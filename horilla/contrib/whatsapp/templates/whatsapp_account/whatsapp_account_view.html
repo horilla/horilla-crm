@@ -1,0 +1,18 @@
+{% extends "settings/settings.html" %}
+{% block settings %}
+    {% has_perm "whatsapp.view_whatsappaccount" as can_view_whatsapp_account %}
+    {% if can_view_whatsapp_account %}
+        <div id="whatsapp-account-view">
+            <div id="navBar" hx-get="{{ nav_url}}?{{request.GET.urlencode}}" hx-trigger="load"></div>
+            <div
+                id="mainSession"
+                class="pt-3"
+                hx-get="{{ list_url }}?{{ request.GET.urlencode}}{% if filter_form %}&hx_trigger={{filter_form}}{% endif %}"
+                hx-trigger="load"
+            >
+            </div>
+        </div>
+    {% else %}
+        {% include "403.html" with embed=True %}
+    {% endif %}
+{% endblock %}

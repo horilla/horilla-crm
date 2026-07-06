@@ -1,0 +1,28 @@
+{% load i18n %}
+<div id="whatsapp-message-list" class="custom-scroll flex flex-col gap-1.5 px-3 pb-3 pt-2 overflow-y-auto h-full bg-primary-50">
+    {% for message in messages %}
+        {% include 'whatsapp_inbox/message_item.html' %}
+    {% empty %}
+        <div id="whatsapp-empty-state" class="flex flex-col items-center justify-center h-full gap-2 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" class="text-color-300">
+                <path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12c0 1.821.487 3.53 1.338 5L2 22l5.5-1.315A9.96 9.96 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2m0 18a7.96 7.96 0 0 1-4.062-1.114l-.29-.172l-3.02.722l.744-2.940l-.19-.303A7.96 7.96 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8s-3.589 8-8 8"/>
+            </svg>
+            <p class="text-sm text-color-400">{% trans "No messages yet." %}</p>
+        </div>
+    {% endfor %}
+</div>
+<script>
+    (function () {
+        var list = document.getElementById('whatsapp-message-list');
+        if (!list) { return; }
+        // Land on the newest message even if layout isn't ready yet or images
+        // load late (scrollHeight keeps growing after the first paint).
+        function toBottom() { list.scrollTop = list.scrollHeight; }
+        toBottom();
+        requestAnimationFrame(toBottom);
+        setTimeout(toBottom, 150);
+        list.querySelectorAll('img').forEach(function (img) {
+            if (!img.complete) { img.addEventListener('load', toBottom); }
+        });
+    })();
+</script>

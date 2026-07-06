@@ -214,6 +214,16 @@ class HorillaDetailSectionView(DetailView):
         """Return effective excluded fields: base list plus any extra from subclasses."""
         base = list(self.base_excluded_fields)
         extra = [f for f in (self.excluded_fields or []) if f not in base]
+        request = getattr(self, "request", None)
+        if request is not None and hasattr(request, "session"):
+            excluded = base + extra
+            if request.session.get("show_all_companies", False):
+                # Company is shown only when "all companies" is enabled, even if
+                # the view lists it in excluded_fields.
+                return [f for f in excluded if f != "company"]
+            if "company" not in excluded:
+                return excluded + ["company"]
+            return excluded
         return base + extra
 
     def check_object_permission(self, request, obj):

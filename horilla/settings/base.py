@@ -110,6 +110,7 @@ INSTALLED_APPS = [
     "horilla.contrib.cadences",
     "horilla.contrib.workflow",
     "horilla.contrib.meeting",
+    "horilla.contrib.whatsapp",
 ]
 
 

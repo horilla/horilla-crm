@@ -5,11 +5,32 @@ This module provides encrypted field implementations for storing sensitive
 data such as email passwords in an encrypted format.
 """
 
+# Standard library imports
+import base64
+import binascii
+
 # First party imports (Horilla)
 from horilla.db import models
 
 # Local imports
 from .encryption_utils import encrypt_password
+
+
+def _looks_like_fernet_token(value):
+    """
+    Return True if value is structurally a Fernet token (urlsafe-base64 whose
+    decoded bytes start with Fernet's version byte, 0x80), rather than
+    guessing from string length — plain-text secrets (e.g. long OAuth access
+    tokens) can easily exceed 100 characters and must not be mistaken for
+    already-encrypted values.
+    """
+    if not isinstance(value, str) or not value:
+        return False
+    try:
+        decoded = base64.urlsafe_b64decode(value.encode() + b"=" * (-len(value) % 4))
+    except (binascii.Error, ValueError):
+        return False
+    return len(decoded) > 0 and decoded[0] == 0x80
 
 
 class EncryptedCharField(models.CharField):
@@ -30,8 +51,8 @@ class EncryptedCharField(models.CharField):
         if value is None or value == "":
             return value
 
-        # If already encrypted (long string), don't re-encrypt
-        if isinstance(value, str) and len(value) > 100:
+        # If already encrypted, don't re-encrypt
+        if _looks_like_fernet_token(value):
             return value
 
         # Encrypt plain text password

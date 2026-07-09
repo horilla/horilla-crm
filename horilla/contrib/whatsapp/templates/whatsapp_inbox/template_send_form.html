@@ -1,0 +1,100 @@
+{% load i18n %}
+<div class="p-5">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-semibold">{{ template.title }}</h3>
+        <button type="button" onclick="closeModal()" class="text-gray-500 hover:text-red-500 text-xl cursor-pointer">&times;</button>
+    </div>
+    <form
+        id="whatsapp-template-send-form"
+        hx-post="{{ send_template_url }}"
+        hx-target="#whatsapp-template-send-status"
+        hx-swap="innerHTML"
+        hx-encoding="multipart/form-data"
+        hx-on::before-swap="event.detail.shouldSwap = true;"
+        hx-on::after-request="if(event.detail.successful){closeModal();}"
+        class="flex flex-col gap-4"
+    >
+        {% csrf_token %}
+        <input type="hidden" name="template_id" value="{{ template.pk }}">
+        <div id="whatsapp-template-send-status"></div>
+
+        <div class="text-xs text-color-400 bg-dark-25 border border-dark-50 rounded-md p-2">
+            {{ schema.body.text }}
+        </div>
+
+        {% if schema.header and schema.header.variables %}
+            <div>
+                <label class="block text-xs font-medium mb-1">
+                    {% if schema.header.format == "TEXT" %}
+                        {% trans "Header text" %}
+                    {% else %}
+                        {% blocktrans with format=schema.header.format|lower %}Header {{ format }}{% endblocktrans %}
+                    {% endif %}
+                </label>
+                {% if schema.header.format == "TEXT" %}
+                    <input type="text" name="header_param_1" required class="w-full text-sm border border-dark-50 rounded-md p-2">
+                {% else %}
+                    {% include "whatsapp_inbox/_styled_file_input.html" with field_id="whatsapp-header-media" field_name="header_media" required=True %}
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if schema.body.variables %}
+            <div class="grid grid-cols-1 gap-2">
+                {% for i in schema.body.variable_range %}
+                    <div>
+                        <label class="block text-xs font-medium mb-1">{% blocktrans with n=i %}Body variable #{{ n }}{% endblocktrans %}</label>
+                        <input type="text" name="body_param_{{ i }}" required class="w-full text-sm border border-dark-50 rounded-md p-2">
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% for button in schema.buttons %}
+            {% if button.url_has_variable %}
+                <div>
+                    <label class="block text-xs font-medium mb-1">{% blocktrans with text=button.text %}Button "{{ text }}" URL value{% endblocktrans %}</label>
+                    <input type="text" name="button_param_{{ button.index }}" required class="w-full text-sm border border-dark-50 rounded-md p-2">
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        {% if schema.carousel %}
+            <div class="flex flex-col gap-4">
+                {% for card in schema.carousel.cards %}
+                    <div class="border border-dark-50 rounded-md p-3">
+                        <p class="text-xs font-semibold mb-2">{% blocktrans with n=card.index|add:1 %}Card {{ n }}{% endblocktrans %}</p>
+                        {% if card.body.text %}
+                            <p class="text-xs text-color-400 mb-2">{{ card.body.text }}</p>
+                        {% endif %}
+                        {% if card.header and card.header.variables %}
+                            <div class="mb-2">
+                                <label class="block text-xs font-medium mb-1">{% blocktrans with format=card.header.format|lower %}Card {{ format }}{% endblocktrans %}</label>
+                                {% include "whatsapp_inbox/_styled_file_input.html" with field_id=card.field_id field_name=card.field_name required=True %}
+                            </div>
+                        {% endif %}
+                        {% for i in card.body.variable_range %}
+                            <div class="mb-2">
+                                <label class="block text-xs font-medium mb-1">{% blocktrans %}Body variable {{'{{'}}{{ i }}{{'}}'}}{% endblocktrans %}</label>
+                                <input type="text" name="card_{{ card.index }}_body_param_{{ i }}" required class="w-full text-sm border border-dark-50 rounded-md p-2">
+                            </div>
+                        {% endfor %}
+                        {% for button in card.buttons %}
+                            {% if button.url_has_variable %}
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">{% blocktrans with text=button.text %}Button "{{ text }}" URL value{% endblocktrans %}</label>
+                                    <input type="text" name="card_{{ card.index }}_button_param_{{ button.index }}" required class="w-full text-sm border border-dark-50 rounded-md p-2">
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm border border-dark-50 rounded-md">{% trans "Cancel" %}</button>
+            <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-md text-sm hover:bg-primary-800 transition duration-300">{% trans "Send" %}</button>
+        </div>
+    </form>
+</div>

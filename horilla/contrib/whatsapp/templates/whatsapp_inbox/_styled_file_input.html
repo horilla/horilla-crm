@@ -1,0 +1,50 @@
+{% load i18n %}
+<div class="w-full">
+    <label
+        for="{{ field_id }}"
+        class="flex items-center gap-3 text-color-600 p-2 placeholder:text-xs font-normal w-full border border-dark-50 rounded-md focus-visible:outline-0 placeholder:text-dark-100 text-sm transition duration-300 focus:border-primary-600 cursor-pointer"
+    >
+        <span class="inline-flex items-center px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded-md hover:bg-primary-700 transition">
+            {% trans 'Choose File' %}
+        </span>
+        <span id="{{ field_id }}-name" class="text-sm text-gray-500">
+            {% trans 'No file chosen' %}
+        </span>
+    </label>
+    <input type="file" name="{{ field_name }}" id="{{ field_id }}" {% if required %}required{% endif %} style="display: none">
+    <div class="flex justify-end">
+        <button
+            type="button"
+            id="{{ field_id }}-clear"
+            class="mt-2 text-xs text-primary-600 hover:text-primary-700 font-medium transition-colors"
+            style="display: none"
+        >
+            {% trans 'Clear' %}
+        </button>
+    </div>
+</div>
+<script>
+    (function () {
+        var input = document.getElementById("{{ field_id }}");
+        var fileName = document.getElementById("{{ field_id }}-name");
+        var clearBtn = document.getElementById("{{ field_id }}-clear");
+        if (!input || input.dataset.fileInit === "true") return;
+        input.dataset.fileInit = "true";
+
+        input.addEventListener('change', function () {
+            if (input.files.length > 0) {
+                fileName.textContent = input.files[0].name;
+                clearBtn.style.removeProperty('display');
+            } else {
+                fileName.textContent = "{% trans 'No file chosen' %}";
+                clearBtn.style.display = 'none';
+            }
+        });
+
+        clearBtn.addEventListener('click', function () {
+            input.value = '';
+            fileName.textContent = "{% trans 'No file chosen' %}";
+            clearBtn.style.display = 'none';
+        });
+    })();
+</script>

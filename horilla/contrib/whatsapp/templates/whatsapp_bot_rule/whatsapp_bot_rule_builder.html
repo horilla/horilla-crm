@@ -1,0 +1,687 @@
+{% extends "settings/settings.html" %}
+{% load i18n static %}
+{% block settings %}
+    {% has_perm "whatsapp.change_whatsappbotrule" as can_edit_flow %}
+    {% if can_edit_flow %}
+        <div id="whatsapp-bot-rule-builder">
+        <style>
+            /* Matches this app's Tailwind theme palette (static/assets/js/tailwind.config.js):
+               primary-600 #E54F38, primary-100 #FFF5F1, dark-100 #A8A8A8, dark-50 #E6E6E6. */
+            .flow-diagram-edge {
+                fill: none;
+                stroke: #A8A8A8;
+                stroke-width: 1.5;
+            }
+            .flow-diagram-edge-label {
+                font-size: 10px;
+                fill: #E54F38;
+            }
+            .flow-diagram-edge-label-bg {
+                fill: #FFF5F1;
+                stroke: #FBD8CF;
+                stroke-width: 1;
+            }
+            .flow-diagram-arrowhead-path {
+                fill: #A8A8A8;
+            }
+            .flow-diagram-node[data-is-start="1"] {
+                border: 2px solid #E54F38;
+            }
+            body.dark .flow-diagram-node {
+                background-color: #2a2a2a !important;
+            }
+            body.dark .flow-diagram-edge {
+                stroke: #6b7280;
+            }
+            body.dark .flow-diagram-edge-label {
+                fill: #FF8A73;
+            }
+            body.dark .flow-diagram-edge-label-bg {
+                fill: #3a2420;
+                stroke: #5a332a;
+            }
+            body.dark .flow-diagram-arrowhead-path {
+                fill: #6b7280;
+            }
+        </style>
+        <button
+            id="reloadButton"
+            hidden
+            hx-get="{{ request.path }}?{{ request.GET.urlencode }}"
+            hx-target="#whatsapp-bot-rule-builder"
+            hx-trigger="click"
+            hx-swap="outerHTML"
+            hx-select="#whatsapp-bot-rule-builder"
+        >
+            click
+        </button>
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex gap-4 items-center">
+                <button
+                    hx-get="{% url 'whatsapp:whatsapp_bot_rule_view' %}"
+                    hx-target="#mainContent"
+                    hx-swap="outerHTML"
+                    hx-select="#mainContent"
+                    hx-push-url="true"
+                >
+                    <i class="fas fa-arrow-left mr-2"></i>
+                </button>
+                <div>
+                    <h2 class="text-lg font-semibold text-color-600">{{ flow.name }}</h2>
+                    <p class="text-xs text-color-400">{% trans "Bot Rule Builder" %}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button
+                    id="flow-view-toggle"
+                    type="button"
+                    class="text-sm px-4 py-2 border border-primary-600 rounded-md hover:bg-primary-600 hover:text-[white] transition duration-300 text-primary-600 flex items-center gap-2"
+                    data-mode="{{ view_mode }}"
+                    hx-get="{{ request.path }}?view={% if view_mode == 'diagram' %}list{% else %}diagram{% endif %}"
+                    hx-target="#whatsapp-bot-rule-builder"
+                    hx-swap="outerHTML"
+                    hx-select="#whatsapp-bot-rule-builder"
+                    hx-push-url="true"
+                >
+                    <i class="fa-solid fa-diagram-project text-xs"></i>
+                    <span data-toggle-label>{% if view_mode == 'diagram' %}{% trans "List" %}{% else %}{% trans "Diagram" %}{% endif %}</span>
+                </button>
+                <button
+                    class="text-sm px-4 py-2 bg-primary-600 rounded-md hover:bg-primary-800 transition duration-300 text-white flex items-center gap-2"
+                    hx-get="{% url 'whatsapp:whatsapp_bot_rule_node_create_view' %}?flow={{ flow.pk }}"
+                    hx-target="#modalBox"
+                    hx-swap="innerHTML"
+                    onclick="openModal()"
+                >
+                    <i class="fa-solid fa-plus text-xs"></i> {% trans "Add Node" %}
+                </button>
+            </div>
+        </div>
+
+        <div id="flow-list-view" class="custom-scroll overflow-y-auto h-[calc(100vh_-_270px)] pr-1{% if view_mode == 'diagram' %} hidden{% endif %}"{% if view_mode == 'diagram' %} hidden{% endif %}>
+            <div class="relative flex flex-col gap-2.5">
+                {% if nodes %}
+                    <div class="absolute left-[19px] top-4 bottom-4 w-px bg-dark-50 z-0"></div>
+                {% endif %}
+                {% for node in nodes %}
+                        <div id="flow-node-{{ node.pk }}" class="relative z-10 flex gap-3 rounded-lg transition-colors duration-500">
+                            <div class="w-10 flex justify-center shrink-0">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-primary-100 border-4 border-white">
+                                    <i class="fa-solid {{ node.get_icon_class }} text-xs text-primary-600"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0 bg-white rounded-lg [box-shadow:0px_0px_10px_0px_rgb(0_0_0_/_5%)] hover:[box-shadow:0px_0px_14px_0px_rgb(0_0_0_/_9%)] transition duration-150 mb-1">
+                                <div class="flex items-center gap-3 px-4 py-3">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[.65rem] font-semibold text-dark-100 shrink-0">{{ node.order }}</span>
+                                            <span class="text-sm font-semibold text-color-600 truncate">{{ node.node_key }}</span>
+                                            {% if node.is_start %}
+                                                <span class="text-[.6rem] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-primary-600 text-white shrink-0">{% trans "Start" %}</span>
+                                            {% elif not node.incoming_edges.all %}
+                                                <span class="flex items-center gap-1 text-[.6rem] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 shrink-0" title="{% trans 'No other node connects to this one' %}">
+                                                    <i class="fa-solid fa-triangle-exclamation"></i> {% trans "Unreachable" %}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <span class="text-xs text-color-400">{{ node.get_node_type_display }}</span>
+                                        {% with summary=node.get_config_summary %}
+                                            {% if summary %}
+                                                <p class="text-xs text-color-600 mt-1 line-clamp-2" title="{{ summary }}">{{ summary }}</p>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                    <div class="flex gap-3 shrink-0">
+                                        <img
+                                            src="{% static 'assets/icons/edit.svg' %}"
+                                            alt="{% trans 'Edit' %}"
+                                            class="w-4 h-4 cursor-pointer opacity-70 hover:opacity-100 transition"
+                                            hx-get="{% url 'whatsapp:whatsapp_bot_rule_node_update_view' pk=node.pk %}"
+                                            hx-target="#modalBox"
+                                            hx-swap="innerHTML"
+                                            onclick="openModal()"
+                                        >
+                                        <img
+                                            src="{% static 'assets/icons/a4.svg' %}"
+                                            alt="{% trans 'Delete' %}"
+                                            class="w-4 h-4 cursor-pointer opacity-70 hover:opacity-100 transition"
+                                            hx-post="{% url 'whatsapp:whatsapp_bot_rule_node_delete_view' pk=node.pk %}"
+                                            hx-target="#modalBox"
+                                            hx-swap="innerHTML"
+                                            hx-vals='{"check_dependencies": "false"}'
+                                            onclick="openModal()"
+                                        >
+                                    </div>
+                                </div>
+
+                                <div class="ps-11 pe-4 pb-2.5 flex flex-col gap-1 border-t border-dark-25 pt-2">
+                                    {% for edge in node.incoming_edges.all %}
+                                        <div class="flex items-center gap-2 text-xs text-dark-100">
+                                            <i class="fa-solid fa-arrow-right-to-bracket text-[.65rem]"></i>
+                                            {% trans "from" %}
+                                            <button
+                                                type="button"
+                                                class="flow-goto-node font-medium text-color-600 hover:text-primary-600 hover:underline"
+                                                data-goto-node="flow-node-{{ edge.source_node.pk }}"
+                                            >
+                                                {{ edge.source_node.node_key }}
+                                            </button>
+                                            {% if edge.source_handle %}
+                                                <span class="font-medium px-1.5 py-0.5 rounded bg-dark-25 text-color-600 text-[.7rem]">{{ edge.source_handle }}</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                    {% for edge in node.outgoing_edges.all %}
+                                        <div class="flex items-center gap-2 text-xs group">
+                                            <i class="fa-solid fa-arrow-right-long text-dark-100 text-[.65rem]"></i>
+                                            {% if edge.source_handle %}
+                                                <span class="font-medium px-1.5 py-0.5 rounded bg-dark-25 text-color-600 text-[.7rem]">{{ edge.source_handle }}</span>
+                                            {% endif %}
+                                            <button
+                                                type="button"
+                                                class="flow-goto-node text-color-600 font-medium hover:text-primary-600 hover:underline"
+                                                data-goto-node="flow-node-{{ edge.target_node.pk }}"
+                                            >
+                                                {{ edge.target_node.node_key }}
+                                            </button>
+                                            <span class="flex-1"></span>
+                                            <img
+                                                src="{% static 'assets/icons/edit.svg' %}"
+                                                alt="{% trans 'Edit' %}"
+                                                class="w-3 h-3 cursor-pointer opacity-0 group-hover:opacity-70 hover:!opacity-100 transition"
+                                                hx-get="{% url 'whatsapp:whatsapp_bot_rule_edge_update_view' pk=edge.pk %}"
+                                                hx-target="#modalBox"
+                                                hx-swap="innerHTML"
+                                                onclick="openModal()"
+                                            >
+                                            <img
+                                                src="{% static 'assets/icons/a4.svg' %}"
+                                                alt="{% trans 'Delete' %}"
+                                                class="w-3 h-3 cursor-pointer opacity-0 group-hover:opacity-70 hover:!opacity-100 transition"
+                                                hx-post="{% url 'whatsapp:whatsapp_bot_rule_edge_delete_view' pk=edge.pk %}"
+                                                hx-target="#modalBox"
+                                                hx-swap="innerHTML"
+                                                hx-vals='{"check_dependencies": "false"}'
+                                                onclick="openModal()"
+                                            >
+                                        </div>
+                                    {% endfor %}
+                                    <button
+                                        class="w-fit text-[.7rem] text-primary-600 hover:text-primary-800 flex items-center gap-1"
+                                        hx-get="{% url 'whatsapp:whatsapp_bot_rule_edge_create_view' %}?flow={{ flow.pk }}&source_node={{ node.pk }}"
+                                        hx-target="#modalBox"
+                                        hx-swap="innerHTML"
+                                        onclick="openModal()"
+                                    >
+                                        <i class="fa-solid fa-plus text-[.6rem]"></i> {% trans "Connect" %}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                {% empty %}
+                    <div class="bg-white rounded-lg [box-shadow:0px_0px_10px_0px_rgb(0_0_0_/_5%)] px-4 py-10 text-center">
+                        <i class="fa-solid fa-diagram-project text-2xl text-dark-50 mb-2"></i>
+                        <p class="text-sm text-color-400">{% trans "No nodes yet. Add one to start building this rule." %}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div id="flow-diagram-view" class="relative overflow-auto custom-scroll h-[calc(100vh_-_270px)]{% if view_mode != 'diagram' %} hidden{% endif %}"{% if view_mode != 'diagram' %} hidden{% endif %}>
+            <div id="flow-diagram-canvas" class="relative">
+                <svg id="flow-diagram-arrows" class="absolute inset-0 pointer-events-none" style="width: 100%; height: 100%; overflow: visible;">
+                    <defs>
+                        <marker
+                            id="flow-diagram-arrowhead"
+                            viewBox="0 0 8 8"
+                            markerUnits="userSpaceOnUse"
+                            markerWidth="8"
+                            markerHeight="8"
+                            refX="7"
+                            refY="4"
+                            orient="auto"
+                        >
+                            <path d="M0,0 L8,4 L0,8 Z" class="flow-diagram-arrowhead-path" fill="#A8A8A8"></path>
+                        </marker>
+                    </defs>
+                </svg>
+                {% for node in nodes %}
+                    <div
+                        class="flow-diagram-node absolute bg-white rounded-lg [box-shadow:0px_0px_10px_0px_rgb(0_0_0_/_8%)] px-3 py-2 flex items-center gap-2"
+                        style="width: 190px;"
+                        data-node-pk="{{ node.pk }}"
+                        data-is-start="{{ node.is_start|yesno:'1,0' }}"
+                    >
+                        <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 bg-primary-100">
+                            <i class="fa-solid {{ node.get_icon_class }} text-[.65rem] text-primary-600"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1">
+                                <span class="text-xs font-semibold text-color-600 truncate">{{ node.node_key }}</span>
+                                {% if node.is_start %}
+                                    <span class="text-[.55rem] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-primary-600 text-white shrink-0">{% trans "Start" %}</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-[.65rem] text-color-400 truncate block">{{ node.get_node_type_display }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {{ diagram_data|json_script:"flow-diagram-data" }}
+
+        <script>
+            (function () {
+                function initFlowGotoNode() {
+                    document.querySelectorAll(".flow-goto-node").forEach(function (btn) {
+                        if (btn.dataset.gotoBound) {
+                            return;
+                        }
+                        btn.dataset.gotoBound = "1";
+                        btn.addEventListener("click", function () {
+                            var target = document.getElementById(btn.dataset.gotoNode);
+                            if (!target) {
+                                return;
+                            }
+                            target.scrollIntoView({ behavior: "smooth", block: "center" });
+                            target.classList.add("bg-primary-100");
+                            setTimeout(function () {
+                                target.classList.remove("bg-primary-100");
+                            }, 1200);
+                        });
+                    });
+                }
+
+                initFlowGotoNode();
+                document.body.addEventListener("htmx:afterSwap", initFlowGotoNode);
+            })();
+        </script>
+
+        <script>
+            (function () {
+                var COLUMN_WIDTH = 320;
+                var ROW_HEIGHT = 150;
+                var CANVAS_PADDING = 40;
+
+                function getDiagramData() {
+                    var el = document.getElementById("flow-diagram-data");
+                    if (!el) {
+                        return null;
+                    }
+                    try {
+                        return JSON.parse(el.textContent);
+                    } catch (err) {
+                        return null;
+                    }
+                }
+
+                // Rank nodes into columns from the start node(s) using
+                // longest-path layering (not BFS shortest-path): a node's
+                // column must be strictly greater than EVERY parent's
+                // column, not just its earliest-arriving one. A node with
+                // incoming edges from very different depths (e.g. a shared
+                // "end" node reached both directly and via several extra
+                // steps) would otherwise land in the same column as one of
+                // its own parents, making that connecting edge collapse to
+                // near-zero width and effectively disappear behind the node
+                // boxes. Relaxation runs until stable (capped so a cycle -
+                // e.g. a retry loop back to an earlier node - can't spin
+                // forever); nodes unreachable from any start node are
+                // appended as their own trailing rank rather than hidden.
+                function computeRanks(data) {
+                    var edges = data.edges;
+                    var rank = {};
+                    data.nodes.forEach(function (n) {
+                        rank[n.pk] = n.isStart ? 0 : -1;
+                    });
+
+                    var maxPasses = data.nodes.length + 1;
+                    for (var pass = 0; pass < maxPasses; pass++) {
+                        var changed = false;
+                        edges.forEach(function (e) {
+                            if (rank[e.source] === undefined || rank[e.source] < 0) {
+                                return;
+                            }
+                            var candidate = rank[e.source] + 1;
+                            if (candidate > rank[e.target]) {
+                                rank[e.target] = candidate;
+                                changed = true;
+                            }
+                        });
+                        if (!changed) {
+                            break;
+                        }
+                    }
+
+                    var maxRank = 0;
+                    Object.keys(rank).forEach(function (pk) {
+                        maxRank = Math.max(maxRank, rank[pk]);
+                    });
+                    data.nodes.forEach(function (n) {
+                        if (rank[n.pk] < 0) {
+                            rank[n.pk] = maxRank + 1;
+                        }
+                    });
+
+                    return rank;
+                }
+
+                // Assign a row per node, column by column (left to right), so
+                // a child is placed as close as possible to the average row
+                // of its already-placed parent(s) - this is what keeps a
+                // straight single-parent chain visually flat and only fans
+                // branches out vertically where the graph actually branches,
+                // instead of every node just stacking in arrival order
+                // (which is what produced criss-crossing edges before).
+                function computeRows(data, rank) {
+                    var incoming = {};
+                    data.edges.forEach(function (e) {
+                        if (!incoming[e.target]) {
+                            incoming[e.target] = [];
+                        }
+                        incoming[e.target].push(e.source);
+                    });
+
+                    var byColumn = {};
+                    data.nodes.forEach(function (n) {
+                        var col = rank[n.pk];
+                        if (!byColumn[col]) {
+                            byColumn[col] = [];
+                        }
+                        byColumn[col].push(n.pk);
+                    });
+
+                    var row = {};
+                    var maxCol = 0;
+                    Object.keys(byColumn).forEach(function (col) {
+                        maxCol = Math.max(maxCol, parseInt(col, 10));
+                    });
+
+                    for (var col = 0; col <= maxCol; col++) {
+                        var pksInColumn = byColumn[col] || [];
+
+                        var desired = pksInColumn.map(function (pk) {
+                            var parents = (incoming[pk] || []).filter(function (parentPk) {
+                                return row[parentPk] !== undefined;
+                            });
+                            var target;
+                            if (parents.length) {
+                                var sum = parents.reduce(function (acc, parentPk) {
+                                    return acc + row[parentPk];
+                                }, 0);
+                                target = sum / parents.length;
+                            } else {
+                                target = pksInColumn.indexOf(pk);
+                            }
+                            return { pk: pk, target: target };
+                        });
+
+                        desired.sort(function (a, b) {
+                            return a.target - b.target;
+                        });
+
+                        var nextFreeRow = 0;
+                        desired.forEach(function (entry) {
+                            var placed = Math.max(entry.target, nextFreeRow);
+                            row[entry.pk] = placed;
+                            nextFreeRow = placed + 1;
+                        });
+                    }
+
+                    return row;
+                }
+
+                function layoutDiagram() {
+                    var data = getDiagramData();
+                    var canvas = document.getElementById("flow-diagram-canvas");
+                    if (!data || !canvas) {
+                        return;
+                    }
+
+                    var rank = computeRanks(data);
+                    var row = computeRows(data, rank);
+
+                    var maxRight = 0;
+                    var maxBottom = 0;
+                    data.nodes.forEach(function (n) {
+                        var el = canvas.querySelector('[data-node-pk="' + n.pk + '"]');
+                        if (!el) {
+                            return;
+                        }
+                        var col = rank[n.pk];
+                        var r = row[n.pk] || 0;
+                        var left = CANVAS_PADDING + col * COLUMN_WIDTH;
+                        var top = CANVAS_PADDING + r * ROW_HEIGHT;
+                        el.style.left = left + "px";
+                        el.style.top = top + "px";
+                        // Measure the box's ACTUAL rendered size (offsetWidth/
+                        // Height) rather than assuming a fixed 190px - a long
+                        // node_key/label can wrap or grow the box, and sizing
+                        // the canvas from an assumed width silently clips
+                        // whichever node ends up wider than expected (this is
+                        // what cut the trailing "end" node off the right edge
+                        // even after scrolling all the way).
+                        maxRight = Math.max(maxRight, left + el.offsetWidth);
+                        maxBottom = Math.max(maxBottom, top + el.offsetHeight);
+                    });
+
+                    // min-width/min-height (not width/height) so an
+                    // already-wider parent container isn't shrunk, while
+                    // still guaranteeing enough room for every node box.
+                    canvas.style.minWidth = maxRight + CANVAS_PADDING + "px";
+                    canvas.style.minHeight = maxBottom + CANVAS_PADDING + "px";
+                    canvas.style.width = maxRight + CANVAS_PADDING + "px";
+                    canvas.style.height = maxBottom + CANVAS_PADDING + "px";
+                }
+
+                function drawDiagramArrows() {
+                    var data = getDiagramData();
+                    var canvas = document.getElementById("flow-diagram-canvas");
+                    var svg = document.getElementById("flow-diagram-arrows");
+                    if (!data || !canvas || !svg) {
+                        return;
+                    }
+
+                    while (svg.children.length > 1) {
+                        svg.removeChild(svg.lastChild);
+                    }
+
+                    var canvasRect = canvas.getBoundingClientRect();
+
+                    function anchor(pk, isSource) {
+                        var el = canvas.querySelector('[data-node-pk="' + pk + '"]');
+                        if (!el) {
+                            return null;
+                        }
+                        var r = el.getBoundingClientRect();
+                        return {
+                            x: (isSource ? r.right : r.left) - canvasRect.left,
+                            y: r.top - canvasRect.top + r.height / 2,
+                        };
+                    }
+
+                    // Group edges by exact (source, target) pair - a node can
+                    // have several branches landing on the very same target
+                    // (e.g. 3 list options all continuing to one node), which
+                    // would otherwise all draw the identical curve on top of
+                    // each other, stacking their labels illegibly right at
+                    // the shared midpoint. Each duplicate gets a parallel
+                    // vertical offset so the lines and labels visually
+                    // separate into distinct lanes.
+                    var edgesByPair = {};
+                    data.edges.forEach(function (edge) {
+                        var key = edge.source + ">" + edge.target;
+                        if (!edgesByPair[key]) {
+                            edgesByPair[key] = [];
+                        }
+                        edgesByPair[key].push(edge);
+                    });
+
+                    Object.keys(edgesByPair).forEach(function (pairKey) {
+                        var edges = edgesByPair[pairKey];
+                        var a = anchor(edges[0].source, true);
+                        var b = anchor(edges[0].target, false);
+                        if (!a || !b) {
+                            return;
+                        }
+
+                        edges.forEach(function (edge, index) {
+                            // Center the set of lanes on the natural midline
+                            // (offset 0 for a single edge; symmetric spread
+                            // above/below it for multiple). Offsetting BOTH
+                            // control points (not just one shared midpoint)
+                            // keeps each lane running parallel along its
+                            // whole length, instead of bowing out and then
+                            // pinching back together near the endpoints -
+                            // which is what made adjacent lanes visually
+                            // cross/touch right before reaching the target.
+                            var laneOffset = (index - (edges.length - 1) / 2) * 32;
+                            var c1x = a.x + (b.x - a.x) * 0.35;
+                            var c1y = a.y + laneOffset;
+                            var c2x = a.x + (b.x - a.x) * 0.65;
+                            var c2y = b.y + laneOffset;
+                            var d =
+                                "M" + a.x + "," + a.y +
+                                " C" + c1x + "," + c1y + " " + c2x + "," + c2y + " " + b.x + "," + b.y;
+
+                            // Point AT t=0.5 on the actual rendered cubic
+                            // bezier (not the straight-line midpoint between
+                            // anchors) so the label sits on its own curve -
+                            // using the straight-line approximation put every
+                            // lane's label near the same spot whenever lanes
+                            // fan out early and reconverge late, making it
+                            // impossible to tell which line a label belonged
+                            // to.
+                            function bezierPoint(t) {
+                                var mt = 1 - t;
+                                return {
+                                    x: mt * mt * mt * a.x + 3 * mt * mt * t * c1x + 3 * mt * t * t * c2x + t * t * t * b.x,
+                                    y: mt * mt * mt * a.y + 3 * mt * mt * t * c1y + 3 * mt * t * t * c2y + t * t * t * b.y,
+                                };
+                            }
+                            var labelPoint = bezierPoint(0.5);
+                            var midX = labelPoint.x;
+                            var midY = labelPoint.y;
+
+                            var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                            path.setAttribute("d", d);
+                            path.setAttribute("class", "flow-diagram-edge");
+                            path.setAttribute("marker-end", "url(#flow-diagram-arrowhead)");
+                            // Inline fallback in case the <style> block hasn't
+                            // applied yet right after an htmx swap (e.g. the
+                            // fragment was inserted via innerHTML before the
+                            // stylesheet rules took effect) - without this, an
+                            // un-styled SVG <path> defaults to a solid black
+                            // fill, which reads as a huge black wedge instead
+                            // of a thin connector line.
+                            path.setAttribute("fill", "none");
+                            path.setAttribute("stroke", "#A8A8A8");
+                            path.setAttribute("stroke-width", "1.5");
+                            svg.appendChild(path);
+
+                            if (edge.handle) {
+                                var labelX = midX;
+                                var labelY = midY;
+                                var halfWidth = edge.handle.length * 3.2 + 4;
+
+                                var LABEL_HEIGHT = 16;
+                                // Text glyphs sit visually above the SVG
+                                // baseline, not centered on it - nudging the
+                                // baseline down by roughly a third of the
+                                // font size (rather than relying on
+                                // dominant-baseline, which some renderers
+                                // apply inconsistently) centers the glyph
+                                // itself inside the label pill instead of
+                                // leaving extra empty space above the text.
+                                var labelBaselineY = labelY + 3;
+
+                                var bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                                bg.setAttribute("class", "flow-diagram-edge-label-bg");
+                                bg.setAttribute("x", labelX - halfWidth);
+                                bg.setAttribute("y", labelY - LABEL_HEIGHT / 2);
+                                bg.setAttribute("width", halfWidth * 2);
+                                bg.setAttribute("height", LABEL_HEIGHT);
+                                bg.setAttribute("rx", 3);
+                                bg.setAttribute("fill", "#FFF5F1");
+                                bg.setAttribute("stroke", "#FBD8CF");
+                                svg.appendChild(bg);
+
+                                var label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                                label.setAttribute("x", labelX);
+                                label.setAttribute("y", labelBaselineY);
+                                label.setAttribute("class", "flow-diagram-edge-label");
+                                label.setAttribute("text-anchor", "middle");
+                                label.setAttribute("font-size", "10");
+                                label.setAttribute("fill", "#E54F38");
+                                label.textContent = edge.handle;
+                                svg.appendChild(label);
+                            }
+                        });
+                    });
+                }
+
+                function renderDiagram() {
+                    layoutDiagram();
+                    requestAnimationFrame(drawDiagramArrows);
+                }
+
+                // The Diagram/List toggle is a real navigation link
+                // (?view=diagram / ?view=list, hx-push-url), so the
+                // server always renders the correct panel visible from the
+                // start - a refresh, a back/forward navigation, or the
+                // #reloadButton swap (which now carries the current
+                // querystring, see hx-get="{{ request.path }}?{{
+                // request.GET.urlencode }}") all land on the right view with
+                // no client-side state to restore. This just needs to render
+                // the diagram's layout/arrows whenever that's the panel the
+                // server chose to show.
+                function initFlowDiagramView() {
+                    var toggle = document.getElementById("flow-view-toggle");
+                    if (!toggle || toggle.dataset.mode !== "diagram") {
+                        return;
+                    }
+                    // The container this just-swapped-in fragment lives in
+                    // may not have finished layout yet (freshly unhidden via
+                    // a server-rendered class, or htmx settling in phases -
+                    // scrollbars, select2 widgets, etc.) - getBoundingClientRect()
+                    // calls made too early return zero-sized boxes, which
+                    // silently draws zero-length (invisible) connector lines.
+                    // Repaint a few times on a short delay, same approach
+                    // cadences' own arrow-overlay script uses, so the result
+                    // stays correct once layout has actually settled.
+                    renderDiagram();
+                    [80, 180, 320].forEach(function (ms) {
+                        setTimeout(renderDiagram, ms);
+                    });
+                }
+
+                var redrawTimer = null;
+                function scheduleRedraw() {
+                    var toggle = document.getElementById("flow-view-toggle");
+                    if (!toggle || toggle.dataset.mode !== "diagram") {
+                        return;
+                    }
+                    if (redrawTimer) {
+                        clearTimeout(redrawTimer);
+                    }
+                    redrawTimer = setTimeout(function () {
+                        requestAnimationFrame(drawDiagramArrows);
+                    }, 60);
+                }
+
+                if (document.readyState === "loading") {
+                    document.addEventListener("DOMContentLoaded", initFlowDiagramView);
+                } else {
+                    initFlowDiagramView();
+                }
+                document.body.addEventListener("htmx:afterSwap", initFlowDiagramView);
+                document.body.addEventListener("htmx:afterSettle", initFlowDiagramView);
+                window.addEventListener("resize", scheduleRedraw);
+            })();
+        </script>
+        </div>
+    {% else %}
+        {% include "403.html" with embed=True %}
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,450 @@
+{% extends "single_form_view.html" %}
+{% load i18n %}
+{% block extra_form_content_after_conditions %}
+    {{ block.super }}
+
+    {# Repeatable-row builder UIs for the JSON-backed fields (options, branches, #}
+    {# field_mapping, filters). Each row below is a real, server-rendered form #}
+    {# field submitted natively with the form POST - no hidden JSON blob, no #}
+    {# client-side serialization step to race against an async widget fetch. #}
+    <div id="options_container" class="col-span-2" style="display:none">
+        <label class="text-xs text-color-600 mb-1 block">{% trans "Options" %}</label>
+        <p class="text-xs text-color-400 mb-2">{% trans "Each option is what the contact taps; the id drives branching." %}</p>
+        <div id="options-rows" class="flex flex-col gap-2 mb-2">
+            {% for row in options_rows %}
+                {% include "whatsapp_bot_rule/partials/options_row.html" with row_id=row.row_id option_id=row.id label=row.label %}
+            {% endfor %}
+        </div>
+        <button
+            type="button"
+            id="options-add-row"
+            class="text-xs text-primary-600 hover:underline"
+            hx-get="{% url 'whatsapp:whatsapp_options_add_row_view' %}"
+            hx-include="[name^='options_id_']"
+            hx-target="#options-rows"
+            hx-swap="beforeend"
+            hx-indicator="this"
+        >
+            + {% trans "Add option" %}
+        </button>
+    </div>
+
+    <div id="field_mapping_container" class="col-span-2" style="display:none">
+        <label class="text-xs text-color-600 mb-1 block">{% trans "Field Mapping" %}</label>
+        <p class="text-xs text-color-400 mb-2">{% trans "Model field to write, and the value/variable to write into it." %}</p>
+        <div id="field_mapping-rows" class="flex flex-col gap-2 mb-2">
+            {% for row in field_mapping_rows %}
+                {% include "whatsapp_bot_rule/partials/kv_row.html" with builder="field_mapping" row_id=row.row_id field_name=row.field_name value=row.value field_choices=row.field_choices value_widget_html=row.value_widget_html %}
+            {% endfor %}
+        </div>
+        <button
+            type="button"
+            id="field_mapping-add-row"
+            class="text-xs text-primary-600 hover:underline"
+            hx-get="{% url 'whatsapp:whatsapp_kv_add_row_view' %}"
+            hx-vals='{"builder": "field_mapping"}'
+            hx-include="[name='content_type'],[name^='field_mapping_key_']"
+            hx-target="#field_mapping-rows"
+            hx-swap="beforeend"
+            hx-indicator="this"
+        >
+            + {% trans "Add field" %}
+        </button>
+    </div>
+
+    <div id="filters_container" class="col-span-2" style="display:none">
+        <label class="text-xs text-color-600 mb-1 block">{% trans "Filters" %}</label>
+        <p class="text-xs text-color-400 mb-2">{% trans "Model field to match, and the value/variable to compare it to." %}</p>
+        <div id="filters-rows" class="flex flex-col gap-2 mb-2">
+            {% for row in filters_rows %}
+                {% include "whatsapp_bot_rule/partials/kv_row.html" with builder="filters" row_id=row.row_id field_name=row.field_name value=row.value field_choices=row.field_choices value_widget_html=row.value_widget_html %}
+            {% endfor %}
+        </div>
+        <button
+            type="button"
+            id="filters-add-row"
+            class="text-xs text-primary-600 hover:underline"
+            hx-get="{% url 'whatsapp:whatsapp_kv_add_row_view' %}"
+            hx-vals='{"builder": "filters"}'
+            hx-include="[name='content_type'],[name^='filters_key_']"
+            hx-target="#filters-rows"
+            hx-swap="beforeend"
+            hx-indicator="this"
+        >
+            + {% trans "Add filter" %}
+        </button>
+    </div>
+
+    <div id="branches_container" class="col-span-2" style="display:none">
+        <label class="text-xs text-color-600 mb-1 block">{% trans "Branches" %}</label>
+        <p class="text-xs text-color-400 mb-2">{% trans "First branch whose rules all match wins; order matters." %}</p>
+        <div id="branches-list" class="flex flex-col gap-3 mb-2">
+            {% for branch in branches_rows %}
+                {% include "whatsapp_bot_rule/partials/branch_row.html" with branch_id=branch.row_id handle=branch.handle rules=branch.rules rule_types=rule_types %}
+            {% endfor %}
+        </div>
+        <button
+            type="button"
+            id="branches-add-branch"
+            class="text-xs text-primary-600 hover:underline"
+            hx-get="{% url 'whatsapp:whatsapp_branch_add_row_view' %}"
+            hx-include="[name^='branches_handle_']"
+            hx-target="#branches-list"
+            hx-swap="beforeend"
+            hx-indicator="this"
+        >
+            + {% trans "Add branch" %}
+        </button>
+    </div>
+
+    <script>
+        (function () {
+            var NODE_TYPE_FIELDS = {{ node_type_field_groups|safe }};
+
+            function containerFor(fieldName) {
+                return document.getElementById(fieldName + "_container");
+            }
+
+            function applyVisibility(select) {
+                var nodeType = select.value;
+                var visible = NODE_TYPE_FIELDS[nodeType] || [];
+                Object.keys(NODE_TYPE_FIELDS).forEach(function (type) {
+                    NODE_TYPE_FIELDS[type].forEach(function (fieldName) {
+                        var container = containerFor(fieldName);
+                        if (container) {
+                            container.style.display = "none";
+                        }
+                    });
+                });
+                visible.forEach(function (fieldName) {
+                    var container = containerFor(fieldName);
+                    if (container) {
+                        container.style.display = "";
+                    }
+                });
+            }
+
+            function initNodeTypeToggle() {
+                var select = document.querySelector("[data-node-type-select]");
+                if (!select || select.dataset.nodeTypeToggleBound) {
+                    return;
+                }
+                select.dataset.nodeTypeToggleBound = "1";
+                applyVisibility(select);
+                select.addEventListener("change", function () {
+                    applyVisibility(select);
+                });
+            }
+
+            // ---- Condition rule row show/hide (pure display toggle, no fetch) ----
+            var RULE_TYPES_WITH_FIELD = ["field_equals", "field_not_equals", "field_contains", "field_gt", "field_lt", "date_before", "date_after"];
+            var RULE_TYPES_WITH_VALUE = RULE_TYPES_WITH_FIELD.concat(["button_selected"]);
+            var RULE_TYPES_WITH_VARIABLE = ["variable_exists"];
+
+            function ruleNeedsField(type) {
+                return RULE_TYPES_WITH_FIELD.indexOf(type) !== -1 || RULE_TYPES_WITH_VARIABLE.indexOf(type) !== -1;
+            }
+            function ruleNeedsValue(type) {
+                return RULE_TYPES_WITH_VALUE.indexOf(type) !== -1;
+            }
+
+            function updateRuleRowVisibility(ruleEl) {
+                var typeEl = ruleEl.querySelector(".rule-type");
+                var fieldEl = ruleEl.querySelector(".rule-field");
+                var valueEl = ruleEl.querySelector(".rule-value");
+                if (!typeEl || !fieldEl || !valueEl) {
+                    return;
+                }
+                var type = typeEl.value;
+                fieldEl.style.display = ruleNeedsField(type) ? "" : "none";
+                fieldEl.placeholder = RULE_TYPES_WITH_VARIABLE.indexOf(type) !== -1 ? "{% trans 'Variable name' %}" : "{% trans 'Field name' %}";
+                valueEl.style.display = ruleNeedsValue(type) ? "" : "none";
+            }
+
+            function initRuleRow(ruleEl) {
+                if (ruleEl.dataset.ruleVisibilityBound) {
+                    return;
+                }
+                ruleEl.dataset.ruleVisibilityBound = "1";
+                updateRuleRowVisibility(ruleEl);
+                var typeEl = ruleEl.querySelector(".rule-type");
+                if (typeEl) {
+                    typeEl.addEventListener("change", function () {
+                        updateRuleRowVisibility(ruleEl);
+                    });
+                }
+            }
+
+            function initAllRuleRows() {
+                document.querySelectorAll(".rule-row").forEach(initRuleRow);
+            }
+
+            // ---- Insert-token picker (attached to every kv-value-live text input) ----
+            var FLOW_VARIABLE_NAMES = {{ flow_variable_names|default:"[]"|safe }};
+            var FLOW_VARIABLE_PREFIXES = {{ flow_variable_prefixes|default:"{}"|safe }};
+            // Built via string concatenation rather than literal double
+            // braces, since Django's template parser scans this file's raw
+            // text for its own tag syntax regardless of JS string/comment
+            // context, and would otherwise try to parse these as its own
+            // template variable tags.
+            var TOKEN_OPEN = "{" + "{";
+            var TOKEN_CLOSE = "}" + "}";
+            var FIELD_OPTIONS_URL = "{% url 'whatsapp:whatsapp_field_mapping_options_view' %}";
+            var fieldListCache = {};
+
+            function contentTypeSelect() {
+                return document.getElementById("id_content_type");
+            }
+
+            function fetchJson(url, params) {
+                var query = Object.keys(params)
+                    .filter(function (key) { return params[key]; })
+                    .map(function (key) { return encodeURIComponent(key) + "=" + encodeURIComponent(params[key]); })
+                    .join("&");
+                return fetch(url + "?" + query, {
+                    headers: { "X-Requested-With": "XMLHttpRequest", "HX-Request": "true" },
+                }).then(function (resp) { return resp.json(); });
+            }
+
+            function getFieldList(contentTypeId) {
+                if (!contentTypeId) {
+                    return Promise.resolve([]);
+                }
+                if (fieldListCache[contentTypeId]) {
+                    return Promise.resolve(fieldListCache[contentTypeId]);
+                }
+                return fetchJson(FIELD_OPTIONS_URL, { content_type_id: contentTypeId }).then(function (data) {
+                    fieldListCache[contentTypeId] = data.fields || [];
+                    return fieldListCache[contentTypeId];
+                });
+            }
+
+            // Tokens the admin can insert into a variable-token value field.
+            // conversation.* is a fixed, small allowlist (see interpolation.py's
+            // _CONVERSATION_SAFE_FIELDS); variables.* is whatever earlier
+            // Question/Buttons/List nodes in this same flow captured
+            // (flow_variable_names, passed in from the view); record.<field>
+            // depends on the node's own Target Model, resolved on demand.
+            function availableTokens(contentTypeId) {
+                var tokens = [
+                    { value: TOKEN_OPEN + "conversation.contact_number" + TOKEN_CLOSE, label: "{% trans 'Contact phone number' %}" },
+                    { value: TOKEN_OPEN + "conversation.contact_name" + TOKEN_CLOSE, label: "{% trans 'Contact WhatsApp profile name' %}" },
+                    { value: TOKEN_OPEN + "conversation.status" + TOKEN_CLOSE, label: "{% trans 'Conversation status' %}" },
+                    { value: TOKEN_OPEN + "now" + TOKEN_CLOSE, label: "{% trans 'Current date/time' %}" },
+                ];
+                FLOW_VARIABLE_NAMES.forEach(function (name) {
+                    tokens.push({
+                        value: TOKEN_OPEN + "variables." + name + TOKEN_CLOSE,
+                        label: "{% trans 'Captured answer:' %} " + name,
+                    });
+                });
+                // A Send Meta Flow node's answers land under this prefix.
+                // When its config records the actual answer field names
+                // (answer_field_names), offer exact clickable tokens;
+                // otherwise fall back to a "<prefix>.field_name" pattern
+                // hint, since the real field names live in Meta Flow
+                // Builder and aren't stored locally by default.
+                Object.keys(FLOW_VARIABLE_PREFIXES).forEach(function (prefix) {
+                    var fieldNames = FLOW_VARIABLE_PREFIXES[prefix];
+                    if (fieldNames && fieldNames.length) {
+                        fieldNames.forEach(function (fieldName) {
+                            tokens.push({
+                                value: TOKEN_OPEN + "variables." + prefix + "." + fieldName + TOKEN_CLOSE,
+                                label: "{% trans 'Meta Flow answer:' %} " + fieldName,
+                            });
+                        });
+                    } else {
+                        tokens.push({
+                            value: TOKEN_OPEN + "variables." + prefix + "." + "field_name" + TOKEN_CLOSE,
+                            label: "{% trans 'Meta Flow answer (replace field_name):' %} " + prefix,
+                        });
+                    }
+                });
+                var fieldsPromise = contentTypeId ? getFieldList(contentTypeId) : Promise.resolve([]);
+                return fieldsPromise.then(function (fields) {
+                    fields.forEach(function (field) {
+                        tokens.push({
+                            value: TOKEN_OPEN + "record." + field.name + TOKEN_CLOSE,
+                            label: "{% trans 'Linked record:' %} " + field.label,
+                        });
+                    });
+                    return tokens;
+                });
+            }
+
+            var openTokenPanel = null; // the single currently-open panel, across all rows
+
+            function closeOpenTokenPanel() {
+                if (openTokenPanel && openTokenPanel.parentNode) {
+                    openTokenPanel.parentNode.removeChild(openTokenPanel);
+                }
+                openTokenPanel = null;
+            }
+            document.addEventListener("click", function (evt) {
+                if (openTokenPanel && !openTokenPanel.contains(evt.target) && !evt.target.closest(".kv-insert-token-btn")) {
+                    closeOpenTokenPanel();
+                }
+            });
+
+            var CARET_INSERTABLE_TYPES = ["text"];
+            var TOKEN_INSERTABLE_TYPES = ["text", "number", "date", "datetime-local"];
+
+            function isCaretInsertable(el) {
+                return !!el && el.tagName === "INPUT" && CARET_INSERTABLE_TYPES.indexOf(el.type) !== -1;
+            }
+
+            function isTokenInsertable(el) {
+                return !!el && el.tagName === "INPUT" && TOKEN_INSERTABLE_TYPES.indexOf(el.type) !== -1;
+            }
+
+            function insertTokenIntoValueEl(valueEl, tokenValue, selStart, selEnd) {
+                var current = valueEl.value || "";
+                var start = selStart != null ? selStart : current.length;
+                var end = selEnd != null ? selEnd : current.length;
+                valueEl.value = current.slice(0, start) + tokenValue + current.slice(end);
+                var caret = start + tokenValue.length;
+                valueEl.focus();
+                valueEl.setSelectionRange(caret, caret);
+            }
+
+            function ensureTokenButton(slot, valueEl) {
+                if (slot.querySelector(".kv-insert-token-btn")) {
+                    return;
+                }
+                var btn = document.createElement("button");
+                btn.type = "button";
+                btn.title = "{% trans 'Insert Field' %}";
+                btn.className = "kv-insert-token-btn w-7 h-7 shrink-0 hover:bg-primary-600 hover:text-[white] transition-all p-[5px] border border-dark-50 hover:border-primary-600 flex items-center justify-center rounded-md";
+                btn.innerHTML =
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">' +
+                    '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1">' +
+                    '<path stroke-width="2" d="M8 12h.009m3.986 0h.01m3.986 0H16" />' +
+                    '<path stroke-width="1.5" d="M18 21c1.232 0 2.231-1.151 2.231-2.571c0-2.248-.1-3.743 1.442-5.52c.436-.502.436-1.316 0-1.818c-1.542-1.777-1.442-3.272-1.442-5.52C20.231 4.151 19.232 3 18 3M6 21c-1.232 0-2.231-1.151-2.231-2.571c0-2.248.1-3.743-1.442-5.52c-.436-.502-.436-1.316 0-1.818C3.835 9.352 3.769 7.84 3.769 5.57C3.769 4.151 4.768 3 6 3" />' +
+                    '</g></svg>';
+                slot.appendChild(btn);
+
+                var savedSelStart = null;
+                var savedSelEnd = null;
+
+                btn.addEventListener("click", function (evt) {
+                    evt.stopPropagation();
+                    var currentValueEl = slot.querySelector(".kv-value-live");
+                    var wasOpenForThisButton = openTokenPanel && openTokenPanel._forButton === btn;
+                    closeOpenTokenPanel();
+                    if (wasOpenForThisButton) {
+                        return;
+                    }
+
+                    if (isCaretInsertable(currentValueEl)) {
+                        savedSelStart = currentValueEl.selectionStart;
+                        savedSelEnd = currentValueEl.selectionEnd;
+                    } else {
+                        savedSelStart = null;
+                        savedSelEnd = null;
+                    }
+
+                    var panel = document.createElement("div");
+                    panel.className = "w-72 max-h-64 overflow-y-auto rounded-md border border-dark-50 bg-white shadow-lg text-xs";
+                    panel.style.position = "fixed";
+                    panel.style.zIndex = "9999";
+                    panel._forButton = btn;
+                    panel.textContent = "{% trans 'Loading...' %}";
+                    document.body.appendChild(panel);
+
+                    // Fixed positioning (viewport coordinates, no scroll
+                    // offset) so the panel tracks the button regardless of
+                    // the modal's own internal scrolling. Anchor
+                    // right/above instead of left/below whenever there
+                    // isn't enough room, so it stays fully on screen.
+                    var rect = btn.getBoundingClientRect();
+                    var panelWidth = 288; // matches w-72
+                    var panelMaxHeight = 256; // matches max-h-64
+                    var left = rect.left;
+                    if (left + panelWidth > window.innerWidth - 8) {
+                        left = Math.max(8, rect.right - panelWidth);
+                    }
+                    var top = rect.bottom + 4;
+                    if (top + panelMaxHeight > window.innerHeight - 8) {
+                        top = Math.max(8, rect.top - panelMaxHeight - 4);
+                    }
+                    panel.style.left = left + "px";
+                    panel.style.top = top + "px";
+                    openTokenPanel = panel;
+
+                    var contentTypeId = contentTypeSelect() ? contentTypeSelect().value : "";
+                    availableTokens(contentTypeId).then(function (tokens) {
+                        if (openTokenPanel !== panel) {
+                            return; // closed/superseded while loading
+                        }
+                        panel.innerHTML = "";
+                        tokens.forEach(function (token) {
+                            var item = document.createElement("button");
+                            item.type = "button";
+                            item.className = "w-full text-left px-3 py-2 hover:bg-dark-25 border-b border-dark-50 last:border-b-0";
+                            item.innerHTML =
+                                '<span class="block font-medium">' + token.label + '</span>' +
+                                '<span class="block text-color-400 font-mono">' + token.value + '</span>';
+                            item.addEventListener("click", function () {
+                                var targetValueEl = slot.querySelector(".kv-value-live");
+                                if (isCaretInsertable(targetValueEl)) {
+                                    insertTokenIntoValueEl(targetValueEl, token.value, savedSelStart, savedSelEnd);
+                                } else {
+                                    // Current widget is a choice/FK/date/etc
+                                    // control that can't hold a token mid-value -
+                                    // ask the server for this row's value widget
+                                    // again, seeded with the token as the
+                                    // existing value. The server's own "a
+                                    // {{token}} isn't a valid stored value"
+                                    // check (see _render_value_widget) falls
+                                    // back to plain text for us.
+                                    var kvRow = slot.closest(".kv-row");
+                                    var fieldSelect = kvRow ? kvRow.querySelector(".kv-field") : null;
+                                    var rowMatch = /^id_(.+)_value_slot_(.+)$/.exec(slot.id);
+                                    if (fieldSelect && rowMatch) {
+                                        htmx.ajax("GET", FIELD_OPTIONS_URL, {
+                                            target: "#" + slot.id,
+                                            swap: "innerHTML",
+                                            values: {
+                                                builder: rowMatch[1],
+                                                row_id: rowMatch[2],
+                                                render: "value_widget",
+                                                content_type: contentTypeSelect() ? contentTypeSelect().value : "",
+                                                existing_value: token.value,
+                                                field_name: fieldSelect.value,
+                                            },
+                                        });
+                                    }
+                                }
+                                closeOpenTokenPanel();
+                            });
+                            panel.appendChild(item);
+                        });
+                    });
+                });
+            }
+
+            function initTokenPickers() {
+                document.querySelectorAll(".kv-value-slot").forEach(function (slot) {
+                    var valueEl = slot.querySelector(".kv-value-live");
+                    if (isTokenInsertable(valueEl)) {
+                        ensureTokenButton(slot, valueEl);
+                    } else {
+                        var existingBtn = slot.querySelector(".kv-insert-token-btn");
+                        if (existingBtn) {
+                            existingBtn.remove();
+                        }
+                    }
+                });
+            }
+
+            function initAll() {
+                initNodeTypeToggle();
+                initAllRuleRows();
+                initTokenPickers();
+            }
+
+            initAll();
+            document.body.addEventListener("htmx:afterSwap", initAll);
+        })();
+    </script>
+{% endblock %}

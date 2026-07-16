@@ -1,0 +1,36 @@
+{% load i18n %}
+<div class="rule-row flex items-center gap-2" data-branch-id="{{ branch_id }}" data-row-id="{{ row_id }}" id="rule-row-{{ branch_id }}-{{ row_id }}">
+    <select
+        name="branches_rule_type_{{ branch_id }}_{{ row_id }}"
+        id="id_branches_rule_type_{{ branch_id }}_{{ row_id }}"
+        class="rule-type js-example-basic-single headselect text-xs border border-dark-50 rounded-md p-2"
+    >
+        {% for rule_value, rule_label in rule_types %}
+            <option value="{{ rule_value }}" {% if rule_value == type %}selected{% endif %}>{{ rule_label }}</option>
+        {% endfor %}
+    </select>
+    <input
+        type="text"
+        name="branches_rule_field_{{ branch_id }}_{{ row_id }}"
+        id="id_branches_rule_field_{{ branch_id }}_{{ row_id }}"
+        value="{{ field }}"
+        class="rule-field w-1/4 text-xs border border-dark-50 rounded-md p-2"
+        placeholder="{% trans 'Field name' %}"
+    >
+    <input
+        type="text"
+        name="branches_rule_value_{{ branch_id }}_{{ row_id }}"
+        id="id_branches_rule_value_{{ branch_id }}_{{ row_id }}"
+        value="{{ value }}"
+        class="rule-value flex-1 text-xs border border-dark-50 rounded-md p-2"
+        placeholder="{% trans 'Value' %}"
+    >
+    <button
+        type="button"
+        class="rule-remove text-red-600 text-xs px-2"
+        hx-delete="{% url 'whatsapp:whatsapp_rule_remove_row_view' branch_id=branch_id row_id=row_id %}"
+        hx-target="#rule-row-{{ branch_id }}-{{ row_id }}"
+        hx-swap="outerHTML"
+        hx-indicator="this"
+    >&times;</button>
+</div>

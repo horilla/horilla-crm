@@ -1,0 +1,18 @@
+{% load i18n %}
+<select
+    name="{{ builder }}_key_{{ row_id }}"
+    id="id_{{ builder }}_key_{{ row_id }}"
+    class="kv-field js-example-basic-single headselect w-full text-sm"
+    hx-get="{% url 'whatsapp:whatsapp_field_mapping_options_view' %}"
+    hx-target="#id_{{ builder }}_value_slot_{{ row_id }}"
+    hx-swap="innerHTML"
+    hx-include="[name='content_type']"
+    hx-vals='{"builder": "{{ builder }}", "row_id": "{{ row_id }}", "render": "value_widget"}'
+    hx-trigger="change"
+    hx-indicator="this"
+>
+    <option value="">{% trans "Select a field" %}</option>
+    {% for choice in field_choices %}
+        <option value="{{ choice.name }}" {% if choice.name == field_name %}selected{% endif %}>{{ choice.label }}</option>
+    {% endfor %}
+</select>

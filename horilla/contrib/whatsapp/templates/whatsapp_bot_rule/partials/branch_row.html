@@ -1,0 +1,36 @@
+{% load i18n %}
+<div class="branch-row border border-dark-50 rounded-md p-3" data-row-id="{{ branch_id }}" id="branch-row-{{ branch_id }}">
+    <div class="flex items-center gap-2 mb-2">
+        <input
+            type="text"
+            name="branches_handle_{{ branch_id }}"
+            id="id_branches_handle_{{ branch_id }}"
+            value="{{ handle }}"
+            class="flex-1 text-sm border border-dark-50 rounded-md p-2"
+            placeholder="{% trans 'Branch handle, e.g. vip' %}"
+        >
+        <button
+            type="button"
+            class="branch-remove text-red-600 text-xs px-2"
+            hx-delete="{% url 'whatsapp:whatsapp_branch_remove_row_view' row_id=branch_id %}"
+            hx-target="#branch-row-{{ branch_id }}"
+            hx-swap="outerHTML"
+            hx-indicator="this"
+        >&times; {% trans "Remove branch" %}</button>
+    </div>
+    <div class="rules flex flex-col gap-2 mb-2" id="branch-{{ branch_id }}-rules">
+        {% for rule in rules %}
+            {% include "whatsapp_bot_rule/partials/rule_row.html" with branch_id=branch_id row_id=rule.row_id type=rule.type field=rule.field value=rule.value %}
+        {% endfor %}
+    </div>
+    <button
+        type="button"
+        class="branch-add-rule text-xs text-primary-600 hover:underline"
+        hx-get="{% url 'whatsapp:whatsapp_rule_add_row_view' %}"
+        hx-vals='{"branch_id": "{{ branch_id }}"}'
+        hx-include="[name^='branches_rule_type_{{ branch_id }}_']"
+        hx-target="#branch-{{ branch_id }}-rules"
+        hx-swap="beforeend"
+        hx-indicator="this"
+    >+ {% trans "Add rule" %}</button>
+</div>

@@ -1,0 +1,26 @@
+{% extends "single_form_view.html" %}
+{% block extra_form_content_after_conditions %}
+    {{ block.super }}
+    <script>
+        (function () {
+            function initTriggerTypeToggle() {
+                var select = document.getElementById("id_trigger_type");
+                var container = document.getElementById("trigger_keywords_container");
+                if (!select || !container || select.dataset.triggerTypeToggleBound) {
+                    return;
+                }
+                select.dataset.triggerTypeToggleBound = "1";
+
+                function applyVisibility() {
+                    container.style.display = select.value === "keyword" ? "" : "none";
+                }
+
+                applyVisibility();
+                select.addEventListener("change", applyVisibility);
+            }
+
+            initTriggerTypeToggle();
+            document.body.addEventListener("htmx:afterSwap", initTriggerTypeToggle);
+        })();
+    </script>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% load i18n %}
+<div class="flex items-center gap-2 kv-row" data-row-id="{{ row_id }}" id="{{ builder }}-row-{{ row_id }}">
+    <div class="w-1/3 shrink-0" id="id_{{ builder }}_field_slot_{{ row_id }}">
+        {% include "whatsapp_bot_rule/partials/kv_field_select.html" %}
+    </div>
+    <div class="kv-value-slot flex-1 min-w-0 flex items-center gap-1" id="id_{{ builder }}_value_slot_{{ row_id }}">
+        {% if value_widget_html %}
+            {{ value_widget_html }}
+        {% else %}
+            <input
+                type="text"
+                name="{{ builder }}_value_{{ row_id }}"
+                id="id_{{ builder }}_value_{{ row_id }}"
+                value="{{ value }}"
+                placeholder="{% templatetag openvariable %}variables.name{% templatetag closevariable %}"
+                class="kv-value-live w-full text-sm border border-dark-50 rounded-md p-2 font-mono"
+            >
+        {% endif %}
+    </div>
+    <button
+        type="button"
+        class="kv-remove text-red-600 text-xs px-2"
+        hx-delete="{% url 'whatsapp:whatsapp_kv_remove_row_view' row_id=row_id %}"
+        hx-target="#{{ builder }}-row-{{ row_id }}"
+        hx-swap="outerHTML"
+        hx-indicator="this"
+    >&times;</button>
+</div>

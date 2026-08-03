@@ -25,23 +25,26 @@ from horilla.contrib.generics.forms.condition_fields import (
 from horilla.contrib.keys.models import ShortcutKey
 from horilla.contrib.keys.utils import resolve_page_url
 from horilla.contrib.utils.middlewares import _thread_local
-from horilla.core.exceptions import FieldDoesNotExist
+from horilla.core.exceptions import FieldDoesNotExist, PermissionDenied
 from horilla.db import transaction
 from horilla.db.models.signals import post_save, pre_save
 from horilla.urls import reverse, reverse_lazy
 from horilla.utils import timezone
+from horilla.utils.translation import gettext as _
 from horilla.web.response import ScriptResponse
 from horilla_crm.leads.assignment.evaluation import compare
 from horilla_crm.leads.assignment.notify import (
     deliver_assignment_notifications,
     notify_assignment,
 )
+from horilla_crm.leads.assignment.owner_lock import may_be_locked, owner_locked
 from horilla_crm.leads.assignment.pool import (
     OWNER_FIELD,
     VIA_AUTO,
+    advance_rotation,
     build_assignment_info,
     condition_users,
-    pick_least_loaded,
+    pick_for_condition,
 )
 
 # Local imports
@@ -164,7 +167,6 @@ def migrate_crm_shortkey_urls(sender, **kwargs):
     try:
         for old_url, new_url in _CRM_SHORTKEY_URL_MIGRATIONS.items():
             updated = ShortcutKey.all_objects.filter(page=old_url).update(page=new_url)
-            print(f"Migrated {updated} shortkey(s): '{old_url}' → '{new_url}'")
             if updated:
                 logger.info(
                     "Migrated %d shortkey(s): '%s' → '%s'", updated, old_url, new_url
@@ -194,6 +196,44 @@ def flag_lead_conversion_transition(sender, instance, **kwargs):
         Lead.objects.filter(pk=instance.pk).values_list("is_convert", flat=True).first()
     )
     instance._just_converted = not was_converted
+
+
+@receiver(pre_save, sender=Lead)
+def guard_assigned_lead_owner(sender, instance, **kwargs):
+    """
+    Refuse a change of owner that the lead's assignment rule does not allow.
+
+    The lead forms and the Change Owner action already stop it with a message;
+    this guard covers every other way a request can save a lead (inline edit,
+    bulk update, API), so the rule does not depend on the page. It only looks
+    at saves made for a signed-in user, and not at saves made by a workflow
+    action, which are the administrator's own automation.
+    """
+    if not instance.pk:
+        return
+    request = getattr(_thread_local, "request", None)
+    user = getattr(request, "user", None)
+    if (sender, instance.pk) in getattr(_thread_local, "_workflow_executing", ()):
+        return
+    if not may_be_locked(instance, user):
+        return
+    owner_attname = Lead._meta.get_field(OWNER_FIELD).attname
+    stored_owner = (
+        Lead.all_objects.filter(pk=instance.pk)
+        .values_list(owner_attname, flat=True)
+        .first()
+    )
+    if stored_owner == getattr(instance, owner_attname):
+        return
+    # The owner is being changed: judge it by the owner that is stored, not by
+    # the new one already set on the instance.
+    if owner_locked(instance, user, current_owner_id=stored_owner):
+        raise PermissionDenied(
+            _(
+                "The owner of a lead assigned by an assignment rule "
+                "cannot be changed."
+            )
+        )
 
 
 @receiver(post_save, sender=Lead)
@@ -306,12 +346,13 @@ def _resolve_target_users(condition):
     return condition_users(condition)
 
 
-def _pick_least_loaded_user(users_qs):
+def _pick_assignee(condition, users_qs):
     """
-    From a queryset of users, return the one currently owning the fewest active leads.
-    Ties broken by PK (lowest first) for determinism.
+    From a queryset of users, pick the one who gets the lead, with the method
+    the condition is set to (least lead count or round robin). A round robin
+    turn is taken here, so the next lead goes to the next person.
     """
-    return pick_least_loaded(users_qs)
+    return pick_for_condition(condition, users_qs, advance=True)
 
 
 def apply_assignment_rules(lead):
@@ -322,7 +363,8 @@ def apply_assignment_rules(lead):
     1. Iterate active LeadAssignmentRules ordered by creation date.
     2. For each rule, iterate its conditions (ordered by creation date).
     3. Evaluate criteria for each condition against the lead.
-    4. On first match: pick the user with fewest leads (round-robin), update the lead's owner,
+    4. On first match: pick one user with the condition's assignment method (least lead
+       count or round robin), update the lead's owner,
        then send email / notification / both per the condition's notify_method.
     5. Stop after the first matching condition across all rules.
     """
@@ -339,7 +381,7 @@ def apply_assignment_rules(lead):
 
                 # Condition matched — resolve target users
                 users_qs = _resolve_target_users(condition)
-                assigned_user = _pick_least_loaded_user(users_qs)
+                assigned_user = _pick_assignee(condition, users_qs)
                 if not assigned_user:
                     logger.warning(
                         "Assignment rule '%s' condition #%s matched lead %s "
@@ -401,7 +443,16 @@ def handle_lead_assignment(sender, instance, created, **kwargs):
 
     condition_id = getattr(instance, "_assignment_condition_id", None)
     if condition_id:
-        transaction.on_commit(lambda: notify_assignment(condition_id, instance.pk))
+        owner_id = getattr(instance, "_assignment_owner_id", None)
+
+        def _finish():
+            # The form only previewed the next person of a round robin
+            # condition; the turn is taken now that the lead exists.
+            if owner_id:
+                advance_rotation(condition_id, owner_id)
+            notify_assignment(condition_id, instance.pk)
+
+        transaction.on_commit(_finish)
         return
 
     def _run():

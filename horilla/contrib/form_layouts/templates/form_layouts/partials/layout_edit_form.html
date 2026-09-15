@@ -1,0 +1,269 @@
+{% load i18n %}
+{% trans "Discard your unsaved changes?" as discard_confirm %}
+<form
+    id="form-layout-form"
+    class="flex-1 min-h-0 flex flex-col"
+    hx-post="{% url 'form_layouts:form_layout_save' %}"
+    hx-target="#form-layout-editor"
+    hx-swap="outerHTML"
+>
+    {% csrf_token %}
+    <input type="hidden" name="model" value="{{ selected_content_type.pk }}">
+
+    <div class="flex items-start gap-2 rounded-md border border-primary-200 bg-primary-100 text-primary-600 text-xs px-3 py-2 mb-3 flex-shrink-0">
+        <i class="fas fa-circle-info mt-0.5"></i>
+        <span>
+            {% trans "Drag a field by its handle, or use the arrows, to change its position. Switch a field off to hide it from the create form. Required fields always stay on the form." %}
+        </span>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-between gap-2 px-1 pb-2 flex-shrink-0">
+        <span class="text-xs text-gray-500">
+            <span class="font-semibold text-gray-700" data-layout-shown>{{ visible_count }}</span>
+            / {{ total_count }} {% trans "fields shown" %}
+        </span>
+        <span class="flex items-center gap-2">
+            <button
+                type="button"
+                class="text-xs px-2.5 py-1 rounded-md border border-dark-50 text-gray-600 hover:border-primary-600 hover:text-primary-600 transition duration-300"
+                data-layout-action="show-all"
+            >
+                <i class="fas fa-eye me-1"></i>{% trans "Show all" %}
+            </button>
+            <button
+                type="button"
+                class="text-xs px-2.5 py-1 rounded-md border border-dark-50 text-gray-600 hover:border-primary-600 hover:text-primary-600 transition duration-300"
+                data-layout-action="hide-optional"
+            >
+                <i class="fas fa-eye-slash me-1"></i>{% trans "Hide optional fields" %}
+            </button>
+        </span>
+    </div>
+
+    <ul id="form-layout-fields" class="flex-1 min-h-0 overflow-y-auto custom-scroll pe-1" data-sortable-list>
+        {% for entry in entries %}
+            <li
+                class="form-layout-item flex items-center gap-2 border border-dark-50 rounded-md px-2 py-1.5 mb-2 select-none transition-colors {% if entry.visible %}bg-white{% else %}bg-gray-50 opacity-60{% endif %}"
+                data-field="{{ entry.name }}"
+            >
+                <span
+                    class="form-layout-handle shrink-0 w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-primary-600 hover:bg-gray-100 cursor-grab active:cursor-grabbing"
+                    title="{% trans 'Drag to reorder' %}"
+                >
+                    <i class="fas fa-grip-vertical"></i>
+                </span>
+                <span class="form-layout-position w-6 shrink-0 text-xs text-gray-400 text-center">{{ forloop.counter }}</span>
+                <input type="hidden" name="field_order" value="{{ entry.name }}">
+                {% if entry.required %}
+                    <span class="flex-1 min-w-0 text-sm text-gray-800 truncate">{{ entry.label }}</span>
+                {% else %}
+                    <label for="form-layout-visible-{{ forloop.counter }}" class="flex-1 min-w-0 text-sm text-gray-800 truncate cursor-pointer">
+                        {{ entry.label }}
+                    </label>
+                {% endif %}
+                {% if entry.is_custom %}
+                    <span class="shrink-0 px-2 py-0.5 rounded-full text-[11px] bg-primary-100 text-primary-600">
+                        {% trans "Custom Field" %}
+                    </span>
+                {% endif %}
+                {% if entry.required %}
+                    <span class="shrink-0 px-2 py-0.5 rounded-full text-[11px] bg-gray-100 text-gray-500">
+                        {% trans "Required" %}
+                    </span>
+                {% endif %}
+                <span class="shrink-0 flex items-center">
+                    <button
+                        type="button"
+                        class="w-7 h-7 rounded text-gray-400 hover:text-primary-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                        data-layout-move="up"
+                        title="{% trans 'Move up' %}"
+                        aria-label="{% trans 'Move up' %}"
+                    >
+                        <i class="fas fa-arrow-up text-xs"></i>
+                    </button>
+                    <button
+                        type="button"
+                        class="w-7 h-7 rounded text-gray-400 hover:text-primary-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                        data-layout-move="down"
+                        title="{% trans 'Move down' %}"
+                        aria-label="{% trans 'Move down' %}"
+                    >
+                        <i class="fas fa-arrow-down text-xs"></i>
+                    </button>
+                </span>
+                {% if entry.required %}
+                    <span
+                        class="shrink-0 w-11 flex justify-center text-gray-400"
+                        title="{% trans 'Required fields are always shown. Make the field optional in Field Requirements to hide it.' %}"
+                    >
+                        <i class="fas fa-lock"></i>
+                    </span>
+                {% else %}
+                    {% comment %}
+                        "relative" keeps the sr-only checkbox inside this row. Without it the
+                        checkbox is positioned against an ancestor outside the scrolling list,
+                        stays at its unscrolled offset, and focusing it on click scrolls the page.
+                    {% endcomment %}
+                    <label class="relative shrink-0 w-11 inline-flex items-center justify-center cursor-pointer" title="{% trans 'Show on Create Form' %}">
+                        <input
+                            type="checkbox"
+                            id="form-layout-visible-{{ forloop.counter }}"
+                            name="visible"
+                            value="{{ entry.name }}"
+                            class="sr-only peer"
+                            {% if entry.visible %}checked{% endif %}
+                        >
+                        <span class="relative w-11 h-5 bg-gray-200 rounded-full peer-checked:bg-primary-600 peer-focus-visible:ring-2 peer-focus-visible:ring-primary-300 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6 rtl:peer-checked:after:-translate-x-6"></span>
+                    </label>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <div class="flex flex-wrap items-center justify-between gap-2 pt-3 mt-1 border-t border-dark-50 flex-shrink-0">
+        <span class="hidden items-center gap-1 text-xs text-amber-600" data-layout-dirty-note>
+            <i class="fas fa-circle-exclamation"></i>
+            {% trans "You have unsaved changes." %}
+        </span>
+        <span class="flex items-center gap-2 ms-auto">
+            <button
+                type="button"
+                class="text-sm px-4 py-2 border border-primary-600 rounded-md hover:bg-primary-600 hover:text-[white] transition duration-300 text-primary-600"
+                hx-get="{% url 'form_layouts:form_layout_editor' %}?model={{ selected_content_type.pk }}"
+                hx-target="#form-layout-editor"
+                hx-swap="outerHTML"
+                hx-trigger="confirmed"
+                data-layout-cancel
+                data-confirm="{{ discard_confirm }}"
+            >
+                {% trans "Cancel" %}
+            </button>
+            <button
+                type="submit"
+                class="inline-flex items-center gap-2 text-sm px-4 py-2 bg-primary-600 rounded-md hover:bg-primary-800 transition duration-300 text-[white]"
+            >
+                <i class="fas fa-check text-xs"></i>
+                {% trans "Save Layout" %}
+            </button>
+        </span>
+    </div>
+</form>
+
+<script>
+    (function () {
+        if (!window.horillaFormLayouts) {
+            window.horillaFormLayouts = {
+                init: function (form) {
+                    if (!form || form.dataset.layoutReady === "1") {
+                        return;
+                    }
+                    form.dataset.layoutReady = "1";
+
+                    var list = form.querySelector("[data-sortable-list]");
+                    var dirty = false;
+
+                    function markDirty() {
+                        dirty = true;
+                        var note = form.querySelector("[data-layout-dirty-note]");
+                        if (note) {
+                            note.classList.remove("hidden");
+                            note.classList.add("inline-flex");
+                        }
+                    }
+
+                    function refresh() {
+                        var items = list.querySelectorAll(".form-layout-item");
+                        var shown = 0;
+                        items.forEach(function (item, index) {
+                            item.querySelector(".form-layout-position").textContent = index + 1;
+                            item.querySelector('[data-layout-move="up"]').disabled = index === 0;
+                            item.querySelector('[data-layout-move="down"]').disabled = index === items.length - 1;
+                            var box = item.querySelector('input[name="visible"]');
+                            var visible = !box || box.checked;
+                            if (visible) {
+                                shown += 1;
+                            }
+                            item.classList.toggle("opacity-60", !visible);
+                            item.classList.toggle("bg-gray-50", !visible);
+                            item.classList.toggle("bg-white", visible);
+                        });
+                        var counter = form.querySelector("[data-layout-shown]");
+                        if (counter) {
+                            counter.textContent = shown;
+                        }
+                    }
+
+                    if (typeof Sortable !== "undefined") {
+                        new Sortable(list, {
+                            animation: 150,
+                            handle: ".form-layout-handle",
+                            draggable: ".form-layout-item",
+                            forceFallback: true,
+                            fallbackOnBody: true,
+                            ghostClass: "opacity-40",
+                            onEnd: function (event) {
+                                if (event.oldIndex !== event.newIndex) {
+                                    markDirty();
+                                }
+                                refresh();
+                            },
+                        });
+                    }
+
+                    list.addEventListener("click", function (event) {
+                        var button = event.target.closest("[data-layout-move]");
+                        if (!button || button.disabled) {
+                            return;
+                        }
+                        var item = button.closest(".form-layout-item");
+                        if (button.dataset.layoutMove === "up" && item.previousElementSibling) {
+                            list.insertBefore(item, item.previousElementSibling);
+                        } else if (button.dataset.layoutMove === "down" && item.nextElementSibling) {
+                            list.insertBefore(item.nextElementSibling, item);
+                        }
+                        markDirty();
+                        refresh();
+                        item.scrollIntoView({ block: "nearest" });
+                        if (!button.disabled) {
+                            button.focus();
+                        }
+                    });
+
+                    list.addEventListener("change", function (event) {
+                        if (event.target.name === "visible") {
+                            markDirty();
+                            refresh();
+                        }
+                    });
+
+                    form.addEventListener("click", function (event) {
+                        var action = event.target.closest("[data-layout-action]");
+                        if (action) {
+                            var show = action.dataset.layoutAction === "show-all";
+                            list.querySelectorAll('input[name="visible"]').forEach(function (box) {
+                                box.checked = show;
+                            });
+                            markDirty();
+                            refresh();
+                            return;
+                        }
+                        var cancel = event.target.closest("[data-layout-cancel]");
+                        if (cancel) {
+                            if (dirty && typeof hxConfirm === "function") {
+                                hxConfirm(cancel, cancel.dataset.confirm);
+                            } else {
+                                htmx.trigger(cancel, "confirmed");
+                            }
+                        }
+                    });
+
+                    refresh();
+                },
+            };
+            document.addEventListener("htmx:historyRestore", function () {
+                window.horillaFormLayouts.init(document.getElementById("form-layout-form"));
+            });
+        }
+        window.horillaFormLayouts.init(document.getElementById("form-layout-form"));
+    })();
+</script>

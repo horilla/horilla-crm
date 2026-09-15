@@ -1,0 +1,82 @@
+{% load static i18n %}
+<div id="form-layout-editor" class="flex-1 min-h-0 flex flex-col">
+    {% include "messages.html" %}
+
+    {% if not model_choices %}
+        <p class="text-sm text-gray-500">{% trans "No model supports a configurable create form yet." %}</p>
+    {% else %}
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3 flex-shrink-0">
+            <div class="flex flex-wrap items-center gap-2">
+                {% if is_editing %}
+                    <span class="inline-flex items-center gap-2 text-sm font-semibold text-gray-800">
+                        <i class="fas fa-pen text-primary-600 text-xs"></i>
+                        {% blocktrans with model=selected_label %}Editing the {{ model }} create form{% endblocktrans %}
+                    </span>
+                {% else %}
+                    {% for choice in model_choices %}
+                        <button
+                            type="button"
+                            class="text-xs px-3 py-1.5 rounded-md border transition duration-300 {% if choice.selected %}bg-primary-600 border-primary-600 text-[white]{% else %}bg-white border-dark-50 text-gray-600 hover:border-primary-600 hover:text-primary-600{% endif %}"
+                            hx-get="{% url 'form_layouts:form_layout_editor' %}?model={{ choice.id }}"
+                            hx-target="#form-layout-editor"
+                            hx-swap="outerHTML"
+                            {% if choice.selected %}aria-pressed="true"{% endif %}
+                        >
+                            {{ choice.label }}
+                        </button>
+                    {% endfor %}
+                    <span
+                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {% if has_layout %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-500{% endif %}"
+                    >
+                        {% if has_layout %}
+                            {% trans "Custom layout: Create opens a single-page form" %}
+                        {% else %}
+                            {% trans "Default form in use" %}
+                        {% endif %}
+                    </span>
+                {% endif %}
+            </div>
+
+            {% if not is_editing %}
+                <div class="flex items-center gap-2">
+                    {% if can_reset and has_layout %}
+                        {% trans "Reset this create form to the default layout?" as reset_confirm %}
+                        <button
+                            type="button"
+                            class="text-sm px-4 py-2 border border-primary-600 rounded-md hover:bg-primary-600 hover:text-[white] transition duration-300 text-primary-600"
+                            hx-post="{% url 'form_layouts:form_layout_reset' %}"
+                            hx-vals='{"model": "{{ selected_content_type.pk }}"}'
+                            hx-include="#form-layout-csrf [name=csrfmiddlewaretoken]"
+                            hx-trigger="confirmed"
+                            hx-target="#form-layout-editor"
+                            hx-swap="outerHTML"
+                            onclick="hxConfirm(this, '{{ reset_confirm|escapejs }}')"
+                        >
+                            {% trans "Reset to Default" %}
+                        </button>
+                    {% endif %}
+                    {% if can_change %}
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-2 text-sm px-4 py-2 bg-primary-600 rounded-md hover:bg-primary-800 transition duration-300 text-[white]"
+                            hx-get="{% url 'form_layouts:form_layout_editor' %}?model={{ selected_content_type.pk }}&mode=edit"
+                            hx-target="#form-layout-editor"
+                            hx-swap="outerHTML"
+                        >
+                            <i class="fas fa-pen text-xs"></i>
+                            {% trans "Edit Layout" %}
+                        </button>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <span id="form-layout-csrf" class="hidden">{% csrf_token %}</span>
+
+        {% if is_editing %}
+            {% include "form_layouts/partials/layout_edit_form.html" %}
+        {% else %}
+            {% include "form_layouts/partials/layout_view_list.html" %}
+        {% endif %}
+    {% endif %}
+</div>

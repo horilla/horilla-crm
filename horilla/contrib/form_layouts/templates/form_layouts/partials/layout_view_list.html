@@ -1,0 +1,56 @@
+{% load i18n %}
+{% if not has_layout %}
+    <div class="flex items-start gap-2 rounded-md border border-primary-200 bg-primary-100 text-primary-600 text-xs px-3 py-2 mb-3 flex-shrink-0">
+        <i class="fas fa-circle-info mt-0.5"></i>
+        <span>
+            {% trans "No layout saved yet. Create uses the standard multi-step form with every field." %}
+            {% if can_change %}
+                {% trans "Click Edit Layout to choose fields and their order." %}
+            {% endif %}
+        </span>
+    </div>
+{% elif not can_change %}
+    <div class="flex items-start gap-2 rounded-md border border-dark-50 bg-gray-50 text-gray-500 text-xs px-3 py-2 mb-3 flex-shrink-0">
+        <i class="fas fa-lock mt-0.5"></i>
+        <span>{% trans "You can view this layout but not change it." %}</span>
+    </div>
+{% endif %}
+
+<div class="text-xs text-gray-500 px-1 pb-2 flex-shrink-0">
+    {% blocktrans with shown=visible_count total=total_count %}{{ shown }} of {{ total }} fields are shown on the create form{% endblocktrans %}
+</div>
+
+<ol id="form-layout-fields" class="flex-1 min-h-0 overflow-y-auto custom-scroll pe-1">
+    {% for entry in entries %}
+        <li
+            class="flex items-center gap-3 border border-dark-50 rounded-md px-3 py-2 mb-2 {% if entry.visible %}bg-white{% else %}bg-gray-50{% endif %}"
+            data-field="{{ entry.name }}"
+        >
+            <span class="w-6 shrink-0 text-xs text-gray-400 text-center">{{ forloop.counter }}</span>
+            <span class="flex-1 min-w-0 text-sm truncate {% if entry.visible %}text-gray-800{% else %}text-gray-400{% endif %}">
+                {{ entry.label }}
+            </span>
+            {% if entry.is_custom %}
+                <span class="shrink-0 px-2 py-0.5 rounded-full text-[11px] bg-primary-100 text-primary-600">
+                    {% trans "Custom Field" %}
+                </span>
+            {% endif %}
+            {% if entry.required %}
+                <span class="shrink-0 px-2 py-0.5 rounded-full text-[11px] bg-gray-100 text-gray-500">
+                    {% trans "Required" %}
+                </span>
+            {% endif %}
+            {% if entry.visible %}
+                <span class="shrink-0 inline-flex items-center gap-1 w-20 justify-center px-2 py-0.5 rounded-full text-[11px] bg-green-100 text-green-700">
+                    <i class="fas fa-eye"></i>
+                    {% trans "Shown" %}
+                </span>
+            {% else %}
+                <span class="shrink-0 inline-flex items-center gap-1 w-20 justify-center px-2 py-0.5 rounded-full text-[11px] bg-gray-100 text-gray-500">
+                    <i class="fas fa-eye-slash"></i>
+                    {% trans "Hidden" %}
+                </span>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ol>

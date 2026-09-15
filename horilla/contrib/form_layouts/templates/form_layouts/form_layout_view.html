@@ -1,0 +1,14 @@
+{% extends "settings/settings.html" %}
+{% load static i18n %}
+
+{% block settings %}
+    <div id="form-layout-view" class="h-full flex flex-col min-h-0">
+        <div class="flex-shrink-0 mb-3">
+            <h3 class="text-md font-semibold">{% trans "Create Form Layout" %}</h3>
+            <p class="text-xs text-gray-500">
+                {% trans "Choose which fields appear when a record is created and in what order. Edit forms always show every field." %}
+            </p>
+        </div>
+        {% include "form_layouts/layout_editor.html" %}
+    </div>
+{% endblock %}

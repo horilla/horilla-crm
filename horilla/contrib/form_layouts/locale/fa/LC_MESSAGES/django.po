@@ -1,0 +1,178 @@
+# Persian translations for the form layouts app.
+# This file is distributed under the same license as the Horilla package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-15 13:00+0000\n"
+"PO-Revision-Date: 2026-09-15 13:00+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Form Layouts"
+msgstr "چیدمان فرم‌ها"
+
+msgid ""
+"Choose which fields appear on the create form of opted-in models, and in "
+"what order, per company."
+msgstr ""
+"انتخاب کنید در فرم ایجاد مدل‌های پشتیبانی‌شده چه فیلدهایی و به چه ترتیبی "
+"نمایش داده شوند؛ برای هر شرکت به‌صورت جداگانه."
+
+msgid ""
+"Register form layouts as a self-contained contrib feature. Lead and "
+"Opportunity opt in through the feature registry. Per-company FormLayoutField "
+"rows hide optional fields and reorder the single-page create form; a model "
+"with a saved layout opens that form instead of the multi-step wizard. Edit "
+"forms are never changed."
+msgstr ""
+"چیدمان فرم‌ها به‌عنوان یک قابلیت مستقل ثبت شد. سرنخ و فرصت از طریق رجیستری "
+"قابلیت‌ها فعال می‌شوند. تنظیمات هر شرکت فیلدهای اختیاری را از فرم ایجاد "
+"تک‌صفحه‌ای مخفی کرده و ترتیب آن را تغییر می‌دهد؛ مدلی که چیدمان ذخیره‌شده دارد "
+"به‌جای فرم چندمرحله‌ای، همین فرم را باز می‌کند. فرم‌های ویرایش هرگز تغییر "
+"نمی‌کنند."
+
+msgid "Create Form Layout"
+msgstr "چیدمان فرم ایجاد"
+
+msgid "Show on Create Form"
+msgstr "نمایش در فرم ایجاد"
+
+msgid "Model"
+msgstr "مدل"
+
+msgid "Company"
+msgstr "شرکت"
+
+msgid "Created By"
+msgstr "ایجاد شده توسط"
+
+msgid "Updated By"
+msgstr "به‌روزرسانی شده توسط"
+
+msgid "Cancel"
+msgstr "انصراف"
+
+msgid "Sequence"
+msgstr "توالی"
+
+msgid "Field"
+msgstr "فیلد"
+
+msgid "Required"
+msgstr "الزامی"
+
+msgid "Form Layout Field"
+msgstr "فیلد چیدمان فرم"
+
+msgid "Form Layout Fields"
+msgstr "فیلدهای چیدمان فرم"
+
+msgid "Select a valid model."
+msgstr "یک مدل معتبر انتخاب کنید."
+
+msgid "Create form layout saved."
+msgstr "چیدمان فرم ایجاد ذخیره شد."
+
+msgid "Create form reset to the default layout."
+msgstr "فرم ایجاد به چیدمان پیش‌فرض بازگشت."
+
+msgid ""
+"Choose which fields appear when a record is created and in what order. Edit "
+"forms always show every field."
+msgstr ""
+"انتخاب کنید هنگام ایجاد رکورد چه فیلدهایی و به چه ترتیبی نمایش داده شوند. "
+"فرم‌های ویرایش همیشه همه فیلدها را نشان می‌دهند."
+
+msgid "No model supports a configurable create form yet."
+msgstr "هنوز هیچ مدلی از فرم ایجاد قابل تنظیم پشتیبانی نمی‌کند."
+
+msgid "Custom layout: Create opens a single-page form"
+msgstr "چیدمان سفارشی: ایجاد، فرم تک‌صفحه‌ای را باز می‌کند"
+
+msgid "Default form in use"
+msgstr "فرم پیش‌فرض در حال استفاده است"
+
+#, python-format
+msgid "Editing the %(model)s create form"
+msgstr "در حال ویرایش فرم ایجاد %(model)s"
+
+msgid "Edit Layout"
+msgstr "ویرایش چیدمان"
+
+msgid "Reset this create form to the default layout?"
+msgstr "فرم ایجاد به چیدمان پیش‌فرض بازگردد؟"
+
+msgid "Reset to Default"
+msgstr "بازگشت به پیش‌فرض"
+
+msgid "No layout saved yet. Create uses the standard multi-step form with every field."
+msgstr "هنوز چیدمانی ذخیره نشده است. ایجاد رکورد با فرم چندمرحله‌ای استاندارد و همه فیلدها انجام می‌شود."
+
+msgid "Click Edit Layout to choose fields and their order."
+msgstr "برای انتخاب فیلدها و ترتیب آن‌ها روی «ویرایش چیدمان» کلیک کنید."
+
+msgid "You can view this layout but not change it."
+msgstr "شما می‌توانید این چیدمان را ببینید، اما امکان تغییر آن را ندارید."
+
+#, python-format
+msgid "%(shown)s of %(total)s fields are shown on the create form"
+msgstr "%(shown)s از %(total)s فیلد در فرم ایجاد نمایش داده می‌شود"
+
+msgid "Custom Field"
+msgstr "فیلد سفارشی"
+
+msgid "Shown"
+msgstr "نمایش"
+
+msgid "Hidden"
+msgstr "مخفی"
+
+msgid "Discard your unsaved changes?"
+msgstr "تغییرات ذخیره‌نشده کنار گذاشته شوند؟"
+
+msgid ""
+"Drag a field by its handle, or use the arrows, to change its position. "
+"Switch a field off to hide it from the create form. Required fields always "
+"stay on the form."
+msgstr ""
+"برای تغییر جایگاه، فیلد را از دستگیره بکشید یا از فلش‌ها استفاده کنید. برای "
+"مخفی کردن فیلد از فرم ایجاد، کلید آن را خاموش کنید. فیلدهای الزامی همیشه در "
+"فرم باقی می‌مانند."
+
+msgid "fields shown"
+msgstr "فیلد نمایش داده می‌شود"
+
+msgid "Show all"
+msgstr "نمایش همه"
+
+msgid "Hide optional fields"
+msgstr "مخفی کردن فیلدهای اختیاری"
+
+msgid "Drag to reorder"
+msgstr "برای جابه‌جایی بکشید"
+
+msgid "Move up"
+msgstr "انتقال به بالا"
+
+msgid "Move down"
+msgstr "انتقال به پایین"
+
+msgid ""
+"Required fields are always shown. Make the field optional in Field "
+"Requirements to hide it."
+msgstr ""
+"فیلدهای الزامی همیشه نمایش داده می‌شوند. برای مخفی کردن، ابتدا فیلد را در "
+"«الزامات فیلد» اختیاری کنید."
+
+msgid "You have unsaved changes."
+msgstr "تغییرات ذخیره‌نشده دارید."
+
+msgid "Save Layout"
+msgstr "ذخیره چیدمان"

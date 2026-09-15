@@ -29,6 +29,7 @@ register_model_for_feature(
         "scoring",
         "workflow_models",
         "field_requirements",
+        "form_layouts",
     ],
 )
 

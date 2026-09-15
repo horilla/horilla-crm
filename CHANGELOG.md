@@ -37,6 +37,12 @@ date and open a fresh Unreleased above it.
 ### Security      — vulnerabilities fixed; link the advisory and credit the reporter
 -->
 
+### Added
+
+- **Form Layouts app** — administrators can choose, per company, which fields appear on
+  the Lead and Opportunity create forms and in what order. Once a layout is saved, the
+  create button opens a trimmed single-page form; edit forms are unchanged.
+
 ## [1.13.8] — 2026-09-05
 
 ### Added

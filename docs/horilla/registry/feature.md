@@ -22,6 +22,8 @@ Apps add more via `register_feature()`. `horilla.contrib.field_requirements`
 registers `field_requirements` → `field_requirement_models` with
 `auto_register_all=False`, so models must opt in explicitly. See
 [field requirements](../contrib/field_requirements/field_requirements.md).
+`horilla.contrib.form_layouts` registers `form_layouts` → `form_layout_models`
+the same way. See [form layouts](../contrib/form_layouts/form_layouts.md).
 
 ## Main APIs
 

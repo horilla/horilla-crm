@@ -409,6 +409,30 @@ def get_model_name_from_request_or_instance(form, kwargs):
     return model_name
 
 
+def _get_custom_field_choices(model):
+    """
+    Return (choice_value, label) pairs for user-defined custom fields
+    (the custom_fields app) registered for this model, so they can be
+    selected alongside the model's own fields in condition builders.
+
+    Imported lazily to avoid a circular import: custom_fields.forms
+    imports from horilla.contrib.generics.forms at module load time.
+    """
+    try:
+        from custom_fields.models import CustomFieldDefinition
+    except ImportError:
+        return []
+    try:
+        definitions = CustomFieldDefinition.objects.filter(
+            content_type__app_label=model._meta.app_label,
+            content_type__model=model._meta.model_name,
+        ).order_by("order", "pk")
+        return [(f"cf_{definition.pk}", definition.name) for definition in definitions]
+    except Exception as e:
+        logger.error("Error fetching custom fields for %s: %s", model, str(e))
+        return []
+
+
 def get_model_field_choices(form, model_name):
     """Get field choices for a model (excluding reverse relations and common non-editable)."""
     field_choices = [("", "---------")]
@@ -443,6 +467,7 @@ def get_model_field_choices(form, model_name):
                     or field.name.replace("_", " ").title()
                 )
                 field_choices.append((field.name, verbose_name))
+            field_choices.extend(_get_custom_field_choices(model))
     except Exception as e:
         logger.error("Error fetching model %s: %s", model_name, str(e), exc_info=True)
     return field_choices

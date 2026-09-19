@@ -212,6 +212,39 @@ def handle_lead_conversion(sender, instance, created, **kwargs):
     transaction.on_commit(_run)
 
 
+def _get_custom_field_value_for_lead(field, lead):
+    """
+    Resolve a 'cf_<id>' condition field to its string value for this lead.
+    Returns None if the field definition can't be resolved (caller treats
+    that as "no match"), or "" when the lead simply has no value stored.
+    """
+    try:
+        from custom_fields.models import CustomFieldDefinition, CustomFieldValue
+        from horilla.contrib.core.models import HorillaContentType
+
+        cfd = CustomFieldDefinition.objects.filter(pk=field[len("cf_") :]).first()
+        if not cfd:
+            logger.warning(
+                "Assignment rule: custom field '%s' no longer exists", field
+            )
+            return None
+        content_type = HorillaContentType.objects.get(app_label="leads", model="lead")
+        cfv = CustomFieldValue.objects.filter(
+            field_definition=cfd, content_type=content_type, object_id=lead.pk
+        ).first()
+        if not cfv:
+            return ""
+        value = cfv.get_value()
+        if isinstance(value, list):
+            return ",".join(str(item) for item in value)
+        return "" if value is None else str(value)
+    except Exception as exc:
+        logger.error(
+            "Assignment rule custom field eval error (field=%s): %s", field, exc
+        )
+        return None
+
+
 def _eval_single_criterion(criteria, lead):
     """
     Evaluate one LeadAssignmentMatchCriteria row against a lead instance.
@@ -221,24 +254,35 @@ def _eval_single_criterion(criteria, lead):
     operator = criteria.operator
     value = criteria.value or ""
 
-    try:
-        meta_field = Lead._meta.get_field(field)
-    except FieldDoesNotExist:
-        logger.warning("Assignment rule: field '%s' does not exist on Lead", field)
-        return False
+    if field.startswith("cf_"):
+        field_val = _get_custom_field_value_for_lead(field, lead)
+        if field_val is None:
+            return False
+    else:
+        try:
+            meta_field = Lead._meta.get_field(field)
+        except FieldDoesNotExist:
+            logger.warning("Assignment rule: field '%s' does not exist on Lead", field)
+            return False
+
+        try:
+            raw = getattr(lead, field, None)
+
+            # FK → compare by PK string
+            if (
+                hasattr(meta_field, "related_model")
+                and meta_field.related_model is not None
+            ):
+                field_val = str(raw.pk) if raw is not None else ""
+            else:
+                field_val = "" if raw is None else str(raw)
+        except Exception as exc:
+            logger.error(
+                "Assignment rule criterion eval error (field=%s): %s", field, exc
+            )
+            return False
 
     try:
-        raw = getattr(lead, field, None)
-
-        # FK → compare by PK string
-        if (
-            hasattr(meta_field, "related_model")
-            and meta_field.related_model is not None
-        ):
-            field_val = str(raw.pk) if raw is not None else ""
-        else:
-            field_val = "" if raw is None else str(raw)
-
         if operator == "exact":
             return field_val == value
         if operator == "ne":

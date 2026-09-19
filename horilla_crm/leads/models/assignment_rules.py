@@ -248,9 +248,26 @@ class LeadAssignmentMatchCriteria(HorillaCoreModel):
         verbose_name_plural = _("Lead Assignment Match Criteria")
         ordering = ["created_at"]
 
-    def get_field_label(self):
-        """Return the verbose name of the Lead field (e.g. 'lead_status' → 'Lead Status')."""
+    def _get_custom_field_definition(self):
+        """Resolve a 'cf_<id>' field to its CustomFieldDefinition, if any."""
+        if not self.field.startswith("cf_"):
+            return None
+        try:
+            from custom_fields.models import CustomFieldDefinition
 
+            return CustomFieldDefinition.objects.filter(
+                pk=self.field[len("cf_") :]
+            ).first()
+        except Exception:
+            return None
+
+    def get_field_label(self):
+        """Return the verbose name of the Lead field (e.g. 'lead_status' → 'Lead Status'),
+        or the custom field's own name for user-defined fields."""
+
+        custom_field = self._get_custom_field_definition()
+        if custom_field:
+            return custom_field.name
         try:
             return Lead._meta.get_field(self.field).verbose_name
         except Exception:
@@ -261,6 +278,8 @@ class LeadAssignmentMatchCriteria(HorillaCoreModel):
 
         if not self.value:
             return "-"
+        if self.field.startswith("cf_"):
+            return self.value
         try:
             meta_field = Lead._meta.get_field(self.field)
             related_model = getattr(meta_field, "related_model", None)

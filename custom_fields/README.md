@@ -5,7 +5,8 @@
 **Settings URL prefix:** `/custom-fields/` · namespace `custom_fields`
 
 Lets an administrator define extra fields (`cf_1`, `cf_2`, …) on any **opted-in**
-model — small text, large text, number, single choice, or multiple choice — and
+model — small text, large text, number, single choice, multiple choice, date, or
+date and time — and
 surface them wherever that model’s data appears:
 
 | Surface | How it plugs in |
@@ -130,7 +131,7 @@ One row per custom field on a content type:
 |-------|------|
 | `content_type` | Target model (`HorillaContentType`) |
 | `name` | Admin-facing label |
-| `field_type` | `small_text`, `large_text`, `number`, `choice` (multi), `single_choice` |
+| `field_type` | `small_text`, `large_text`, `number`, `choice` (multi), `single_choice`, `date`, `datetime` |
 | `is_required` | Form required flag |
 | `choices` | Comma-separated options (choice types) |
 | `order` | Display order |
@@ -141,6 +142,22 @@ Synthetic form/list keys are `cf_<pk>` (see `utils.is_custom_field_name`).
 
 One row per `(definition, object)` holding the stored value (text / JSON list for
 multi-choice via `parse_choice_values` / `serialize_choice_values`).
+
+Each type has its own typed column so filters and rule engines compare real
+values: `value_text` (text and choices), `value_number`, `value_date`, and
+`value_datetime` (timezone-aware, stored in UTC). `set_value` writes the
+column for the definition's type and clears the rest.
+
+**Date and Date and Time** render as `<input type="date">` /
+`<input type="datetime-local">`, like Horilla's own date fields. With the
+`horilla_jalali` app installed and Shamsi selected, the same inputs open the
+Jalali picker, which submits Gregorian ISO values — the database always holds
+Gregorian dates. Display (detail, list, export, Edit Details) goes through the
+composed `DateTimeFormatter`, so each viewer sees their own date format,
+timezone, and calendar. Filters and condition builders (e.g. Lead assignment
+rules) get the standard date operators: equals, before/after, between,
+today/yesterday/this week/this month, and empty/not empty. Condition values
+come back from `get_value` as ISO 8601 strings.
 
 ---
 

@@ -17,13 +17,21 @@ themselves:
 """
 
 import logging
+from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
-from custom_fields.models import CustomFieldValue, parse_choice_values
+from custom_fields.models import (
+    CustomFieldValue,
+    parse_choice_values,
+    to_date_value,
+    to_datetime_value,
+)
 from custom_fields.utils import (
+    RELATIVE_DATE_OPERATORS,
     custom_field_form_name,
     get_custom_field_definitions,
     get_definition_by_form_name,
+    relative_date_bounds,
     safe_custom_field_label,
 )
 from horilla.contrib.core.models import HorillaContentType
@@ -37,6 +45,8 @@ FILTER_TYPE_MAP = {
     "number": "decimal",
     "choice": "choice",
     "single_choice": "choice",
+    "date": "date",
+    "datetime": "datetime",
 }
 
 
@@ -124,6 +134,10 @@ def matching_object_ids(model, defn, operator, value, start_value, end_value):
     """
     ct = HorillaContentType.objects.get_for_model(model)
     base = CustomFieldValue.objects.filter(content_type=ct, field_definition=defn)
+    if defn.field_type in ("date", "datetime"):
+        return _matching_date_object_ids(
+            base, defn.field_type, operator, value, start_value, end_value
+        )
     numeric = defn.field_type == "number"
     choice = defn.field_type == "choice"
     value_key = "value_number" if numeric else "value_text"
@@ -215,3 +229,104 @@ def matching_object_ids(model, defn, operator, value, start_value, end_value):
         **{f"{value_key}__{lookup_suffix}": filter_value}
     )
     return (True, qs.values_list("object_id", flat=True))
+
+
+def _matching_date_object_ids(
+    base, field_type, operator, value, start_value, end_value
+):
+    """
+    Return ``(include, object_ids)`` for a date or datetime custom-field filter.
+
+    Datetimes are compared by calendar day (in the active timezone) when the
+    filter value is a bare date, and to the minute otherwise — the precision
+    of a ``datetime-local`` input.
+    """
+    is_datetime = field_type == "datetime"
+    column = "value_datetime" if is_datetime else "value_date"
+    filled = base.filter(**{f"{column}__isnull": False})
+
+    if operator == "isnull":
+        return (False, filled.values_list("object_id", flat=True))
+    if operator == "isnotnull":
+        return (True, filled.values_list("object_id", flat=True))
+
+    if operator in RELATIVE_DATE_OPERATORS:
+        start, end = relative_date_bounds(operator)
+        day_column = f"{column}__date" if is_datetime else column
+        qs = filled.filter(**{f"{day_column}__gte": start, f"{day_column}__lte": end})
+        return (True, qs.values_list("object_id", flat=True))
+
+    if operator == "between":
+        start_q = _date_bound_q(column, is_datetime, start_value, lower=True)
+        end_q = _date_bound_q(column, is_datetime, end_value, lower=False)
+        if start_q is None and end_q is None:
+            return None
+        qs = filled
+        for bound in (start_q, end_q):
+            if bound is not None:
+                qs = qs.filter(bound)
+        return (True, qs.values_list("object_id", flat=True))
+
+    if operator not in ("exact", "ne", "gt", "lt", "gte", "lte"):
+        return None
+    exact_q = _date_exact_q(column, is_datetime, value)
+    if exact_q is None:
+        return None
+    if operator in ("exact", "ne"):
+        ids = filled.filter(exact_q).values_list("object_id", flat=True)
+        return (operator == "exact", ids)
+    bound_q = _date_bound_q(
+        column,
+        is_datetime,
+        value,
+        lower=operator in ("gt", "gte"),
+        inclusive=operator in ("gte", "lte"),
+    )
+    return (True, filled.filter(bound_q).values_list("object_id", flat=True))
+
+
+def _is_bare_date(value):
+    return to_date_value(value) is not None and len(str(value).strip()) <= 10
+
+
+def _date_exact_q(column, is_datetime, value):
+    """``Q`` matching the day (date / bare-date value) or the minute (datetime)."""
+    if value in (None, ""):
+        return None
+    if not is_datetime or _is_bare_date(value):
+        day = to_date_value(value)
+        if day is None:
+            return None
+        return Q(**{f"{column}__date" if is_datetime else column: day})
+    moment = to_datetime_value(value)
+    if moment is None:
+        return None
+    start = moment.replace(second=0, microsecond=0)
+    return Q(**{f"{column}__gte": start, f"{column}__lt": start + timedelta(minutes=1)})
+
+
+def _date_bound_q(column, is_datetime, value, lower, inclusive=True):
+    """
+    ``Q`` for one side of a range. ``lower`` means "on/after ``value``".
+
+    A bare date on a datetime column covers that whole day, so
+    ``between 2026-01-01 and 2026-01-31`` includes the evening of the 31st.
+    A full datetime covers its whole minute.
+    """
+    if value in (None, ""):
+        return None
+    if not is_datetime or _is_bare_date(value):
+        day = to_date_value(value)
+        if day is None:
+            return None
+        key = f"{column}__date" if is_datetime else column
+        lookup = ("gt", "gte") if lower else ("lt", "lte")
+        return Q(**{f"{key}__{lookup[inclusive]}": day})
+    moment = to_datetime_value(value)
+    if moment is None:
+        return None
+    minute_start = moment.replace(second=0, microsecond=0)
+    minute_end = minute_start + timedelta(minutes=1)
+    if lower:
+        return Q(**{f"{column}__gte": minute_start if inclusive else minute_end})
+    return Q(**{f"{column}__lt": minute_end if inclusive else minute_start})

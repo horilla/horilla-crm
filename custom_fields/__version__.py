@@ -5,7 +5,7 @@ Version information for the custom_fields app.
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 __module_name__ = "Custom Fields"
 __release_date__ = ""
 __description__ = _(
@@ -14,6 +14,11 @@ __description__ = _(
     "filters, and exports."
 )
 __icon__ = "assets/icons/custom-field.svg"
+
+__1_0_3__ = _(
+    "Add Date and Date and Time field types with typed storage, Jalali-aware "
+    "pickers and display, date filters, and date operators in assignment rules."
+)
 
 __1_0_2__ = _(
     "Support bulk Edit Details save for cf_* fields; export via the generics "

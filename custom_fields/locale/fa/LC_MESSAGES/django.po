@@ -83,6 +83,12 @@ msgstr "استفاده از HTML در نام فیلد مجاز نیست."
 msgid "Enter a valid number."
 msgstr "یک عدد معتبر وارد کنید."
 
+msgid "Enter a valid date."
+msgstr "یک تاریخ معتبر وارد کنید."
+
+msgid "Enter a valid date/time."
+msgstr "یک تاریخ و ساعت معتبر وارد کنید."
+
 msgid "Select a valid choice."
 msgstr "یک گزینه معتبر انتخاب کنید."
 
@@ -113,6 +119,15 @@ msgstr "عدد"
 msgid "Multiple Choice"
 msgstr "چندگزینه‌ای"
 
+msgid "Single Choice"
+msgstr "تک‌گزینه‌ای"
+
+msgid "Date"
+msgstr "تاریخ"
+
+msgid "Date and Time"
+msgstr "تاریخ و ساعت"
+
 msgid "Field Name"
 msgstr "نام فیلد"
 
@@ -142,6 +157,12 @@ msgstr "مقدار"
 
 msgid "Numeric Value"
 msgstr "مقدار عددی"
+
+msgid "Date Value"
+msgstr "مقدار تاریخ"
+
+msgid "Date and Time Value"
+msgstr "مقدار تاریخ و ساعت"
 
 msgid "Custom Field Value"
 msgstr "مقدار فیلد سفارشی"
@@ -182,6 +203,14 @@ msgstr ""
 "فیلدهای اضافی را روی سرنخ‌ها و فرصت‌ها تعریف کنید. آن‌ها را در تنظیمات "
 "پیکربندی کنید و در فرم‌های ایجاد/ویرایش، نمای جزئیات، ستون‌های فهرست، "
 "فیلترها و خروجی‌ها استفاده کنید."
+
+msgid ""
+"Add Date and Date and Time field types with typed storage, Jalali-aware "
+"pickers and display, date filters, and date operators in assignment rules."
+msgstr ""
+"افزودن انواع فیلد «تاریخ» و «تاریخ و ساعت» با ذخیره‌سازی نوع‌دار، انتخابگر "
+"و نمایش سازگار با تقویم شمسی، فیلترهای تاریخ و عملگرهای تاریخ در قوانین "
+"تخصیص."
 
 msgid ""
 "Add a Custom Fields settings app for Leads and Opportunities. Support "

@@ -1,10 +1,14 @@
 """Models for Custom Field definitions and per-record values."""
 
 import json
+from datetime import date, datetime
+
+from django.utils.dateparse import parse_date, parse_datetime
 
 from horilla.contrib.core.models import HorillaContentType, HorillaCoreModel
 from horilla.db import models
 from horilla.urls import reverse_lazy
+from horilla.utils import timezone
 from horilla.utils.translation import gettext_lazy as _
 
 
@@ -38,6 +42,61 @@ def format_choice_display(val):
     return ", ".join(parse_choice_values(val))
 
 
+def to_date_value(val):
+    """
+    Return a Gregorian ``date`` from a date, datetime, or ISO string, else None.
+
+    Date inputs always post ISO ``YYYY-MM-DD``; the Jalali picker converts
+    Shamsi selections back to Gregorian before submit, so no calendar
+    conversion is needed here.
+    """
+    if val in (None, ""):
+        return None
+    if isinstance(val, datetime):
+        return timezone.localtime(val).date() if timezone.is_aware(val) else val.date()
+    if isinstance(val, date):
+        return val
+    text = str(val).strip()
+    try:
+        return parse_date(text) or _date_from_datetime_text(text)
+    except ValueError:
+        return None
+
+
+def _date_from_datetime_text(text):
+    parsed = to_datetime_value(text)
+    return timezone.localtime(parsed).date() if parsed else None
+
+
+def to_datetime_value(val):
+    """
+    Return an aware ``datetime`` from a datetime, date, or ISO string, else None.
+
+    Naive values (e.g. ``datetime-local`` input ``YYYY-MM-DDTHH:MM``) are read
+    in the active timezone, matching how Django forms clean ``DateTimeField``.
+    """
+    if val in (None, ""):
+        return None
+    if isinstance(val, datetime):
+        parsed = val
+    elif isinstance(val, date):
+        parsed = datetime(val.year, val.month, val.day)
+    else:
+        text = str(val).strip()
+        try:
+            parsed = parse_datetime(text)
+            if parsed is None:
+                day = parse_date(text)
+                parsed = datetime(day.year, day.month, day.day) if day else None
+        except ValueError:
+            return None
+        if parsed is None:
+            return None
+    if timezone.is_naive(parsed):
+        parsed = timezone.make_aware(parsed, timezone.get_current_timezone())
+    return parsed
+
+
 class CustomFieldDefinition(HorillaCoreModel):
     """
     Defines a user-created custom field attached to a specific model
@@ -50,6 +109,8 @@ class CustomFieldDefinition(HorillaCoreModel):
         ("number", _("Number")),
         ("choice", _("Multiple Choice")),
         ("single_choice", _("Single Choice")),
+        ("date", _("Date")),
+        ("datetime", _("Date and Time")),
     ]
 
     content_type = models.ForeignKey(
@@ -121,6 +182,10 @@ class CustomFieldValue(HorillaCoreModel):
         blank=True,
         verbose_name=_("Numeric Value"),
     )
+    value_date = models.DateField(null=True, blank=True, verbose_name=_("Date Value"))
+    value_datetime = models.DateTimeField(
+        null=True, blank=True, verbose_name=_("Date and Time Value")
+    )
 
     class Meta:
         """One value per definition and target object."""
@@ -134,11 +199,16 @@ class CustomFieldValue(HorillaCoreModel):
 
     def get_value(self):
         """Return the typed Python value for this field's type."""
-        if self.field_definition.field_type == "number":
+        field_type = self.field_definition.field_type
+        if field_type == "number":
             return self.value_number
-        if self.field_definition.field_type == "choice":
+        if field_type == "date":
+            return self.value_date
+        if field_type == "datetime":
+            return self.value_datetime
+        if field_type == "choice":
             return parse_choice_values(self.value_text)
-        if self.field_definition.field_type == "single_choice":
+        if field_type == "single_choice":
             values = parse_choice_values(self.value_text)
             return values[0] if values else ""
         return self.value_text
@@ -148,27 +218,32 @@ class CustomFieldValue(HorillaCoreModel):
         if self.field_definition.field_type in ("choice", "single_choice"):
             return format_choice_display(self.value_text)
         value = self.get_value()
+        if isinstance(value, (date, datetime)):
+            return value.isoformat()
         return "" if value is None else str(value)
 
     def set_value(self, val):
-        """Store ``val`` in the text or number column for this field type."""
-        if self.field_definition.field_type == "number":
-            from decimal import Decimal, InvalidOperation
+        """Store ``val`` in the column for this field type and clear the others."""
+        from decimal import Decimal, InvalidOperation
 
+        field_type = self.field_definition.field_type
+        self.value_text = ""
+        self.value_number = None
+        self.value_date = None
+        self.value_datetime = None
+        if field_type == "number":
             try:
                 self.value_number = Decimal(str(val)) if val not in (None, "") else None
             except (InvalidOperation, ValueError):
                 self.value_number = None
-            self.value_text = ""
-        elif self.field_definition.field_type == "choice":
+        elif field_type == "date":
+            self.value_date = to_date_value(val)
+        elif field_type == "datetime":
+            self.value_datetime = to_datetime_value(val)
+        elif field_type in ("choice", "single_choice"):
             self.value_text = serialize_choice_values(val)
-            self.value_number = None
-        elif self.field_definition.field_type == "single_choice":
-            self.value_text = serialize_choice_values(val)
-            self.value_number = None
         else:
             self.value_text = str(val) if val is not None else ""
-            self.value_number = None
 
 
 # Django and Horilla store these on auth.Permission.name. Groups & Permissions

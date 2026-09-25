@@ -1,11 +1,15 @@
 """Helpers for custom-field names, widgets, labels, and stored values."""
 
 import re
+from calendar import monthrange
+from datetime import timedelta
 
 from django import forms
 
 from horilla.contrib.core.models import HorillaContentType
+from horilla.contrib.generics.forms.form_class_mixin import WIDGET_INPUT_CSS_CLASS_NO_PR
 from horilla.contrib.utils.middlewares import get_current_request
+from horilla.utils import timezone
 from horilla.utils.html import strip_tags
 from horilla.utils.translation import gettext as _
 
@@ -14,6 +18,8 @@ from .models import (
     CustomFieldValue,
     format_choice_display,
     parse_choice_values,
+    to_date_value,
+    to_datetime_value,
 )
 
 SELECT2_MULTI_CLASS = "js-example-basic-multiple headselect w-full"
@@ -28,7 +34,18 @@ INLINE_FIELD_TYPES = {
     "number": "number",
     "choice": "select",
     "single_choice": "select",
+    "date": "date",
+    "datetime": "datetime-local",
 }
+
+DATE_FIELD_TYPES = ("date", "datetime")
+
+RELATIVE_DATE_OPERATORS = ("today", "yesterday", "this_week", "this_month")
+
+# Wire formats of ``<input type="date">`` / ``<input type="datetime-local">``.
+# The Jalali picker (horilla_jalali) submits these same Gregorian formats.
+DATE_INPUT_FORMAT = "%Y-%m-%d"
+DATETIME_INPUT_FORMAT = "%Y-%m-%dT%H:%M"
 
 
 def is_custom_field_name(name):
@@ -187,6 +204,27 @@ def build_custom_form_fields(model):
                     }
                 ),
             )
+        elif defn.field_type == "date":
+            field = forms.DateField(
+                required=defn.is_required,
+                label=safe_custom_field_label(defn),
+                widget=forms.DateInput(
+                    attrs={"type": "date", "class": WIDGET_INPUT_CSS_CLASS_NO_PR},
+                    format=DATE_INPUT_FORMAT,
+                ),
+            )
+        elif defn.field_type == "datetime":
+            field = forms.DateTimeField(
+                required=defn.is_required,
+                label=safe_custom_field_label(defn),
+                widget=forms.DateTimeInput(
+                    attrs={
+                        "type": "datetime-local",
+                        "class": WIDGET_INPUT_CSS_CLASS_NO_PR,
+                    },
+                    format=DATETIME_INPUT_FORMAT,
+                ),
+            )
         else:
             continue
         fields[key] = field
@@ -230,6 +268,7 @@ def save_custom_field_values(model_class, instance_pk, cleaned_data, company=Non
             defn = CustomFieldDefinition.objects.get(pk=defn_pk)
         except CustomFieldDefinition.DoesNotExist:
             continue
+        value = coerce_custom_field_value(defn, value)
 
         cfv, created = CustomFieldValue.objects.update_or_create(
             field_definition=defn,
@@ -252,15 +291,93 @@ def save_custom_field_values(model_class, instance_pk, cleaned_data, company=Non
     return changed_keys
 
 
+def coerce_custom_field_value(definition, value):
+    """
+    Return ``value`` as the Python type stored for ``definition``.
+
+    Form ``cleaned_data`` is already typed, but the "Edit Details" bulk form
+    posts raw strings; coercing both keeps the no-op-save comparison in
+    ``save_custom_field_values`` accurate for date and datetime fields.
+    """
+    if definition.field_type == "date":
+        return to_date_value(value)
+    if definition.field_type == "datetime":
+        return to_datetime_value(value)
+    return value
+
+
 def format_custom_field_display(definition, value):
     """Plain-text value for detail, list, export, and inline display."""
     if definition.field_type == "choice":
         return format_choice_display(value)
+    if definition.field_type in DATE_FIELD_TYPES:
+        return format_custom_field_date_display(definition, value)
     if value is None:
         return ""
     return str(value)
 
 
+def format_custom_field_date_display(definition, value):
+    """
+    Format a date/datetime value with the viewer's date format and calendar.
+
+    Goes through Horilla's composed ``DateTimeFormatter``, so the Jalali
+    extension (when installed and enabled for the user) shows Shamsi dates
+    while the stored value stays Gregorian.
+    """
+    from horilla.contrib.generics.templatetags.horilla_tags._shared import (
+        _get_request_user_company,
+        format_datetime_value,
+    )
+
+    value = coerce_custom_field_value(definition, value)
+    if value is None:
+        return ""
+    _request, user, company = _get_request_user_company()
+    return format_datetime_value(value, user=user, company=company) or ""
+
+
+def custom_field_input_value(definition, value):
+    """
+    Return ``value`` in the wire format of the field's HTML input.
+
+    Datetimes are shown in the active (user) timezone, like Horilla's own
+    ``datetime-local`` inputs.
+    """
+    if definition.field_type == "date":
+        parsed = to_date_value(value)
+        return parsed.strftime(DATE_INPUT_FORMAT) if parsed else ""
+    if definition.field_type == "datetime":
+        parsed = to_datetime_value(value)
+        if parsed is None:
+            return ""
+        return timezone.localtime(parsed).strftime(DATETIME_INPUT_FORMAT)
+    return value
+
+
 def choice_values_from_data(value):
     """Normalize POST/session/form data into a list of selected choices."""
     return parse_choice_values(value)
+
+
+def relative_date_bounds(operator):
+    """
+    Return inclusive ``(start, end)`` dates for today/yesterday/this_week/this_month.
+
+    Same semantics as ``HorillaFilterSet._get_relative_date_bounds`` (week
+    starts on Monday, "today" is the active timezone's local date), so custom
+    fields filter exactly like model date fields.
+    """
+    today = timezone.localdate()
+    if operator == "today":
+        return today, today
+    if operator == "yesterday":
+        yesterday = today - timedelta(days=1)
+        return yesterday, yesterday
+    if operator == "this_week":
+        week_start = today - timedelta(days=today.weekday())
+        return week_start, week_start + timedelta(days=6)
+    if operator == "this_month":
+        last_day = monthrange(today.year, today.month)[1]
+        return today.replace(day=1), today.replace(day=last_day)
+    return None, None

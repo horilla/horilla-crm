@@ -26,10 +26,12 @@ from decimal import Decimal, InvalidOperation
 from django.utils.encoding import force_str
 from django.utils.translation import gettext_lazy as _
 
-from custom_fields.models import CustomFieldDefinition
+from custom_fields.models import CustomFieldDefinition, to_date_value, to_datetime_value
 from custom_fields.utils import (
+    DATE_FIELD_TYPES,
     INLINE_FIELD_TYPES,
     custom_field_form_name,
+    custom_field_input_value,
     format_custom_field_display,
     get_custom_field_definitions,
     get_definition_by_form_name,
@@ -248,6 +250,8 @@ def build_custom_field_info(definition, obj):
         ]
     if definition.field_type == "number":
         info["step"] = "0.0001"
+    if definition.field_type in DATE_FIELD_TYPES:
+        info["value"] = custom_field_input_value(definition, value)
     return info
 
 
@@ -303,6 +307,12 @@ def _validate_inline_value(definition, raw_value):
             Decimal(str(raw_value))
         except (InvalidOperation, ValueError):
             return str(_("Enter a valid number."))
+    if definition.field_type == "date" and str(raw_value).strip() != "":
+        if to_date_value(raw_value) is None:
+            return str(_("Enter a valid date."))
+    if definition.field_type == "datetime" and str(raw_value).strip() != "":
+        if to_datetime_value(raw_value) is None:
+            return str(_("Enter a valid date/time."))
     return None
 
 

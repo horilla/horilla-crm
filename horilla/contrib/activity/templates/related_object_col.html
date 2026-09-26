@@ -1,0 +1,15 @@
+{% if detail_url %}
+    <a
+        href="{{ detail_url }}"
+        hx-get="{{ detail_url }}"
+        hx-target="#mainContent"
+        hx-select-oob="#sideMenuContainer"
+        hx-swap="outerHTML"
+        hx-push-url="true"
+        hx-select="#mainContent"
+        onclick="event.stopPropagation()"
+        class="text-primary-600 hover:text-primary-800 hover:underline"
+    >{{ name }}</a>
+{% else %}
+    {{ name }}
+{% endif %}

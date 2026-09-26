@@ -210,6 +210,7 @@ class Activity(HorillaCoreModel):
     )
 
     OWNER_FIELDS = ["owner", "assigned_to"]
+    SORT_FIELD_MAPPING = {"related_object_col": "related_object"}
 
     class Meta:
         """
@@ -312,6 +313,26 @@ class Activity(HorillaCoreModel):
                 context={"meeting_url": self.meeting_url},
             )
         return "—"
+
+    def related_object_col(self):
+        """Return the related record for list views, linked when the viewer may open it."""
+        from horilla.contrib.utils.middlewares import get_current_request
+
+        from .methods import get_related_record_url
+
+        related = self.related_object
+        if related is None:
+            return ""
+        request = get_current_request()
+        return render_template(
+            path="related_object_col.html",
+            context={
+                "name": str(related),
+                "detail_url": get_related_record_url(
+                    related, getattr(request, "user", None)
+                ),
+            },
+        )
 
     def get_meeting_url_display(self):
         """Return plain-text meeting URL for kanban cards (no HTML)."""

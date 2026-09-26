@@ -43,6 +43,7 @@ from horilla.views.generic import DetailView, View
 from horilla.web import HttpResponse, RefreshResponse, ScriptResponse
 
 from ..filters import ActivityFilter
+from ..methods import get_related_record_context
 from ..models import Activity
 from .list_view import AllActivityListView
 
@@ -633,6 +634,13 @@ class ActivityDetailTab(LoginRequiredMixin, HorillaDetailSectionView):
     """
 
     model = Activity
+    template_name = "activity_details_tab.html"
+
+    def get_template_names(self):
+        """Serve the plain details tab when refreshing its own content (e.g. Cancel on edit)."""
+        if self.request.headers.get("HX-Target") == "details-tab-content":
+            return ["details_tab.html"]
+        return super().get_template_names()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -640,6 +648,7 @@ class ActivityDetailTab(LoginRequiredMixin, HorillaDetailSectionView):
         self.include_fields = get_activity_detail_tab_fields(obj.activity_type)
 
         context["body"] = self.body or self.get_default_body()
+        context["related_record"] = get_related_record_context(obj, self.request.user)
         return context
 
 

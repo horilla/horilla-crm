@@ -78,7 +78,7 @@ class AllActivityListView(LoginRequiredMixin, HorillaListView):
     columns = [
         "subject",
         "activity_type",
-        "related_object",
+        ("related_object", "related_object_col"),
         ("status", "status_col"),
     ]
 

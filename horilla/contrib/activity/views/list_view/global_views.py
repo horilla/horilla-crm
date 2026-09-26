@@ -33,7 +33,7 @@ class GlobalTaskListView(GlobalTypeListMixin, LoginRequiredMixin, HorillaListVie
         "subject",
         "due_datetime",
         "task_priority",
-        "related_object",
+        ("related_object", "related_object_col"),
         ("status", "status_col"),
     ]
 
@@ -60,7 +60,7 @@ class GlobalMeetingListView(GlobalTypeListMixin, LoginRequiredMixin, HorillaList
         ("start_datetime", "get_start_date"),
         ("end_datetime", "get_end_date"),
         ("meeting_url", "meeting_link_col"),
-        "related_object",
+        ("related_object", "related_object_col"),
         ("status", "status_col"),
     ]
 
@@ -87,7 +87,7 @@ class GlobalCallListView(GlobalTypeListMixin, LoginRequiredMixin, HorillaListVie
         "call_purpose",
         "call_type",
         "call_duration_display",
-        "related_object",
+        ("related_object", "related_object_col"),
         ("status", "status_col"),
     ]
 
@@ -114,7 +114,7 @@ class GlobalEventListView(GlobalTypeListMixin, LoginRequiredMixin, HorillaListVi
         ("start_datetime", "get_start_date"),
         ("end_datetime", "get_end_date"),
         "location",
-        "related_object",
+        ("related_object", "related_object_col"),
         ("status", "status_col"),
     ]
 

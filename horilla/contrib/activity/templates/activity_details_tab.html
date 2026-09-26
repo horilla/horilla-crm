@@ -1,0 +1,10 @@
+<div class="h-full flex flex-col">
+    {% if related_record %}
+        <div class="px-3 pt-3 flex-shrink-0">
+            {% include "related_record_card.html" %}
+        </div>
+    {% endif %}
+    <div class="min-h-0 flex-1">
+        {% include "details_tab.html" %}
+    </div>
+</div>

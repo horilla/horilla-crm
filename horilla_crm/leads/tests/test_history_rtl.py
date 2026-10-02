@@ -28,6 +28,14 @@ class HistoryTabRtlOverlayTests(SimpleTestCase):
         self.assertNotIn("flex-direction: row-reverse", css)
         self.assertIn("unicode-bidi: isolate", css)
 
+    def test_history_rtl_css_points_the_diff_arrow_at_the_new_value(self):
+        """In RTL the new value sits left of the old one, so the arrow is flipped."""
+        css = (
+            Path(settings.BASE_DIR) / "static" / "assets" / "css" / "history-rtl.css"
+        ).read_text(encoding="utf-8")
+        rule = css.split('[dir="rtl"] #history-main .history-diff-arrow {', 1)[1]
+        self.assertIn("transform: scaleX(-1);", rule.split("}", 1)[0])
+
     def test_detail_tab_view_css_expands_detail_pane(self):
         """tab_view.html still defines detail-pane expand styles."""
         css = (

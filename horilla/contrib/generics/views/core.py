@@ -29,6 +29,7 @@ from horilla.web import HttpResponse, RefreshResponse
 
 # Local imports
 from ..forms import HorillaHistoryForm, HorillaModelForm
+from ..templatetags.horilla_tags.history_display import collapse_redundant_history
 
 logger = logging.getLogger(__name__)
 
@@ -248,6 +249,24 @@ class HorillaHistorySectionView(DetailView):
             return RefreshResponse(request)
         return super().dispatch(request, *args, **kwargs)
 
+    def get_history_date(self, timestamp):
+        """
+        Return the day a history timestamp falls on in the timezone its time is
+        shown in (the user's, else the company's), not the stored UTC day, so an
+        entry is never grouped under the day before or after the one it shows.
+        """
+        # Lazy import: avoid cycles with extension bootstrap / generics imports.
+        from horilla.extension.formatting import get_datetime_formatter
+
+        user = self.request.user
+        company = getattr(self.request, "active_company", None) or getattr(
+            user, "company", None
+        )
+        local_timestamp = get_datetime_formatter()._apply_timezone(
+            timestamp, user=user, company=company
+        )
+        return local_timestamp.date()
+
     def get_context_data(self, **kwargs):
         """Add paginated history by date, filter form, and filter_applied to context."""
         context = super().get_context_data(**kwargs)
@@ -257,7 +276,7 @@ class HorillaHistorySectionView(DetailView):
         history_by_date = []
         date_dict = {}
         for entry in histories:
-            date_key = entry.timestamp.date()
+            date_key = self.get_history_date(entry.timestamp)
             if date_key not in date_dict:
                 date_dict[date_key] = []
             date_dict[date_key].append(entry)
@@ -278,6 +297,15 @@ class HorillaHistorySectionView(DetailView):
         paginator = Paginator(history_by_date, self.paginate_by)
         page_number = self.request.GET.get("page", 1)
         page_obj = paginator.get_page(page_number)
+        # Collapse the shown days here rather than in the template, so a day
+        # left with nothing to show (e.g. only saves that changed no visible
+        # field) is dropped instead of rendering as an empty group.
+        shown_days = []
+        for date_key, entries in page_obj.object_list:
+            entries = collapse_redundant_history(entries)
+            if entries:
+                shown_days.append((date_key, entries))
+        page_obj.object_list = shown_days
 
         context["page_obj"] = page_obj
         context["actions"] = [str(entry).split()[0].lower() for entry in histories]

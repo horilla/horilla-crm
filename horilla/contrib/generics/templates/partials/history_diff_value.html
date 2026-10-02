@@ -1,2 +1,2 @@
-{# A long value renders its preview and its full text (one line per paragraph); the History tab's "Show full text" toggle picks which one is visible. #}
-{% with text=value|html_to_text|default:"--" %}{% if text|is_long_diff_value %}<span class="history-value-preview" dir="auto">{{ text|truncate_diff_value }}</span><span class="history-value-full" dir="auto">{{ value|html_to_paragraphs }}</span>{% else %}{{ text }}{% endif %}{% endwith %}
+{# One side of a History diff; see the history_diff_value filter. history_tab.html uses the filter directly, since an include's trailing newline would end up inside the value's span. #}
+{{ value|history_diff_value }}

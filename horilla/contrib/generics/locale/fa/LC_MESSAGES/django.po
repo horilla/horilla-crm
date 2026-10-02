@@ -1379,3 +1379,18 @@ msgstr "در حال ویرایش — تغییرات ذخیره‌نشده"
 
 msgid "Show full text"
 msgstr "نمایش متن کامل"
+
+#, python-format
+msgid "%(model)s %(label)s edited"
+msgstr "%(model)s %(label)s ویرایش شد"
+
+#, python-format
+msgid "%(model)s edited"
+msgstr "%(model)s ویرایش شد"
+
+#, python-format
+msgid "New %(type)s created"
+msgstr "%(type)s جدید ایجاد شد"
+
+msgid "Edits"
+msgstr "ویرایش"

@@ -4,11 +4,13 @@
 import importlib
 import sys
 from datetime import date, datetime
+from datetime import timezone as dt_timezone
 from types import SimpleNamespace
 from unittest.mock import patch
 
 # Third-party imports (Django)
 from django.test import SimpleTestCase
+from django.utils import formats, timezone
 
 # First party imports (Horilla)
 from horilla.contrib.generics.templatetags.horilla_tags.history_i18n import (
@@ -124,6 +126,35 @@ class HistoryDatetimeShamsiTests(IsolatedHistoryRegistryMixin, SimpleTestCase):
             self.assertIsNone(
                 format_history_datetime_as_jalali(date(2026, 8, 19), user=user)
             )
+
+    def test_datetime_diff_values_shift_into_the_viewer_time_zone(self):
+        """auditlog writes DateTimeField diff values in settings.TIME_ZONE, so
+        they are shifted into the viewer's timezone like the entry times."""
+        user = SimpleNamespace(time_zone="Asia/Tehran")
+        value = datetime(2026, 9, 29, 23, 29, tzinfo=dt_timezone.utc)
+        with override("fa"):
+            # The diff string auditlog stores for this value.
+            stored = formats.localize(
+                timezone.localtime(value, timezone.get_default_timezone())
+            )
+            text = str(format_history_datetime_as_jalali(stored, user=user))
+            self.assertEqual(text, str(format_shamsi(value, user=user)))
+        self.assertIn("۱۴۰۵-۰۷-۰۸", text)
+        self.assertIn("۰۲:۵۹", text)
+
+    def test_date_diff_values_are_not_shifted(self):
+        """A date has no time to shift, so a viewer west of UTC still sees the
+        same day."""
+        user = SimpleNamespace(time_zone="America/New_York")
+        value = date(2026, 8, 19)
+        with override("fa"):
+            expected = format_shamsi(value, user=user)
+            for stored in (formats.localize(value), "2026-08-19"):
+                with self.subTest(stored=stored):
+                    self.assertEqual(
+                        format_history_datetime_as_jalali(stored, user=user),
+                        expected,
+                    )
 
     def test_unparseable_text_is_left_to_the_default(self):
         """Non-date diff text is not something the formatter claims."""

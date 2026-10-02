@@ -6,18 +6,23 @@ Unit tests and integration tests for the horilla.contrib.generics app.
 
 # Standard library imports
 from datetime import date, datetime
+from datetime import timezone as dt_timezone
+from html.parser import HTMLParser
 from pathlib import Path
+from types import SimpleNamespace
 
 # Third-party imports (Django)
+from auditlog.models import LogEntry
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in, user_logged_out
+from django.contrib.contenttypes.models import ContentType
 from django.template.loader import render_to_string
 from django.test import RequestFactory, SimpleTestCase, TestCase
 from login_history.models import post_login, post_logout
 
 # First party imports (Horilla)
 from horilla.auth.models import User
-from horilla.contrib.core.models import Company, ListColumnVisibility
+from horilla.contrib.core.models import Company, Holiday, ListColumnVisibility
 from horilla.contrib.generics.templatetags.horilla_tags import (
     history_i18n as history_i18n_module,
 )
@@ -26,13 +31,16 @@ from horilla.contrib.generics.templatetags.horilla_tags._shared import (
 )
 from horilla.contrib.generics.templatetags.horilla_tags.history_display import (
     DIFF_VALUE_PREVIEW_LENGTH,
+    collapse_redundant_history,
     has_long_diff_value,
+    history_changes_display,
     html_to_paragraphs,
     is_long_diff_value,
 )
 from horilla.contrib.generics.templatetags.horilla_tags.history_i18n import (
     history_datetime,
 )
+from horilla.contrib.generics.views.core import HorillaHistorySectionView
 from horilla.contrib.generics.views.helpers.list_column import get_view_columns
 from horilla.registry.history_registry import (
     HISTORY_DATETIME_FORMATTERS,
@@ -343,3 +351,213 @@ class HistoryDatetimeFormatterRegistryTests(SimpleTestCase):
         self.assertEqual(get_history_datetime_formatters(), [formatter])
         unregister_history_datetime_formatter(formatter)
         self.assertEqual(get_history_datetime_formatters(), [])
+
+
+class HistoryDayGroupingTests(SimpleTestCase):
+    """History entries are grouped under the day their shown time falls on,
+    not the stored UTC day."""
+
+    def _view(self, user_time_zone=None, company_time_zone=None):
+        view = HorillaHistorySectionView()
+        company = None
+        if company_time_zone:
+            company = SimpleNamespace(time_zone=company_time_zone)
+        user = SimpleNamespace(time_zone=user_time_zone, company=company)
+        view.request = SimpleNamespace(user=user, active_company=None)
+        return view
+
+    def test_entry_after_midnight_local_time_groups_under_the_local_day(self):
+        """23:29 UTC is 02:59 the next day in Tehran, which is the day the
+        entry shows, so it is grouped there."""
+        view = self._view(user_time_zone="Asia/Tehran")
+        timestamp = datetime(2026, 9, 29, 23, 29, tzinfo=dt_timezone.utc)
+        self.assertEqual(view.get_history_date(timestamp), date(2026, 9, 30))
+
+    def test_company_time_zone_is_used_when_the_user_has_none(self):
+        """Grouping falls back to the company's timezone, like the entry
+        times do."""
+        view = self._view(company_time_zone="Asia/Tehran")
+        timestamp = datetime(2026, 9, 29, 23, 29, tzinfo=dt_timezone.utc)
+        self.assertEqual(view.get_history_date(timestamp), date(2026, 9, 30))
+
+    def test_without_a_time_zone_the_utc_day_is_kept(self):
+        """With no user or company timezone the stored day is unchanged."""
+        view = self._view()
+        timestamp = datetime(2026, 9, 29, 23, 29, tzinfo=dt_timezone.utc)
+        self.assertEqual(view.get_history_date(timestamp), date(2026, 9, 29))
+
+
+class HistoryChangesDisplayTests(TestCase):
+    """history_changes_display turns auditlog's raw diff into what the
+    History tab shows."""
+
+    def _entry(self, changes):
+        return LogEntry(
+            content_type=ContentType.objects.get_for_model(Holiday),
+            object_pk="1",
+            action=LogEntry.Action.UPDATE,
+            changes=changes,
+        )
+
+    @staticmethod
+    def _label(field_name):
+        return str(Holiday._meta.get_field(field_name).verbose_name)
+
+    def test_last_saved_fields_are_hidden_in_every_language(self):
+        """Updated At / Updated By are hidden whatever language their labels
+        are in, leaving only the real edit."""
+        entry = self._entry(
+            {
+                "name": ["Nowruz", "Nowruz holiday"],
+                "updated_at": ["2026-09-29 14:25:00", "2026-09-29 23:29:00"],
+                "updated_by": ["None", "99"],
+            }
+        )
+        for language in ("en", "fa"):
+            with self.subTest(language=language), override(language):
+                changes = history_changes_display(entry)
+                self.assertEqual([str(key) for key in changes], [self._label("name")])
+
+    def test_empty_values_are_blank_not_none(self):
+        """auditlog's "None" for an empty value shows as blank (the template's
+        "--"), and None -> blank is not reported as a change."""
+        entry = self._entry(
+            {
+                "monthly_day_of_month": ["None", "15"],
+                "name": ["None", ""],
+            }
+        )
+        changes = {
+            str(key): value for key, value in history_changes_display(entry).items()
+        }
+        self.assertEqual(changes, {self._label("monthly_day_of_month"): ["", "15"]})
+
+    def test_update_with_nothing_to_show_is_dropped(self):
+        """A save that only touched hidden fields is not listed as an empty
+        "X updated" row, even with no creation entry next to it."""
+        hidden_only = self._entry(
+            {"updated_at": ["2026-09-29 14:25:00", "2026-09-29 23:29:00"]}
+        )
+        real_edit = self._entry({"name": ["Nowruz", "Nowruz holiday"]})
+        self.assertEqual(
+            collapse_redundant_history([hidden_only, real_edit]), [real_edit]
+        )
+
+
+class HistoryTabViewTests(TestCase):
+    """The History tab view lists each day's entries as the tab shows them."""
+
+    def test_day_with_nothing_to_show_is_not_listed(self):
+        """A day whose only entry has nothing to show is left out instead of
+        rendering as an empty group."""
+        user = User.objects.create_user(
+            username="planner", email="planner@example.com", password="pass"
+        )
+        holiday = Holiday.objects.create(
+            name="Nowruz",
+            start_date=datetime(2026, 3, 20, tzinfo=dt_timezone.utc),
+            end_date=datetime(2026, 3, 24, tzinfo=dt_timezone.utc),
+            created_by=user,
+            updated_by=user,
+        )
+        holiday.save()  # Changes nothing but Updated At.
+        resave = LogEntry.objects.get_for_object(holiday).get(
+            action=LogEntry.Action.UPDATE
+        )
+        resave.timestamp = datetime(2026, 9, 29, 12, 0, tzinfo=dt_timezone.utc)
+        resave.save()
+
+        view = HorillaHistorySectionView()
+        view.model = Holiday
+        request = RequestFactory().get("/history/")
+        request.user = SimpleNamespace(time_zone="UTC", company=None)
+        view.setup(request, pk=holiday.pk)
+        view.object = holiday
+        days = list(view.get_context_data()["page_obj"])
+
+        self.assertEqual(len(days), 1)
+        self.assertNotEqual(days[0][0], date(2026, 9, 29))
+        self.assertEqual(
+            [entry.action for entry in days[0][1]], [LogEntry.Action.CREATE]
+        )
+
+
+class _ActorPlacementParser(HTMLParser):
+    """Record, for each "by {actor}" span, whether it sits inside a field row."""
+
+    def __init__(self):
+        super().__init__()
+        self.open_spans = []
+        self.actor_in_field_row = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag != "span":
+            return
+        classes = (dict(attrs).get("class") or "").split()
+        if "history-actor" in classes:
+            self.actor_in_field_row.append(
+                any("history-kv" in span for span in self.open_spans)
+            )
+        self.open_spans.append(classes)
+
+    def handle_endtag(self, tag):
+        if tag == "span" and self.open_spans:
+            self.open_spans.pop()
+
+
+class HistoryTabRenderingTests(TestCase):
+    """How the History tab lays out an edit row."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="editor", email="editor@example.com", password="pass"
+        )
+
+    def render_edit(self, changes):
+        entry = LogEntry(
+            content_type=ContentType.objects.get_for_model(Holiday),
+            object_pk="1",
+            action=LogEntry.Action.UPDATE,
+            changes=changes,
+            actor=self.user,
+            timestamp=datetime(2026, 9, 29, 12, 0, tzinfo=dt_timezone.utc),
+        )
+        request = RequestFactory().get("/history/")
+        with override("en"):
+            return render_to_string(
+                "history_tab.html",
+                {
+                    "page_obj": [(date(2026, 9, 29), [entry])],
+                    "model_name": "holiday",
+                    "request": request,
+                },
+            )
+
+    def actor_in_field_row(self, html):
+        parser = _ActorPlacementParser()
+        parser.feed(html)
+        return parser.actor_in_field_row
+
+    def test_actor_follows_a_single_field_inline(self):
+        """With one changed field, "by {actor}" stays on that field's row."""
+        html = self.render_edit({"name": ["Nowruz", "Nowruz holiday"]})
+        self.assertEqual(self.actor_in_field_row(html), [True])
+
+    def test_actor_gets_its_own_row_after_several_fields(self):
+        """With several changed fields, "by {actor}" is not part of the last
+        field's row."""
+        html = self.render_edit(
+            {
+                "name": ["Nowruz", "Nowruz holiday"],
+                "monthly_day_of_month": ["1", "15"],
+            }
+        )
+        self.assertEqual(self.actor_in_field_row(html), [False])
+
+    def test_diff_values_have_no_surrounding_whitespace(self):
+        """No whitespace inside a value's span: in a right-to-left UI it would
+        land on the far side of a left-to-right value, gluing it to the
+        arrow."""
+        html = self.render_edit({"monthly_day_of_month": ["None", "15"]})
+        self.assertRegex(html, r'class="history-kv-value"\s+dir="auto"\s*>--</span>')
+        self.assertRegex(html, r'class="history-diff-chip"\s+dir="auto"\s*>15</span>')

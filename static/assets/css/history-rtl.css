@@ -51,6 +51,15 @@
   word-break: break-word;
 }
 
+/* The diff arrow points from the old value to the new one, which sits to its
+   left in RTL; "→" is not mirrored by the bidi algorithm, so flip it. The
+   full-text view's vertical arrow (history-tab.css) is more specific and
+   keeps its rotation. */
+[dir="rtl"] #history-main .history-diff-arrow {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+
 #history-main .history-actor {
   display: inline-flex;
   align-items: center;

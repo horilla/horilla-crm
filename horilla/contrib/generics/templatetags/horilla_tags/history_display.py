@@ -12,7 +12,7 @@ from django.utils.encoding import smart_str
 
 # First party imports (Horilla)
 from horilla.core.exceptions import FieldDoesNotExist
-from horilla.utils.html import strip_tags
+from horilla.utils.html import format_html, strip_tags
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
@@ -24,6 +24,9 @@ _WHITESPACE_RE = re.compile(r"\s+")
 _SEPARATOR_RE = re.compile(r"(?:\s*,\s*)+")
 
 DIFF_VALUE_PREVIEW_LENGTH = 60
+
+# Auto-managed "last saved" fields, hidden from History diffs.
+_BOOKKEEPING_FIELD_NAMES = ("updated_at", "updated_by", "modified_at")
 
 
 @register.filter
@@ -116,40 +119,45 @@ def truncate_diff_value(value):
     return "…" + value[-DIFF_VALUE_PREVIEW_LENGTH:]
 
 
-def _is_redundant_history_entry(entry, same_group_entries):
+@register.filter
+def history_diff_value(value):
     """
-    Return True if this entry should be hidden: an UPDATE with no real displayed
-    changes (e.g. a noise auto-save right after creation) for an object that has
-    a CREATE in the same group is collapsed. Genuine edits (with real field
-    changes) are always kept, even on the same day as the create.
-    Works for any model; no model names.
+    Render one side (old or new) of a History diff as plain text, or for a
+    long value as its tail preview plus its full text (one line per
+    paragraph); the History tab's "Show full text" toggle picks which one is
+    visible. Empty values render as "--".
+
+    Returned without surrounding whitespace on purpose: inside the History
+    tab's dir="auto" value span, a trailing space lands on the far side of a
+    left-to-right value ("--", a phone number) in a right-to-left UI, which
+    glues the value to the diff arrow.
+    """
+    text = html_to_text("" if value is None else value) or "--"
+    if not is_long_diff_value(text):
+        return text
+    return format_html(
+        '<span class="history-value-preview" dir="auto">{}</span>'
+        '<span class="history-value-full" dir="auto">{}</span>',
+        truncate_diff_value(text),
+        html_to_paragraphs(value),
+    )
+
+
+def _is_redundant_history_entry(entry):
+    """
+    Return True if this entry should be hidden: an UPDATE with nothing to
+    display - every change it recorded is hidden (bookkeeping fields like
+    "Updated At", reverse relations) or not a real change (a re-saved value
+    that only differs in formatting). Such a row would only read "X updated",
+    which says nothing. Genuine edits (with real field changes) are always
+    kept. Works for any model; no model names.
     """
     try:
         if getattr(entry, "action", None) != LogEntry.Action.UPDATE:
             return False
-        if history_changes_display(entry):
-            return False
-        ct = getattr(entry, "content_type", None)
-        if ct is None:
-            return False
-        entry_pk = str(
-            getattr(entry, "object_pk", None) or getattr(entry, "object_id", "")
-        )
-        for other in same_group_entries:
-            if other is entry:
-                continue
-            if getattr(other, "action", None) != LogEntry.Action.CREATE:
-                continue
-            if getattr(other, "content_type", None) != ct:
-                continue
-            other_pk = str(
-                getattr(other, "object_pk", None) or getattr(other, "object_id", "")
-            )
-            if other_pk == entry_pk:
-                return True
+        return not history_changes_display(entry)
     except Exception:
-        pass
-    return False
+        return False
 
 
 # A m2m-add UPDATE landing within this many seconds of its object's CREATE is
@@ -304,8 +312,8 @@ def collapse_redundant_history(entries):
     """
     Collapse redundant/duplicate history rows so one logical action reads as one
     row instead of several:
-      - An UPDATE with no real displayed changes (a noise auto-save right after
-        creation) is dropped.
+      - An UPDATE with no displayed changes (a save that only touched hidden
+        fields such as "Updated At", or a no-op re-save) is dropped.
       - A M2M "delete" + "add" UPDATE pair on the same field/object within
         _M2M_REASSIGN_WINDOW_SECONDS (a reassignment, e.g. changing who's
         "Assigned To") is merged into one row showing "Old -> New", matching how
@@ -324,7 +332,7 @@ def collapse_redundant_history(entries):
     for entry in entries:
         if id(entry) in absorbed_into_reassignment:
             continue
-        if _is_redundant_history_entry(entry, entries):
+        if _is_redundant_history_entry(entry):
             continue
         target = _find_creation_time_m2m_target(entry, entries)
         if target is not None:
@@ -513,11 +521,27 @@ def history_changes_display(entry):
             if val[0] == "type" and val[1] == "operation":
                 del result[key]
 
-    # Drop auto-managed bookkeeping timestamps (e.g. "updated_at") - never a
-    # meaningful change to show, just noise alongside the real field edit.
-    for key in list(result):
-        if key.lower().replace(" ", "_") in ("updated_at", "modified_at"):
-            del result[key]
+    # Drop auto-managed bookkeeping fields (when and by whom the row was last
+    # saved) - the entry's own time and actor already say that, so they're
+    # just noise alongside the real field edit. Matched by field name: the
+    # keys are verbose names in the active language ("Updated At" in English,
+    # "به‌روزرسانی شده در" in Persian), so a label match only works in English.
+    if model:
+        for field_name in _BOOKKEEPING_FIELD_NAMES:
+            if field_name not in changes_dict:
+                continue
+            try:
+                field = model._meta.get_field(field_name)
+            except FieldDoesNotExist:
+                continue
+            result.pop(str(getattr(field, "verbose_name", field_name)), None)
+
+    # auditlog stores an empty value as the string "None" (a null ForeignKey,
+    # an unset nullable field, ...). Blank it so the template shows its usual
+    # "--" placeholder instead of the literal word.
+    for key, val in result.items():
+        if isinstance(val, (list, tuple)) and len(val) >= 2 and val[0] != "__m2m__":
+            result[key] = ["" if v == "None" else v for v in val]
 
     # Drop fields whose "change" isn't real - e.g. a Decimal re-saved with
     # different precision ("40199.14" -> "40199.1400000000") or "0.00" vs "0".
@@ -654,6 +678,28 @@ def _get_history_create_type_field(model):
     return field_name
 
 
+def _created_choice_display(entry, model, field_name):
+    """
+    Return the human-readable value `field_name` had when this CREATE entry
+    was logged, read from the entry's own change snapshot, or "" if it wasn't
+    recorded. Reading the live row instead would show today's value - a task
+    created "In Progress" and completed since would read "Status: Completed"
+    on its creation row.
+    """
+    changes = getattr(entry, "changes_dict", None) or {}
+    values = changes.get(field_name)
+    if not isinstance(values, (list, tuple)) or len(values) < 2:
+        return ""
+    value = values[1]
+    if value in (None, "", "None"):
+        return ""
+    try:
+        field = model._meta.get_field(field_name)
+    except FieldDoesNotExist:
+        return ""
+    return str(dict(field.flatchoices).get(value, value))
+
+
 def _get_related_object_from_entry(entry):
     """Return the model instance a log entry refers to, or None."""
     if entry is None:
@@ -681,11 +727,11 @@ def create_type_display(entry):
     For a CREATE log entry whose model declares HISTORY_CREATE_TYPE_FIELD (a
     choices field naming what "kind" of record this is, e.g. Activity's
     activity_type), return a phrase like "New Task created" using that
-    field's own get_<field>_display() value - matching the generic "New
+    field's display value at creation time - matching the generic "New
     {Model} created" badge's wording. Generic: derives the label from the
     model's own field choices, not a hardcoded per-model/per-value mapping.
-    Returns empty string when the model doesn't opt in or the entry isn't a
-    create.
+    Returns empty string when the model doesn't opt in, the entry isn't a
+    create, or the creation snapshot has no value for the field.
     """
     if entry is None:
         return ""
@@ -702,16 +748,7 @@ def create_type_display(entry):
     field_name = _get_history_create_type_field(model)
     if not field_name:
         return ""
-    obj = _get_related_object_from_entry(entry)
-    if obj is None:
-        return ""
-    display_getter = getattr(obj, f"get_{field_name}_display", None)
-    if not callable(display_getter):
-        return ""
-    try:
-        type_label = display_getter()
-    except Exception:
-        return ""
+    type_label = _created_choice_display(entry, model, field_name)
     if not type_label:
         return ""
     return str(_("New %(type)s created") % {"type": type_label})
@@ -770,9 +807,9 @@ def create_status_display(entry, primary_model_name=None):
     """
     For a CREATE log entry belonging to a RELATED object (not the page's own
     record - see related_entry_subject), whose model has a `status` choices
-    field, return its human-readable value (via the model's own
-    get_status_display()) so the create row can show e.g. "Status: Not
-    Started". Generic: works for any model with a `status` field.
+    field, return its human-readable value at creation time so the create
+    row can show e.g. "Status: Not Started" - not the record's current
+    status. Generic: works for any model with a `status` field.
 
     When the entry IS the page's own record being created (e.g. viewing this
     Task's own History tab), this returns "" - the current status is already
@@ -789,20 +826,16 @@ def create_status_display(entry, primary_model_name=None):
         return ""
     try:
         ct = getattr(entry, "content_type", None)
-        if ct is not None and primary_model_name and ct.model == primary_model_name:
+        if ct is None:
             return ""
-    except Exception:
-        pass
-    obj = _get_related_object_from_entry(entry)
-    if obj is None:
-        return ""
-    display_getter = getattr(obj, "get_status_display", None)
-    if not callable(display_getter):
-        return ""
-    try:
-        return str(display_getter())
+        if primary_model_name and ct.model == primary_model_name:
+            return ""
+        model = ct.model_class()
     except Exception:
         return ""
+    if model is None:
+        return ""
+    return _created_choice_display(entry, model, "status")
 
 
 @register.filter

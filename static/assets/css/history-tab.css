@@ -19,11 +19,10 @@
 }
 
 /* Each changed field reads as its own row instead of one dense run-on
-   paragraph. The "by {actor}" attribution stays inline after the last
-   field's diff when it fits on the same line, and only wraps to its own
-   line when it doesn't - so a single short field keeps actor and diff
-   together, while a long value or several fields still read as separate
-   rows above the attribution. */
+   paragraph. The "by {actor}" attribution stays inline after a lone
+   field's diff, so a single change keeps actor and diff together; with
+   several fields it gets its own row below them, so it doesn't read as
+   belonging to the last field. */
 #history-main .history-kv {
   display: block;
   margin: 3px 0;

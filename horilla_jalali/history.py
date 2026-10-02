@@ -39,16 +39,20 @@ def format_shamsi(value, *, user=None, company=None, convert_timezone=True):
 
 def parse_history_datetime_string(value):
     """Parse a stored diff display string, including Django's Persian-localized
-    Gregorian form (``19 اوت 2026، ساعت 8:27``)."""
+    Gregorian form (``19 اوت 2026، ساعت 8:27``). A value without a time parses
+    as a ``date``."""
     if not isinstance(value, str) or value in ("", "--", "None", "none"):
         return None
     localized = parse_localized_gregorian_display(value)
     if localized is not None:
         return localized
     try:
-        return dateutil_parser.parse(value)
+        parsed = dateutil_parser.parse(value)
     except (ValueError, TypeError, OverflowError):
         return None
+    if ":" not in value:
+        return parsed.date()
+    return parsed
 
 
 def format_history_datetime_as_jalali(value, *, user=None, company=None):
@@ -64,5 +68,7 @@ def format_history_datetime_as_jalali(value, *, user=None, company=None):
     parsed = parse_history_datetime_string(value)
     if parsed is None:
         return None
-    # Stored diff strings are already in display time; don't shift them again.
-    return format_shamsi(parsed, user=user, company=company, convert_timezone=False)
+    # auditlog writes DateTimeField diff values in settings.TIME_ZONE, not the
+    # viewer's timezone, so shift them the same way as the entry timestamps.
+    # Date-only values parse as dates and are never shifted.
+    return format_shamsi(parsed, user=user, company=company)

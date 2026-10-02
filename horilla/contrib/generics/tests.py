@@ -7,9 +7,11 @@ Unit tests and integration tests for the horilla.contrib.generics app.
 # Standard library imports
 from datetime import date, datetime
 from pathlib import Path
+from unittest import mock
 
 # Third-party imports (Django)
 from django.conf import settings
+from django.contrib.auth.models import Permission
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.template.loader import render_to_string
 from django.test import RequestFactory, SimpleTestCase, TestCase
@@ -17,7 +19,7 @@ from login_history.models import post_login, post_logout
 
 # First party imports (Horilla)
 from horilla.auth.models import User
-from horilla.contrib.core.models import Company, ListColumnVisibility
+from horilla.contrib.core.models import Company, Holiday, ListColumnVisibility, Role
 from horilla.contrib.generics.templatetags.horilla_tags import (
     history_i18n as history_i18n_module,
 )
@@ -41,6 +43,7 @@ from horilla.registry.history_registry import (
     unregister_history_datetime_formatter,
 )
 from horilla.urls import reverse
+from horilla.utils import timezone
 from horilla.utils.translation import override
 
 
@@ -343,3 +346,136 @@ class HistoryDatetimeFormatterRegistryTests(SimpleTestCase):
         self.assertEqual(get_history_datetime_formatters(), [formatter])
         unregister_history_datetime_formatter(formatter)
         self.assertEqual(get_history_datetime_formatters(), [])
+
+
+class ChangeOwnEditFormAccessTests(TestCase):
+    """With only ``change_own_<model>``, a generic edit form opens for the
+    same records the list and detail views offer Edit on: an ``OWNER_FIELDS``
+    entry, ForeignKey or ManyToMany, names the user or someone in a role
+    below theirs.
+
+    Holiday stands in for any owned model: its ``OWNER_FIELDS`` is the
+    ManyToMany ``specific_users``, and its edit form is a plain
+    ``HorillaSingleFormView``.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # django-login-history reads request.META['HTTP_USER_AGENT'] on
+        # login/logout, which the test client's bare request doesn't set.
+        user_logged_in.disconnect(post_login)
+        user_logged_out.disconnect(post_logout)
+
+    @classmethod
+    def tearDownClass(cls):
+        user_logged_in.connect(post_login)
+        user_logged_out.connect(post_logout)
+        super().tearDownClass()
+
+    def setUp(self):
+        self.company = Company.objects.create(
+            name="Acme", email="acme@example.com", country="US"
+        )
+        director_role = Role.objects.create(role_name="Director", company=self.company)
+        manager_role = Role.objects.create(
+            role_name="Sales Manager", parent_role=director_role, company=self.company
+        )
+        rep_role = Role.objects.create(
+            role_name="Sales Rep", parent_role=manager_role, company=self.company
+        )
+        support_role = Role.objects.create(role_name="Support", company=self.company)
+        self.director = self.make_user("director", director_role)
+        self.manager = self.make_user("manager", manager_role)
+        self.rep = self.make_user("rep", rep_role)
+        self.peer = self.make_user("peer", support_role)
+        # Holidays are created by someone else, so the created_by fallback
+        # owner field doesn't grant anyone access.
+        self.hr = User.objects.create_user(
+            username="hr", email="hr@example.com", password="pass", company=self.company
+        )
+        self.rep_holiday = self.make_holiday("Rep's day off", self.rep)
+        self.manager_holiday = self.make_holiday("Manager's day off", self.manager)
+
+    def make_user(self, username, role):
+        """Create a user in ``role`` whose only edit right is change_own_holiday."""
+        user = User.objects.create_user(
+            username=username,
+            email=f"{username}@example.com",
+            password="pass",
+            company=self.company,
+            role=role,
+        )
+        user.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label="core", codename="change_own_holiday"
+            )
+        )
+        return user
+
+    def make_holiday(self, name, owner):
+        """Create a holiday that ``owner`` holds through ``specific_users``."""
+        now = timezone.now()
+        holiday = Holiday.objects.create(
+            name=name,
+            start_date=now,
+            end_date=now,
+            company=self.company,
+            created_by=self.hr,
+            updated_by=self.hr,
+        )
+        holiday.specific_users.add(owner)
+        return holiday
+
+    def can_open_edit_form(self, user, holiday):
+        """Whether ``user`` gets the edit form rather than the 403 page."""
+        self.client.force_login(user)
+        response = self.client.get(
+            reverse("core:holiday_update_form", kwargs={"pk": holiday.pk}),
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(response.status_code, 200)
+        return "403.html" not in [template.name for template in response.templates]
+
+    def test_owner_through_a_many_to_many_owner_field(self):
+        """A user listed in a ManyToMany owner field can edit the record."""
+        self.assertTrue(self.can_open_edit_form(self.rep, self.rep_holiday))
+
+    def test_users_in_parent_roles_can_edit_a_subordinate_record(self):
+        """The rep's manager, and the director above them, can edit it too."""
+        self.assertTrue(self.can_open_edit_form(self.manager, self.rep_holiday))
+        self.assertTrue(self.can_open_edit_form(self.director, self.rep_holiday))
+
+    def test_no_access_up_or_across_the_role_tree(self):
+        """Neither a subordinate nor a user in an unrelated role gets access."""
+        self.assertFalse(self.can_open_edit_form(self.rep, self.manager_holiday))
+        self.assertFalse(self.can_open_edit_form(self.peer, self.rep_holiday))
+
+    def test_change_own_permission_is_still_required(self):
+        """Owning the record isn't enough without change_own_<model>."""
+        self.rep.user_permissions.clear()
+        self.assertFalse(self.can_open_edit_form(self.rep, self.rep_holiday))
+
+    def test_is_owned_by_still_decides_alone(self):
+        """A model's own is_owned_by() replaces the OWNER_FIELDS rule."""
+        with mock.patch.object(Holiday, "is_owned_by", create=True) as is_owned_by:
+            is_owned_by.return_value = False
+            self.assertFalse(self.can_open_edit_form(self.manager, self.rep_holiday))
+            is_owned_by.return_value = True
+            self.assertTrue(self.can_open_edit_form(self.peer, self.rep_holiday))
+
+    def test_granted_access_still_opens_the_form(self):
+        """has_granted_access(user, "change") grants edit without ownership."""
+
+        def has_granted_access(holiday, user, action):
+            return user == self.peer and action == "change"
+
+        with mock.patch.object(
+            Holiday, "has_granted_access", has_granted_access, create=True
+        ):
+            self.assertTrue(self.can_open_edit_form(self.peer, self.rep_holiday))
+
+    def test_fallback_owner_fields_still_open_the_form(self):
+        """The record's creator can edit it without being in OWNER_FIELDS."""
+        Holiday.objects.filter(pk=self.rep_holiday.pk).update(created_by=self.peer)
+        self.assertTrue(self.can_open_edit_form(self.peer, self.rep_holiday))

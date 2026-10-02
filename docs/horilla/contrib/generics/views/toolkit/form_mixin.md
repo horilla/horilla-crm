@@ -223,10 +223,11 @@ Flow:
 1. require pk + model
 2. load object by pk
 3. ownership checks in order:
-   - `obj.is_owned_by(user)` if method exists
-   - model-declared `OWNER_FIELDS`
-   - per-instance **granted access** hook: `user_has_granted_access(obj, user, "change")` (see [list.md — Granted access](../list.md#granted-access-per-model-opt-in-beyond-owner_fields)) — lets a model grant edit access some other way (e.g. `Opportunity` team membership) even when `OWNER_FIELDS` doesn't match
-   - fallback fields:
+   - `obj.is_owned_by(user)` if method exists — when defined, its result is final
+   - `check_record_change_access(user, obj)` from `views/details.py`, the same rule the list and detail views apply to their Edit actions:
+     - model-declared `OWNER_FIELDS`, ForeignKey or ManyToMany, naming the user or anyone in a subordinate role (`get_allowed_user_ids(user)` from `horilla.contrib.core.utils`), so a manager can edit their team's records
+     - per-instance **granted access** hook: `user_has_granted_access(obj, user, "change")` (see [list.md — Granted access](../list.md#granted-access-per-model-opt-in-beyond-owner_fields)) — lets a model grant edit access some other way (e.g. `Opportunity` team membership) even when `OWNER_FIELDS` doesn't match
+   - fallback fields, matched against the user only:
      - `<model_name>_owner`
      - `owner`
      - `created_by`

@@ -267,7 +267,11 @@ class FormViewCommonMixin:
     def has_object_permission(self):
         """
         Check object-level permissions (e.g., ownership) on self.model.
-        Uses model's OWNER_FIELDS attribute or fallback owner fields.
+        A model's own is_owned_by() decides alone. Otherwise the record
+        change rule the list and detail views use applies: OWNER_FIELDS
+        (ForeignKey or ManyToMany) naming the user or a user in a
+        subordinate role, or the granted-access hook. Fallback owner fields
+        are checked last.
         """
         pk_key = self.get_pk_key()
         if not self.kwargs.get(pk_key) or not self.model:
@@ -279,15 +283,9 @@ class FormViewCommonMixin:
             if hasattr(obj, "is_owned_by"):
                 return obj.is_owned_by(self.request.user)
 
-            if hasattr(self.model, "OWNER_FIELDS"):
-                for owner_field in self.model.OWNER_FIELDS:
-                    if hasattr(obj, owner_field):
-                        if getattr(obj, owner_field) == self.request.user:
-                            return True
+            from ..details import check_record_change_access
 
-            from ..helpers.queryset_utils import user_has_granted_access
-
-            if user_has_granted_access(obj, self.request.user, "change"):
+            if check_record_change_access(self.request.user, obj):
                 return True
 
             fallback_owner_fields = [

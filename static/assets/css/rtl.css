@@ -100,10 +100,10 @@
   inset-inline-end: 0;
 }
 
-/* Calendar sidebar — open type menus toward the calendar grid in RTL */
-[dir="rtl"] .calendar-sidebar .dropdown-content {
+/* Calendar type menus (right-5) — same as right-0 above, keeping the 1.25rem offset */
+[dir="rtl"] .dropdown-content.right-5 {
   right: auto !important;
-  left: 0;
+  inset-inline-end: 1.25rem;
 }
 
 /* Notification sidebar — mirror to the left in RTL (same pattern as filter panel) */

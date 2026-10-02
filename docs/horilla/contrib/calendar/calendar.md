@@ -142,6 +142,15 @@ The sidebar has a **Color by** toggle. **Type** (the default) keeps each event i
 - The mode is saved per browser in `localStorage` (`calendarColorBy`).
 - The two status colors are saved per user like the type colors, as `UserCalendarPreference` rows with `calendar_type` `status_completed` / `status_pending` (defaults in `DEFAULT_STATUS_COLORS`) and `is_selected=False`: they hold a color only and are never fetched as a calendar.
 
+### My Calendars selection
+
+Which standard types (`task`, `event`, `meeting`, `unavailability`) are checked is saved per user and company in `UserCalendarPreference.is_selected`. A type with no row counts as checked, so a new user sees all four.
+
+- `SaveCalendarPreferencesView` unselects the user's rows, then selects the checked types. An unchecked type without a row gets one with `is_selected=False` and its color from `DEFAULT_CALENDAR_TYPE_COLORS` (`_save_unchecked_calendar_types()`); otherwise it would show as checked again after the reload.
+- **Display This Only** saves the same way, so the choice is still applied the next time the calendar opens.
+- `GetCalendarEventsView` called without `calendar_types[]` applies the same rule. Unchecking everything (the **My Calendars** box) fetches no events.
+- The status color rows are not calendar types. Saving a selection never adds, selects or recolors them.
+
 ## Query behavior
 
 `CalendarView` loads the user's standard calendar preferences once and builds a

@@ -219,6 +219,30 @@ def events_for_custom_calendar(request, cc):
     return out
 
 
+def _save_unchecked_calendar_types(user, company, checked_types):
+    """
+    Give each standard calendar type not in ``checked_types`` an unselected
+    preference row if it has none. The sidebar shows a type without a row as
+    checked, so otherwise unchecking it doesn't stick. Callers unselect the
+    user's existing rows first.
+    """
+    saved_types = set(
+        UserCalendarPreference.objects.filter(user=user, company=company).values_list(
+            "calendar_type", flat=True
+        )
+    )
+    for calendar_type, color in DEFAULT_CALENDAR_TYPE_COLORS.items():
+        if calendar_type in checked_types or calendar_type in saved_types:
+            continue
+        # Not create(): a quick double click can post the same change twice.
+        UserCalendarPreference.objects.get_or_create(
+            user=user,
+            calendar_type=calendar_type,
+            company=company,
+            defaults={"color": color, "is_selected": False},
+        )
+
+
 class CalendarView(LoginRequiredMixin, TemplateView):
     """View to display the calendar with user preferences."""
 
@@ -268,6 +292,9 @@ class CalendarView(LoginRequiredMixin, TemplateView):
         ]
 
         display_only = self.request.GET.get("display_only")
+        company = (
+            getattr(self.request, "active_company", None) or self.request.user.company
+        )
         custom_calendars = CustomCalendar.objects.filter(
             user=self.request.user, is_active=True
         ).order_by("name")
@@ -279,6 +306,7 @@ class CalendarView(LoginRequiredMixin, TemplateView):
             UserCalendarPreference.objects.filter(
                 user=self.request.user, calendar_type=display_only
             ).update(is_selected=True)
+            _save_unchecked_calendar_types(self.request.user, company, [display_only])
             for calendar in context["calendars"]:
                 calendar["selected"] = calendar["id"] == display_only
             CustomCalendar.objects.filter(user=self.request.user).update(
@@ -297,6 +325,7 @@ class CalendarView(LoginRequiredMixin, TemplateView):
                 UserCalendarPreference.objects.filter(user=self.request.user).update(
                     is_selected=False
                 )
+                _save_unchecked_calendar_types(self.request.user, company, [])
                 for calendar in context["calendars"]:
                     calendar["selected"] = False
                 CustomCalendar.objects.filter(user=self.request.user).update(
@@ -412,6 +441,8 @@ class SaveCalendarPreferencesView(LoginRequiredMixin, View):
                             preference.company = company
                         preference.save(update_fields=["is_selected", "company"])
 
+                _save_unchecked_calendar_types(request.user, company, standard_types)
+
                 if custom_pks:
                     CustomCalendar.objects.filter(
                         user=request.user, pk__in=custom_pks
@@ -441,19 +472,21 @@ class GetCalendarEventsView(LoginRequiredMixin, View):
                 return JsonResponse({"status": "success", "events": []})
 
             if not selected_types:
-                selected_types = list(
+                # Same rule as the sidebar: a type without a row is checked.
+                unchecked = set(
                     UserCalendarPreference.objects.filter(
-                        user=request.user, is_selected=True
+                        user=request.user, is_selected=False
                     ).values_list("calendar_type", flat=True)
                 )
+                selected_types = [
+                    ct for ct in DEFAULT_CALENDAR_TYPE_COLORS if ct not in unchecked
+                ]
                 selected_types += [
                     f"custom_{pk}"
                     for pk in CustomCalendar.objects.filter(
                         user=request.user, is_selected=True, is_active=True
                     ).values_list("id", flat=True)
                 ]
-                if not selected_types:
-                    selected_types = ["task", "event", "meeting", "unavailability"]
 
             events = []
             if selected_types:

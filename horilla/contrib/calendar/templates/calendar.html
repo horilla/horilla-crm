@@ -136,6 +136,29 @@
             return baseUrl;
         }
 
+        // Extra calendar-events params: the visible range, so only the
+        // activities on screen are loaded, and scope=team while the
+        // Mine | Team toggle is on Team.
+        function calendarEventsQuery(start, end) {
+            let query = '&start=' + encodeURIComponent(start) + '&end=' + encodeURIComponent(end);
+            if (window.calendarScope === 'team') {
+                query += '&scope=team';
+            }
+            return query;
+        }
+
+        // The Mine | Team toggle is rendered only for users the Team view
+        // shows more to; without it the calendar always shows Mine.
+        function setCalendarScope(scope) {
+            const $buttons = $(".calendar-scope-btn");
+            window.calendarScope = $buttons.length && scope === "team" ? "team" : "mine";
+            $buttons.each(function () {
+                const active = this.dataset.scope === window.calendarScope;
+                $(this).toggleClass("bg-primary-600 text-white", active)
+                    .toggleClass("bg-primary-300 text-primary-600", !active);
+            });
+        }
+
         function updateEventStatus(eventId, newStatus) {
             fetch('{% url "calendar:mark_completed" %}', {
                 method: 'POST',
@@ -305,6 +328,14 @@
             const today = new Date();
             const currentDate = today.toISOString().split('T')[0];
 
+            // Restore the scope first: the calendar loads its first events
+            // while it is being created.
+            let savedScope = null;
+            try {
+                savedScope = localStorage.getItem("calendarScope");
+            } catch (e) {}
+            setCalendarScope(savedScope);
+
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 height: "100%",
                 expandRows: true,
@@ -364,6 +395,7 @@
                     if (window.currentDisplayOnly) {
                         url += '&display_only=' + encodeURIComponent(window.currentDisplayOnly);
                     }
+                    url += calendarEventsQuery(fetchInfo.startStr, fetchInfo.endStr);
 
                     fetch(url, {
                         headers: { 'X-CSRFToken': '{{ csrf_token }}',
@@ -511,6 +543,9 @@
                         const safeEventUrl = escapeHtml(event.url || '');
                         const safeDeleteUrl = escapeHtml(event.extendedProps.deleteUrl || '');
                         const safeDetailUrl = escapeHtml(event.extendedProps.detailUrl || '');
+                        // Sent only in the Team view: what the user may do on this record
+                        const canChange = event.extendedProps.canChange !== false;
+                        const canDelete = event.extendedProps.canDelete !== false;
 
                         const dateRows = isTask
                             ? `<div class="font-bold">{% trans 'Due Date' %}</div>
@@ -538,7 +573,7 @@
                                         <div>:</div>
                                         <div>${safeStatus}</div>
                                     </div>
-                                    ${status != "completed" && window.statusFieldPermission === "readwrite" ? `
+                                    ${status != "completed" && window.statusFieldPermission === "readwrite" && canChange ? `
                                     <button type="button"
                                         onclick="updateEventStatus('${escapeJsString(event.id)}', 'completed')"
                                         class="w-full mt-2 py-1.5 px-3 text-xs font-medium rounded-md bg-primary-100 text-primary-600 border border-primary-200 transition duration-300 flex items-center justify-center gap-1.5"
@@ -559,7 +594,7 @@
 
                         icons = `
                                 <div class="flex tablebtn mt-3">
-                                ${window.hasActivityChangeOwnPerm ? `
+                                ${window.hasActivityChangeOwnPerm && canChange ? `
                                     <button type="button"
                                         onclick="editEvent('${safeEventIdJs}', '${safeEventUrlJs}')"
                                         class="w-10 h-7 bg-dark-25 flex-1 flex justify-center border-r border-r-[white] hover:bg-dark-50 transition duration-300 items-center"
@@ -570,7 +605,7 @@
                                         <i class="fas fa-edit text-color-600"></i>
                                     </button>
                                     ` : '' }
-                                    ${window.hasActivityDeletePerm ? `
+                                    ${window.hasActivityDeletePerm && canDelete ? `
                                     <button type="button"
                                         onclick="deleteEvent('${safeEventIdJs}', '${safeDeleteUrlJs}')"
                                         class="w-10 h-7 bg-dark-25 flex-1 flex justify-center border-r border-r-[white] hover:bg-dark-50 transition duration-300 items-center"
@@ -720,6 +755,14 @@
                     localStorage.setItem("calendarColorBy", window.calendarColorBy);
                 } catch (e) {}
                 // Refetch so every event remounts and eventDidMount picks the new mode.
+                calendar.refetchEvents();
+            });
+
+            $(".calendar-scope-btn").on("click", function () {
+                setCalendarScope(this.dataset.scope);
+                try {
+                    localStorage.setItem("calendarScope", window.calendarScope);
+                } catch (e) {}
                 calendar.refetchEvents();
             });
 
@@ -877,7 +920,8 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        const url = '{% url "calendar:get_calendar_events" %}?' + selectedTypes.map(type => `calendar_types[]=${encodeURIComponent(type)}`).join('&');
+                        const url = '{% url "calendar:get_calendar_events" %}?' + selectedTypes.map(type => `calendar_types[]=${encodeURIComponent(type)}`).join('&') +
+                            calendarEventsQuery(calendar.view.activeStart.toISOString(), calendar.view.activeEnd.toISOString());
                         fetch(url, {
                             headers: { 'X-CSRFToken': '{{ csrf_token }}',
                                         'X-Requested-With': 'XMLHttpRequest' },
@@ -945,7 +989,8 @@
 
                             if (selectedTypes.length > 0) {
                                 const url = '{% url "calendar:get_calendar_events" %}?' +
-                                    selectedTypes.map(type => `calendar_types[]=${encodeURIComponent(type)}`).join('&');
+                                    selectedTypes.map(type => `calendar_types[]=${encodeURIComponent(type)}`).join('&') +
+                                    calendarEventsQuery(calendar.view.activeStart.toISOString(), calendar.view.activeEnd.toISOString());
 
                                 $.ajax({
                                     url: url,
@@ -1098,6 +1143,27 @@
             </div>
             <div class="col-span-6 lg:col-span-2">
                 <div class="h-full shadow-[0px_0px_20px_0px_rgba(0,0,0,0.05)] bg-white rounded-lg z-0 p-4 w-[200px]">
+                    {% if team_scope_available %}
+                        <div class="pb-3 mb-3 border-b border-primary-300">
+                            <span class="block text-sm mb-2">{% trans 'Show' %}</span>
+                            <div class="flex rounded-md overflow-hidden text-xs">
+                                <button
+                                    type="button"
+                                    class="calendar-scope-btn flex-1 py-1.5 bg-primary-600 text-white transition duration-300"
+                                    data-scope="mine"
+                                >
+                                    {% trans 'Mine' %}
+                                </button>
+                                <button
+                                    type="button"
+                                    class="calendar-scope-btn flex-1 py-1.5 bg-primary-300 text-primary-600 transition duration-300"
+                                    data-scope="team"
+                                >
+                                    {% trans 'Team' %}
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
                     <div class="pb-3 mb-1 border-b border-primary-300">
                         <span class="block text-sm mb-2">{% trans 'Color by' %}</span>
                         <div class="flex rounded-md overflow-hidden text-xs">

@@ -221,9 +221,13 @@ In **Add Column to List**, the column is labelled "Related To" under Visible or 
 
 Access to the related record's detail URL is centralized in
 `horilla.contrib.activity.methods.get_related_record_url(related, user)`
-(view access + company-visible queryset + optional `?section=`). The calendar
-event feed reuses it for each activity's `relatedUrl` / **Open Related Record**
-action — see [calendar](../calendar/calendar.md#activity-popup-actions).
+(view access + company-visible queryset + optional `?section=`).
+`get_related_record_urls(records, user)` is its batch form for views that link
+many records at once: it takes `{key: record}` and returns `{key: url}` with the
+same result per record, running the queries per related model instead of per
+record. `get_related_record_url()` calls it with a single record. The calendar
+event feed uses it for each activity's `relatedUrl` / **Open Related Record**
+action — see [calendar](../calendar/calendar.md#query-behavior).
 
 ---
 

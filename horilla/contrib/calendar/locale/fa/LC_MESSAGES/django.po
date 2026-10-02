@@ -246,6 +246,15 @@ msgstr "تکمیل‌نشده"
 msgid "Status colors"
 msgstr "رنگ وضعیت‌ها"
 
+msgid "Show"
+msgstr "نمایش"
+
+msgid "Mine"
+msgstr "خودم"
+
+msgid "Team"
+msgstr "تیم"
+
 msgid "Is Selected"
 msgstr "انتخاب شده است"
 

@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Fix ownership for bind-mounted container UID
         # docker-compose.yml bind-mounts the checkout into web/celery-worker/
@@ -38,7 +38,7 @@ jobs:
         run: sudo chown -R 1000:1000 .
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build web image
         run: |

@@ -13,9 +13,10 @@ from unittest import mock
 import environ
 
 # Third-party imports (Django)
+from django.core.cache import cache
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, TestCase
 
 # First-party / Horilla imports
 from horilla.contrib.core.management.commands import wait_for_db
@@ -150,3 +151,32 @@ class WaitForDbCommandTests(SimpleTestCase):
         """Asking for an alias that is not configured is an error."""
         with self.assertRaisesMessage(CommandError, "Unknown database alias: other"):
             self.run_command({"default": {}}, "--database", "other")
+
+
+class LoginLogoutPageDefaultsTests(TestCase):
+    """
+    The desktop login and logout keep their own page and URLs. Subclasses can
+    point ``template_name`` / ``login_url_name`` / ``redirect_url`` elsewhere.
+    """
+
+    def setUp(self):
+        cache.clear()
+
+    def test_login_page_uses_the_desktop_template(self):
+        """GET /login/ still renders login.html."""
+        response = self.client.get("/login/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "login.html")
+
+    def test_failed_login_returns_to_the_desktop_login(self):
+        """A wrong password still sends the user back to /login/."""
+        response = self.client.post(
+            "/login/", {"username": "nobody", "password": "wrong"}
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/login/?next=/")
+
+    def test_logout_returns_to_the_desktop_login(self):
+        """Logging out still refreshes to /login."""
+        response = self.client.get("/logout/")
+        self.assertContains(response, 'content="0;url=/login"')

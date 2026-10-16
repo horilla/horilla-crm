@@ -1,0 +1,115 @@
+{% extends "mobile/skeleton.html" %}
+{% load i18n %}
+
+{% block title %}{{ TITLE }} - {% trans "Login" %}{% endblock title %}
+
+{% block body %}
+    <main
+        class="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6"
+        style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);"
+    >
+        <div class="mb-8 text-center">
+            <img src="{% static LOGO_PATH %}" alt="{{ TITLE }}" class="mx-auto mb-4 h-14 w-auto">
+            <h1 class="text-xl font-semibold">{{ LOGIN_WELCOME_LINE }}</h1>
+            <p class="mt-1 text-sm text-dark-400">{{ LOGIN_TAG_LINE }}</p>
+        </div>
+
+        <form method="post" action="{% url 'mobile:login' %}" class="flex flex-col gap-4">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}">
+            <div>
+                <label for="mobile-username" class="mb-1 block text-sm font-medium">{% trans "Username" %}</label>
+                <input
+                    id="mobile-username"
+                    type="text"
+                    name="username"
+                    autocomplete="username"
+                    autocapitalize="none"
+                    required
+                    class="h-12 w-full rounded-lg border border-secondary-300 bg-white px-3 text-base focus:border-primary-600 focus:outline-none"
+                >
+            </div>
+            <div>
+                <label for="mobile-password" class="mb-1 block text-sm font-medium">{% trans "Password" %}</label>
+                <div class="relative">
+                    <input
+                        id="mobile-password"
+                        type="password"
+                        name="password"
+                        autocomplete="current-password"
+                        required
+                        class="h-12 w-full rounded-lg border border-secondary-300 bg-white px-3 text-base focus:border-primary-600 focus:outline-none"
+                        style="padding-inline-end: 3rem;"
+                    >
+                    <button
+                        type="button"
+                        id="mobile-password-toggle"
+                        class="absolute inset-y-0 flex w-12 items-center justify-center text-dark-400"
+                        style="inset-inline-end: 0;"
+                        aria-label="{% trans 'Show password' %}"
+                        aria-controls="mobile-password"
+                        aria-pressed="false"
+                        data-label-show="{% trans 'Show password' %}"
+                        data-label-hide="{% trans 'Hide password' %}"
+                    >
+                        <i class="fa-regular fa-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <button
+                type="submit"
+                class="h-12 w-full rounded-lg bg-primary-600 text-base font-medium text-white hover:bg-primary-800"
+            >
+                {% trans "Sign in" %}
+            </button>
+        </form>
+
+        {% if show_forgot_password or initialize_database %}
+            {# Password reset and first-run setup stay on the full version. #}
+            <a
+                href="{% url 'core:login' %}"
+                class="mt-6 text-center text-sm text-primary-600"
+            >
+                {% if initialize_database %}
+                    {% trans "Set up Horilla on the full version" %}
+                {% else %}
+                    {% trans "Forgot password?" %}
+                {% endif %}
+            </a>
+        {% endif %}
+    </main>
+{% endblock body %}
+
+{% block extra_js %}
+    {% trans "This field is required." as required_message %}
+    <script>
+        (function () {
+            const input = document.getElementById("mobile-password");
+            const toggle = document.getElementById("mobile-password-toggle");
+            toggle.addEventListener("click", function () {
+                const show = input.type === "password";
+                input.type = show ? "text" : "password";
+                toggle.setAttribute("aria-pressed", String(show));
+                toggle.setAttribute(
+                    "aria-label",
+                    show ? toggle.dataset.labelHide : toggle.dataset.labelShow
+                );
+                toggle.querySelector("i").className = show
+                    ? "fa-regular fa-eye-slash"
+                    : "fa-regular fa-eye";
+            });
+
+            // The browser's own "Please fill out this field" follows the
+            // browser language, not the page's; show ours instead.
+            const requiredMessage = "{{ required_message|escapejs }}";
+            document.querySelectorAll("form [required]").forEach(function (field) {
+                field.addEventListener("invalid", function () {
+                    field.setCustomValidity(field.value ? "" : requiredMessage);
+                });
+                field.addEventListener("input", function () {
+                    field.setCustomValidity("");
+                });
+            });
+        })();
+    </script>
+{% endblock extra_js %}

@@ -1,0 +1,23 @@
+{% extends "mobile/skeleton.html" %}
+{% load i18n %}
+
+{% block body %}
+    <div class="mx-auto flex min-h-screen max-w-xl flex-col">
+        <header
+            class="sticky top-0 z-30 bg-[#f8f8f9] px-4 pb-2"
+            style="padding-top: calc(env(safe-area-inset-top) + 1rem);"
+        >
+            {% block header %}
+                <h1 class="text-xl font-semibold">{% block page_title %}{% endblock page_title %}</h1>
+            {% endblock header %}
+        </header>
+
+        <main class="flex-1 pb-24">
+            {% block content %}{% endblock content %}
+        </main>
+
+        {% block bottom_nav %}
+            {% include "mobile/partials/bottom_nav.html" %}
+        {% endblock bottom_nav %}
+    </div>
+{% endblock body %}

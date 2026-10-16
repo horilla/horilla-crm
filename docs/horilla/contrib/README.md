@@ -29,6 +29,7 @@ This tree mirrors **`horilla/contrib/`** Django apps. Each subfolder holds docum
 | **generics** | [generics/generics_app.md](generics/generics_app.md) · [generics/views/views_init.md](generics/views/views_init.md) · … |
 | **keys** | [keys/keys.md](keys/keys.md) · [keys/default_shortcut_registration.md](keys/default_shortcut_registration.md) |
 | **mail** | [mail/mail.md](mail/mail.md) |
+| **mobile** (optional, off by default) | [mobile/mobile.md](mobile/mobile.md) |
 | **notifications** | [notifications/notifications.md](notifications/notifications.md) |
 | **process** (approvals + reviews) | [process/process.md](process/process.md) |
 | **reports** | [reports/reports.md](reports/reports.md) |

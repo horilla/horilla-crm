@@ -1,0 +1,87 @@
+{% load i18n mobile_tags %}<!DOCTYPE html>
+<html
+    lang="{{ LANGUAGE_CODE|default:'en' }}"
+    dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}"
+>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <meta name="theme-color" content="#ffffff">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="{{ TITLE }}">
+        <title>{% block title %}{{ TITLE }}{% endblock title %}</title>
+
+        <link rel="manifest" href="{% url 'mobile:manifest' %}">
+        <link rel="icon" href="{% static FAVICON_PATH %}">
+        <link rel="apple-touch-icon" href="{% mobile_static 'favicons/apple-touch-icon.png' %}">
+
+        {% load_registered_html "head_start" "mobile" as head_start_html %}
+        {% for tpl in head_start_html %}
+            {% include tpl %}
+        {% endfor %}
+
+        <script>
+            (function () {
+                const theme = localStorage.getItem("theme") || "light";
+                const html = document.documentElement;
+                html.classList.toggle("dark", theme === "dark");
+                html.style.colorScheme = theme === "dark" ? "dark" : "light";
+            })();
+        </script>
+
+        <script src="{% mobile_static 'assets/js/tailwind/tailwind.js' %}"></script>
+        <script src="{% mobile_static 'assets/js/tailwind.config.js' %}"></script>
+        <script src="{% mobile_static 'assets/js/htmx/htmx.min.js' %}"></script>
+
+        <link rel="stylesheet" href="{% mobile_static 'assets/fontawesome/css/all.min.css' %}">
+        <link rel="stylesheet" href="{% mobile_static 'assets/css/style.css' %}">
+        <link rel="stylesheet" href="{% mobile_static 'assets/css/dark.css' %}">
+        <link rel="stylesheet" href="{% mobile_static 'assets/css/googlefonts/css2.css' %}">
+
+        {% load_registered_html "head_end" "mobile" as head_end_html %}
+        {% for tpl in head_end_html %}
+            {% include tpl %}
+        {% endfor %}
+    </head>
+
+    <body
+        class="min-h-screen bg-[#f8f8f9] font-[Inter,_sans-serif] antialiased"
+        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+    >
+        {# Same theme switch as the desktop: dark.css styles body.dark #}
+        <script>
+            if (localStorage.getItem("theme") === "dark") {
+                document.body.classList.add("dark");
+            }
+        </script>
+
+        {% load_registered_html "body_start" "mobile" as body_start_html %}
+        {% for tpl in body_start_html %}
+            {% include tpl %}
+        {% endfor %}
+
+        {% include "mobile/partials/messages.html" %}
+
+        {% block body %}{% endblock body %}
+
+        {% load_registered_html "body_end" "mobile" as body_end_html %}
+        {% for tpl in body_end_html %}
+            {% include tpl %}
+        {% endfor %}
+
+        <script>
+            if ("serviceWorker" in navigator) {
+                window.addEventListener("load", function () {
+                    navigator.serviceWorker
+                        .register("{% url 'mobile:service_worker' %}", {scope: "{% url 'mobile:home' %}"})
+                        .catch(function (error) {
+                            console.warn("Mobile service worker registration failed:", error);
+                        });
+                });
+            }
+        </script>
+        {% block extra_js %}{% endblock extra_js %}
+    </body>
+</html>

@@ -191,13 +191,22 @@ class SaveActiveTabView(LoginRequiredMixin, View):
 class LoginUserView(View):
     """
     Class-based view to handle user login.
+
+    Subclasses can serve their own login page (e.g. a mobile layout) by
+    overriding ``template_name``, ``login_url_name`` (where failed attempts are
+    sent back to) and ``default_next_url`` (where a successful login goes when
+    no ``next`` is given). Authentication and lockout stay in this class.
     """
+
+    template_name = "login.html"
+    login_url_name = "core:login"
+    default_next_url = "/"
 
     def get(self, request):
         """
         Render login page with an optional 'next' param preserved.
         """
-        next_url = safe_url(request, request.GET.get("next", "/"))
+        next_url = safe_url(request, request.GET.get("next", self.default_next_url))
         condition_view = InitializeDatabaseConditionView()
         initialize_database = condition_view.get_initialize_condition()
         show_forgot_password = False
@@ -218,7 +227,7 @@ class LoginUserView(View):
             sender=self.__class__, request=request, context=context
         )
 
-        return render(request, "login.html", context=context)
+        return render(request, self.template_name, context=context)
 
     def post(self, request):
         """
@@ -226,7 +235,7 @@ class LoginUserView(View):
         """
         identifier = request.POST.get("username")
         secret = request.POST.get("password")
-        next_url = safe_url(request, request.POST.get("next", "/"))
+        next_url = safe_url(request, request.POST.get("next", self.default_next_url))
 
         ip = (
             request.META.get(
@@ -244,7 +253,7 @@ class LoginUserView(View):
                 request,
                 _("Too many failed login attempts. Please try again in 15 minutes."),
             )
-            return redirect(reverse_lazy("core:login") + f"?next={next_url}")
+            return redirect(reverse_lazy(self.login_url_name) + f"?next={next_url}")
 
         user = authenticate(request, username=identifier, password=secret)
 
@@ -265,14 +274,14 @@ class LoginUserView(View):
                 messages.error(
                     request, _("Invalid credentials. Please check and try again.")
                 )
-            return redirect(reverse_lazy("core:login") + f"?next={next_url}")
+            return redirect(reverse_lazy(self.login_url_name) + f"?next={next_url}")
 
         if not user.is_active:
             messages.warning(
                 request,
                 _("This user is archived or blocked. Please contact support."),
             )
-            return redirect(reverse_lazy("core:login") + f"?next={next_url}")
+            return redirect(reverse_lazy(self.login_url_name) + f"?next={next_url}")
 
         # Clear failed attempt counters on successful login
         cache.delete(attempt_key)
@@ -288,7 +297,12 @@ class LogoutView(View):
     """
     Class-based view to logout the user and clear local storage.
     All preservation logic is handled by signal receivers.
+
+    Subclasses can send the user to another login page by overriding
+    ``redirect_url``.
     """
+
+    redirect_url = "/login"
 
     def get(self, request, *args, **kwargs):
         """
@@ -331,7 +345,7 @@ class LogoutView(View):
             }}
         </script>
 
-        <meta http-equiv="refresh" content="0;url=/login">
+        <meta http-equiv="refresh" content="0;url={escape(str(self.redirect_url))}">
         """
 
         response = HttpResponse()

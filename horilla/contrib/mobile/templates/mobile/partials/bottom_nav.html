@@ -1,0 +1,27 @@
+{% load i18n %}
+{% comment %}
+    Bottom navigation. Each later page adds its own tab here; the bar stays
+    hidden while the shell has a single page.
+{% endcomment %}
+{% if mobile_nav_items|length > 1 %}
+    <nav
+        class="fixed inset-x-0 bottom-0 z-40 border-t border-secondary-200 bg-white"
+        style="padding-bottom: env(safe-area-inset-bottom);"
+        aria-label="{% trans 'Main' %}"
+    >
+        <ul class="mx-auto flex max-w-xl justify-around py-2">
+            {% for item in mobile_nav_items %}
+                <li>
+                    <a
+                        href="{{ item.url }}"
+                        class="flex flex-col items-center gap-1 px-3 text-xs {% if item.active %}text-primary-600{% else %}text-dark-400{% endif %}"
+                        {% if item.active %}aria-current="page"{% endif %}
+                    >
+                        <i class="{{ item.icon }} text-lg" aria-hidden="true"></i>
+                        {{ item.label }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+{% endif %}

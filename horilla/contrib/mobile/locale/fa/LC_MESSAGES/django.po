@@ -1,0 +1,93 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-16 18:02+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: __version__.py:12
+msgid "Optional installable phone mode under /m/ for quick on-the-go work."
+msgstr "حالت موبایل اختیاری و قابل نصب در مسیر /m/ برای کارهای سریع بیرون از دفتر."
+"حالت موبایل اختیاری و قابل نصب در مسیر ‎/m/‎ برای کارهای سریع بیرون از دفتر."
+
+#: __version__.py:17
+msgid ""
+"Installable phone shell under /m/: mobile layout, login and logout, a web "
+"app manifest and a service worker that only caches versioned static files."
+msgstr ""
+"پوسته‌ی قابل نصب موبایل در مسیر /m/: چیدمان موبایل، ورود و خروج، مانیفست "
+"وب‌اپ و یک سرویس‌ورکر که فقط فایل‌های ثابت نسخه‌دار را ذخیره می‌کند."
+"پوسته‌ی قابل نصب موبایل در مسیر ‎/m/‎: چیدمان موبایل، ورود و خروج، مانیفست وب‌اپ "
+"و یک سرویس‌ورکر که فقط فایل‌های ثابت نسخه‌دار را ذخیره می‌کند."
+
+#: apps.py:18
+msgid "Mobile"
+msgstr "موبایل"
+
+#: navigation.py:14 templates/mobile/more.html:4 templates/mobile/more.html:5
+msgid "More"
+msgstr "بیشتر"
+
+#: templates/mobile/login.html:4
+msgid "Login"
+msgstr "ورود"
+
+#: templates/mobile/login.html:21
+msgid "Username"
+msgstr "نام کاربری"
+
+#: templates/mobile/login.html:33
+msgid "Password"
+msgstr "رمز عبور"
+
+#: templates/mobile/login.html:47 templates/mobile/login.html:50
+msgid "Show password"
+msgstr "نمایش رمز عبور"
+
+#: templates/mobile/login.html:51
+msgid "Hide password"
+msgstr "پنهان کردن رمز عبور"
+
+#: templates/mobile/login.html:61
+msgid "Sign in"
+msgstr "ورود"
+
+#: templates/mobile/login.html:72
+msgid "Set up Horilla on the full version"
+msgstr "راه‌اندازی هوریلا در نسخه‌ی کامل"
+
+#: templates/mobile/login.html:74
+msgid "Forgot password?"
+msgstr "رمز عبور را فراموش کرده‌اید؟"
+
+#: templates/mobile/login.html:82
+msgid "This field is required."
+msgstr "این مقدار لازم است."
+
+#: templates/mobile/more.html:23
+msgid "Language"
+msgstr "زبان"
+
+#: templates/mobile/more.html:49
+msgid "Open full version"
+msgstr "باز کردن نسخه‌ی کامل"
+
+#: templates/mobile/more.html:56
+msgid "Log out"
+msgstr "خروج"
+
+#: templates/mobile/partials/bottom_nav.html:10
+msgid "Main"
+msgstr "اصلی"

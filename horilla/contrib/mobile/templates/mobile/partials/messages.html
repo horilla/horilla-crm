@@ -1,0 +1,25 @@
+{% if messages %}
+    <div
+        id="mobile-messages"
+        class="fixed inset-x-3 bottom-24 z-50 mx-auto flex max-w-xl flex-col gap-2"
+        style="margin-bottom: env(safe-area-inset-bottom);"
+        role="status"
+        aria-live="polite"
+    >
+        {% for message in messages %}
+            <div
+                class="rounded-lg px-4 py-3 text-sm shadow-md {% if message.tags == 'error' %}bg-[#fef2f2] text-danger-dark{% elif message.tags == 'warning' %}bg-[#fffbeb] text-warning-dark{% elif message.tags == 'success' %}bg-[#f0fdf4] text-success-dark{% else %}bg-white{% endif %}"
+            >
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+            const box = document.getElementById("mobile-messages");
+            if (box) {
+                box.remove();
+            }
+        }, 4000);
+    </script>
+{% endif %}

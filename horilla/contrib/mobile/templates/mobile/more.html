@@ -1,0 +1,60 @@
+{% extends "mobile/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ TITLE }} - {% trans "More" %}{% endblock title %}
+{% block page_title %}{% trans "More" %}{% endblock page_title %}
+
+{% block content %}
+    <section class="mx-4 mb-4 flex items-center gap-3 rounded-xl bg-white p-4">
+        <img
+            src="{{ request.user.get_avatar }}"
+            alt=""
+            class="h-12 w-12 flex-none rounded-full object-cover"
+        >
+        <div class="min-w-0">
+            <p class="truncate font-medium">{{ request.user.get_full_name|default:request.user.username }}</p>
+            {% if request.active_company %}
+                <p class="truncate text-sm text-dark-400">{{ request.active_company }}</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="mx-4 mb-4 overflow-hidden rounded-xl bg-white">
+        <h2 class="px-4 pb-1 pt-3 text-xs text-dark-400">{% trans "Language" %}</h2>
+        <ul>
+            {% for lang in allowed_languages %}
+                <li class="border-t border-secondary-100 first:border-t-0">
+                    <form action="{% url 'set_language' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="language" value="{{ lang.code }}">
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button
+                            type="submit"
+                            class="flex w-full items-center justify-between px-4 py-3 text-start"
+                            {% if lang.active %}aria-current="true"{% endif %}
+                        >
+                            <span>{{ lang.name }}</span>
+                            {% if lang.active %}
+                                <i class="fa-solid fa-check text-primary-600" aria-hidden="true"></i>
+                            {% endif %}
+                        </button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="mx-4 overflow-hidden rounded-xl bg-white">
+        <a href="{% url 'core:home_view' %}" class="flex items-center justify-between px-4 py-3">
+            <span>{% trans "Open full version" %}</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-dark-400" aria-hidden="true"></i>
+        </a>
+        <a
+            href="{% url 'mobile:logout' %}"
+            class="flex items-center justify-between border-t border-secondary-100 px-4 py-3 text-danger"
+        >
+            <span>{% trans "Log out" %}</span>
+            <i class="fa-solid fa-arrow-right-from-bracket{% if LANGUAGE_BIDI %} fa-flip-horizontal{% endif %}" aria-hidden="true"></i>
+        </a>
+    </section>
+{% endblock content %}

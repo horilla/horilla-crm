@@ -40,7 +40,7 @@
                 </button>
             </div>
             {% endif %}
-            <div class="max-h-80 overflow-y-auto custom-scroll pr-1">
+            <div class="max-h-80 overflow-y-auto custom-scroll pe-1">
                 <div class="{% if items|length > 9 %}grid grid-cols-3{% else %}flex flex-wrap{% endif %} gap-2">
                     {% for item in items %}<span data-name="{{ item.name }}" class="min-w-0 max-w-full">{{ item.chip }}</span>{% endfor %}
                 </div>

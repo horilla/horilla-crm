@@ -657,3 +657,6 @@ msgstr "ترتیب چیدمان ذخیره شد."
 
 msgid "Layout reset to default."
 msgstr "چیدمان به پیش‌فرض بازنشانی شد."
+
+msgid "Return the 403 page instead of crashing when a user cannot toggle the default dashboard. Offer custom fields in dashboard pickers, grouping and charts."
+msgstr "نمایش صفحه 403 به‌جای خطای سیستمی وقتی کاربر اجازه تغییر داشبورد پیش‌فرض را ندارد. ارائه فیلدهای سفارشی در انتخابگرها، گروه‌بندی و نمودارهای داشبورد."

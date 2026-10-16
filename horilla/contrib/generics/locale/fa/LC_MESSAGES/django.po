@@ -1394,3 +1394,28 @@ msgstr "%(type)s جدید ایجاد شد"
 
 msgid "Edits"
 msgstr "ویرایش"
+
+msgid "Self"
+msgstr "همین رکورد"
+
+msgid "Select Fields to Display in Split View"
+msgstr "انتخاب فیلدها برای نمایش در نمای تقسیم شده"
+
+msgid "Show more"
+msgstr "نمایش بیشتر"
+
+msgid "Show less"
+msgstr "نمایش کمتر"
+
+#, python-format
+msgid "\n                            Nothing to show yet. The %(view)s list does not have any data.\n                        "
+msgstr "\nهنوز چیزی برای نمایش وجود ندارد. فهرست %(view)s هیچ داده‌ای ندارد."
+
+msgid "Oldest First"
+msgstr "قدیمی‌ترین ابتدا"
+
+msgid "This record is read-only."
+msgstr "این رکورد فقط خواندنی است."
+
+msgid "Add Column to Split View"
+msgstr "افزودن ستون به نمای تقسیم شده"

@@ -246,14 +246,14 @@ msgid ""
 msgstr ""
 
 msgid "Field Requirements"
-msgstr ""
+msgstr "الزامات فیلد"
 
 #, python-format
 msgid "%(label)s (always required)"
-msgstr ""
+msgstr "%(label)s (همیشه الزامی)"
 
 msgid "Select Model"
-msgstr ""
+msgstr "انتخاب مدل"
 
 msgid "Field"
 msgstr "فیلد"
@@ -273,40 +273,40 @@ msgstr "به‌روزرسانی شده توسط"
 msgid ""
 "When enabled the field must be filled in. When disabled the field becomes "
 "optional on create and edit forms."
-msgstr ""
+msgstr "وقتی فعال باشد، فیلد باید پر شود. وقتی غیرفعال باشد، فیلد در فرم‌های ایجاد و ویرایش اختیاری می‌شود."
 
 msgid "Field Requirement"
-msgstr ""
+msgstr "الزام فیلد"
 
 msgid "Optional"
-msgstr ""
+msgstr "اختیاری"
 
 msgid "Select a valid model."
 msgstr "یک مدل معتبر انتخاب کنید."
 
 #, python-format
 msgid "%(model)s does not support configurable field requirements."
-msgstr ""
+msgstr "%(model)s از الزامات فیلد قابل پیکربندی پشتیبانی نمی‌کند."
 
 #, python-format
 msgid "%(field)s is not a field on %(model)s."
-msgstr ""
+msgstr "%(field)s فیلدی از %(model)s نیست."
 
 msgid "This field cannot be configured."
-msgstr ""
+msgstr "این فیلد قابل پیکربندی نیست."
 
 #, python-format
 msgid ""
 "%(field)s cannot be made optional because the database has no way to store "
 "an empty value for it. Allow null values on the field first."
-msgstr ""
+msgstr "%(field)s را نمی‌توان اختیاری کرد، زیرا پایگاه داده راهی برای ذخیره مقدار خالی آن ندارد. ابتدا مقادیر null را برای این فیلد مجاز کنید."
 
 msgid ""
 "Choose which fields your team must fill in when creating or editing records."
-msgstr ""
+msgstr "انتخاب کنید تیم شما هنگام ایجاد یا ویرایش رکوردها کدام فیلدها را باید پر کند."
 
 msgid "Requirement"
-msgstr ""
+msgstr "الزام"
 
 #, fuzzy
 #| msgid ""
@@ -343,15 +343,11 @@ msgstr ""
 msgid "Form Layouts"
 msgstr "چیدمان فرم‌ها"
 
-#, fuzzy
-#| msgid "Form Layouts"
 msgid "Form Layout"
-msgstr "چیدمان فرم‌ها"
+msgstr "چیدمان فرم"
 
-#, fuzzy
-#| msgid "Show on Create Form"
 msgid "Show on Form"
-msgstr "نمایش در فرم ایجاد"
+msgstr "نمایش در فرم"
 
 msgid "Sequence"
 msgstr "توالی"
@@ -445,14 +441,8 @@ msgstr "انصراف"
 msgid "Save Layout"
 msgstr "ذخیره چیدمان"
 
-#, fuzzy
-#| msgid ""
-#| "No layout saved yet. Create uses the standard multi-step form with every "
-#| "field."
 msgid "No layout saved yet. The standard form with every field is used."
-msgstr ""
-"هنوز چیدمانی ذخیره نشده است. ایجاد رکورد با فرم چندمرحله‌ای استاندارد و همه "
-"فیلدها انجام می‌شود."
+msgstr "هنوز چیدمانی ذخیره نشده است. فرم استاندارد با همه فیلدها استفاده می‌شود."
 
 msgid "Click Edit Layout to choose fields and their order."
 msgstr "برای انتخاب فیلدها و ترتیب آن‌ها روی «ویرایش چیدمان» کلیک کنید."
@@ -492,3 +482,76 @@ msgstr "فرم ایجاد به چیدمان پیش‌فرض بازگشت."
 
 #~ msgid "Custom layout: Create opens a single-page form"
 #~ msgstr "چیدمان سفارشی: ایجاد، فرم تک‌صفحه‌ای را باز می‌کند"
+
+msgid "Configure fields on opted-in models: add custom fields, choose which fields are required or optional, and set which fields appear on a form and in what order, per company."
+msgstr "پیکربندی فیلدها در مدل‌های فعال‌شده: افزودن فیلدهای سفارشی، انتخاب فیلدهای الزامی یا اختیاری، و تعیین اینکه کدام فیلدها و با چه ترتیبی در فرم نمایش داده شوند، به تفکیک شرکت."
+
+msgid "Merge the Custom Fields, Field Requirements and Form Layouts apps into one Field Management app with a single Settings menu entry. Feature registry names are unchanged; existing installs are upgraded by migrate alone, keeping data and permissions. Full Width on form layouts and custom fields. Use custom fields in conditions, reports, dashboards, grouping, filters and import, including date comparisons. Skip custom layouts on partial forms that declare their own fields. Stop Kanban group settings from crashing when the app label is missing."
+msgstr "ادغام برنامه‌های فیلدهای سفارشی، الزامات فیلد و چیدمان فرم‌ها در یک برنامه مدیریت فیلدها با یک مورد واحد در منوی تنظیمات. نام‌های رجیستری قابلیت‌ها تغییری نکرده‌اند؛ نصب‌های موجود فقط با migrate ارتقا می‌یابند و داده‌ها و مجوزها حفظ می‌شوند. گزینه تمام‌عرض در چیدمان فرم‌ها و فیلدهای سفارشی. استفاده از فیلدهای سفارشی در شروط، گزارش‌ها، داشبوردها، گروه‌بندی، فیلترها و واردات، از جمله مقایسه تاریخ. نادیده گرفتن چیدمان‌های سفارشی در فرم‌های جزئی که فیلدهای خود را تعریف می‌کنند. رفع خطای تنظیمات گروه کانبان وقتی برچسب برنامه وجود ندارد."
+
+msgid "Field Management"
+msgstr "مدیریت فیلدها"
+
+msgid "Choices are required for this field type."
+msgstr "برای این نوع فیلد، گزینه‌ها الزامی هستند."
+
+msgid "Custom fields are not supported for this model."
+msgstr "فیلدهای سفارشی برای این مدل پشتیبانی نمی‌شوند."
+
+msgid "You don't have permission to change this field."
+msgstr "شما اجازه تغییر این فیلد را ندارید."
+
+msgid "Full Width"
+msgstr "تمام‌عرض"
+
+msgid "Span both columns of the form."
+msgstr "هر دو ستون فرم را در بر می‌گیرد."
+
+msgid "Search fields…"
+msgstr "جستجوی فیلدها…"
+
+msgid "Hide optional"
+msgstr "پنهان کردن اختیاری‌ها"
+
+msgid "Show all listed fields on the form"
+msgstr "نمایش همه فیلدهای فهرست‌شده در فرم"
+
+msgid "Hide all listed optional fields. Required fields stay on."
+msgstr "پنهان کردن همه فیلدهای اختیاری فهرست‌شده. فیلدهای الزامی نمایش داده می‌شوند."
+
+msgid "Span both columns on the form"
+msgstr "در بر گرفتن هر دو ستون فرم"
+
+msgid "No fields match your search."
+msgstr "هیچ فیلدی با جستجوی شما مطابقت ندارد."
+
+msgid "No fields are shown."
+msgstr "هیچ فیلدی نمایش داده نمی‌شود."
+
+msgid "No fields are hidden."
+msgstr "هیچ فیلدی پنهان نیست."
+
+msgid "Clear search"
+msgstr "پاک کردن جستجو"
+
+msgid "Show all fields"
+msgstr "نمایش همه فیلدها"
+
+msgid "Choose which fields appear and in what order. Available as a Custom Layout mode on create and edit forms."
+msgstr "انتخاب کنید کدام فیلدها و با چه ترتیبی نمایش داده شوند. به‌عنوان حالت «چیدمان سفارشی» در فرم‌های ایجاد و ویرایش در دسترس است."
+
+msgid "Fields Shown"
+msgstr "فیلدهای نمایش داده‌شده"
+
+msgid "Form layout created."
+msgstr "چیدمان فرم ایجاد شد."
+
+msgid "All form layouts"
+msgstr "همه چیدمان‌های فرم"
+
+#, python-format
+msgid "%(model)s Form Layout"
+msgstr "چیدمان فرم %(model)s"
+
+msgid "Delete this form layout? The create form goes back to the default."
+msgstr "این چیدمان فرم حذف شود؟ فرم ایجاد به حالت پیش‌فرض برمی‌گردد."

@@ -285,10 +285,10 @@ msgid "Call Logs"
 msgstr "گزارش‌های تماس"
 
 msgid "How to configure your Caller ID"
-msgstr ""
+msgstr "نحوه پیکربندی شناسه تماس‌گیرنده"
 
 msgid "Log in to Twilio Console"
-msgstr ""
+msgstr "ورود به Twilio Console"
 
 msgid "Visit"
 msgstr "بازدید"
@@ -297,37 +297,37 @@ msgid "and sign in."
 msgstr "و وارد شوید."
 
 msgid "Go to Phone Numbers"
-msgstr ""
+msgstr "رفتن به Phone Numbers"
 
 msgid "Navigate to Phone Numbers → Manage → Active Numbers."
 msgstr ""
 
 msgid "Copy your number"
-msgstr ""
+msgstr "شماره خود را کپی کنید"
 
 msgid "Copy the number in E.164 format (e.g. +12125551234)."
 msgstr ""
 
 msgid "Paste below"
-msgstr ""
+msgstr "در کادر زیر جای‌گذاری کنید"
 
 msgid "Enter the number as your Caller ID and click Save."
-msgstr ""
+msgstr "شماره را به‌عنوان شناسه تماس‌گیرنده وارد کرده و روی «ذخیره» کلیک کنید."
 
 msgid "Log in to SignalWire Dashboard"
-msgstr ""
+msgstr "ورود به SignalWire Dashboard"
 
 msgid "and sign in to your Space."
-msgstr ""
+msgstr "و وارد Space خود شوید."
 
 msgid "Click Phone Numbers in the left menu → select an active number."
 msgstr ""
 
 msgid "Log in to Telnyx Portal"
-msgstr ""
+msgstr "ورود به Telnyx Portal"
 
 msgid "Go to Numbers"
-msgstr ""
+msgstr "رفتن به Numbers"
 
 msgid "Click Numbers in the left menu → My Numbers."
 msgstr ""
@@ -353,15 +353,15 @@ msgstr ""
 msgid ""
 "Mock provider is for testing only. Enter any phone number in E.164 format "
 "(e.g. +919XXXXXXXXX) as your Caller ID."
-msgstr ""
+msgstr "ارائه‌دهنده Mock فقط برای تست است. هر شماره تلفنی را با قالب E.164 (مثلاً ‎+919XXXXXXXXX) به‌عنوان شناسه تماس‌گیرنده وارد کنید."
 
 msgid ""
 "Enter the outbound phone number assigned to your account by your provider in"
 " E.164 format (e.g. +12125551234)."
-msgstr ""
+msgstr "شماره تلفن خروجی‌ای را که ارائه‌دهنده به حساب شما اختصاص داده با قالب E.164 وارد کنید (مثلاً ‎+12125551234)."
 
 msgid "How to configure Twilio"
-msgstr ""
+msgstr "نحوه پیکربندی Twilio"
 
 msgid "Found on the Console home page under Account Info. Starts with AC."
 msgstr ""
@@ -380,7 +380,7 @@ msgid ""
 msgstr ""
 
 msgid "How to configure SignalWire (Beta)"
-msgstr ""
+msgstr "نحوه پیکربندی SignalWire (Beta)"
 
 msgid "Log in to SignalWire"
 msgstr ""
@@ -409,13 +409,13 @@ msgid ""
 msgstr ""
 
 msgid "How to configure Telnyx (Beta)"
-msgstr ""
+msgstr "نحوه پیکربندی Telnyx (Beta)"
 
 msgid "Go to Auth → API Keys → Create API Key. Copy the generated key."
 msgstr ""
 
 msgid "Connection ID"
-msgstr ""
+msgstr "شناسه اتصال"
 
 msgid ""
 "Go to Voice → Connections → create or select a TeXML App. Copy the "
@@ -431,7 +431,7 @@ msgid ""
 msgstr ""
 
 msgid "How to configure Sinch (Beta)"
-msgstr ""
+msgstr "نحوه پیکربندی Sinch (Beta)"
 
 msgid "Account SID (Project ID)"
 msgstr ""
@@ -450,7 +450,7 @@ msgid ""
 msgstr ""
 
 msgid "How to configure Exotel (Beta)"
-msgstr ""
+msgstr "نحوه پیکربندی Exotel (Beta)"
 
 msgid "Account SID (SID)"
 msgstr ""
@@ -469,34 +469,34 @@ msgid "Go to Numbers → Exophone Numbers and copy your Exophone number."
 msgstr ""
 
 msgid "How to configure Mock (Testing)"
-msgstr ""
+msgstr "نحوه پیکربندی Mock (آزمایشی)"
 
 msgid ""
 "Mock provider requires no real credentials. It simulates calls locally for "
 "development and testing."
-msgstr ""
+msgstr "ارائه‌دهنده Mock به اطلاعات ورود واقعی نیاز ندارد. تماس‌ها را برای توسعه و تست به‌صورت محلی شبیه‌سازی می‌کند."
 
 msgid "Auth Token"
 msgstr ""
 
 msgid "Enter any value (e.g. test-token)."
-msgstr ""
+msgstr "هر مقداری وارد کنید (مثلاً test-token)."
 
 msgid "Enter any phone number in E.164 format (e.g. +919XXXXXXXXX)."
-msgstr ""
+msgstr "هر شماره تلفنی را با قالب E.164 وارد کنید (مثلاً ‎+919XXXXXXXXX)."
 
 msgid "Caller ID"
 msgstr "شناسه تماس‌گیرنده"
 
 msgid "(optional)"
-msgstr ""
+msgstr "(اختیاری)"
 
 msgid "Your phone number (e.g. +919XXXXXXXXX)"
-msgstr ""
+msgstr "شماره تلفن شما (مثلاً ‎+919XXXXXXXXX)"
 
 msgid ""
 "Leave blank to use the provider's default number set by your administrator."
-msgstr ""
+msgstr "برای استفاده از شماره پیش‌فرض ارائه‌دهنده که مدیر شما تنظیم کرده، خالی بگذارید."
 
 msgid "Save"
 msgstr "ذخیره"
@@ -529,10 +529,10 @@ msgid "Recording"
 msgstr ""
 
 msgid "via"
-msgstr ""
+msgstr "از طریق"
 
 msgid "Hang Up"
-msgstr ""
+msgstr "قطع تماس"
 
 msgid "Cancel Call"
 msgstr "لغو تماس"
@@ -541,7 +541,7 @@ msgid "Call Accounts"
 msgstr "حساب‌های تماس"
 
 msgid "Manage the calling accounts connected to your profile."
-msgstr ""
+msgstr "حساب‌های تماس متصل به پروفایل خود را مدیریت کنید."
 
 msgid "Call Integration Disabled"
 msgstr "یکپارچه‌سازی تماس غیرفعال است"
@@ -549,7 +549,7 @@ msgstr "یکپارچه‌سازی تماس غیرفعال است"
 msgid ""
 "Call integration is not currently enabled for your account. Please contact "
 "your administrator."
-msgstr ""
+msgstr "یکپارچه‌سازی تماس در حال حاضر برای حساب شما فعال نیست. لطفاً با مدیر خود تماس بگیرید."
 
 msgid "No Providers Configured"
 msgstr "ارائه‌دهنده‌ای پیکربندی نشده است"
@@ -557,13 +557,13 @@ msgstr "ارائه‌دهنده‌ای پیکربندی نشده است"
 msgid ""
 "Ask your administrator to add a provider under Settings → Integrations → "
 "Call Integration."
-msgstr ""
+msgstr "از مدیر خود بخواهید یک ارائه‌دهنده در «تنظیمات ← یکپارچه‌سازی‌ها ← یکپارچه‌سازی تماس» اضافه کند."
 
 msgid "Configuration saved."
-msgstr ""
+msgstr "پیکربندی ذخیره شد."
 
 msgid "Edit Configuration"
-msgstr ""
+msgstr "ویرایش پیکربندی"
 
 msgid "Call"
 msgstr "تماس"
@@ -572,13 +572,13 @@ msgid "Make a Call"
 msgstr "برقراری تماس"
 
 msgid "Phone Number"
-msgstr ""
+msgstr "شماره تلفن"
 
 msgid "+1234567890"
-msgstr ""
+msgstr "+1234567890"
 
 msgid "No phone number found on this record. Please enter one."
-msgstr ""
+msgstr "شماره تلفنی در این رکورد یافت نشد. لطفاً یک شماره وارد کنید."
 
 msgid "Select provider..."
 msgstr "انتخاب ارائه‌دهنده..."
@@ -607,10 +607,10 @@ msgid "Enable Call Integration"
 msgstr "فعال‌سازی یکپارچه‌سازی تماس"
 
 msgid "Enable Call Integration?"
-msgstr ""
+msgstr "یکپارچه‌سازی تماس فعال شود؟"
 
 msgid "Disabled — users cannot make calls"
-msgstr ""
+msgstr "غیرفعال — کاربران نمی‌توانند تماس بگیرند"
 
 #| msgid ""
 #| "Enable call integration to allow users to make and receive calls directly "
@@ -620,34 +620,34 @@ msgstr ""
 "به کاربران اجازه دهید مستقیماً از هر رکوردی تماس برقرار کرده و دریافت کنند."
 
 msgid "Enabled — users can make and receive calls"
-msgstr ""
+msgstr "فعال — کاربران می‌توانند تماس بگیرند و تماس دریافت کنند"
 
 msgid "Disable Call Integration?"
-msgstr ""
+msgstr "یکپارچه‌سازی تماس غیرفعال شود؟"
 
 msgid "Users will no longer be able to make calls from the CRM."
-msgstr ""
+msgstr "کاربران دیگر نمی‌توانند از CRM تماس بگیرند."
 
 msgid "Choose who can initiate calls."
-msgstr ""
+msgstr "انتخاب کنید چه کسانی می‌توانند تماس برقرار کنند."
 
 msgid "Set access to All Users?"
 msgstr "دسترسی را به همه کاربران تنظیم کنیم؟"
 
 msgid "Every user in the company will be able to initiate calls."
-msgstr ""
+msgstr "همه کاربران شرکت خواهند توانست تماس برقرار کنند."
 
 msgid "Every user in the company can use call integration."
-msgstr ""
+msgstr "همه کاربران شرکت می‌توانند از یکپارچه‌سازی تماس استفاده کنند."
 
 msgid "Switch to Specific Roles?"
-msgstr ""
+msgstr "به نقش‌های مشخص تغییر کند؟"
 
 msgid "Only users with selected roles will be able to make calls."
-msgstr ""
+msgstr "فقط کاربرانی که نقش‌های انتخاب‌شده را دارند خواهند توانست تماس بگیرند."
 
 msgid "Only users with selected roles can use call integration."
-msgstr ""
+msgstr "فقط کاربرانی که نقش‌های انتخاب‌شده را دارند می‌توانند از یکپارچه‌سازی تماس استفاده کنند."
 
 msgid "Click to add or remove roles."
 msgstr ""
@@ -659,13 +659,13 @@ msgid "roles"
 msgstr "نقش‌ها"
 
 msgid "Switch to Specific Users?"
-msgstr ""
+msgstr "به کاربران مشخص تغییر کند؟"
 
 msgid "Only individually selected users will be able to make calls."
-msgstr ""
+msgstr "فقط کاربرانی که تک‌تک انتخاب شده‌اند خواهند توانست تماس بگیرند."
 
 msgid "Only selected individual users can use call integration."
-msgstr ""
+msgstr "فقط کاربرانی که تک‌تک انتخاب شده‌اند می‌توانند از یکپارچه‌سازی تماس استفاده کنند."
 
 msgid "Click to add or remove users."
 msgstr ""
@@ -677,7 +677,7 @@ msgid "users"
 msgstr "کاربران"
 
 msgid "Setup guides"
-msgstr ""
+msgstr "راهنماهای راه‌اندازی"
 
 msgid "Add"
 msgstr "افزودن"
@@ -756,3 +756,489 @@ msgstr "افزونه تماس فعالیت"
 
 msgid "Gate the Call History tab on the related record's own access; stop registering Call Log as an always-on related activity target."
 msgstr "وابسته کردن زبانه «تاریخچه تماس» به دسترسی خود رکورد مرتبط؛ توقف ثبت «گزارش تماس» به‌عنوان مقصد همیشه فعال فعالیت مرتبط."
+
+msgid "Open call log details in a modal and clarify the provider setup guides. Stop the Call History empty state from covering the tab buttons. Show allowed users and roles as pills. Disable Call Now on a locked record."
+msgstr "نمایش جزئیات گزارش تماس در یک پنجره و شفاف‌تر شدن راهنماهای راه‌اندازی ارائه‌دهنده. جلوگیری از پوشاندن دکمه‌های زبانه توسط حالت خالی «تاریخچه تماس». نمایش کاربران و نقش‌های مجاز به‌صورت برچسب. غیرفعال شدن «تماس فوری» در رکورد قفل‌شده."
+
+msgid "Navigate to Phone Numbers → Manage → Active numbers."
+msgstr "به Phone Numbers → Manage → Active numbers بروید."
+
+msgid "Copy a number you own in Twilio, in E.164 format (e.g. +12125551234). On a trial account you can also use a number listed under Phone Numbers → Manage → Verified Caller IDs."
+msgstr "شماره‌ای را که در Twilio دارید با قالب E.164 کپی کنید (مثلاً ‎+12125551234). در حساب آزمایشی می‌توانید از شماره‌های فهرست‌شده در Phone Numbers → Manage → Verified Caller IDs نیز استفاده کنید."
+
+msgid "Enter the number as your Caller ID and click Save. Do not enter your personal mobile number unless it is a Verified Caller ID — Twilio rejects calls from numbers it does not recognise."
+msgstr "شماره را به‌عنوان شناسه تماس‌گیرنده وارد کرده و روی «ذخیره» کلیک کنید. شماره موبایل شخصی خود را وارد نکنید مگر اینکه یک Verified Caller ID باشد — Twilio تماس از شماره‌هایی را که نمی‌شناسد رد می‌کند."
+
+msgid "Not sure?"
+msgstr "مطمئن نیستید؟"
+
+msgid "Leave this blank. Calls then use the Default Caller ID set by your administrator."
+msgstr "این قسمت را خالی بگذارید. در این صورت تماس‌ها از شناسه تماس‌گیرنده پیش‌فرضی که مدیر شما تنظیم کرده استفاده می‌کنند."
+
+msgid "Click Phone Numbers in the left menu. Your numbers are listed under Purchased Numbers."
+msgstr "در منوی سمت چپ روی Phone Numbers کلیک کنید. شماره‌های شما زیر Purchased Numbers فهرست شده‌اند."
+
+msgid "Copy the number in E.164 format, without spaces, brackets or dashes (e.g. +12029004429)."
+msgstr "شماره را با قالب E.164 و بدون فاصله، پرانتز یا خط تیره کپی کنید (مثلاً ‎+12029004429)."
+
+msgid "In the left menu open Numbers → Phone Numbers. Only numbers you bought from Telnyx are listed there."
+msgstr "در منوی سمت چپ، Numbers → Phone Numbers را باز کنید. فقط شماره‌هایی که از Telnyx خریده‌اید در آنجا فهرست می‌شوند."
+
+msgid "Copy the number in E.164 format, without spaces, brackets or dashes (e.g. +12125551234)."
+msgstr "شماره را با قالب E.164 و بدون فاصله، پرانتز یا خط تیره کپی کنید (مثلاً ‎+12125551234)."
+
+msgid "Leave this blank to use the Default Caller ID set by your administrator. Only enter a number if it is a Sinch number on the same account, in E.164 format (e.g. +12125551234)."
+msgstr "برای استفاده از شناسه تماس‌گیرنده پیش‌فرضی که مدیر شما تنظیم کرده، این قسمت را خالی بگذارید. فقط وقتی شماره وارد کنید که یک شماره Sinch در همین حساب باشد، با قالب E.164 (مثلاً ‎+12125551234)."
+
+msgid "Enter your own phone number"
+msgstr "شماره تلفن خودتان را وارد کنید"
+
+msgid "Exotel rings your phone first, then connects the customer. Enter your mobile number with the country code (e.g. +919876543210)."
+msgstr "Exotel ابتدا با تلفن شما تماس می‌گیرد و سپس مشتری را وصل می‌کند. شماره موبایل خود را همراه با کد کشور وارد کنید (مثلاً ‎+919876543210)."
+
+msgid "Do not enter the ExoPhone"
+msgstr "ExoPhone را وارد نکنید"
+
+msgid "The ExoPhone is set by your administrator and is shown to the customer as the caller ID."
+msgstr "ExoPhone را مدیر شما تنظیم می‌کند و به‌عنوان شناسه تماس‌گیرنده به مشتری نمایش داده می‌شود."
+
+msgid "Click Save. If your account is a trial account, make sure this number is added or verified in the Exotel dashboard."
+msgstr "روی «ذخیره» کلیک کنید. اگر حساب شما آزمایشی است، مطمئن شوید این شماره در داشبورد Exotel اضافه یا تأیید شده باشد."
+
+msgid "Before you start"
+msgstr "پیش از شروع"
+
+msgid "You need a Twilio account. Sign up free at"
+msgstr "به یک حساب Twilio نیاز دارید. ثبت‌نام رایگان در"
+
+msgid "(a trial account is enough for testing)."
+msgstr "(حساب آزمایشی برای تست کافی است)."
+
+msgid "Part 1 — Collect your details from Twilio"
+msgstr "بخش ۱ — اطلاعات خود را از Twilio جمع‌آوری کنید"
+
+msgid "Sign in to the Twilio Console"
+msgstr "ورود به Twilio Console"
+
+msgid "Sign in, then open the classic Console layout, which this guide uses:"
+msgstr "وارد شوید، سپس چیدمان کلاسیک Console را که این راهنما بر اساس آن نوشته شده باز کنید:"
+
+msgid "You land on the Account Dashboard, with Develop and Monitor tabs in the sidebar. If Twilio shows a different layout, look for the same items under the Communications menu."
+msgstr "به Account Dashboard می‌رسید که زبانه‌های Develop و Monitor در نوار کناری آن قرار دارند. اگر Twilio چیدمان دیگری نشان داد، همین موارد را در منوی Communications پیدا کنید."
+
+msgid "Copy the Account SID"
+msgstr "Account SID را کپی کنید"
+
+msgid "On the dashboard, scroll to the Account Info box. Copy the Account SID (a 34-character value starting with AC)."
+msgstr "در داشبورد به کادر Account Info بروید. Account SID را کپی کنید (مقداری ۳۴ نویسه‌ای که با AC شروع می‌شود)."
+
+msgid "Copy the Auth Token"
+msgstr "Auth Token را کپی کنید"
+
+msgid "In the same Account Info box, click Show next to Auth Token and copy it. Treat it like a password."
+msgstr "در همان کادر Account Info، روی Show کنار Auth Token کلیک کرده و آن را کپی کنید. مانند رمز عبور از آن محافظت کنید."
+
+msgid "Get a Twilio phone number"
+msgstr "یک شماره تلفن Twilio بگیرید"
+
+msgid "On the Account Dashboard, under Connect to 3rd-party applications, the item Twilio phone number must be ticked. If it is not, click Get a trial phone number and accept the number Twilio suggests (a paid account can buy one under Phone Numbers → Manage → Buy a number)."
+msgstr "در Account Dashboard، زیر Connect to 3rd-party applications، گزینه Twilio phone number باید تیک خورده باشد. اگر نخورده است، روی Get a trial phone number کلیک کنید و شماره‌ای را که Twilio پیشنهاد می‌دهد بپذیرید (حساب پولی می‌تواند از Phone Numbers → Manage → Buy a number شماره بخرد)."
+
+msgid "Copy that number"
+msgstr "آن شماره را کپی کنید"
+
+msgid "Go to Phone Numbers → Manage → Active numbers and copy the number in E.164 format: a plus sign, the country code, then the digits with no spaces or dashes (e.g. +12125551234). This is your Default Caller ID."
+msgstr "به Phone Numbers → Manage → Active numbers بروید و شماره را با قالب E.164 کپی کنید: علامت به‌علاوه، کد کشور و سپس ارقام بدون فاصله یا خط تیره (مثلاً ‎+12125551234). این شناسه تماس‌گیرنده پیش‌فرض شماست."
+
+msgid "Allow calls to your country"
+msgstr "تماس با کشور مقصد را مجاز کنید"
+
+msgid "Go to Voice → Settings → Geo permissions and enable the country you will be calling (for example India or United Kingdom). Calls to a disabled country fail with error 21215."
+msgstr "به Voice → Settings → Geo permissions بروید و کشوری را که با آن تماس می‌گیرید فعال کنید (برای مثال India یا United Kingdom). تماس با کشور غیرفعال با خطای 21215 ناموفق می‌شود."
+
+msgid "Part 2 — Trial accounts only: verify the phone you will call"
+msgstr "بخش ۲ — فقط حساب‌های آزمایشی: تلفنی را که با آن تماس می‌گیرید تأیید کنید"
+
+msgid "A Twilio trial account can only call numbers you have verified. Skip this part if you have upgraded to a paid account."
+msgstr "حساب آزمایشی Twilio فقط می‌تواند با شماره‌هایی که تأیید کرده‌اید تماس بگیرد. اگر حساب خود را به حساب پولی ارتقا داده‌اید، از این بخش بگذرید."
+
+msgid "In the Twilio Console open Phone Numbers → Manage → Verified Caller IDs. The phone number you signed up with is normally already verified."
+msgstr "در Twilio Console، Phone Numbers → Manage → Verified Caller IDs را باز کنید. شماره‌ای که با آن ثبت‌نام کرده‌اید معمولاً از قبل تأیید شده است."
+
+msgid "Click Add a new Caller ID, choose your country, enter the mobile number you want to test with, and choose Call or SMS."
+msgstr "روی Add a new Caller ID کلیک کنید، کشور خود را انتخاب کنید، شماره موبایلی را که می‌خواهید با آن تست کنید وارد کنید و Call یا SMS را انتخاب کنید."
+
+msgid "Enter the verification code Twilio sends or reads out. The number now shows in the Verified Caller IDs list."
+msgstr "کد تأییدی را که Twilio ارسال می‌کند یا می‌خواند وارد کنید. اکنون شماره در فهرست Verified Caller IDs نمایش داده می‌شود."
+
+msgid "Use this verified number as the phone number on the Lead or Contact you test with. Calling any other number fails with error 21608."
+msgstr "از این شماره تأییدشده به‌عنوان شماره تلفن سرنخ یا مخاطبی که با آن تست می‌کنید استفاده کنید. تماس با هر شماره دیگری با خطای 21608 ناموفق می‌شود."
+
+msgid "Part 3 — Enter the details in this form"
+msgstr "بخش ۳ — اطلاعات را در این فرم وارد کنید"
+
+msgid "Click Add above and fill in the form:"
+msgstr "روی «افزودن» در بالا کلیک کنید و فرم را پر کنید:"
+
+msgid "Any label, for example Twilio Main."
+msgstr "هر عنوانی، برای مثال Twilio Main."
+
+msgid "Select Twilio."
+msgstr "Twilio را انتخاب کنید."
+
+msgid "Set to Active. The default is Inactive, and an Inactive provider is not offered when users click Call Now."
+msgstr "روی «فعال» تنظیم کنید. پیش‌فرض «غیرفعال» است و ارائه‌دهنده غیرفعال هنگام کلیک کاربران روی «تماس فوری» پیشنهاد نمی‌شود."
+
+msgid "Paste the Twilio phone number from Part 1. It must be a number you own in Twilio — a personal mobile number is rejected (error 21210 or 21212)."
+msgstr "شماره تلفن Twilio از بخش ۱ را جای‌گذاری کنید. باید شماره‌ای باشد که در Twilio مالک آن هستید — شماره موبایل شخصی رد می‌شود (خطای 21210 یا 21212)."
+
+msgid "Paste the value starting with AC."
+msgstr "مقداری را که با AC شروع می‌شود جای‌گذاری کنید."
+
+msgid "Paste the Auth Token."
+msgstr "Auth Token را جای‌گذاری کنید."
+
+msgid "Leave this blank. Twilio signs its webhooks with your Auth Token and has no separate webhook secret setting. If you want signature checking, paste the same Auth Token here — any other value makes every status update fail with 403."
+msgstr "این قسمت را خالی بگذارید. Twilio وب‌هوک‌های خود را با Auth Token شما امضا می‌کند و تنظیم جداگانه‌ای برای رمز وب‌هوک ندارد. اگر بررسی امضا را می‌خواهید، همان Auth Token را اینجا جای‌گذاری کنید — هر مقدار دیگری باعث می‌شود همه به‌روزرسانی‌های وضعیت با خطای 403 ناموفق شوند."
+
+msgid "Click Save, then use the Test Connection action on the provider row. You should see Connection successful. If you see HTTP 401, the Account SID or Auth Token is wrong or has extra spaces."
+msgstr "روی «ذخیره» کلیک کنید، سپس از عملیات Test Connection در ردیف ارائه‌دهنده استفاده کنید. باید پیام Connection successful را ببینید. اگر HTTP 401 دیدید، Account SID یا Auth Token اشتباه است یا فاصله اضافی دارد."
+
+msgid "You need a SignalWire account. Sign up free at"
+msgstr "به یک حساب SignalWire نیاز دارید. ثبت‌نام رایگان در"
+
+msgid "Part 1 — Collect your details from SignalWire"
+msgstr "بخش ۱ — اطلاعات خود را از SignalWire جمع‌آوری کنید"
+
+msgid "Sign in to SignalWire"
+msgstr "ورود به SignalWire"
+
+msgid "Go to"
+msgstr "به این نشانی بروید:"
+
+msgid "click Log in, and open your Space. You land on the Dashboard at https://your-space.signalwire.com/dashboard."
+msgstr "روی Log in کلیک کنید و Space خود را باز کنید. به Dashboard در نشانی https://your-space.signalwire.com/dashboard می‌رسید."
+
+msgid "Copy the Project ID"
+msgstr "Project ID را کپی کنید"
+
+msgid "On the Dashboard, find the line Project ID near the top and copy it (a long value like 797923a2-413f-416c-830f-bbf5b5c215d3). This is the Account SID in the CRM form."
+msgstr "در Dashboard، خط Project ID را در بالای صفحه پیدا کرده و کپی کنید (مقداری طولانی مانند 797923a2-413f-416c-830f-bbf5b5c215d3). این همان «شناسه SID حساب» در فرم CRM است."
+
+msgid "Copy the Space URL"
+msgstr "Space URL را کپی کنید"
+
+msgid "On the same Dashboard, find the line URL (for example your-space.signalwire.com) and copy it. This is the API Base URL in the CRM form."
+msgstr "در همان Dashboard، خط URL را پیدا کرده و کپی کنید (برای مثال your-space.signalwire.com). این همان «URL پایه API» در فرم CRM است."
+
+msgid "Create an API token"
+msgstr "یک توکن API بسازید"
+
+msgid "In the left sidebar click API Credentials. Under Tokens click New, give it a name such as CRM, tick the permission for the Compatibility API (or Voice) if asked, and save. Copy the token straight away — it is shown only once. This is the Auth Token in the CRM form. Your login password and the Project ID are not tokens."
+msgstr "در نوار کناری سمت چپ روی API Credentials کلیک کنید. زیر Tokens روی New کلیک کنید، نامی مانند CRM به آن بدهید، در صورت درخواست مجوز Compatibility API (یا Voice) را تیک بزنید و ذخیره کنید. توکن را بلافاصله کپی کنید — فقط یک بار نمایش داده می‌شود. این همان «توکن احراز هویت» در فرم CRM است. رمز ورود شما و Project ID توکن نیستند."
+
+msgid "Find your phone number"
+msgstr "شماره تلفن خود را پیدا کنید"
+
+msgid "In the left sidebar click Phone Numbers. Your numbers are listed under Purchased Numbers; a trial account normally includes one. If the list is empty, click Buy and choose a number with Voice enabled."
+msgstr "در نوار کناری سمت چپ روی Phone Numbers کلیک کنید. شماره‌های شما زیر Purchased Numbers فهرست شده‌اند؛ حساب آزمایشی معمولاً یک شماره دارد. اگر فهرست خالی است، روی Buy کلیک کنید و شماره‌ای با قابلیت Voice انتخاب کنید."
+
+msgid "Copy it in E.164 format: a plus sign, the country code, then the digits with no spaces, brackets or dashes. For example +1 (202) 900-4429 becomes +12029004429. This is your Default Caller ID."
+msgstr "آن را با قالب E.164 کپی کنید: علامت به‌علاوه، کد کشور و سپس ارقام بدون فاصله، پرانتز یا خط تیره. برای مثال ‎+1 (202) 900-4429‎ به ‎+12029004429‎ تبدیل می‌شود. این شناسه تماس‌گیرنده پیش‌فرض شماست."
+
+msgid "A SignalWire trial account can only call numbers you have verified. Skip this part if you have exited trial mode."
+msgstr "حساب آزمایشی SignalWire فقط می‌تواند با شماره‌هایی که تأیید کرده‌اید تماس بگیرد. اگر از حالت آزمایشی خارج شده‌اید، از این بخش بگذرید."
+
+msgid "In the left sidebar open Phone Numbers → Verified and add a new number."
+msgstr "در نوار کناری سمت چپ، Phone Numbers → Verified را باز کنید و یک شماره جدید اضافه کنید."
+
+msgid "Enter the mobile number you want to test with, including the country code (e.g. +14155550123), then click Call Me."
+msgstr "شماره موبایلی را که می‌خواهید با آن تست کنید همراه با کد کشور وارد کنید (مثلاً ‎+14155550123)، سپس روی Call Me کلیک کنید."
+
+msgid "Answer the call and enter the verification code it reads out. The number now shows in the Verified list."
+msgstr "به تماس پاسخ دهید و کد تأییدی را که خوانده می‌شود وارد کنید. اکنون شماره در فهرست Verified نمایش داده می‌شود."
+
+msgid "If you see Number must be from an allowed region, trial accounts only accept numbers from certain countries. Use a number from an allowed country, or click Exit Trial Mode (add a credit card and top up your balance) to remove the restriction."
+msgstr "اگر پیام Number must be from an allowed region را دیدید، حساب‌های آزمایشی فقط شماره‌های برخی کشورها را می‌پذیرند. از شماره یک کشور مجاز استفاده کنید، یا برای رفع این محدودیت روی Exit Trial Mode کلیک کنید (یک کارت اعتباری اضافه کرده و موجودی خود را شارژ کنید)."
+
+msgid "Use this verified number as the phone number on the Lead or Contact you test with."
+msgstr "از این شماره تأییدشده به‌عنوان شماره تلفن سرنخ یا مخاطبی که با آن تست می‌کنید استفاده کنید."
+
+msgid "Any label, for example SignalWire Main."
+msgstr "هر عنوانی، برای مثال SignalWire Main."
+
+msgid "Select SignalWire (Beta)."
+msgstr "SignalWire (Beta) را انتخاب کنید."
+
+msgid "Paste the SignalWire phone number from Part 1 (for example +12029004429)."
+msgstr "شماره تلفن SignalWire از بخش ۱ را جای‌گذاری کنید (برای مثال ‎+12029004429)."
+
+msgid "Paste the Project ID."
+msgstr "Project ID را جای‌گذاری کنید."
+
+msgid "Paste the API token you created."
+msgstr "توکن API ساخته‌شده را جای‌گذاری کنید."
+
+msgid "Paste the Space URL, for example your-space.signalwire.com. Adding https:// in front is optional."
+msgstr "Space URL را جای‌گذاری کنید، برای مثال your-space.signalwire.com. افزودن https:// به ابتدای آن اختیاری است."
+
+msgid "Leave this blank. A wrong value makes every status update from SignalWire fail with 403."
+msgstr "این قسمت را خالی بگذارید. مقدار اشتباه باعث می‌شود همه به‌روزرسانی‌های وضعیت از SignalWire با خطای 403 ناموفق شوند."
+
+msgid "Click Save, then use the Test Connection action on the provider row. You should see Connection successful. HTTP 401 means the Project ID or API token is wrong or has extra spaces; a connection error or HTTP 404 usually means the Space URL is wrong."
+msgstr "روی «ذخیره» کلیک کنید، سپس از عملیات Test Connection در ردیف ارائه‌دهنده استفاده کنید. باید پیام Connection successful را ببینید. HTTP 401 یعنی Project ID یا توکن API اشتباه است یا فاصله اضافی دارد؛ خطای اتصال یا HTTP 404 معمولاً یعنی Space URL اشتباه است."
+
+msgid "You need a Telnyx account. Sign up free at"
+msgstr "به یک حساب Telnyx نیاز دارید. ثبت‌نام رایگان در"
+
+msgid "and sign in to the portal at"
+msgstr "و ورود به پورتال در"
+
+msgid "New accounts start at the Pretrial level (shown next to the Upgrade link at the top of the portal). Some features, such as Verified Numbers, are blocked at that level — see Part 2."
+msgstr "حساب‌های جدید در سطح Pretrial شروع می‌شوند (کنار پیوند Upgrade در بالای پورتال نمایش داده می‌شود). برخی قابلیت‌ها مانند Verified Numbers در این سطح مسدود هستند — بخش ۲ را ببینید."
+
+msgid "Part 1 — Collect your details from Telnyx"
+msgstr "بخش ۱ — اطلاعات خود را از Telnyx جمع‌آوری کنید"
+
+msgid "Create an API key"
+msgstr "یک کلید API بسازید"
+
+msgid "Click the profile icon at the top right and choose API keys. Click Create API Key and copy the key straight away — it is shown only once. It starts with KEY. This is the Auth Token / API Secret in the CRM form."
+msgstr "روی نماد پروفایل در بالا سمت راست کلیک کنید و API keys را انتخاب کنید. روی Create API Key کلیک کنید و کلید را بلافاصله کپی کنید — فقط یک بار نمایش داده می‌شود. این کلید با KEY شروع می‌شود. این همان «توکن احراز هویت / رمز API» در فرم CRM است."
+
+msgid "Create a Voice API application"
+msgstr "یک برنامه Voice API بسازید"
+
+msgid "In the left sidebar open Programmable Voice → Applications and click Add new application (choose the Voice API / Call Control type, not TeXML). Give it a name such as CRM Calls. If the form asks for a webhook URL, enter any valid https:// address; the CRM supplies its own webhook for every call."
+msgstr "در نوار کناری سمت چپ، Programmable Voice → Applications را باز کنید و روی Add new application کلیک کنید (نوع Voice API / Call Control را انتخاب کنید، نه TeXML). نامی مانند CRM Calls به آن بدهید. اگر فرم نشانی وب‌هوک خواست، هر نشانی معتبر https:// را وارد کنید؛ CRM برای هر تماس وب‌هوک خودش را ارائه می‌دهد."
+
+msgid "Set up outbound calling on the application"
+msgstr "تماس خروجی را روی برنامه تنظیم کنید"
+
+msgid "In the application's settings find the Outbound tab (or Outbound Voice Profile) and select an Outbound Voice Profile. If none exists, create one under Outbound Voice in the sidebar and allow the countries you will call. Save the application."
+msgstr "در تنظیمات برنامه، زبانه Outbound (یا Outbound Voice Profile) را پیدا کنید و یک Outbound Voice Profile انتخاب کنید. اگر وجود ندارد، یکی در بخش Outbound Voice در نوار کناری بسازید و کشورهایی را که با آن‌ها تماس می‌گیرید مجاز کنید. برنامه را ذخیره کنید."
+
+msgid "Copy the Connection ID"
+msgstr "شناسه اتصال را کپی کنید"
+
+msgid "Open the application again and copy its ID (a long value like 1234567890123456789). This is the Connection ID in the CRM form."
+msgstr "برنامه را دوباره باز کنید و ID آن را کپی کنید (مقداری طولانی مانند 1234567890123456789). این همان «شناسه اتصال» در فرم CRM است."
+
+msgid "Buy a phone number"
+msgstr "یک شماره تلفن بخرید"
+
+msgid "In the sidebar open Numbers → Phone Numbers and click Buy number. Pick a number with Voice enabled and complete the order. Phone Numbers only lists numbers you buy from Telnyx — your personal mobile number will not appear there."
+msgstr "در نوار کناری، Numbers → Phone Numbers را باز کنید و روی Buy number کلیک کنید. شماره‌ای با قابلیت Voice انتخاب کرده و سفارش را تکمیل کنید. Phone Numbers فقط شماره‌هایی را که از Telnyx می‌خرید فهرست می‌کند — شماره موبایل شخصی شما آنجا نمایش داده نمی‌شود."
+
+msgid "Link the number to your application"
+msgstr "شماره را به برنامه خود متصل کنید"
+
+msgid "In Numbers → Phone Numbers, open the number and set its Voice connection to the application you created."
+msgstr "در Numbers → Phone Numbers، شماره را باز کنید و اتصال Voice آن را روی برنامه‌ای که ساخته‌اید تنظیم کنید."
+
+msgid "Copy the number"
+msgstr "شماره را کپی کنید"
+
+msgid "Copy it in E.164 format: a plus sign, the country code, then the digits with no spaces, brackets or dashes (e.g. +12125551234). This is your Default Caller ID."
+msgstr "آن را با قالب E.164 کپی کنید: علامت به‌علاوه، کد کشور و سپس ارقام بدون فاصله، پرانتز یا خط تیره (مثلاً ‎+12125551234). این شناسه تماس‌گیرنده پیش‌فرض شماست."
+
+msgid "Part 2 — Pretrial accounts: upgrade before you test"
+msgstr "بخش ۲ — حساب‌های Pretrial: پیش از تست، حساب را ارتقا دهید"
+
+msgid "Open Numbers → Verified Numbers. If it shows “This feature is not permitted at this account level”, your account is still at the Pretrial level. Click Upgrade at the top of the portal and complete the steps Telnyx asks for (such as account verification or adding a payment method). After the upgrade:"
+msgstr "Numbers → Verified Numbers را باز کنید. اگر پیام «This feature is not permitted at this account level» نمایش داده شد، حساب شما هنوز در سطح Pretrial است. روی Upgrade در بالای پورتال کلیک کنید و مراحلی را که Telnyx می‌خواهد تکمیل کنید (مانند تأیید حساب یا افزودن روش پرداخت). پس از ارتقا:"
+
+msgid "Open Numbers → Verified Numbers → Verify Number and add the mobile number you want to test with, including the country code."
+msgstr "Numbers → Verified Numbers → Verify Number را باز کنید و شماره موبایلی را که می‌خواهید با آن تست کنید همراه با کد کشور اضافه کنید."
+
+msgid "Enter the verification code Telnyx sends or reads out."
+msgstr "کد تأییدی را که Telnyx ارسال می‌کند یا می‌خواند وارد کنید."
+
+msgid "Any label, for example Telnyx Main."
+msgstr "هر عنوانی، برای مثال Telnyx Main."
+
+msgid "Select Telnyx (Beta)."
+msgstr "Telnyx (Beta) را انتخاب کنید."
+
+msgid "Paste the Telnyx phone number you bought in Part 1."
+msgstr "شماره تلفن Telnyx را که در بخش ۱ خریدید جای‌گذاری کنید."
+
+msgid "Paste the API key (starts with KEY)."
+msgstr "کلید API را جای‌گذاری کنید (با KEY شروع می‌شود)."
+
+msgid "Paste the application ID from Part 1."
+msgstr "ID برنامه از بخش ۱ را جای‌گذاری کنید."
+
+msgid "Leave this blank. If you want signature checking, paste your Telnyx Public Key (profile icon → API keys → Public Key) — it is not a password you make up."
+msgstr "این قسمت را خالی بگذارید. اگر بررسی امضا را می‌خواهید، Public Key حساب Telnyx خود را جای‌گذاری کنید (profile icon → API keys → Public Key) — این رمزی نیست که خودتان بسازید."
+
+msgid "Click Save, then use the Test Connection action on the provider row. You should see Connection successful. HTTP 401 means the API key is wrong or has extra spaces; HTTP 403 means your account level does not allow the request."
+msgstr "روی «ذخیره» کلیک کنید، سپس از عملیات Test Connection در ردیف ارائه‌دهنده استفاده کنید. باید پیام Connection successful را ببینید. HTTP 401 یعنی کلید API اشتباه است یا فاصله اضافی دارد؛ HTTP 403 یعنی سطح حساب شما اجازه این درخواست را نمی‌دهد."
+
+msgid "You need a Sinch account. Sign up at"
+msgstr "به یک حساب Sinch نیاز دارید. ثبت‌نام در"
+
+msgid "(new accounts get free trial credit)."
+msgstr "(حساب‌های جدید اعتبار آزمایشی رایگان دریافت می‌کنند)."
+
+msgid "The CRM uses the Sinch Voice API, so you need a Voice app — not an Access Key or the Project ID."
+msgstr "CRM از Sinch Voice API استفاده می‌کند، بنابراین به یک Voice app نیاز دارید — نه Access Key یا Project ID."
+
+msgid "Part 1 — Collect your details from Sinch"
+msgstr "بخش ۱ — اطلاعات خود را از Sinch جمع‌آوری کنید"
+
+msgid "Sign in to the Sinch Dashboard"
+msgstr "ورود به Sinch Dashboard"
+
+msgid "Create a Voice app"
+msgstr "یک Voice app بسازید"
+
+msgid "In the left menu open Voice → Apps and click Create new app. Give it a name such as CRM Calls and save it. If it asks for a callback URL you can leave it empty."
+msgstr "در منوی سمت چپ، Voice → Apps را باز کنید و روی Create new app کلیک کنید. نامی مانند CRM Calls به آن بدهید و ذخیره کنید. اگر نشانی callback خواست، می‌توانید آن را خالی بگذارید."
+
+msgid "Copy the Application Key"
+msgstr "Application Key را کپی کنید"
+
+msgid "Open the app you just created. The Application Key is shown on its page. This is the Account SID in the CRM form."
+msgstr "برنامه‌ای را که ساختید باز کنید. Application Key در صفحه آن نمایش داده می‌شود. این همان «شناسه SID حساب» در فرم CRM است."
+
+msgid "Copy the Application Secret"
+msgstr "Application Secret را کپی کنید"
+
+msgid "On the same page copy the Application Secret (reveal it first if it is hidden). This is the Auth Token / API Secret in the CRM form. Treat it like a password."
+msgstr "در همان صفحه Application Secret را کپی کنید (اگر پنهان است، ابتدا آن را نمایان کنید). این همان «توکن احراز هویت / رمز API» در فرم CRM است. مانند رمز عبور از آن محافظت کنید."
+
+msgid "Get a phone number"
+msgstr "یک شماره تلفن بگیرید"
+
+msgid "Open Numbers → Your virtual numbers. If the list is empty, rent a number with Voice capability. Then assign that number to your Voice app. Calls can only be placed from a number on your account."
+msgstr "Numbers → Your virtual numbers را باز کنید. اگر فهرست خالی است، شماره‌ای با قابلیت Voice اجاره کنید. سپس آن شماره را به Voice app خود اختصاص دهید. تماس فقط از شماره‌ای برقرار می‌شود که در حساب شما باشد."
+
+msgid "Part 2 — Trial accounts: the number you will call"
+msgstr "بخش ۲ — حساب‌های آزمایشی: شماره‌ای که با آن تماس می‌گیرید"
+
+msgid "On a trial account Sinch usually lets you call only the phone number you verified when you signed up. Use that number on the Lead or Contact you test with. Calls to other numbers are rejected until you add funds."
+msgstr "در حساب آزمایشی، Sinch معمولاً فقط اجازه تماس با شماره‌ای را می‌دهد که هنگام ثبت‌نام تأیید کرده‌اید. از همان شماره در سرنخ یا مخاطبی که با آن تست می‌کنید استفاده کنید. تا وقتی موجودی اضافه نکنید، تماس با شماره‌های دیگر رد می‌شود."
+
+msgid "Any label, for example Sinch Main."
+msgstr "هر عنوانی، برای مثال Sinch Main."
+
+msgid "Select Sinch (Beta)."
+msgstr "Sinch (Beta) را انتخاب کنید."
+
+msgid "Paste the Sinch phone number from Part 1."
+msgstr "شماره تلفن Sinch از بخش ۱ را جای‌گذاری کنید."
+
+msgid "Paste the Application Key."
+msgstr "Application Key را جای‌گذاری کنید."
+
+msgid "Paste the Application Secret."
+msgstr "Application Secret را جای‌گذاری کنید."
+
+msgid "Click Save, then use the Test Connection action on the provider row. You should see Connection successful. HTTP 401 means the Application Key or Secret is wrong or has extra spaces."
+msgstr "روی «ذخیره» کلیک کنید، سپس از عملیات Test Connection در ردیف ارائه‌دهنده استفاده کنید. باید پیام Connection successful را ببینید. HTTP 401 یعنی Application Key یا Secret اشتباه است یا فاصله اضافی دارد."
+
+msgid "You need an Exotel account. Sign up at"
+msgstr "به یک حساب Exotel نیاز دارید. ثبت‌نام در"
+
+msgid "and sign in to the dashboard at"
+msgstr "و ورود به داشبورد در"
+
+msgid "Exotel may ask you to complete verification (KYC) before your ExoPhone can be used for calls."
+msgstr "ممکن است Exotel پیش از آنکه ExoPhone شما برای تماس قابل استفاده باشد، از شما بخواهد احراز هویت (KYC) را تکمیل کنید."
+
+msgid "How calls work: Exotel first rings the agent's own phone, and when the agent answers it connects the customer. The ExoPhone is shown to both as the caller ID. So you need an ExoPhone (admin) and each agent needs to enter their own mobile number (Part 4)."
+msgstr "نحوه کار تماس‌ها: Exotel ابتدا با تلفن خود نماینده تماس می‌گیرد و وقتی نماینده پاسخ داد، مشتری را وصل می‌کند. ExoPhone به‌عنوان شناسه تماس‌گیرنده به هر دو نمایش داده می‌شود. بنابراین به یک ExoPhone (مدیر) نیاز دارید و هر نماینده باید شماره موبایل خود را وارد کند (بخش ۴)."
+
+msgid "Part 1 — Collect your details from Exotel"
+msgstr "بخش ۱ — اطلاعات خود را از Exotel جمع‌آوری کنید"
+
+msgid "Open the API settings"
+msgstr "تنظیمات API را باز کنید"
+
+msgid "In the dashboard open Settings → API Settings (it may be listed under API in the menu). This page shows your Account SID, API Key and API Token."
+msgstr "در داشبورد، Settings → API Settings را باز کنید (ممکن است در منو زیر API فهرست شده باشد). این صفحه Account SID، API Key و API Token شما را نشان می‌دهد."
+
+msgid "Copy the value labelled Account SID. This is the Account SID in the CRM form."
+msgstr "مقداری را که برچسب Account SID دارد کپی کنید. این همان «شناسه SID حساب» در فرم CRM است."
+
+msgid "Copy the API Key"
+msgstr "API Key را کپی کنید"
+
+msgid "Copy the API Key. If there is none, click the button to create one. This is the API Key in the CRM form."
+msgstr "API Key را کپی کنید. اگر وجود ندارد، روی دکمه ساخت آن کلیک کنید. این همان «کلید API» در فرم CRM است."
+
+msgid "Copy the API Token"
+msgstr "API Token را کپی کنید"
+
+msgid "Copy the API Token (reveal it first if it is hidden). This is the Auth Token / API Secret in the CRM form. Treat it like a password."
+msgstr "API Token را کپی کنید (اگر پنهان است، ابتدا آن را نمایان کنید). این همان «توکن احراز هویت / رمز API» در فرم CRM است. مانند رمز عبور از آن محافظت کنید."
+
+msgid "Find your ExoPhone"
+msgstr "ExoPhone خود را پیدا کنید"
+
+msgid "In the dashboard open the ExoPhones page (under Numbers or Phone Numbers). Copy the number assigned to your account. This is your Default Caller ID."
+msgstr "در داشبورد، صفحه ExoPhones را باز کنید (زیر Numbers یا Phone Numbers). شماره‌ای را که به حساب شما اختصاص داده شده کپی کنید. این شناسه تماس‌گیرنده پیش‌فرض شماست."
+
+msgid "Part 2 — Trial accounts: the numbers you will call"
+msgstr "بخش ۲ — حساب‌های آزمایشی: شماره‌هایی که با آن‌ها تماس می‌گیرید"
+
+msgid "A trial Exotel account can usually call only numbers that you have added or verified in the dashboard. Add the agent's phone and the test customer's phone there before you test."
+msgstr "حساب آزمایشی Exotel معمولاً فقط با شماره‌هایی می‌تواند تماس بگیرد که در داشبورد اضافه یا تأیید کرده‌اید. پیش از تست، تلفن نماینده و تلفن مشتری آزمایشی را آنجا اضافه کنید."
+
+msgid "Any label, for example Exotel Main."
+msgstr "هر عنوانی، برای مثال Exotel Main."
+
+msgid "Select Exotel (Beta)."
+msgstr "Exotel (Beta) را انتخاب کنید."
+
+msgid "Paste the ExoPhone number."
+msgstr "شماره ExoPhone را جای‌گذاری کنید."
+
+msgid "Paste the Account SID."
+msgstr "Account SID را جای‌گذاری کنید."
+
+msgid "Paste the API Key."
+msgstr "API Key را جای‌گذاری کنید."
+
+msgid "Paste the API Token."
+msgstr "API Token را جای‌گذاری کنید."
+
+msgid "Click Save, then use the Test Connection action on the provider row. You should see Connection successful. HTTP 401 means the API Key, API Token or Account SID is wrong or has extra spaces."
+msgstr "روی «ذخیره» کلیک کنید، سپس از عملیات Test Connection در ردیف ارائه‌دهنده استفاده کنید. باید پیام Connection successful را ببینید. HTTP 401 یعنی API Key، API Token یا Account SID اشتباه است یا فاصله اضافی دارد."
+
+msgid "Part 4 — Each agent enters their own phone number"
+msgstr "بخش ۴ — هر نماینده شماره تلفن خود را وارد می‌کند"
+
+msgid "Every user who will place calls opens My Settings → Calls, finds this provider, enters their own mobile number (the phone Exotel should ring first, with country code, e.g. +919876543210) and clicks Save. Without it, Exotel has no agent phone to ring."
+msgstr "هر کاربری که تماس برقرار می‌کند، «تنظیمات من ← تماس‌ها» را باز می‌کند، این ارائه‌دهنده را پیدا می‌کند، شماره موبایل خود را وارد می‌کند (تلفنی که Exotel ابتدا با آن تماس می‌گیرد، همراه با کد کشور، مثلاً ‎+919876543210) و روی «ذخیره» کلیک می‌کند. بدون آن، Exotel تلفنی از نماینده ندارد که با آن تماس بگیرد."
+
+msgid "Not configured yet."
+msgstr "هنوز پیکربندی نشده است."
+
+msgid "· Click To Add Or Remove Roles"
+msgstr "· برای افزودن یا حذف نقش‌ها کلیک کنید"
+
+msgid "Role(s)"
+msgstr "نقش"
+
+msgid "· Click To Add Or Remove Users"
+msgstr "· برای افزودن یا حذف کاربران کلیک کنید"
+
+msgid "User(s)"
+msgstr "کاربر"
+
+msgid "This record is read-only."
+msgstr "این رکورد فقط خواندنی است."
+
+msgid "No Matching Results"
+msgstr "نتیجه‌ای یافت نشد"
+
+msgid "Nothing Selected Yet"
+msgstr "هنوز موردی انتخاب نشده است"
+
+msgid "Roles With Call Access"
+msgstr "نقش‌های دارای دسترسی تماس"
+
+msgid "Users With Call Access"
+msgstr "کاربران دارای دسترسی تماس"

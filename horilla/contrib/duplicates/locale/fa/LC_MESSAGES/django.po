@@ -381,3 +381,6 @@ msgstr "رکورد"
 
 msgid "Matching Rules condition Operator narrowing passes condition_model on module change; move CRM-dependent duplicate demo fixtures into CRM apps."
 msgstr "محدودسازی عملگر شرط در قوانین تطابق هنگام تغییر ماژول، condition_model را ارسال می‌کند؛ انتقال داده‌های نمایشی تکراری وابسته به CRM به اپلیکیشن‌های CRM."
+
+msgid "Match custom fields in duplicate rules instead of reading them as model columns."
+msgstr "تطبیق فیلدهای سفارشی در قوانین تکراری به‌جای خواندن آن‌ها به‌عنوان ستون‌های مدل."

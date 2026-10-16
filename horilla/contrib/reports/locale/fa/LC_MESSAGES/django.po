@@ -447,3 +447,6 @@ msgstr "فیلد نامعتبر '{}'. این فیلد در مدل وجود ند�
 
 msgid "Invalid filter value: {}"
 msgstr "مقدار فیلتر نامعتبر: {}"
+
+msgid "Accept custom fields as report columns, including detail virtual fields."
+msgstr "پذیرش فیلدهای سفارشی به‌عنوان ستون گزارش، از جمله فیلدهای مجازی جزئیات."

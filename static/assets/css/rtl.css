@@ -359,6 +359,16 @@
 }
 
 /*
+ * Reorder buttons on the Add Column to List / Split View and detail field
+ * pickers: the outer button rounds its physical right corners. In RTL the
+ * button group sits on the left edge of the row, so round the left ones.
+ */
+[dir="rtl"] #fieldSelectorForm .rounded-r-\[5px\],
+[dir="rtl"] #detailFieldSelectorForm .rounded-r-\[5px\] {
+  border-radius: 5px 0 0 5px;
+}
+
+/*
  * Detail breadcrumbs use a right-pointing chevron parked on physical right.
  * In RTL the trail flows right-to-left, so the separator belongs on the
  * inline-start side and must point left.

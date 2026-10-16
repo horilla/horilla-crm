@@ -851,3 +851,6 @@ msgstr "پیوست باید دقیقاً به یکی از ایمیل خروجی 
 
 msgid "Add a generic Inbox for fetched incoming mail with preview and row actions; keep both Inbox row actions visible (disabled when unavailable)."
 msgstr "افزودن صندوق ورودی عمومی برای ایمیل‌های دریافتی واکشی‌شده همراه با پیش‌نمایش و اقدامات ردیف؛ نمایش همیشگی هر دو اقدام ردیف صندوق ورودی (غیرفعال در صورت در دسترس نبودن)."
+
+msgid "Ask for the owner when adding an inbox email as a Lead or Contact, with rule assignment for leads. Stop counting self-opens and direct visits as email opens. Require add permission on the outgoing server form and an HTMX request on inbox delete. Format the inbox received time with the user's datetime format."
+msgstr "درخواست مالک هنگام افزودن ایمیل صندوق ورودی به‌عنوان سرنخ یا مخاطب، همراه با تخصیص بر اساس قانون برای سرنخ‌ها. شمرده نشدن باز کردن ایمیل توسط خود فرستنده و بازدیدهای مستقیم به‌عنوان باز شدن ایمیل. الزام مجوز افزودن در فرم سرور خروجی و درخواست HTMX برای حذف از صندوق ورودی. قالب‌بندی زمان دریافت در صندوق ورودی با قالب تاریخ و زمان کاربر."

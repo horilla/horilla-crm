@@ -381,3 +381,6 @@ msgstr "شرط"
 
 msgid "Optional edge-trigger-only firing for on_update automations; fix blank created_by when saving rules."
 msgstr "اجرای اختیاری فقط هنگام عبور از شرط (edge-trigger) برای اتوماسیون‌های on_update؛ رفع خالی ماندن created_by هنگام ذخیره قوانین."
+
+msgid "Render automation email and notification date/time fields in each recipient's own timezone. Evaluate custom fields in conditions instead of reading them as model columns."
+msgstr "نمایش فیلدهای تاریخ/زمان در ایمیل و اعلان اتوماسیون بر اساس منطقه زمانی هر گیرنده. ارزیابی فیلدهای سفارشی در شروط به‌جای خواندن آن‌ها به‌عنوان ستون‌های مدل."

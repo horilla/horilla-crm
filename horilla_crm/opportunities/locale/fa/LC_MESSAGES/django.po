@@ -908,3 +908,6 @@ msgstr "هشدار معاملات بزرگ: {{ instance.name }}"
 
 msgid "<p>A big deal has landed in the pipeline!</p><p><strong>{{ instance.name }}</strong>, owned by {{ instance.owner }}, is worth <strong>{{ instance.amount }}</strong> and is currently in the <strong>{{ instance.stage }}</strong> stage.</p>"
 msgstr "<p style=\"text-align: right;\">‫یک معامله بزرگ وارد پایپ لاین شد!‬</p><p style=\"text-align: right;\">‫فرصت <strong>{{ instance.name }}</strong> متعلق به {{ instance.owner }}، به ارزش <strong>{{ instance.amount }}</strong> است و اکنون در مرحله <strong>{{ instance.stage }}</strong> قرار دارد.‬</p>"
+
+msgid "Link Leads"
+msgstr "پیوند سرنخ‌ها"

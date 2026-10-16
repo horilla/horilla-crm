@@ -1,7 +1,7 @@
 {% if detail_url %}
 <a
     href="{{ detail_url }}"
-    class="group inline-flex max-w-full items-center gap-2 rounded-full border border-[#ebebeb] bg-white py-0.5 pl-1 pr-2.5 transition-colors hover:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-1"
+    class="group inline-flex max-w-full items-center gap-2 rounded-full border border-[#ebebeb] bg-white py-0.5 ps-1 pe-2.5 transition-colors hover:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-1"
 >
     <span class="relative flex h-4 w-4 shrink-0 overflow-hidden rounded-full bg-primary-100 ring-1 ring-secondary-100">
         <img src="{{ avatar_url }}" alt="{{ full_name }}" class="h-full w-full object-cover">
@@ -12,7 +12,7 @@
     {% themed_icon "assets/img/arrow-up-right.svg" "h-3 w-3 shrink-0 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" %}
 </a>
 {% else %}
-<span class="inline-flex max-w-full items-center gap-2 rounded-full border border-[#ebebeb] bg-white py-0.5 pl-1 pr-2.5">
+<span class="inline-flex max-w-full items-center gap-2 rounded-full border border-[#ebebeb] bg-white py-0.5 ps-1 pe-2.5">
     <span class="relative flex h-4 w-4 shrink-0 overflow-hidden rounded-full bg-primary-100 ring-1 ring-secondary-100">
         <img src="{{ avatar_url }}" alt="{{ full_name }}" class="h-full w-full object-cover">
     </span>

@@ -479,3 +479,6 @@ msgstr "اقدام ذخیره شد."
 
 msgid "Time trigger action saved."
 msgstr "اقدام محرک زمانی ذخیره شد."
+
+msgid "Evaluate custom fields in workflow conditions and show their labels on rule details."
+msgstr "ارزیابی فیلدهای سفارشی در شروط گردش کار و نمایش برچسب آن‌ها در جزئیات قانون."

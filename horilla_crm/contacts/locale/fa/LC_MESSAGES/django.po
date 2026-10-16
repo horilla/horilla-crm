@@ -212,3 +212,6 @@ msgstr "مشاهده سلسله‌مراتب"
 
 msgid "Add as Contact"
 msgstr "افزودن به‌عنوان مخاطب"
+
+msgid "Link Leads"
+msgstr "پیوند سرنخ‌ها"

@@ -373,7 +373,7 @@ msgid "Completed Calls"
 msgstr "تماس‌های تکمیل شده"
 
 msgid "Call History"
-msgstr ""
+msgstr "تاریخچه تماس"
 
 #| msgid "Call"
 msgid "Call Now"
@@ -445,3 +445,9 @@ msgstr "%(field)s نمی‌تواند در گذشته باشد."
 
 msgid "Limit related-record and custom calendar modules to opted-in models; fix Assigned To for all activity types, Related To save from Edit Details, and detail breadcrumbs; all-day form and date handling with calendar."
 msgstr "محدود کردن ماژول‌های رکورد مرتبط و تقویم سفارشی به مدل‌های فعال‌شده؛ رفع «تخصیص یافته به» برای همه انواع فعالیت، ذخیره «مرتبط با» از «ویرایش جزئیات» و مسیر راهنمای جزئیات؛ فرم و مدیریت تاریخ فعالیت‌های تمام‌روز همراه با تقویم."
+
+msgid "Limit related-object choices to records the user can view. Enable notification templates for Activity. Show a Related To cell and plain status on rows listed from another record. Use the field label when a date cannot be in the past."
+msgstr "محدود کردن گزینه‌های شیء مرتبط به رکوردهایی که کاربر می‌تواند ببیند. فعال‌سازی قالب‌های اعلان برای فعالیت. نمایش ستون «مرتبط با» و وضعیت ساده در ردیف‌هایی که از رکورد دیگری فهرست شده‌اند. استفاده از برچسب فیلد وقتی تاریخ نمی‌تواند در گذشته باشد."
+
+msgid "This record is read-only."
+msgstr "این رکورد فقط خواندنی است."

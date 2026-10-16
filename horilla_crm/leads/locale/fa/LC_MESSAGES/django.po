@@ -838,3 +838,160 @@ msgstr "ایجاد به‌عنوان"
 
 msgid "Choose whether incoming emails matching this configuration create a Lead or a Contact."
 msgstr "انتخاب کنید ایمیل‌های دریافتی منطبق با این پیکربندی، سرنخ ایجاد کنند یا مخاطب."
+
+#, python-format
+msgid "%(field)s is not %(value)s"
+msgstr "%(field)s برابر %(value)s نیست"
+
+#, python-format
+msgid "%(field)s is %(value)s"
+msgstr "%(field)s برابر %(value)s است"
+
+#, python-format
+msgid "%(field)s does not contain %(value)s"
+msgstr "%(field)s شامل %(value)s نیست"
+
+#, python-format
+msgid "%(field)s contains %(value)s"
+msgstr "%(field)s شامل %(value)s است"
+
+#, python-format
+msgid "%(field)s does not start with %(value)s"
+msgstr "%(field)s با %(value)s شروع نمی‌شود"
+
+#, python-format
+msgid "%(field)s does not end with %(value)s"
+msgstr "%(field)s با %(value)s پایان نمی‌یابد"
+
+#, python-format
+msgid "%(field)s is not greater than %(value)s"
+msgstr "%(field)s بزرگ‌تر از %(value)s نیست"
+
+#, python-format
+msgid "%(field)s is not greater than or equal to %(value)s"
+msgstr "%(field)s بزرگ‌تر یا مساوی %(value)s نیست"
+
+#, python-format
+msgid "%(field)s is not less than %(value)s"
+msgstr "%(field)s کوچک‌تر از %(value)s نیست"
+
+#, python-format
+msgid "%(field)s is not less than or equal to %(value)s"
+msgstr "%(field)s کوچک‌تر یا مساوی %(value)s نیست"
+
+#, python-format
+msgid "%(field)s is not empty"
+msgstr "%(field)s خالی نیست"
+
+#, python-format
+msgid "%(field)s is empty"
+msgstr "%(field)s خالی است"
+
+#, python-format
+msgid "%(field)s is not between %(value)s"
+msgstr "%(field)s بین %(value)s نیست"
+
+#, python-format
+msgid "%(rules)s has no active people to assign to."
+msgstr "%(rules)s هیچ فرد فعالی برای تخصیص ندارد."
+
+msgid "Assign using rules"
+msgstr "تخصیص با قوانین"
+
+#, python-format
+msgid "Choose one of the people rule “%(rule)s” assigns to."
+msgstr "یکی از افرادی را انتخاب کنید که قانون «%(rule)s» به آن‌ها تخصیص می‌دهد."
+
+#, python-format
+msgid "The lead does not satisfy any active assignment rule%(reason)s. Change the values or untick “Assign using rules”."
+msgstr "سرنخ با هیچ قانون تخصیص فعالی مطابقت ندارد%(reason)s. مقادیر را تغییر دهید یا تیک «تخصیص با قوانین» را بردارید."
+
+#, python-format
+msgid "Rule “%(rule)s” applies. The owner is picked from its people by the fewest leads; you can choose another one."
+msgstr "قانون «%(rule)s» اعمال می‌شود. مالک از میان افراد این قانون، فردی با کمترین تعداد سرنخ انتخاب می‌شود؛ می‌توانید فرد دیگری را انتخاب کنید."
+
+msgid "The rule is confirmed when the remaining fields are filled in."
+msgstr "قانون پس از پر شدن فیلدهای باقی‌مانده تأیید می‌شود."
+
+msgid "The matching rule assigns the lead to one of its people with the fewest leads; the selected Owner is used when no rule matches."
+msgstr "قانون منطبق، سرنخ را به فردی از افراد خود که کمترین سرنخ را دارد تخصیص می‌دهد؛ اگر هیچ قانونی منطبق نباشد، مالک انتخاب‌شده استفاده می‌شود."
+
+msgid "The selected Owner is always used."
+msgstr "همیشه مالک انتخاب‌شده استفاده می‌شود."
+
+msgid "Is Converted"
+msgstr "تبدیل شده"
+
+msgid "Converted Contact"
+msgstr "مخاطب تبدیل‌شده"
+
+msgid "Converted Opportunity"
+msgstr "فرصت تبدیل‌شده"
+
+msgid "Converted At"
+msgstr "زمان تبدیل"
+
+msgid "Apply Assignment Rule"
+msgstr "اعمال قانون تخصیص"
+
+msgid "Applies when created as a Lead. If checked, assignment rules decide the owner and the selected Owner is used when no rule matches. If unchecked, the selected Owner is always used."
+msgstr "هنگام ایجاد به‌صورت سرنخ اعمال می‌شود. اگر انتخاب شود، قوانین تخصیص مالک را تعیین می‌کنند و اگر هیچ قانونی منطبق نباشد، مالک انتخاب‌شده استفاده می‌شود. اگر انتخاب نشود، همیشه مالک انتخاب‌شده استفاده می‌شود."
+
+msgid "If checked, assignment rules decide the owner and the selected Lead Owner is used when no rule matches. If unchecked, the selected Lead Owner is always used."
+msgstr "اگر انتخاب شود، قوانین تخصیص مالک را تعیین می‌کنند و اگر هیچ قانونی منطبق نباشد، مالک سرنخ انتخاب‌شده استفاده می‌شود. اگر انتخاب نشود، همیشه مالک سرنخ انتخاب‌شده استفاده می‌شود."
+
+msgid "Link Records"
+msgstr "پیوند رکوردها"
+
+msgid "Show this lead's activities, notes and emails on the records below. The lead itself is not changed."
+msgstr "فعالیت‌ها، یادداشت‌ها و ایمیل‌های این سرنخ در رکوردهای زیر نمایش داده می‌شود. خود سرنخ تغییری نمی‌کند."
+
+msgid "Link Leads"
+msgstr "پیوند سرنخ‌ها"
+
+msgid "Show the activities, notes and emails of these converted leads on this record. The leads themselves are not changed. Remove a lead to unlink it."
+msgstr "فعالیت‌ها، یادداشت‌ها و ایمیل‌های این سرنخ‌های تبدیل‌شده در این رکورد نمایش داده می‌شود. خود سرنخ‌ها تغییری نمی‌کنند. برای لغو پیوند یک سرنخ، آن را حذف کنید."
+
+msgid "Converted leads"
+msgstr "سرنخ‌های تبدیل‌شده"
+
+msgid "Search converted leads"
+msgstr "جستجوی سرنخ‌های تبدیل‌شده"
+
+msgid "Select options"
+msgstr "انتخاب گزینه‌ها"
+
+#, python-format
+msgid "Select\n                            %(vname)s"
+msgstr "انتخاب %(vname)s"
+
+msgid "Apply assignment rule"
+msgstr "اعمال قانون تخصیص"
+
+msgid "If checked, the matching assignment rule picks the owner (the user with the fewest leads), and the selected Lead Owner is used when no rule matches. If unchecked, rules are skipped and the selected Lead Owner is always used."
+msgstr "اگر انتخاب شود، قانون تخصیص منطبق مالک را انتخاب می‌کند (کاربری که کمترین سرنخ را دارد) و اگر هیچ قانونی منطبق نباشد، مالک سرنخ انتخاب‌شده استفاده می‌شود. اگر انتخاب نشود، قوانین نادیده گرفته می‌شوند و همیشه مالک سرنخ انتخاب‌شده استفاده می‌شود."
+
+msgid "A converted lead is read-only and cannot be changed."
+msgstr "سرنخ تبدیل‌شده فقط خواندنی است و قابل تغییر نیست."
+
+msgid "This lead is already converted."
+msgstr "این سرنخ قبلاً تبدیل شده است."
+
+#, python-format
+msgid "You cannot change the link for: %(names)s"
+msgstr "نمی‌توانید پیوند این موارد را تغییر دهید: %(names)s"
+
+msgid "Leads linked."
+msgstr "سرنخ‌ها پیوند داده شدند."
+
+msgid "You do not have access to this record."
+msgstr "شما به این رکورد دسترسی ندارید."
+
+msgid "Convert the lead first, or pick existing records when converting."
+msgstr "ابتدا سرنخ را تبدیل کنید، یا هنگام تبدیل رکوردهای موجود را انتخاب کنید."
+
+msgid "Lead linked."
+msgstr "سرنخ پیوند داده شد."
+
+msgid "Lead Company"
+msgstr "شرکت سرنخ"

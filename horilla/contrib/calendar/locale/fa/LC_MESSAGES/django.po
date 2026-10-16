@@ -753,3 +753,15 @@ msgstr "رنگ متن"
 
 msgid "Team calendar: members filter (user picker), status filter, unavailability for filtered members, applied members first; rebuild custom calendars around module activities with event text colors; fix duplicate custom/standard events and all-day date spanning/creation; action-button layout."
 msgstr "تقویم تیم: فیلتر اعضا (انتخابگر کاربر)، فیلتر وضعیت، عدم دسترسی اعضای فیلترشده و نمایش اعضای اعمال‌شده در ابتدا؛ بازسازی تقویم‌های سفارشی بر پایه فعالیت‌های ماژول همراه با رنگ متن رویدادها؛ رفع رویدادهای تکراری سفارشی/استاندارد و گسترش و ایجاد رویدادهای تمام‌روز؛ چیدمان دکمه‌های اقدام."
+
+msgid "Show multi-day events in the all-day row and block past unavailability. Activity assignees modal with user pills and search (hidden on short lists). Keep the detail URL and menu section on refresh; require change permission to mark complete and view permission to open assignees."
+msgstr "نمایش رویدادهای چندروزه در ردیف تمام روز و جلوگیری از ثبت عدم دسترسی در گذشته. پنجره افراد تخصیص‌یافته فعالیت با برچسب کاربران و جستجو (در فهرست‌های کوتاه پنهان است). حفظ نشانی جزئیات و بخش منو هنگام بازخوانی صفحه؛ الزام مجوز ویرایش برای علامت‌گذاری تکمیل و مجوز مشاهده برای باز کردن افراد تخصیص‌یافته."
+
+msgid "View all assignees"
+msgstr "مشاهده همه افراد تخصیص‌یافته"
+
+msgid "No matching users."
+msgstr "کاربری مطابق یافت نشد."
+
+msgid "No users assigned yet."
+msgstr "هنوز کاربری تخصیص داده نشده است."

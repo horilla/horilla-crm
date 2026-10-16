@@ -548,3 +548,36 @@ msgstr "لطفاً ابتدا شناسه کلاینت، راز و شناسه م�
 
 msgid "Teams account connected successfully."
 msgstr "حساب تیمز با موفقیت متصل شد."
+
+msgid "Show the allowed users and roles modals as pills with the standard search bar."
+msgstr "نمایش پنجره‌های کاربران و نقش‌های مجاز به‌صورت برچسب همراه با نوار جستجوی استاندارد."
+
+msgid "Click To Activate"
+msgstr "برای فعال‌سازی کلیک کنید"
+
+msgid "· Click To Add Or Remove Roles"
+msgstr "· برای افزودن یا حذف نقش‌ها کلیک کنید"
+
+msgid "Role(s)"
+msgstr "نقش"
+
+msgid "Click To Select"
+msgstr "برای انتخاب کلیک کنید"
+
+msgid "· Click To Add Or Remove Users"
+msgstr "· برای افزودن یا حذف کاربران کلیک کنید"
+
+msgid "User(s)"
+msgstr "کاربر"
+
+msgid "No Matching Results"
+msgstr "نتیجه‌ای یافت نشد"
+
+msgid "Nothing Selected Yet"
+msgstr "هنوز موردی انتخاب نشده است"
+
+msgid "Users With Access"
+msgstr "کاربران دارای دسترسی"
+
+msgid "Roles With Access"
+msgstr "نقش‌های دارای دسترسی"

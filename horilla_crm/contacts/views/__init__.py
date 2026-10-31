@@ -2,23 +2,25 @@
 
 # Local imports
 from horilla_crm.contacts.views.core import (
-    ContactActivityTab,
-    ContactDetailTab,
-    ContactDetailView,
-    ContactDetailViewTabs,
     ContactGroupByView,
-    ContactHierarchyView,
-    ContactHistorytab,
     ContactKanbanView,
     ContactListView,
     ContactNavbar,
-    ContactRelatedListsTab,
     ContactView,
-    ContactsNotesAndAttachments,
     ContactCardView,
     ContactSplitView,
     ContactChartView,
     ContactTimelineView,
+)
+from horilla_crm.contacts.views.detail import (
+    ContactActivityTab,
+    ContactDetailTab,
+    ContactDetailView,
+    ContactDetailViewTabs,
+    ContactHierarchyView,
+    ContactHistorytab,
+    ContactRelatedListsTab,
+    ContactsNotesAndAttachments,
 )
 from horilla_crm.contacts.views.actions import (
     AddChildContactFormView,
@@ -40,6 +42,11 @@ __all__ = [
     "ContactListView",
     "ContactGroupByView",
     "ContactKanbanView",
+    "ContactCardView",
+    "ContactSplitView",
+    "ContactChartView",
+    "ContactTimelineView",
+    # detail
     "ContactDetailView",
     "ContactDetailViewTabs",
     "ContactDetailTab",
@@ -48,10 +55,6 @@ __all__ = [
     "ContactHistorytab",
     "ContactRelatedListsTab",
     "ContactHierarchyView",
-    "ContactCardView",
-    "ContactSplitView",
-    "ContactChartView",
-    "ContactTimelineView",
     # actions
     "ContactFormView",
     "ContactsSingleFormView",

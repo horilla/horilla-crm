@@ -469,8 +469,12 @@
                     <div id="condition-fields-container">
                         <!-- First condition row (always present) -->
                         <div class="flex items-center gap-2 mb-2 condition-row" data-row-id="0" id="condition-row-0">
+                            {% if "logical_operator" in condition_fields %}
+                                <input type="hidden" name="logical_operator_0" value="{{ submitted_condition_data.0.logical_operator|default:'and' }}">
+                            {% endif %}
                             <div class="flex gap-2 flex-1">
                                 {% for field_name in condition_fields %}
+                                    {% if field_name != "logical_operator" %}
                                     <div id="id_{{ field_name }}_0_cell" class="flex-1 min-w-0">
                                         <div id="id_{{ field_name }}_0_container">
                                             {% if submitted_condition_data.0 and field_name in submitted_condition_data.0 %}
@@ -480,6 +484,7 @@
                                             {% endif %}
                                         </div>
                                     </div>
+                                    {% endif %}
                                 {% endfor %}
                             </div>
                         </div>
@@ -493,13 +498,22 @@
                                         data-row-id="{{ row_id }}"
                                         id="condition-row-{{ row_id }}"
                                     >
+                                        {% if "logical_operator" in condition_fields %}
+                                            <div id="id_logical_operator_{{ row_id }}_cell" class="w-20 shrink-0">
+                                                <div id="id_logical_operator_{{ row_id }}_container">
+                                                    {% render_field_with_name form "logical_operator" row_id row_data|get_item_form:"logical_operator" %}
+                                                </div>
+                                            </div>
+                                        {% endif %}
                                         <div class="flex gap-2 flex-1">
                                             {% for field_name in condition_fields %}
+                                                {% if field_name != "logical_operator" %}
                                                 <div id="id_{{ field_name }}_{{ row_id }}_cell" class="flex-1 min-w-0">
                                                     <div id="id_{{ field_name }}_{{ row_id }}_container">
                                                         {% render_field_with_name form field_name row_id row_data|get_item_form:field_name %}
                                                     </div>
                                                 </div>
+                                                {% endif %}
                                             {% endfor %}
                                         </div>
                                         <button
@@ -526,8 +540,16 @@
                                         data-row-id="{{ forloop.counter }}"
                                         id="condition-row-{{ forloop.counter }}"
                                     >
+                                        {% if "logical_operator" in condition_fields %}
+                                            <div id="id_logical_operator_{{ forloop.counter }}_cell" class="w-20 shrink-0">
+                                                <div id="id_logical_operator_{{ forloop.counter }}_container">
+                                                    {% render_field_with_name form "logical_operator" forloop.counter condition|getter:"logical_operator" %}
+                                                </div>
+                                            </div>
+                                        {% endif %}
                                         <div class="flex gap-2 flex-1">
                                             {% for field_name in condition_fields %}
+                                                {% if field_name != "logical_operator" %}
                                                 <div id="id_{{ field_name }}_{{ forloop.parentloop.counter }}_cell" class="flex-1 min-w-0">
                                                     <div id="id_{{ field_name }}_{{ forloop.parentloop.counter }}_container">
                                                         {% if field_name == 'field' %}
@@ -562,6 +584,7 @@
                                                         {% endif %}
                                                     </div>
                                                 </div>
+                                                {% endif %}
                                             {% endfor %}
                                         </div>
                                         <button

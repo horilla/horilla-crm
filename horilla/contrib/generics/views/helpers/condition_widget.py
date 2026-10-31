@@ -19,7 +19,9 @@ from horilla.apps import apps
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.generics.forms.condition_fields import (
+    CONDITION_EXCLUDED_FIELDS,
     get_condition_field_widget_info,
+    get_condition_model_fields,
 )
 from horilla.db import models
 from horilla.shortcuts import render
@@ -209,13 +211,11 @@ class GetFieldValueWidgetView(LoginRequiredMixin, View):
                 '<div id="id_operator_{}_container" hx-swap-oob="true">'
                 '<select name="operator_{}" id="id_operator_{}" '
                 'class="js-example-basic-single headselect" '
-                'data-placeholder="{}" '
                 'hx-get="{}" hx-target="#id_value_{}_container" hx-swap="innerHTML" '
                 'hx-vals="{}" hx-include="{}" hx-trigger="change">{}</select></div>',
                 row_id,
                 row_id,
                 row_id,
-                _("Select Operator"),
                 get_widget_url,
                 row_id,
                 escape(hx_vals),
@@ -316,8 +316,11 @@ class GetFieldValueWidgetView(LoginRequiredMixin, View):
         if relational_widget is not None:
             return relational_widget
         if hasattr(model_field, "choices") and model_field.choices:
-            return self._render_select_input(
-                model_field.choices, row_id, existing_value
+            existing_ids = [
+                v.strip() for v in (existing_value or "").split(",") if v.strip()
+            ]
+            return self._render_multiselect_input(
+                list(model_field.choices), row_id, existing_ids
             )
         return self._render_simple_field_widget(model_field, row_id, existing_value)
 
@@ -336,18 +339,18 @@ class GetFieldValueWidgetView(LoginRequiredMixin, View):
             # Get all objects for the select, but ensure existing_value is included
             queryset = related_model.objects.all()
             choices = [(obj.pk, str(obj)) for obj in queryset]
-            # If existing_value is provided but not in choices, try to find the object
-            if existing_value and existing_value not in [str(c[0]) for c in choices]:
-                try:
-                    existing_obj = related_model.objects.get(pk=existing_value)
-                    # Add it to choices if not already there
-                    if (existing_obj.pk, str(existing_obj)) not in choices:
-                        choices.insert(
-                            1, (existing_obj.pk, str(existing_obj))
-                        )  # Insert after empty option
-                except (related_model.DoesNotExist, ValueError):
-                    pass
-            return self._render_select_input(choices, row_id, existing_value)
+            existing_ids = [
+                v.strip() for v in (existing_value or "").split(",") if v.strip()
+            ]
+            known = {str(c[0]) for c in choices}
+            for pk in existing_ids:
+                if pk not in known:
+                    try:
+                        obj = related_model.objects.get(pk=pk)
+                        choices.append((obj.pk, str(obj)))
+                    except (related_model.DoesNotExist, ValueError):
+                        pass
+            return self._render_multiselect_input(choices, row_id, existing_ids)
         return None
 
     def _render_simple_field_widget(self, model_field, row_id, existing_value):
@@ -475,9 +478,16 @@ class GetFieldValueWidgetView(LoginRequiredMixin, View):
             '<option value="{}" {}>{}</option>',
             options_iter,
         )
+        selected_joined = ",".join(force_str(v) for v in (existing_values or []))
+        # Like the filter panel: the select itself is never submitted; its picks are
+        # joined into the hidden value_<row> input (see global.js) so the backend
+        # still receives exactly one comma-separated value per row.
         return format_html(
-            '<select name="value_{}" id="id_value_{}" multiple class="js-example-basic-multiple headselect w-full h-full" data-placeholder="{}">{}</select>',
+            '<input type="hidden" name="value_{}" id="id_value_{}" class="conditionValue" value="{}">'
+            '<select id="id_value_{}_multi" multiple class="js-example-basic-multiple conditionMultiSelect headselect w-full h-full" data-placeholder="{}">{}</select>',
             row_id,
+            row_id,
+            selected_joined,
             row_id,
             _("Select value(s)"),
             options_html,
@@ -705,34 +715,12 @@ class GetModelFieldChoicesView(LoginRequiredMixin, View):
             request.GET.get("only_text_fields", "false").lower() == "true"
         )
 
-        # Default exclude fields
-        default_exclude = [
-            "id",
-            "pk",
-            "created_at",
-            "updated_at",
-            "created_by",
-            "updated_by",
-            "company",
-            "additional_info",
-        ]
-        exclude_fields = list(set(exclude_fields + default_exclude))
+        exclude_fields = set(exclude_fields) | CONDITION_EXCLUDED_FIELDS
 
         # Build field choices
-        # Use _meta.fields and _meta.many_to_many to get only forward fields (not reverse relations)
-        # This excludes one-to-many and many-to-many reverse relationships
         field_choices = [("", "---------")]
-        all_forward_fields = list(model_class._meta.fields) + list(
-            model_class._meta.many_to_many
-        )
 
-        for field in all_forward_fields:
-            if field.name in exclude_fields:
-                continue
-            # Skip non-editable fields (e.g. editable=False on the model)
-            if not getattr(field, "editable", True):
-                continue
-
+        for field in get_condition_model_fields(model_class, exclude_fields):
             # Filter by field types if specified
             if field_types:
                 field_type_name = field.__class__.__name__

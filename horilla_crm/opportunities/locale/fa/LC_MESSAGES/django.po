@@ -911,3 +911,7 @@ msgstr "<p style=\"text-align: right;\">‫یک معامله بزرگ وارد �
 
 msgid "Link Leads"
 msgstr "پیوند سرنخ‌ها"
+
+#: horilla_crm/opportunities/templates/opportunity_stage/opportunity_stages_modal.html:99
+msgid "Select Opportunity Stages for %(company_name)s"
+msgstr "انتخاب مراحل فرصت برای %(company_name)s"

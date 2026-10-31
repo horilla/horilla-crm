@@ -3272,6 +3272,22 @@ msgstr "نام کاربری را وارد کنید"
 msgid "Enter Password"
 msgstr "رمز عبور را وارد کنید"
 
+#: horilla/contrib/core/forms/permission.py:91
+msgid "The following user(s) do not belong to the role's company"
+msgstr "کاربران زیر به شرکت این نقش تعلق ندارند"
+
+#: horilla/contrib/core/templates/import/import_data.html:6 horilla/contrib/core/templates/import/import_step2.html:5
+msgid "Import %(module)s"
+msgstr "ایمپورت %(module)s"
+
+#: horilla/contrib/core/templates/role/role.html:72
+msgid "Reset"
+msgstr "بازنشانی"
+
+#: templates/components/empty_states/feature_disabled.html:5
+msgid "Feature not enabled"
+msgstr "این قابلیت فعال نیست"
+
 msgid "Load Demo Data"
 msgstr "بارگذاری داده‌های نمایشی"
 

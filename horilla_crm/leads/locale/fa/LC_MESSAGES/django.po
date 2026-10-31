@@ -995,3 +995,7 @@ msgstr "سرنخ پیوند داده شد."
 
 msgid "Lead Company"
 msgstr "شرکت سرنخ"
+
+#: horilla_crm/leads/templates/lead_status/lead_stages_modal.html:100
+msgid "Select Lead Stages for %(company_name)s"
+msgstr "انتخاب مراحل سرنخ برای %(company_name)s"

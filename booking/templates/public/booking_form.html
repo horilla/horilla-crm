@@ -595,7 +595,7 @@
                     <!-- Personal details form -->
                     <form method="post" id="booking-form">
                         {% csrf_token %}
-                        <input type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
+                        <input type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;inset-inline-start:-9999px;width:1px;height:1px;opacity:0;">
                         <input type="hidden" name="booking_date" id="form-date">
                         <input type="hidden" name="booking_time" id="form-time">
                         <input type="hidden" name="timezone" id="form-tz">
@@ -727,6 +727,7 @@
                 booked: "{% trans 'All slots are booked for this day' %}",
             };
             const _hostUnavailableSlot = "{% trans 'Host is unavailable at this time' %}";
+            const _slotBooked = "{% trans 'This slot is already booked' %}";
             const _failedToLoadSlots = "{% trans 'Failed to load slots.' %}";
             const _noAvailableSlots = "{% trans 'No available slots for this date.' %}";
             const SLOTS_URL          = "{% url 'booking:available_slots' page.slug %}";
@@ -947,7 +948,7 @@
                     const btn = document.createElement("div");
                     if (isBooked) {
                         btn.className = "slot-btn booked";
-                        btn.title = "This slot is already booked";
+                        btn.title = _slotBooked;
                     } else if (unavailableSet.has(slot)) {
                         btn.className = "slot-btn booked";
                         btn.title = _hostUnavailableSlot;

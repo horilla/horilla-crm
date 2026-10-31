@@ -447,3 +447,223 @@ msgstr "شیء یافت نشد."
 
 msgid "You don't have permission to view this item."
 msgstr "شما مجوز مشاهده این مورد را ندارید."
+
+#: horilla/contrib/cadences/forms.py:266
+msgid "Enter a number"
+msgstr "یک عدد وارد کنید"
+
+#: horilla/contrib/cadences/forms.py:262
+msgid "Enter number of days"
+msgstr "تعداد روزها را وارد کنید"
+
+#: horilla/contrib/cadences/forms.py:555
+msgid "When the previous Task is"
+msgstr "وقتی وظیفه قبلی در این وضعیت باشد"
+
+#: horilla/contrib/cadences/forms.py:556
+msgid "When the previous Call is"
+msgstr "وقتی تماس قبلی در این وضعیت باشد"
+
+#: horilla/contrib/cadences/forms.py:557
+msgid "When the previous Email is"
+msgstr "وقتی ایمیل قبلی در این وضعیت باشد"
+
+#: horilla/contrib/cadences/forms.py:559
+msgid "When the previous follow-up is"
+msgstr "وقتی پیگیری قبلی در این وضعیت باشد"
+
+#: horilla/contrib/cadences/forms.py:686
+msgid "Select one or more cadences. Each starts from its first follow-up, even if the cadence conditions are not met."
+msgstr "یک یا چند توالی انتخاب کنید. هر کدام از اولین پیگیری خود شروع می‌شود، حتی اگر شرایط توالی برقرار نباشد."
+
+#: horilla/contrib/cadences/forms.py:697
+msgid "Select cadences"
+msgstr "انتخاب توالی‌ها"
+
+#: horilla/contrib/cadences/forms.py:738
+msgid "Could not start %(cadence)s: no follow-up could be created. Check that an outgoing mail server is set up for email follow-ups."
+msgstr "شروع %(cadence)s ممکن نشد: هیچ پیگیری‌ای ایجاد نشد. بررسی کنید که برای پیگیری‌های ایمیلی، سرور ایمیل خروجی تنظیم شده باشد."
+
+#: horilla/contrib/cadences/models.py:472
+msgid "Cadence Enrollment"
+msgstr "ثبت در توالی"
+
+#: horilla/contrib/cadences/models.py:473
+msgid "Cadence Enrollments"
+msgstr "ثبت‌های توالی"
+
+#: horilla/contrib/cadences/models.py:179
+msgid "When to create this follow-up once it is triggered: immediately, or after a delay of minutes, hours, days or months."
+msgstr "زمان ایجاد این پیگیری پس از فعال شدن: بلافاصله، یا پس از چند دقیقه، ساعت، روز یا ماه."
+
+#: horilla/contrib/cadences/models.py:187
+msgid "Wait for"
+msgstr "انتظار به مدت"
+
+#: horilla/contrib/cadences/models.py:188
+msgid "Number of minutes, hours, days or months (the unit chosen in Do This) to wait before this follow-up is created."
+msgstr "تعداد دقیقه، ساعت، روز یا ماه (واحدی که در «انجام این» انتخاب شده است) برای انتظار پیش از ایجاد این پیگیری."
+
+#: horilla/contrib/cadences/models.py:199
+msgid "Create this follow-up when the previous follow-up reaches this status. Several follow-ups can use the same status; they are all created together."
+msgstr "وقتی پیگیری قبلی به این وضعیت برسد، این پیگیری ایجاد می‌شود. چند پیگیری می‌توانند از یک وضعیت استفاده کنند؛ همه با هم ایجاد می‌شوند."
+
+#: horilla/contrib/cadences/models.py:212
+msgid "Due Date (days after trigger)"
+msgstr "تاریخ سررسید (روز پس از فعال شدن)"
+
+#: horilla/contrib/cadences/models.py:213
+msgid "Due date of the task, counted in days from the moment this follow-up is triggered. 0 = due the same day, 1 = due the next day."
+msgstr "تاریخ سررسید وظیفه، به روز از لحظه فعال شدن این پیگیری. ۰ = سررسید همان روز، ۱ = سررسید روز بعد."
+
+#: horilla/contrib/cadences/models.py:251
+msgid "Call Date (days after trigger)"
+msgstr "تاریخ تماس (روز پس از فعال شدن)"
+
+#: horilla/contrib/cadences/models.py:252
+msgid "Start date of the call, counted in days from the moment this follow-up is triggered. 0 = same day, 1 = next day."
+msgstr "تاریخ شروع تماس، به روز از لحظه فعال شدن این پیگیری. ۰ = همان روز، ۱ = روز بعد."
+
+#: horilla/contrib/cadences/models.py:411
+msgid "Ongoing"
+msgstr "در جریان"
+
+#: horilla/contrib/cadences/models.py:413 horilla/contrib/cadences/models.py:534
+msgid "Un-enrolled"
+msgstr "خارج‌شده از توالی"
+
+#: horilla/contrib/cadences/models.py:417 horilla/contrib/cadences/models.py:523
+msgid "Automatic"
+msgstr "خودکار"
+
+#: horilla/contrib/cadences/models.py:418
+msgid "Manual"
+msgstr "دستی"
+
+#: horilla/contrib/cadences/models.py:438 horilla/contrib/cadences/views/record_tab.py:164
+msgid "Cadence Status"
+msgstr "وضعیت توالی"
+
+#: horilla/contrib/cadences/models.py:444
+msgid "Source"
+msgstr "منبع"
+
+#: horilla/contrib/cadences/models.py:448
+msgid "Run"
+msgstr "نوبت"
+
+#: horilla/contrib/cadences/models.py:449
+msgid "1 for the first enrollment, increases each time it is enrolled again."
+msgstr "۱ برای اولین ثبت؛ هر بار که دوباره ثبت شود، یکی بیشتر می‌شود."
+
+#: horilla/contrib/cadences/models.py:458
+msgid "When the enrollment completed, failed or was un-enrolled."
+msgstr "زمانی که ثبت به پایان رسید، ناموفق شد یا از توالی خارج شد."
+
+#: horilla/contrib/cadences/models.py:466
+msgid "Un-enrolled By"
+msgstr "خارج‌شده توسط"
+
+#: horilla/contrib/cadences/models.py:529
+msgid "Stopped"
+msgstr "متوقف‌شده"
+
+#: horilla/contrib/cadences/models.py:534
+msgid "Enrolled"
+msgstr "ثبت‌شده"
+
+#: horilla/contrib/cadences/services.py:473
+msgid "This cadence is not active."
+msgstr "این توالی فعال نیست."
+
+#: horilla/contrib/cadences/services.py:475
+msgid "This cadence belongs to a different module."
+msgstr "این توالی متعلق به ماژول دیگری است."
+
+#: horilla/contrib/cadences/services.py:477
+msgid "No follow-ups are configured in this cadence."
+msgstr "هیچ پیگیری‌ای در این توالی تنظیم نشده است."
+
+#: horilla/contrib/cadences/services.py:483 horilla/contrib/cadences/services.py:517
+msgid "This record is already enrolled in this cadence."
+msgstr "این رکورد از قبل در این توالی ثبت شده است."
+
+#: horilla/contrib/cadences/services.py:534
+msgid "Records enrolled automatically cannot be un-enrolled."
+msgstr "رکوردهایی را که خودکار ثبت شده‌اند نمی‌توان از توالی خارج کرد."
+
+#: horilla/contrib/cadences/services.py:537
+msgid "Only a running enrollment can be un-enrolled."
+msgstr "فقط ثبتی را که در حال اجراست می‌توان از توالی خارج کرد."
+
+#: horilla/contrib/cadences/templates/cadence_detail.html:225
+msgid "Add another follow-up here"
+msgstr "افزودن پیگیری دیگر در اینجا"
+
+#: horilla/contrib/cadences/templates/cadence_unenroll_action_col.html:9
+msgid "Un-enroll this record? Its open follow-ups will be cancelled."
+msgstr "این رکورد از توالی خارج شود؟ پیگیری‌های باز آن لغو می‌شوند."
+
+#: horilla/contrib/cadences/templates/cadence_unenroll_action_col.html:11 horilla/contrib/cadences/templates/cadence_unenroll_action_col.html:19
+msgid "Un-enroll"
+msgstr "خروج از توالی"
+
+#: horilla/contrib/cadences/views/cadence_report.py:223 horilla/contrib/cadences/views/cadence_report.py:352 horilla/contrib/cadences/views/cadence_report.py:500
+msgid "No follow-ups have been triggered yet."
+msgstr "هنوز هیچ پیگیری‌ای فعال نشده است."
+
+#: horilla/contrib/cadences/views/detail.py:387
+msgid "Automate sequences of follow-ups for your records."
+msgstr "دنباله‌ای از پیگیری‌ها را برای رکوردهای خود خودکار کنید."
+
+#: horilla/contrib/cadences/views/enrollment.py:64
+msgid "Enroll Cadence"
+msgstr "ثبت در توالی"
+
+#: horilla/contrib/cadences/views/enrollment.py:50
+msgid "You don't have permission to change this record."
+msgstr "شما مجوز تغییر این رکورد را ندارید."
+
+#: horilla/contrib/cadences/views/enrollment.py:35
+msgid "Cadences are not enabled for this model."
+msgstr "توالی‌ها برای این مدل فعال نیستند."
+
+#: horilla/contrib/cadences/views/enrollment.py:33
+msgid "Invalid model for cadence."
+msgstr "مدل نامعتبر برای توالی."
+
+#: horilla/contrib/cadences/views/enrollment.py:113
+msgid "Enrolled in %(cadences)s."
+msgstr "در %(cadences)s ثبت شد."
+
+#: horilla/contrib/cadences/views/enrollment.py:138
+msgid "Un-enrolled from %(cadence)s."
+msgstr "از %(cadence)s خارج شد."
+
+#: horilla/contrib/cadences/views/record_tab.py:174
+msgid "This record is not enrolled in any cadence yet."
+msgstr "این رکورد هنوز در هیچ توالی‌ای ثبت نشده است."
+
+#: horilla/contrib/cadences/views/record_tab.py:107
+msgid "View and manage the cadences this %(name)s is enrolled in."
+msgstr "توالی‌هایی را که این %(name)s در آن‌ها ثبت شده است مشاهده و مدیریت کنید."
+
+#: horilla/contrib/cadences/views/record_tab.py:127
+msgid "Enroll"
+msgstr "ثبت در توالی"
+
+#: horilla/contrib/cadences/views/record_tab.py:161
+msgid "Completed Date"
+msgstr "تاریخ تکمیل"
+
+#: horilla/contrib/cadences/views/record_tab.py:162
+msgid "Enrolled By"
+msgstr "ثبت‌شده توسط"
+
+#: horilla/contrib/cadences/views/record_tab.py:163
+msgid "Un-enrolled Date"
+msgstr "تاریخ خروج از توالی"
+
+#: horilla/contrib/cadences/views/record_tab.py:166
+msgid "Last Follow-up"
+msgstr "آخرین پیگیری"

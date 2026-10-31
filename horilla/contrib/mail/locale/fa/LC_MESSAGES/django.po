@@ -857,3 +857,91 @@ msgstr "افزودن صندوق ورودی عمومی برای ایمیل‌ها
 
 msgid "Ask for the owner when adding an inbox email as a Lead or Contact, with rule assignment for leads. Stop counting self-opens and direct visits as email opens. Require add permission on the outgoing server form and an HTMX request on inbox delete. Format the inbox received time with the user's datetime format."
 msgstr "درخواست مالک هنگام افزودن ایمیل صندوق ورودی به‌عنوان سرنخ یا مخاطب، همراه با تخصیص بر اساس قانون برای سرنخ‌ها. شمرده نشدن باز کردن ایمیل توسط خود فرستنده و بازدیدهای مستقیم به‌عنوان باز شدن ایمیل. الزام مجوز افزودن در فرم سرور خروجی و درخواست HTMX برای حذف از صندوق ورودی. قالب‌بندی زمان دریافت در صندوق ورودی با قالب تاریخ و زمان کاربر."
+
+#: horilla/contrib/mail/forms.py:306
+msgid "Use TLS and Use SSL can't both be Yes. Choose one (TLS for port 587, SSL for port 465)."
+msgstr "«استفاده از TLS» و «استفاده از SSL» نمی‌توانند هر دو «بله» باشند. یکی را انتخاب کنید (TLS برای پورت 587، SSL برای پورت 465)."
+
+#: horilla/contrib/mail/models.py:71
+msgid "Your mail provider's SMTP server, e.g. smtp.gmail.com."
+msgstr "سرور SMTP ارائه‌دهنده ایمیل شما، مثلاً smtp.gmail.com."
+
+#: horilla/contrib/mail/models.py:77
+msgid "Usually 587 (with TLS) or 465 (with SSL)."
+msgstr "معمولاً 587 (با TLS) یا 465 (با SSL)."
+
+#: horilla/contrib/mail/models.py:83
+msgid "The email address people see as the sender. For Gmail or Outlook, use the address you log in with, or an alias you have added and verified."
+msgstr "آدرس ایمیلی که گیرندگان به‌عنوان فرستنده می‌بینند. برای Gmail یا Outlook از آدرسی که با آن وارد می‌شوید، یا نام مستعاری که افزوده و تأیید کرده‌اید، استفاده کنید."
+
+#: horilla/contrib/mail/models.py:94
+msgid "The account used to log in to the mail server, usually your full email address."
+msgstr "حسابی که برای ورود به سرور ایمیل استفاده می‌شود؛ معمولاً آدرس کامل ایمیل شما."
+
+#: horilla/contrib/mail/models.py:105
+msgid "The sender name people see, e.g. Acme HR."
+msgstr "نام فرستنده‌ای که گیرندگان می‌بینند، مثلاً منابع انسانی Acme."
+
+#: horilla/contrib/mail/models.py:119
+msgid "Encrypts the connection. Choose Yes for port 587."
+msgstr "اتصال را رمزگذاری می‌کند. برای پورت 587 «بله» را انتخاب کنید."
+
+#: horilla/contrib/mail/models.py:127
+msgid "Encrypts the connection from the start. Choose Yes for port 465, and keep Use TLS on No."
+msgstr "اتصال را از ابتدا رمزگذاری می‌کند. برای پورت 465 «بله» را انتخاب کنید و «استفاده از TLS» را روی «خیر» بگذارید."
+
+#: horilla/contrib/mail/models.py:138
+msgid "No (recommended): you see an error when an email can't be sent. Yes: errors are hidden so users aren't interrupted, but failed emails go unnoticed."
+msgstr "خیر (توصیه‌شده): وقتی ایمیلی ارسال نشود، خطا نمایش داده می‌شود. بله: خطاها پنهان می‌مانند تا کار کاربران قطع نشود، اما ایمیل‌های ناموفق دیده نمی‌شوند."
+
+#: horilla/contrib/mail/models.py:149
+msgid "Use this server by default when sending emails."
+msgstr "هنگام ارسال ایمیل، به‌طور پیش‌فرض از این سرور استفاده شود."
+
+#: horilla/contrib/mail/models.py:154
+msgid "On: emails show the Display Name below as the sender name. Off: emails show the name of the person who triggered them."
+msgstr "روشن: ایمیل‌ها «نام نمایشی» زیر را به‌عنوان نام فرستنده نشان می‌دهند. خاموش: ایمیل‌ها نام کسی را نشان می‌دهند که ارسال آن‌ها را آغاز کرده است."
+
+#: horilla/contrib/mail/models.py:163
+msgid "How long to wait for the mail server before giving up."
+msgstr "مدت انتظار برای پاسخ سرور ایمیل، پیش از توقف تلاش."
+
+#: horilla/contrib/mail/models.py:171
+msgid "The Application (client) ID from your Azure app registration."
+msgstr "شناسه برنامه (کلاینت) از ثبت برنامه شما در Azure."
+
+#: horilla/contrib/mail/models.py:178
+msgid "The secret value created for your Azure app."
+msgstr "مقدار راز ساخته‌شده برای برنامه Azure شما."
+
+#: horilla/contrib/mail/models.py:185
+msgid "The Directory (tenant) ID of your Microsoft organisation."
+msgstr "شناسه دایرکتوری (مستأجر) سازمان Microsoft شما."
+
+#: horilla/contrib/mail/models.py:191
+msgid "Must match the redirect URI set in your Azure app."
+msgstr "باید با URI بازگردانی تنظیم‌شده در برنامه Azure شما یکسان باشد."
+
+#: horilla/contrib/mail/models.py:194
+msgid "OAuth Authorization Endpoint"
+msgstr "نقطه پایانی مجوز OAuth"
+
+#: horilla/contrib/mail/models.py:197
+msgid "Microsoft's sign-in page address. Leave the default."
+msgstr "آدرس صفحه ورود Microsoft. مقدار پیش‌فرض را تغییر ندهید."
+
+#: horilla/contrib/mail/models.py:200
+msgid "OAuth Token Endpoint"
+msgstr "نقطه پایانی توکن OAuth"
+
+#: horilla/contrib/mail/models.py:203
+msgid "Microsoft's token address. Leave the default."
+msgstr "آدرس توکن Microsoft. مقدار پیش‌فرض را تغییر ندهید."
+
+#: horilla/contrib/mail/models.py:206
+msgid "Microsoft Graph API Endpoint"
+msgstr "نقطه پایانی Microsoft Graph API"
+
+#: horilla/contrib/mail/models.py:209
+msgid "Microsoft's mail API address. Leave the default."
+msgstr "آدرس API ایمیل Microsoft. مقدار پیش‌فرض را تغییر ندهید."

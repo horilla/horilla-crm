@@ -710,3 +710,39 @@ msgstr "لطفاً یک تاریخ و زمان انتخاب کنید."
 
 msgid "That slot is no longer available."
 msgstr "این زمان دیگر در دسترس نیست."
+
+#: booking/templates/public/booking_cancel.html:135 booking/templates/public/booking_cancel.html:79 booking/templates/public/booking_form.html:495
+msgid "Back to booking"
+msgstr "بازگشت به رزرو"
+
+#: booking/templates/public/booking_form.html:349
+msgid "Rescheduling"
+msgstr "در حال تغییر زمان"
+
+#: booking/templates/public/booking_form.html:350
+msgid "Current time"
+msgstr "زمان فعلی"
+
+#: booking/templates/public/booking_form.html:541
+msgid "New Time"
+msgstr "زمان جدید"
+
+#: booking/templates/public/booking_form.html:726
+msgid "Host is unavailable on this day"
+msgstr "میزبان در این روز در دسترس نیست"
+
+#: booking/templates/public/booking_form.html:727
+msgid "All slots are booked for this day"
+msgstr "همه زمان‌های این روز رزرو شده است"
+
+#: booking/templates/public/booking_form.html:729
+msgid "Host is unavailable at this time"
+msgstr "میزبان در این زمان در دسترس نیست"
+
+#: booking/templates/public/booking_form.html:730
+msgid "This slot is already booked"
+msgstr "این زمان قبلاً رزرو شده است"
+
+#: booking/views/public.py:263
+msgid "This email already has the maximum number of upcoming bookings for this page. Cancel one to book another."
+msgstr "این ایمیل به حداکثر تعداد رزروهای پیش‌رو برای این صفحه رسیده است. برای رزرو جدید، یکی از آن‌ها را لغو کنید."

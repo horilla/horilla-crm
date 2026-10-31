@@ -1242,3 +1242,11 @@ msgstr "نقش‌های دارای دسترسی تماس"
 
 msgid "Users With Call Access"
 msgstr "کاربران دارای دسترسی تماس"
+
+#: calls/templates/calls/calls_user_settings.html:15
+msgid "No calling provider is available yet. Please contact your administrator."
+msgstr "هنوز هیچ ارائه‌دهنده تماسی در دسترس نیست. لطفاً با مدیر سیستم تماس بگیرید."
+
+#: calls/templates/calls/tab_providers.html:19
+msgid "Setup Guide"
+msgstr "راهنمای راه‌اندازی"

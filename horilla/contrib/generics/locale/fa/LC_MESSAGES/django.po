@@ -1431,3 +1431,31 @@ msgstr "این رکورد فقط خواندنی است."
 
 msgid "Add Column to Split View"
 msgstr "افزودن ستون به نمای تقسیم شده"
+
+#: horilla/contrib/generics/filters.py:110 horilla/contrib/generics/filters.py:94 horilla/contrib/generics/views/list.py:975
+msgid "This Year"
+msgstr "امسال"
+
+#: horilla/contrib/generics/filters.py:111 horilla/contrib/generics/filters.py:95 horilla/contrib/generics/views/list.py:976
+msgid "This FP"
+msgstr "دوره مالی جاری"
+
+#: horilla/contrib/generics/filters.py:112 horilla/contrib/generics/filters.py:96 horilla/contrib/generics/views/list.py:977
+msgid "This FQ"
+msgstr "سه‌ماهه مالی جاری"
+
+#: horilla/contrib/generics/filters.py:113 horilla/contrib/generics/filters.py:97 horilla/contrib/generics/views/list.py:978
+msgid "This FY"
+msgstr "سال مالی جاری"
+
+#: horilla/contrib/generics/forms/generics.py:378
+msgid "Invalid date range"
+msgstr "بازه تاریخ نامعتبر است"
+
+#: horilla/contrib/generics/templates/partials/bulk_update_form.html:113
+msgid "Select %(name)s"
+msgstr "انتخاب %(name)s"
+
+#: horilla/contrib/generics/templates/related_list_content.html:9
+msgid "View and manage %(title)s related to this %(name)s."
+msgstr "%(title)s مرتبط با این %(name)s را مشاهده و مدیریت کنید."

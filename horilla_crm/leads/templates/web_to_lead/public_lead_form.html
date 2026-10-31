@@ -298,7 +298,7 @@
                     hx-sync="this:drop"
                 >
                     {% csrf_token %}
-                    <input type="text" name="hp_check" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
+                    <input type="text" name="hp_check" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;inset-inline-start:-9999px;width:1px;height:1px;opacity:0;">
                     {% for field in selected_fields_parsed %}
                         <label class="form-label">
                             {{ field.verbose_name }} {% if field.required %}<span style="color: red">*</span>{% endif %}

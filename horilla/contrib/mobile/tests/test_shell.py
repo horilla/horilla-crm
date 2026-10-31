@@ -18,6 +18,7 @@ from django.core.cache import cache
 from django.template import Context, Template
 from django.templatetags.static import static
 from django.test import TestCase, override_settings
+from django.utils.html import escape
 from django.utils.http import urlencode
 from login_history.models import post_login, post_logout
 
@@ -247,7 +248,9 @@ class MobileStaticTagTests(TestCase):
 
     def test_adds_the_asset_version(self):
         path = "assets/css/style.css"
-        self.assertEqual(self.render(path), expected_mobile_static(path))
+        # The template escapes the URL, which shows when the active static
+        # storage's URL already carries a query ("&" becomes "&amp;").
+        self.assertEqual(self.render(path), escape(expected_mobile_static(path)))
 
     def test_uses_ampersand_when_the_static_url_already_has_a_query(self):
         storages = {

@@ -1030,6 +1030,36 @@ class BtnTagTests(SimpleTestCase):
             self.render("{% btn %}")
 
 
+class _SubmittedValues(HTMLParser):
+    """The name -> value pairs a browser would submit for rendered inputs."""
+
+    def __init__(self):
+        super().__init__()
+        self.data = {}
+        self._select = None
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == "input" and attrs.get("name"):
+            self.data[attrs["name"]] = attrs.get("value") or ""
+        elif tag == "select" and attrs.get("name"):
+            self._select = attrs["name"]
+            self.data.setdefault(self._select, "")
+        elif tag == "option" and self._select and "selected" in attrs:
+            self.data[self._select] = attrs.get("value") or ""
+
+    def handle_endtag(self, tag):
+        if tag == "select":
+            self._select = None
+
+
+def submitted_values(html):
+    """Parse ``html`` into what submitting it would post."""
+    parser = _SubmittedValues()
+    parser.feed(str(html))
+    return parser.data
+
+
 class EditDetailsFieldErrorTests(TestCase):
     """When Edit Details can't apply a value, the form stays open with what
     was typed, the error under its field and a message named by the field's
@@ -1102,5 +1132,9 @@ class EditDetailsFieldErrorTests(TestCase):
         )
         field_info = {"name": "contact_number", "field_type": "phone"}
         keep_posted_value(field_info, request)
-        self.assertIn('value="12"', field_info["phone_widget_html"])
-        self.assertIn('value="+98" selected', field_info["phone_widget_html"])
+        # Checked as what the widget posts back, not its markup, so it holds
+        # for a project that renders the dial code differently.
+        self.assertEqual(
+            submitted_values(field_info["phone_widget_html"]),
+            {"contact_number_0": "+98", "contact_number_1": "12"},
+        )

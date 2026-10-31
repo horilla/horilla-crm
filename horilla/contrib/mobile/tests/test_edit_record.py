@@ -23,6 +23,7 @@ if MOBILE_INSTALLED:
         FieldPermission,
         HorillaContentType,
     )
+    from horilla.contrib.generics.forms.generics import PhoneWidget
 
     from .models import MobileTestRecord
 
@@ -175,8 +176,11 @@ class EditRecordFormTests(MobileTestBase):
         self.assertEqual(fields["owner"]["kind"], "related")
         self.assertEqual(fields["owner"]["selected"][0]["value"], self.seller.pk)
         self.assertEqual(fields["phone"]["kind"], "phone")
+        # Split as the desktop phone widget splits it ("+98", "9123456789"
+        # with the stock widget), so a project's own widget is followed too.
         self.assertEqual(
-            (fields["phone"]["code"], fields["phone"]["number"]), ("+98", "9123456789")
+            (fields["phone"]["code"], fields["phone"]["number"]),
+            tuple(PhoneWidget().decompress(self.record.phone)),
         )
         self.assertEqual(fields["city"]["kind"], "input")
         self.assertEqual(fields["city"]["maxlength"], 50)

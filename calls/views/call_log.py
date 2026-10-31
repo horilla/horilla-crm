@@ -2,6 +2,7 @@
 
 # Standard library imports
 import logging
+import re
 from functools import cached_property
 
 # Third-party imports (Django)
@@ -28,13 +29,7 @@ from horilla.utils.decorators import (
 )
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
-from horilla.web import (
-    Http404,
-    HttpResponse,
-    HxTriggerResponse,
-    JsonResponse,
-    ScriptResponse,
-)
+from horilla.web import Http404, HxTriggerResponse, JsonResponse, ScriptResponse
 
 # Local imports
 from ..adapters.factory import get_adapter
@@ -212,13 +207,14 @@ class ClickToCallView(LoginRequiredMixin, View):
 
         try:
             adapter = get_adapter(provider)
+            callback_url = adapter.sign_callback_url(callback_url)
             result = adapter.initiate_call(
                 from_number, to_number, callback_url, twiml_url=twiml_url
             )
         except Exception as exc:
             logger.error("Click-to-call failed for provider %s: %s", provider, exc)
             messages.error(request, str(exc))
-            return HttpResponse()
+            return ScriptResponse(msgs=True, close=True)
 
         call_log = CallLog.objects.create(
             provider=provider,
@@ -295,9 +291,10 @@ class ClickToCallView(LoginRequiredMixin, View):
 @method_decorator(permission_required_or_denied("calls.view_calllog"), name="dispatch")
 class CallStatusView(LoginRequiredMixin, View):
     """
-    Polled by the calling modal every 3 seconds via HTMX.
-    Returns the updated modal fragment; stops polling once the call reaches
-    a terminal status and auto-closes the modal.
+    Returns the updated modal fragment. The calling modal refreshes it when the
+    calls WebSocket reports a status change, with a slow poll as a fallback for
+    the ringing/age timeouts and for providers whose webhooks cannot reach us.
+    Updates stop once the call reaches a terminal status and the modal auto-closes.
     """
 
     TERMINAL = {
@@ -333,13 +330,13 @@ class CallStatusView(LoginRequiredMixin, View):
         if call_log.status not in self.TERMINAL:
             if call_log.started_at:
                 age = (timezone.now() - call_log.started_at).total_seconds()
-                # Ringing with no answer after 30 s → busy (treat as declined/unreachable)
+                # Ringing with no answer after 30 s → no_answer
                 ringing_states = {CallLog.STATUS_RINGING, CallLog.STATUS_INITIATED}
                 if (
                     call_log.status in ringing_states
                     and age >= self.MAX_RINGING_SECONDS
                 ):
-                    call_log.status = CallLog.STATUS_BUSY
+                    call_log.status = CallLog.STATUS_NO_ANSWER
                     call_log.ended_at = call_log.ended_at or timezone.now()
                     call_log.save(update_fields=["status", "ended_at"])
                 # Hard cap: any non-terminal call older than 5 min → no_answer
@@ -390,21 +387,50 @@ class CancelCallView(LoginRequiredMixin, View):
         call_log = CallLog.objects.filter(pk=pk, company=request.active_company).first()
         if not call_log:
             return ScriptResponse(close=True)
+        if call_log.status in CallStatusView.TERMINAL:
+            return self._render(request, call_log)
+
+        live_status = None
         try:
             adapter = get_adapter(call_log.provider)
-            in_progress = call_log.status == CallLog.STATUS_IN_PROGRESS
-            adapter.cancel_call(call_log.provider_call_id, in_progress=in_progress)
+            cancelled = adapter.cancel_call(
+                call_log.provider_call_id,
+                in_progress=call_log.status == CallLog.STATUS_IN_PROGRESS,
+            )
+            if not cancelled:
+                # The provider refused (e.g. the call already ended): sync the real
+                # status instead of claiming the call was cancelled.
+                live_status = adapter.fetch_status(call_log.provider_call_id)
         except Exception as exc:
             logger.error("Cancel call failed for CallLog %s: %s", pk, exc)
-        call_log.status = CallLog.STATUS_CANCELLED
-        call_log.save(update_fields=["status"])
+            cancelled = False
+
+        if cancelled:
+            call_log.status = CallLog.STATUS_CANCELLED
+        elif live_status in CallStatusView.TERMINAL:
+            call_log.status = live_status
+        else:
+            return self._render(
+                request,
+                call_log,
+                error=_("Could not cancel the call. Please try again."),
+            )
+        call_log.ended_at = call_log.ended_at or timezone.now()
+        call_log.save(update_fields=["status", "ended_at"])
+        return self._render(request, call_log)
+
+    @staticmethod
+    def _render(request, call_log, error=None):
         return render(
             request,
             "calls/call_status_modal.html",
             {
                 "call_log": call_log,
-                "is_terminal": True,
-                "status_label": _("Call Cancelled"),
+                "is_terminal": call_log.status in CallStatusView.TERMINAL,
+                "status_label": CallStatusView.STATUS_LABELS.get(
+                    call_log.status, call_log.status
+                ),
+                "error": error,
             },
         )
 

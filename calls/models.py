@@ -295,6 +295,24 @@ class CallProvider(HorillaCoreModel):
     def __str__(self):
         return f"{self.get_provider_type_display()}"
 
+    def webhook_secret_error(self):
+        """
+        Return a user-facing message when this provider cannot verify its webhooks.
+
+        Without the key every provider callback is rejected, so active providers must have one.
+        """
+        from .adapters.factory import get_adapter_class
+
+        adapter_cls = get_adapter_class(self.provider_type)
+        field_name = adapter_cls.WEBHOOK_SECRET_FIELD if adapter_cls else None
+        if not field_name or getattr(self, field_name, ""):
+            return None
+        label = self._meta.get_field(field_name).verbose_name
+        return _(
+            "%(label)s is required for %(provider)s so that call status "
+            "callbacks can be verified. Callbacks are rejected without it."
+        ) % {"label": label, "provider": self.get_provider_type_display()}
+
     def get_edit_url(self):
         """Return the URL for editing this provider."""
         return reverse_lazy("calls:provider_update", kwargs={"pk": self.pk})

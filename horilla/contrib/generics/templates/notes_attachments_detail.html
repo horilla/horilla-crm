@@ -67,7 +67,7 @@
                 {% trans "Notes" %}
             </div>
             <div class="break-words [overflow-wrap:anywhere]">
-                {{ object.description|safe }}
+                {{ object.description|sanitize_html }}
             </div>
         </div>
     {% endif %}

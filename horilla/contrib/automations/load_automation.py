@@ -2,6 +2,7 @@
 
 # Standard library imports
 import json
+import logging
 from pathlib import Path
 
 # Third-party imports (Django)
@@ -23,7 +24,9 @@ from horilla.views.generic import TemplateView, View
 from horilla.web import ScriptResponse
 
 # Local imports
-from .models import HorillaAutomation
+from .models import HorillaAutomation, normalize_delivery_channels
+
+logger = logging.getLogger(__name__)
 
 
 def _get_company(request):
@@ -231,6 +234,20 @@ class CreateSelectedAutomationsView(LoginRequiredMixin, View):
                                 continue
                     if not model_ct:
                         continue
+                    # This loader does not use the form: a seed "both" is
+                    # written as "mail,notification", and a row whose delivery
+                    # channel is not registered here is skipped.
+                    delivery_channel, unknown = normalize_delivery_channels(
+                        fields.get("delivery_channel", "mail"), company
+                    )
+                    if unknown or not delivery_channel:
+                        logger.warning(
+                            "Automation %s not loaded: delivery channel %s is not "
+                            "registered",
+                            title,
+                            ", ".join(unknown) or fields.get("delivery_channel"),
+                        )
+                        continue
                     HorillaAutomation.objects.create(
                         title=title,
                         method_title=title.replace(" ", "_").lower(),
@@ -239,7 +256,7 @@ class CreateSelectedAutomationsView(LoginRequiredMixin, View):
                         trigger=fields.get("trigger", "on_create"),
                         mail_template=mail_template,
                         mail_server=mail_server,
-                        delivery_channel=fields.get("delivery_channel", "mail"),
+                        delivery_channel=delivery_channel,
                         is_active=fields.get("is_active", True),
                         company=company,
                         created_by=request.user,

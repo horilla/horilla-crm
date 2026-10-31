@@ -12,6 +12,7 @@ from horilla.core.exceptions import ValidationError
 
 # First party imports (Horilla)
 from horilla.db import models
+from horilla.registry.delivery import get_delivery_channel, get_delivery_channels
 from horilla.registry.limiters import limit_content_types
 from horilla.registry.permission_registry import permission_exempt_model
 from horilla.urls import reverse_lazy
@@ -30,6 +31,45 @@ CONDITIONS = [
     ("icontains", _("Contains")),
 ]
 
+#: What automations stored for mail and notification together before the
+#: delivery channels could be combined. It is not a channel; the migration
+#: rewrites it to "mail,notification".
+LEGACY_BOTH = "both"
+LEGACY_BOTH_KEYS = ("mail", "notification")
+
+
+def split_delivery_channels(value):
+    """
+    The channel keys in a stored ``delivery_channel`` value, in order.
+
+    ``"mail,notification"`` gives ``["mail", "notification"]``. Tokens are
+    stripped, empty tokens dropped, repeats kept once, and the old ``both``
+    stands for mail and notification. Compare these tokens, never
+    substrings: ``sms`` is also inside ``sms_backup``.
+    """
+    keys = []
+    for token in str(value or "").split(","):
+        token = token.strip()
+        for key in LEGACY_BOTH_KEYS if token == LEGACY_BOTH else (token,):
+            if key and key not in keys:
+                keys.append(key)
+    return keys
+
+
+def normalize_delivery_channels(value, company=None):
+    """
+    ``value`` (a stored string or a list of keys) as the string to store.
+
+    Returns ``(stored, unknown)``: the keys registered and available to
+    ``company``, comma-separated in registry order, and the keys that are not.
+    """
+    if not isinstance(value, str):
+        value = ",".join(str(key) for key in value or [])
+    keys = split_delivery_channels(value)
+    available = [channel.key for channel in get_delivery_channels(company)]
+    unknown = [key for key in keys if key not in available]
+    return ",".join(key for key in available if key in keys), unknown
+
 
 class HorillaAutomation(HorillaCoreModel):
     """
@@ -42,11 +82,6 @@ class HorillaAutomation(HorillaCoreModel):
         ("on_create_or_update", _("Both Create and Update")),
         ("on_delete", _("On Delete")),
         ("scheduled", _("Scheduled (time-based)")),
-    ]
-    SEND_OPTIONS = [
-        ("mail", _("Send as Mail")),
-        ("notification", _("Send as Notification")),
-        ("both", _("Send as Mail and Notification")),
     ]
 
     title = models.CharField(max_length=256, unique=True, verbose_name=_("Title"))
@@ -108,10 +143,13 @@ class HorillaAutomation(HorillaCoreModel):
             "Select the mail server to use for sending emails. If not selected, the primary mail server will be used."
         ),
     )
+    # The keys of the selected delivery channels (horilla.registry.delivery),
+    # comma-separated in registry order: "mail", "mail,notification",
+    # "mail,sms". No fixed choices: a channel added by another app must not
+    # change this field, so it never needs a migration here.
     delivery_channel = models.CharField(
         default="mail",
-        max_length=50,
-        choices=SEND_OPTIONS,
+        max_length=255,
         verbose_name=_("Choose Delivery Channel"),
     )
 
@@ -167,23 +205,51 @@ class HorillaAutomation(HorillaCoreModel):
         verbose_name = _("Mail and Notification")
         verbose_name_plural = _("Mail and Notifications")
 
+    def get_delivery_channels(self):
+        """The selected channel keys, in stored order (``both`` is mail and notification)."""
+        return split_delivery_channels(self.delivery_channel)
+
     def get_template(self):
         """
-        Returns the template content based on the selected delivery channel.
+        Returns the template content based on the selected delivery channels.
         """
-        templates = {
-            "mail": self.mail_template,
-            "notification": self.notification_template,
-        }
+        keys = self.get_delivery_channels()
+        if keys == ["mail"]:
+            return self.mail_template
+        if keys == ["notification"]:
+            return self.notification_template
 
-        if self.delivery_channel in templates:
-            return templates[self.delivery_channel]
-
-        return format_html(
-            "Mail Template: {}<br>Notification Template: {}",
-            self.mail_template,
-            self.notification_template,
+        channels = [
+            channel
+            for channel in (get_delivery_channel(key) for key in keys)
+            if channel is not None
+        ]
+        shows_mail = any(channel.shows_mail_fields() for channel in channels)
+        shows_notification = any(
+            channel.shows_notification_fields() for channel in channels
         )
+        if shows_mail and shows_notification:
+            return format_html(
+                "Mail Template: {}<br>Notification Template: {}",
+                self.mail_template,
+                self.notification_template,
+            )
+        if shows_mail:
+            return self.mail_template
+        if shows_notification:
+            return self.notification_template
+        return None
+
+    def get_delivery_channel_display(self):
+        """
+        The labels of the selected channels, joined by a comma. A channel
+        whose app is no longer installed shows its stored key.
+        """
+        labels = []
+        for key in self.get_delivery_channels():
+            channel = get_delivery_channel(key)
+            labels.append(str(channel.label) if channel is not None else key)
+        return ", ".join(labels)
 
     def clean(self):
         """Validate template fields based on delivery_channel."""
@@ -210,65 +276,63 @@ class HorillaAutomation(HorillaCoreModel):
             if errors:
                 raise ValidationError(errors)
 
-        if (
-            self.delivery_channel == "notification"
-            and not self.notification_template_id
-        ):
+        company = self.company if self.company_id else None
+        stored, unknown = normalize_delivery_channels(self.delivery_channel, company)
+        if unknown:
+            raise ValidationError(
+                {
+                    "delivery_channel": _("Unknown delivery channel: %(keys)s.")
+                    % {"keys": ", ".join(unknown)}
+                }
+            )
+        if not stored:
+            raise ValidationError(
+                {"delivery_channel": _("Select at least one delivery channel.")}
+            )
+        # Registry order; an old "both" becomes "mail,notification".
+        self.delivery_channel = stored
+
+        # Each selected channel needs the template fields it shows: mail
+        # needs the mail template and server, notification its template.
+        channels = [get_delivery_channel(key) for key in stored.split(",")]
+        mail_channel = next(
+            (channel for channel in channels if channel.shows_mail_fields()), None
+        )
+        notification_channel = next(
+            (channel for channel in channels if channel.shows_notification_fields()),
+            None,
+        )
+        if mail_channel is not None:
+            if not self.mail_template_id:
+                raise ValidationError(
+                    {
+                        "mail_template": _(
+                            "Mail template is required when delivery channel is "
+                            "'%(channel)s'."
+                        )
+                        % {"channel": mail_channel.label}
+                    }
+                )
+            if not self.mail_server_id:
+                raise ValidationError(
+                    {
+                        "mail_server": _(
+                            "Outgoing mail server is required when delivery "
+                            "channel is '%(channel)s'."
+                        )
+                        % {"channel": mail_channel.label}
+                    }
+                )
+        if notification_channel is not None and not self.notification_template_id:
             raise ValidationError(
                 {
                     "notification_template": _(
-                        "Notification template is required when delivery channel is "
-                        "'Send as Notification'."
+                        "Notification template is required when delivery "
+                        "channel is '%(channel)s'."
                     )
+                    % {"channel": notification_channel.label}
                 }
             )
-        if self.delivery_channel == "mail":
-            if not self.mail_template_id:
-                raise ValidationError(
-                    {
-                        "mail_template": _(
-                            "Mail template is required when delivery channel is "
-                            "'Send as Mail'."
-                        )
-                    }
-                )
-            if not self.mail_server_id:
-                raise ValidationError(
-                    {
-                        "mail_server": _(
-                            "Outgoing mail server is required when delivery channel is "
-                            "'Send as Mail'."
-                        )
-                    }
-                )
-        if self.delivery_channel == "both":
-            if not self.mail_template_id:
-                raise ValidationError(
-                    {
-                        "mail_template": _(
-                            "Mail template is required when delivery channel is "
-                            "'Send as Mail and Notification'."
-                        )
-                    }
-                )
-            if not self.notification_template_id:
-                raise ValidationError(
-                    {
-                        "notification_template": _(
-                            "Notification template is required when delivery channel is "
-                            "'Send as Mail and Notification'."
-                        )
-                    }
-                )
-            if not self.mail_server_id:
-                raise ValidationError(
-                    {
-                        "mail_server": _(
-                            "Outgoing mail server is required when delivery channel is "
-                            "'Send as Mail and Notification'."
-                        )
-                    }
-                )
 
     def save(self, *args, **kwargs):
         self.full_clean(exclude=["created_by", "updated_by"])

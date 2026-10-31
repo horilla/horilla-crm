@@ -222,15 +222,6 @@ class CadenceDetailView(LoginRequiredMixin, HorillaDetailView):
                 out.append({"empty_slot": True, "slot_order": s})
         return out
 
-    @staticmethod
-    def _stage2_source_pk(followup):
-        source = followup.branch_from
-        while source and source.followup_number > 2 and source.branch_from_id:
-            source = source.branch_from
-        if source and source.followup_number == 2:
-            return source.pk
-        return None
-
     @classmethod
     def _followups_into_columns(cls, followups, num_columns, buckets):
         _CONDITION_CARD_ICONS = (
@@ -278,7 +269,6 @@ class CadenceDetailView(LoginRequiredMixin, HorillaDetailView):
                     "can_add_sibling": can_add_sibling,
                     "bottom_add_followup_number": fu_n,
                     "bottom_add_branch_from_id": followup.branch_from_id,
-                    "show_child_down_arrow": False,
                     "show_delete_followup": getattr(
                         followup, "branch_children_count", 0
                     )
@@ -293,8 +283,6 @@ class CadenceDetailView(LoginRequiredMixin, HorillaDetailView):
                 cols[i] = cls._rebuild_column_by_parent_slots(
                     cols[i], fn, buckets, prev_column_rows=cols[i - 1]
                 )
-        for col_idx in range(2, num_columns):
-            cls._apply_fu3_column_visual_flags(cols[col_idx])
         for col in cols[1:]:
             cls._flag_last_sibling_add(col)
         return cols
@@ -310,28 +298,6 @@ class CadenceDetailView(LoginRequiredMixin, HorillaDetailView):
                 last_by_parent[row["condition"].branch_from_id] = row
         for row in last_by_parent.values():
             row["show_card_add_below_next"] = row["can_add_sibling"]
-
-    @classmethod
-    def _apply_fu3_column_visual_flags(cls, cols_2):
-        real_indices = [i for i, r in enumerate(cols_2) if r.get("condition")]
-        for idx, i in enumerate(real_indices):
-            row = cols_2[i]
-            source_pk = cls._stage2_source_pk(row["condition"])
-            if idx + 1 < len(real_indices):
-                j = real_indices[idx + 1]
-                next_source_pk = cls._stage2_source_pk(cols_2[j]["condition"])
-                row["show_child_down_arrow"] = bool(
-                    source_pk and source_pk == next_source_pk
-                )
-            else:
-                row["show_child_down_arrow"] = False
-        next_source_pk = None
-        for i in range(len(cols_2) - 1, -1, -1):
-            row = cols_2[i]
-            if not row.get("condition"):
-                continue
-            source_pk = cls._stage2_source_pk(row["condition"])
-            next_source_pk = source_pk
 
 
 @method_decorator(htmx_required, name="dispatch")

@@ -15,6 +15,9 @@ touched, so no data migration is needed.
 import logging
 from datetime import timedelta
 
+# Third-party imports
+from dateutil.relativedelta import relativedelta
+
 # Third-party imports (Django)
 from django.db import IntegrityError
 
@@ -32,7 +35,7 @@ from horilla.utils import timezone
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
-from .models import Cadence, CadenceEnrollment
+from .models import Cadence, CadenceEnrollment, CadenceScheduledFollowUp
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +44,9 @@ CLOSED_ACTIVITY_STATUSES = ("completed", "cancelled")
 # Mail statuses that mean "not sent yet".
 OPEN_MAIL_STATUSES = ("scheduled",)
 FAILED_MAIL_STATUSES = ("failed", "bounced")
+# Delays up to this long are queued for their exact time. Longer ones are left to the
+# periodic task, because Redis redelivers waiting tasks after its visibility timeout.
+EXACT_TIMING_MAX_DELAY = timedelta(hours=1)
 
 
 class EnrollmentError(Exception):
@@ -91,6 +97,11 @@ def existing_followup_ids(enrollment):
         followup_id = _runtime_of(item).get("followup_id")
         if followup_id:
             ids.add(followup_id)
+    ids.update(
+        CadenceScheduledFollowUp.all_objects.filter(enrollment=enrollment).values_list(
+            "followup_id", flat=True
+        )
+    )
     return ids
 
 
@@ -209,7 +220,20 @@ def _create_email_draft_for_followup(
 
 
 def create_followup_item(instance, enrollment, followup, trigger_time=None):
-    """Create the task / call / email for ``followup`` inside ``enrollment``."""
+    """
+    Create the task / call / email for ``followup`` inside ``enrollment``.
+
+    A new task or call already has a status (for example a call starts as
+    Scheduled), and creating it is not a status change, so the signal never sees
+    it. The follow-ups waiting for that status are therefore started here.
+    """
+    item = _build_followup_item(instance, enrollment, followup, trigger_time)
+    if isinstance(item, Activity):
+        create_next_followups(enrollment, instance, followup, item.status)
+    return item
+
+
+def _build_followup_item(instance, enrollment, followup, trigger_time=None):
     if followup.followup_type not in {"task", "call", "email"}:
         return None
     cadence = enrollment.cadence
@@ -259,6 +283,121 @@ def create_followup_item(instance, enrollment, followup, trigger_time=None):
     )
 
 
+def followup_delay(followup):
+    """Wait configured in "Do This" as a timedelta, or ``None`` for no wait."""
+    value = followup.do_this_value or 0
+    if followup.do_this_unit == "minute":
+        return timedelta(minutes=value)
+    if followup.do_this_unit == "hour":
+        return timedelta(hours=value)
+    if followup.do_this_unit == "day":
+        return timedelta(days=value)
+    if followup.do_this_unit == "month":
+        return relativedelta(months=value)
+    return None
+
+
+def start_followup(instance, enrollment, followup, trigger_time=None):
+    """
+    Create the item for ``followup`` now, or schedule it when it has a delay.
+
+    Returns the created item, or the pending ``CadenceScheduledFollowUp`` when the
+    follow-up has to wait; ``None`` when nothing could be created.
+    """
+    delay = followup_delay(followup)
+    if delay is None:
+        return create_followup_item(instance, enrollment, followup, trigger_time)
+    scheduled, created = CadenceScheduledFollowUp.all_objects.get_or_create(
+        enrollment=enrollment,
+        followup=followup,
+        defaults={
+            "scheduled_at": (trigger_time or timezone.now()) + delay,
+            "company": enrollment.company,
+        },
+    )
+    if created and isinstance(delay, timedelta) and delay <= EXACT_TIMING_MAX_DELAY:
+        _queue_at_scheduled_time(scheduled)
+    return scheduled
+
+
+def _queue_at_scheduled_time(scheduled):
+    """
+    Ask Celery to run ``scheduled`` exactly when it is due.
+
+    The periodic task still picks it up if this fails or is lost, so this only
+    removes the wait for the next beat tick.
+    """
+    from .tasks import run_cadence_scheduled_followup
+
+    def queue():
+        try:
+            run_cadence_scheduled_followup.apply_async(
+                args=[scheduled.pk], eta=scheduled.scheduled_at
+            )
+        except Exception:  # pylint: disable=broad-exception-caught
+            logger.warning(
+                "Could not queue cadence follow-up %s; the periodic task will run it",
+                scheduled.pk,
+                exc_info=True,
+            )
+
+    transaction.on_commit(queue)
+
+
+def run_scheduled_followup(scheduled_id):
+    """Create the item of one due scheduled follow-up and record the outcome."""
+    with transaction.atomic():
+        scheduled = (
+            CadenceScheduledFollowUp.all_objects.select_for_update()
+            .select_related("enrollment__cadence", "followup")
+            .filter(pk=scheduled_id, status="pending")
+            .first()
+        )
+        if scheduled is None:
+            return None
+        enrollment = scheduled.enrollment
+        instance = enrollment.related_object if enrollment.status == "active" else None
+        if instance is None:
+            scheduled.status = "cancelled"
+            scheduled.executed_at = timezone.now()
+            scheduled.save(update_fields=["status", "executed_at", "updated_at"])
+            return scheduled
+        try:
+            with transaction.atomic():
+                item = create_followup_item(
+                    instance,
+                    enrollment,
+                    scheduled.followup,
+                    trigger_time=timezone.now(),
+                )
+            scheduled.status = "completed" if item else "failed"
+            if not item:
+                scheduled.error_message = str(_("Nothing could be created."))
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            logger.exception(
+                "Cadence delayed follow-up failed: enrollment=%s followup=%s",
+                enrollment.pk,
+                scheduled.followup_id,
+            )
+            scheduled.status = "failed"
+            scheduled.error_message = str(exc)
+        scheduled.executed_at = timezone.now()
+        scheduled.save(
+            update_fields=["status", "error_message", "executed_at", "updated_at"]
+        )
+    refresh_status(enrollment)
+    return scheduled
+
+
+def due_scheduled_followup_ids(now=None):
+    """Ids of pending scheduled follow-ups whose wait is over."""
+    return list(
+        CadenceScheduledFollowUp.all_objects.filter(
+            status="pending", scheduled_at__lte=now or timezone.now()
+        ).values_list("pk", flat=True)
+    )
+
+
 def create_first_followups(enrollment, instance):
     """Create the stage-1 follow-ups that this enrollment does not have yet."""
     created = []
@@ -269,7 +408,7 @@ def create_first_followups(enrollment, instance):
     for followup in first_followups:
         if followup.pk in existing:
             continue
-        item = create_followup_item(instance, enrollment, followup)
+        item = start_followup(instance, enrollment, followup)
         if item:
             existing.add(followup.pk)
             created.append(item)
@@ -293,7 +432,7 @@ def create_next_followups(enrollment, instance, source_followup, status_key):
     for followup in next_followups:
         if followup.pk in existing:
             continue
-        item = create_followup_item(
+        item = start_followup(
             instance, enrollment, followup, trigger_time=timezone.now()
         )
         if item:
@@ -316,6 +455,11 @@ def refresh_status(enrollment, allow_fail=True):
     example no outgoing mail server) they stay ongoing and are retried on the next save.
     """
     if enrollment.status != "active":
+        return enrollment
+    # A follow-up still waiting for its delay keeps the run going.
+    if CadenceScheduledFollowUp.all_objects.filter(
+        enrollment=enrollment, status="pending"
+    ).exists():
         return enrollment
     activity_statuses = list(
         enrollment_activities(enrollment).values_list("status", flat=True)
@@ -542,6 +686,9 @@ def unenroll(enrollment, user):
         enrollment.save(
             update_fields=["status", "ended_at", "unenrolled_by", "updated_at"]
         )
+        CadenceScheduledFollowUp.all_objects.filter(
+            enrollment=enrollment, status="pending"
+        ).update(status="cancelled", executed_at=timezone.now())
         open_activities = enrollment_activities(enrollment).exclude(
             status__in=CLOSED_ACTIVITY_STATUSES
         )

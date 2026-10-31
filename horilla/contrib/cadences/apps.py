@@ -29,3 +29,5 @@ class CadencesConfig(AppLauncher):
         "menu",
         "view_extensions",
     ]
+
+    celery_schedule_module = "celery_schedules"

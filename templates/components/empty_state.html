@@ -2,11 +2,20 @@
     {% if spacer %}
         <div class="flex justify-between items-center h-20"></div>
     {% endif %}
-    <img
-        src="{% static image|default:'assets/img/not-found.svg' %}"
-        alt="{{ alt|default:'' }}"
-        class="w-60 m-auto mb-4 mt-5"
-    >
+    {% if feature_disabled %}
+        {% trans "Feature not enabled" as feature_disabled_alt %}
+        <img
+            src="{% static 'assets/img/feature-disabled.svg' %}"
+            alt="{{ feature_disabled_alt }}"
+            class="w-60 m-auto mb-4 mt-5"
+        >
+    {% else %}
+        <img
+            src="{% static image|default:'assets/img/not-found.svg' %}"
+            alt="{{ alt|default:'' }}"
+            class="w-60 m-auto mb-4 mt-5"
+        >
+    {% endif %}
     {% if message %}
         <p class="text-sm text-center mb-3">{{ message }}</p>
     {% endif %}

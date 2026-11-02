@@ -1,6 +1,0 @@
-{% comment %}
-    Shared empty state for a page whose feature is not enabled.
-    Usage: {% include "components/empty_states/feature_disabled.html" with message=some_message %}
-{% endcomment %}
-{% trans "Feature not enabled" as empty_state_alt %}
-{% include "components/empty_state.html" with image="assets/img/feature-disabled.svg" alt=empty_state_alt message=message %}

@@ -25,6 +25,7 @@ Reusable markup for **prerequisite gates** and **no-data** screens (image + mess
 | `spacer` | falsy | When true, renders top `h-20` spacer (settings pages) |
 | `action_url` | — | Optional primary CTA link `href` |
 | `action_label` | — | CTA link label (required when `action_url` set) |
+| `feature_disabled` | falsy | When true, uses `assets/img/feature-disabled.svg` with a “Feature not enabled” alt (ignores `image` / `alt`) |
 | `wrapper_class` | — | Extra CSS classes on root `.empty-state` div |
 
 Optional action buttons that need permissions, HTMX, or `onclick` should stay **outside** the include (see forecast target “Go To Forecast Type” button).

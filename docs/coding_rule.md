@@ -728,4 +728,28 @@ Several Horilla models **persist field names as strings** in the database (visib
 
 ---
 
+## App static files
+
+An app's files under `static/` live in a folder with the same name as the app. Django's static finder uses that path, so `{% static %}`, `static()`, and `__icon__` include the app name.
+
+```text
+horilla/contrib/dashboard/static/dashboard/assets/icons/icon6.svg
+```
+
+`__icon__` in that app is `dashboard/assets/icons/icon6.svg`.
+
+```text
+# ❌ Files sit directly under static/
+horilla/contrib/dashboard/static/assets/icons/icon6.svg
+__icon__ = "assets/icons/icon6.svg"
+
+# ✅ App name is the first folder inside static/
+horilla/contrib/keys/static/keys/assets/icons/icon3.svg
+__icon__ = "keys/assets/icons/icon3.svg"
+```
+
+Shared files that are not owned by one app stay in the project `static/` directory. Those paths do not get an app-name prefix.
+
+---
+
 _Add further rule sections here as `## <Topic>` (e.g. Views, Migrations). See also [Avoid direct Django usage](#avoid-direct-django-usage)._

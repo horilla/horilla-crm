@@ -1,14 +1,18 @@
-"""Tests for horilla_jalali's History tab formatting hook."""
+"""Tests for horilla_jalali's History tab formatting and timeline calendar hooks."""
 
 # Standard library imports
 import importlib
+import re
 import sys
 from datetime import date, datetime
 from datetime import timezone as dt_timezone
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
 # Third-party imports (Django)
+from django.contrib.staticfiles import finders
+from django.template.loader import get_template
 from django.test import SimpleTestCase
 from django.utils import formats, timezone
 
@@ -195,3 +199,35 @@ class HistoryDatetimeShamsiTests(IsolatedHistoryRegistryMixin, SimpleTestCase):
         with override("fa"):
             self.assertIsNone(format_history_datetime_as_jalali("--"))
             self.assertIsNone(format_history_datetime_as_jalali("Open"))
+
+
+class JalaliTimelineCalendarTests(SimpleTestCase):
+    """The Shamsi calendar script fills in the generic timeline's calendar hook."""
+
+    @staticmethod
+    def object_keys(source, name):
+        """Top-level keys of the JS object literal assigned to ``var <name>``."""
+        match = re.search(
+            r"^( *)var " + name + r" = \{\n(.*?)^\1\};", source, re.M | re.S
+        )
+        indent = match.group(1) + "    "
+        return set(re.findall(r"^" + indent + r"(\w+):", match.group(2), re.M))
+
+    def test_every_timeline_calendar_key_is_shamsi(self):
+        """The script sets the hook the timeline reads and overrides every key
+        of its Gregorian default, so no Gregorian column or label is left."""
+        timeline = Path(get_template("timeline_view.html").origin.name).read_text(
+            encoding="utf-8"
+        )
+        script = Path(
+            finders.find("horilla_jalali/js/horilla_calendar_jalali.js")
+        ).read_text(encoding="utf-8")
+        self.assertIn("window.horillaTimelineCalendar", timeline)
+        self.assertIn(
+            "window.horillaTimelineCalendar = JALALI_TIMELINE_CALENDAR;", script
+        )
+        gregorian_keys = self.object_keys(timeline, "GREGORIAN_CALENDAR")
+        self.assertIn("monthStart", gregorian_keys)
+        self.assertEqual(
+            self.object_keys(script, "JALALI_TIMELINE_CALENDAR"), gregorian_keys
+        )

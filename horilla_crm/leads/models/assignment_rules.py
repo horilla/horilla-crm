@@ -17,7 +17,7 @@ from horilla.contrib.utils.methods import render_template
 
 # First party imports (Horilla)
 from horilla.core.exceptions import ValidationError
-from horilla.db import models
+from horilla.db import models, transaction
 from horilla.registry.permission_registry import permission_exempt_model
 from horilla.urls import reverse_lazy
 from horilla.utils.choices import OPERATOR_CHOICES
@@ -42,10 +42,23 @@ class LeadAssignmentRule(HorillaCoreModel):
     """
     Top-level assignment rule container. Conditions are added from the detail view.
     is_active is inherited from HorillaCoreModel.
+
+    Only one rule of a company is active at a time: saving an active rule
+    deactivates the company's other active rules.
     """
 
     name = models.CharField(max_length=256, verbose_name=_("Rule Name"))
     description = models.TextField(blank=True, verbose_name=_("Description"))
+
+    def save(self, *args, **kwargs):
+        """Save the rule; if it is active, deactivate the company's other rules."""
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            if self.is_active:
+                # update() so the other rules' save() is not triggered again.
+                type(self).all_objects.filter(
+                    company=self.company, is_active=True
+                ).exclude(pk=self.pk).update(is_active=False)
 
     class Meta:
         """

@@ -306,7 +306,7 @@ def _resolve_target_users(condition):
     return condition_users(condition)
 
 
-def _pick_round_robin(users_qs):
+def _pick_least_loaded_user(users_qs):
     """
     From a queryset of users, return the one currently owning the fewest active leads.
     Ties broken by PK (lowest first) for determinism.
@@ -339,7 +339,7 @@ def apply_assignment_rules(lead):
 
                 # Condition matched — resolve target users
                 users_qs = _resolve_target_users(condition)
-                assigned_user = _pick_round_robin(users_qs)
+                assigned_user = _pick_least_loaded_user(users_qs)
                 if not assigned_user:
                     logger.warning(
                         "Assignment rule '%s' condition #%s matched lead %s "

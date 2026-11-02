@@ -224,7 +224,6 @@ class OpportunityTeamFormView(
     full_width_fields = ["team_name", "description"]
     condition_fields = ["user", "team_role", "opportunity_access_level"]
     modal_height = False
-    form_title = _("Create Opportunity Team")
     condition_field_title = _("Add Members")
     save_and_new = False
 
@@ -511,7 +510,6 @@ class OpportunityTeamMemberCreateView(
     form_class = OpportunityTeamMemberForm
     condition_fields = ["user", "team_role", "opportunity_access_level"]
     modal_height = False
-    form_title = _("Create Opportunity Team")
     hidden_fields = ["team"]
     condition_field_title = _("Add Members")
     save_and_new = False
@@ -622,7 +620,6 @@ class OpportunityTeamMemberUpdateView(
     model = DefaultOpportunityMember
     fields = ["team", "user", "team_role", "opportunity_access_level"]
     full_width_fields = ["user", "team_role", "opportunity_access_level"]
-    form_title = _("Edit Team Member")
     modal_height = False
     hidden_fields = ["team"]
 
@@ -690,7 +687,6 @@ class OpportunityMemberUpdateView(
     model = OpportunityTeamMember
     fields = ["team_role", "opportunity_access"]
     full_width_fields = ["team_role", "opportunity_access"]
-    form_title = _("Edit Team Member")
     modal_height = False
 
     def has_permission(self):

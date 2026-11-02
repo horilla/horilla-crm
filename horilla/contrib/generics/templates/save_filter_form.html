@@ -1,6 +1,6 @@
 <div id="modalBox" class="relative bg-white rounded-lg shadow-sm">
     <div class="p-5">
-        {% if is_edit %}{% trans "Edit List View" as modal_title %}{% else %}{% trans "New List View" as modal_title %}{% endif %}
+        {% if is_edit %}{% trans "Update List View" as modal_title %}{% else %}{% trans "Create List View" as modal_title %}{% endif %}
         {% modal_header modal_title %}
 
         {% if create_new or is_edit %}

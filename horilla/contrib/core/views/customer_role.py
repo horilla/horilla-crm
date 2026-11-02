@@ -174,7 +174,6 @@ class CustomerRoleFormView(LoginRequiredMixin, HorillaSingleFormView):
     fields = ["customer_role_name", "description"]
     full_width_fields = ["customer_role_name", "description"]
     modal_height = False
-    form_title = _("Customer Role")
     save_and_new = False
 
     @cached_property

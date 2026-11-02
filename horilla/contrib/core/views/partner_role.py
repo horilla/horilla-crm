@@ -176,7 +176,6 @@ class PartnerRoleFormView(LoginRequiredMixin, HorillaSingleFormView):
     fields = ["partner_role_name", "description"]
     full_width_fields = ["partner_role_name", "description"]
     modal_height = False
-    form_title = _("Partner Role")
 
     @cached_property
     def form_url(self):

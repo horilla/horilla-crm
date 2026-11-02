@@ -169,7 +169,6 @@ class TeamRoleFormView(LoginRequiredMixin, HorillaSingleFormView):
     fields = ["team_role_name", "description"]
     full_width_fields = ["team_role_name", "description"]
     modal_height = False
-    form_title = _("Team Role")
 
     @cached_property
     def form_url(self):

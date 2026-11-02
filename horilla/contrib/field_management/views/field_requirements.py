@@ -191,7 +191,6 @@ class FieldRequirementFormView(LoginRequiredMixin, HorillaSingleFormView):
     form_class = FieldRequirementForm
     fields = ["content_type", "field_name", "is_required"]
     modal_height = False
-    form_title = _("Field Requirement")
 
     @cached_property
     def form_url(self):

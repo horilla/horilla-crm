@@ -690,7 +690,7 @@ class AddCurrencyView(LoginRequiredMixin, HorillaSingleFormView):
     """
 
     model = MultipleCurrency
-    form_title = _("Add Currency")
+    form_title = _("Create Currency")
     modal_height = False
     fields = ["currency", "conversion_rate", "decimal_places", "company"]
     hidden_fields = ["company"]
@@ -722,7 +722,7 @@ class AddCurrencyView(LoginRequiredMixin, HorillaSingleFormView):
             else:
                 self.fields = ["conversion_rate", "decimal_places", "company"]
                 self.full_width_fields = []
-            self.form_title = _("Edit Currency Information")
+            self.form_title = _("Update Currency")
         return super().dispatch(request, *args, **kwargs)
 
     def get_form(self, form_class=None):
@@ -1035,7 +1035,7 @@ class DatedConversionRateEditView(LoginRequiredMixin, HorillaSingleFormView):
     """
 
     model = DatedConversionRate
-    form_title = _("Edit Dated Exchange Rate")
+    form_title = _("Update Dated Conversion Rate")
     modal_height = False
     fields = ["conversion_rate", "company"]
     hidden_fields = ["company"]

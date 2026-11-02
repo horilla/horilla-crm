@@ -1,6 +1,6 @@
 <div id="workflow-action-form-wrap">
     <div class="bg-white rounded-lg p-5">
-        {% if edit_pk %}{% trans "Edit Action" as modal_title %}{% else %}{% trans "Add Action" as modal_title %}{% endif %}
+        {% if edit_pk %}{% trans "Update Action" as modal_title %}{% else %}{% trans "Create Action" as modal_title %}{% endif %}
         {% modal_header modal_title %}
 
         <form

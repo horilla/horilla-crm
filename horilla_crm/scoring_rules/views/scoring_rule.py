@@ -338,7 +338,6 @@ class ScoringCriterionCreateUpdateView(LoginRequiredMixin, HorillaSingleFormView
     condition_related_name = "conditions"
     hidden_fields = ["rule"]
     modal_height = False
-    form_title = _("Create New Rule Criteria")
     save_and_new = False
 
     def get(self, request, *args, **kwargs):

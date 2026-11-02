@@ -9,7 +9,7 @@
         <div class="overflow-y-auto custom-scroll h-[calc(100vh-210px)]">
             {% if not has_access %}
                 {% trans "Meeting integration is not currently enabled for your account. Please contact your administrator." as disabled_message %}
-                {% include "components/empty_states/feature_disabled.html" with message=disabled_message %}
+                {% include "components/empty_state.html" with feature_disabled=True message=disabled_message %}
             {% else %}
                 {# ── Zoom ── #}
                 {% with card=provider_cards.zoom %}

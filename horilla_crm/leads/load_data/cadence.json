@@ -29,7 +29,7 @@
             "cadence": 1,
             "field": "lead_status",
             "operator": "exact",
-            "value": "New",
+            "value": "1",
             "logical_operator": "and",
             "order": 0
         }
@@ -199,7 +199,7 @@
             "cadence": 2,
             "field": "lead_status",
             "operator": "exact",
-            "value": "Unworked",
+            "value": "7",
             "logical_operator": "and",
             "order": 0
         }

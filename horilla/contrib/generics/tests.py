@@ -53,7 +53,7 @@ from horilla.registry.history_registry import (
 )
 from horilla.urls import reverse
 from horilla.utils import timezone
-from horilla.utils.translation import override
+from horilla.utils.translation import gettext, override
 
 
 class GetViewColumnsVerboseNameTests(SimpleTestCase):
@@ -1162,3 +1162,9 @@ class TimelineRtlTests(SimpleTestCase):
         self.assertIn("var scrollSign = isRtl ? -1 : 1;", source)
         self.assertIn("scrollSign * Math.max(earliestLeftPx - 40, 0)", source)
         self.assertNotIn("scrollEl.scrollLeft = Math.max(", source)
+
+    def test_persian_span_caption_arrow_points_to_the_end_field(self):
+        """The start field is on the right on RTL pages, so the arrow points left."""
+        with override("fa"):
+            caption = gettext("From %(start)s → %(end)s") % {"start": "A", "end": "B"}
+        self.assertEqual(caption, "از A ← B")

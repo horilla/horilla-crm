@@ -1202,7 +1202,7 @@ msgstr "نوارها استفاده می‌کنند: %(field)s"
 
 #, python-format
 msgid "From %(start)s → %(end)s"
-msgstr "از %(start)s → %(end)s"
+msgstr "از %(start)s ← %(end)s"
 
 msgid "No rows selected for deletion."
 msgstr "هیچ ردیفی برای حذف انتخاب نشده است."

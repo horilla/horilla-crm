@@ -3,8 +3,8 @@ Tests for the automations app: delivery channels.
 
 Mail and notification are registered channels (``horilla.registry.delivery``)
 and a fake phone channel stands in for one another app would add. An
-automation stores the selected channel keys comma-separated, in registry
-order.
+automation stores the selected channel keys comma-separated, in
+``get_delivery_channels()`` order (mail, notification, then the rest).
 """
 
 import ast
@@ -35,6 +35,7 @@ from horilla.registry.delivery import (
     DeliveryChannel,
     get_delivery_channel,
     get_delivery_channels,
+    is_phone_number,
     register_delivery_channel,
     unregister_delivery_channel,
 )
@@ -78,13 +79,6 @@ def register_fake(test, channel=None):
     register_delivery_channel(channel)
     test.addCleanup(unregister_delivery_channel, channel.key)
     return channel
-
-
-def in_registry_order(*keys):
-    """``keys`` as the stored string: comma-separated in registry order."""
-    return ",".join(
-        channel.key for channel in get_delivery_channels() if channel.key in keys
-    )
 
 
 class RegistryTests(SimpleTestCase):
@@ -138,6 +132,35 @@ class RegistryTests(SimpleTestCase):
         get_delivery_channels().clear()
         self.assertIsNotNone(get_delivery_channel("mail"))
 
+    def test_channels_are_sorted_by_order_then_registration(self):
+        """Mail (10) before notification (20) although notifications registers
+        first; the default 100 goes after them; equal orders keep registration order."""
+        late, early, tied = (FakeSmsChannel() for _ in range(3))
+        late.key, early.key, tied.key = "late_sms", "early_sms", "tied_sms"
+        early.order = 5
+        for channel in (late, early, tied):
+            register_fake(self, channel)
+        self.assertEqual(
+            [channel.key for channel in get_delivery_channels()],
+            ["early_sms", "mail", "notification", "late_sms", "tied_sms"],
+        )
+        self.assertEqual(
+            (get_delivery_channel("mail").order, FakeSmsChannel.order), (10, 100)
+        )
+
+    def test_phone_addresses_skip_values_that_are_not_numbers(self):
+        """A phone channel skips an email or text; it keeps written numbers."""
+        channel = FakeSmsChannel()
+        for value in ("09121234567", "+98 912 123-4567", "(021) 8800.1234"):
+            with self.subTest(value=value):
+                self.assertTrue(is_phone_number(value))
+                self.assertEqual(channel.get_address(value), value)
+        for value in ("someone@example.com", "n/a", "+", "call me", ""):
+            with self.subTest(value=value):
+                self.assertFalse(is_phone_number(value))
+                self.assertIsNone(channel.get_address(value))
+        self.assertIsNone(channel.get_address(SimpleNamespace(contact_number="n/a")))
+
     def test_registry_and_channels_do_not_import_the_engines(self):
         """The registry imports no contrib app; mail and notifications not Automations."""
         files = {
@@ -178,14 +201,13 @@ class StoredValueTests(SimpleTestCase):
         self.assertEqual(split_delivery_channels(None), [])
 
     def test_normalize_orders_by_the_registry_and_reports_unknown_keys(self):
-        """Stored in registry order; unregistered keys come back separately."""
+        """Stored mail first, as "both" sent; unregistered keys come back separately."""
         self.assertEqual(
             normalize_delivery_channels("notification,mail"),
-            (in_registry_order("mail", "notification"), []),
+            ("mail,notification", []),
         )
         self.assertEqual(
-            normalize_delivery_channels(["both"]),
-            (in_registry_order("mail", "notification"), []),
+            normalize_delivery_channels(["both"]), ("mail,notification", [])
         )
         self.assertEqual(
             normalize_delivery_channels("mail,pigeon"), ("mail", ["pigeon"])
@@ -197,13 +219,13 @@ class StoredValueTests(SimpleTestCase):
         field = DeliveryChannelsField(required=True)
         self.assertEqual(
             [key for key, _label in field.choices],
-            [channel.key for channel in get_delivery_channels()],
+            ["mail", "notification", "fake_sms"],
         )
         self.assertNotIn("both", dict(field.choices))
         self.assertEqual(field.prepare_value("mail,fake_sms"), ["mail", "fake_sms"])
         self.assertEqual(
             field.clean(["fake_sms", "notification", "mail"]),
-            in_registry_order("mail", "notification", "fake_sms"),
+            "mail,notification,fake_sms",
         )
         self.assertFalse(
             field.has_changed("mail,notification", ["mail", "notification"])
@@ -321,20 +343,17 @@ class ModelTests(AutomationTestCase):
                 self.assertEqual(self.errors(automation), expected)
 
     def test_old_both_is_rewritten(self):
-        """A stored "both" is cleaned to mail and notification, in registry order."""
+        """A stored "both" is cleaned to "mail,notification"."""
         automation = self.automation("both", save=False)
         self.assertEqual(self.errors(automation), set())
-        self.assertEqual(
-            automation.delivery_channel, in_registry_order("mail", "notification")
-        )
+        self.assertEqual(automation.delivery_channel, "mail,notification")
 
-    def test_keys_are_stored_in_registry_order(self):
-        """The selection order does not matter; the registry order is stored."""
+    def test_keys_are_stored_in_channel_order(self):
+        """The selection order does not matter: mail, notification, then the rest."""
         automation = self.automation("fake_sms, notification ,mail")
-        self.assertEqual(
-            automation.delivery_channel,
-            in_registry_order("mail", "notification", "fake_sms"),
-        )
+        self.assertEqual(automation.delivery_channel, "mail,notification,fake_sms")
+        automation = self.automation("notification,mail")
+        self.assertEqual(automation.delivery_channel, "mail,notification")
 
     def test_unknown_or_empty_values_are_refused(self):
         """An unknown token or no channel at all fails on delivery_channel."""
@@ -454,8 +473,9 @@ class DefaultRecipientTests(AutomationTestCase):
             get_delivery_channel("mail").resolve_recipients(spec, None, self.user),
             ["user@example.com", "someone@example.com"],
         )
+        # The phone channel skips the email; mail skipped the number.
         self.assertEqual(
-            self.fake.resolve_recipients("self, 09124444444", None, self.user),
+            self.fake.resolve_recipients(spec, None, self.user),
             ["09121111111", "09124444444"],
         )
 
@@ -631,7 +651,7 @@ class FormAndViewTests(AutomationTestCase):
         self.assertIn("multiple", select)
         self.assertEqual(
             re.findall(r'<option value="([^"]+)"', select),
-            [channel.key for channel in get_delivery_channels(self.company)],
+            ["mail", "notification", "fake_sms"],
         )
         self.assertNotIn('value="both"', select)
         self.assertIn("Send as Fake SMS", select)
@@ -671,9 +691,7 @@ class FormAndViewTests(AutomationTestCase):
         automation = HorillaAutomation.all_objects.filter(title="Mail and SMS").first()
         form = response.context and response.context.get("form")
         self.assertIsNotNone(automation, form.errors if form else response.content)
-        self.assertEqual(
-            automation.delivery_channel, in_registry_order("mail", "fake_sms")
-        )
+        self.assertEqual(automation.delivery_channel, "mail,fake_sms")
 
     def test_template_fields_follow_the_selected_channels(self):
         """A block shows when any selected channel asks for it."""

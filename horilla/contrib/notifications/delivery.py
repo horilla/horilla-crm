@@ -100,6 +100,8 @@ class NotificationChannel(DeliveryChannel):
     key = "notification"
     label = _("Send as Notification")
     address_kind = ADDRESS_USER
+    # After mail (10), before channels that keep the default 100.
+    order = 20
 
     def shows_notification_fields(self):
         """Notifications need the notification template."""

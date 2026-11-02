@@ -47,7 +47,7 @@ def get_model_class(model_name):
 
 
 def get_delivery_channel_choices(company=None):
-    """``(key, label)`` of the registered channels available to ``company``, in registry order."""
+    """``(key, label)`` of the channels available to ``company``, in ``get_delivery_channels()`` order."""
     return [(channel.key, channel.label) for channel in get_delivery_channels(company)]
 
 
@@ -79,7 +79,7 @@ class DeliveryChannelsField(forms.Field):
 
     Shows a stored ``"mail,notification"`` as two selected options and cleans
     the selection to the string the model stores: the keys joined by a comma,
-    in registry order. A plain ``Field`` (like the ``mail_to`` picker), not a
+    in ``get_delivery_channels()`` order. A plain ``Field`` (like the ``mail_to`` picker), not a
     ``ChoiceField``: its cleaned value is that string, not one of the choices.
     """
 
@@ -127,7 +127,7 @@ class DeliveryChannelsField(forms.Field):
         return set(self.prepare_value(initial)) != set(self.prepare_value(data))
 
     def clean(self, value):
-        """The selected keys joined by a comma, in registry order."""
+        """The selected keys joined by a comma, in ``get_delivery_channels()`` order."""
         keys = super().clean(value)
         stored, _unknown = normalize_delivery_channels(keys, self.company)
         return stored

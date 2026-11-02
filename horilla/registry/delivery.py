@@ -26,9 +26,9 @@ nothing about ``"both"`` or about comma-separated values.
 import abc
 import logging
 
-from django.contrib.auth import get_user_model
 from django.db import models
 
+from horilla.auth.models import User
 from horilla.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
@@ -52,6 +52,13 @@ RESERVED_KEYS = {
 #: Parts of a field name that mark a phone number field.
 PHONE_FIELD_HINTS = ("phone", "mobile", "contact_number")
 
+#: Characters a written phone number may have besides digits.
+PHONE_PUNCTUATION = frozenset("+-(). ")
+
+#: ``order`` of a channel that does not set one: after mail (10) and
+#: notification (20).
+DEFAULT_ORDER = 100
+
 _channels = {}
 
 
@@ -65,7 +72,9 @@ class DeliveryChannel(abc.ABC):
     reserved).
     ``label`` is shown in the automation form. ``address_kind`` is what the
     channel sends to: ``"email"``, ``"user"`` or ``"phone"``; the default
-    recipient methods below follow it.
+    recipient methods below follow it. ``order`` places the channel in
+    ``get_delivery_channels()`` and so in the stored value: lower first,
+    registration order when two are equal (mail is 10, notification 20).
 
     Subclasses implement ``send()``. The other methods have defaults.
     """
@@ -73,6 +82,7 @@ class DeliveryChannel(abc.ABC):
     key = ""
     label = ""
     address_kind = ADDRESS_EMAIL
+    order = DEFAULT_ORDER
 
     def is_available(self, company=None):
         """Whether the channel can be chosen for ``company``."""
@@ -89,13 +99,12 @@ class DeliveryChannel(abc.ABC):
         choices = [("self", _("Self (User who triggered)"))]
         if model is None:
             return choices
-        user_model = get_user_model()
         for field in model._meta.get_fields():
             if not hasattr(field, "name"):
                 continue
             if isinstance(field, models.ForeignKey):
                 related = field.related_model
-                if not (isinstance(related, type) and issubclass(related, user_model)):
+                if not (isinstance(related, type) and issubclass(related, User)):
                     continue
             elif not self.is_address_field(field):
                 continue
@@ -156,27 +165,31 @@ class DeliveryChannel(abc.ABC):
         ``target`` is a raw value, used as it is when it fits
         ``address_kind``, or an object (usually a user) whose own field is
         used: ``email`` for ``"email"``, the user itself for ``"user"``,
-        ``contact_number`` for ``"phone"``.
+        ``contact_number`` for ``"phone"``. A value the channel cannot use
+        is skipped: mail skips a value without ``@``, a phone channel one
+        that is not written like a phone number (an email in the shared
+        ``mail_to``, for example).
         """
         if target is None or target == "":
             return None
-        user_model = get_user_model()
         if isinstance(target, str):
             value = target.strip()
             if self.address_kind == ADDRESS_PHONE:
-                return value or None
+                return value if is_phone_number(value) else None
             if "@" not in value:
                 return None
             if self.address_kind == ADDRESS_USER:
-                return user_model.objects.filter(email=value).first()
+                return User.objects.filter(email=value).first()
             return value
         if self.address_kind == ADDRESS_USER:
-            if isinstance(target, user_model):
+            if isinstance(target, User):
                 return target
             email = getattr(target, "email", None)
-            return user_model.objects.filter(email=email).first() if email else None
-        field = "contact_number" if self.address_kind == ADDRESS_PHONE else "email"
-        value = getattr(target, field, None)
+            return User.objects.filter(email=email).first() if email else None
+        if self.address_kind == ADDRESS_PHONE:
+            value = str(getattr(target, "contact_number", None) or "").strip()
+            return value if is_phone_number(value) else None
+        value = getattr(target, "email", None)
         return (str(value).strip() or None) if value else None
 
     def add_also_sent_to(self, recipients, users):
@@ -204,6 +217,17 @@ class DeliveryChannel(abc.ABC):
         Must not block: ``execute_automation()`` runs inside ``post_save``.
         Hand slow work (a provider call) to a thread or a task.
         """
+
+
+def is_phone_number(value):
+    """
+    Whether ``value`` is written like a phone number: digits, optionally
+    with ``+``, spaces, dashes, dots or brackets, and nothing else.
+    """
+    value = str(value or "").strip()
+    return any(char.isdigit() for char in value) and all(
+        char.isdigit() or char in PHONE_PUNCTUATION for char in value
+    )
 
 
 def register_delivery_channel(channel):
@@ -250,5 +274,17 @@ def get_delivery_channel(key):
 
 
 def get_delivery_channels(company=None):
-    """A copy of the registered channels available to ``company``, in registration order."""
-    return [channel for channel in _channels.values() if channel.is_available(company)]
+    """
+    A copy of the registered channels available to ``company``, sorted by
+    ``order`` and then by registration order.
+
+    Registration follows ``INSTALLED_APPS``, where notifications comes
+    before mail; ``order`` is what keeps mail (10) before notification (20),
+    so mail and notification together are stored and sent as
+    ``mail,notification``.
+    """
+    channels = [
+        channel for channel in _channels.values() if channel.is_available(company)
+    ]
+    # sorted() is stable: equal orders keep registration order.
+    return sorted(channels, key=lambda channel: channel.order)

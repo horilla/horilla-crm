@@ -36,6 +36,8 @@ class MailChannel(DeliveryChannel):
     key = "mail"
     label = _("Send as Mail")
     address_kind = ADDRESS_EMAIL
+    # Before notification, so mail and notification together send mail first.
+    order = 10
 
     def shows_mail_fields(self):
         """Mail needs the mail template and the outgoing mail server."""

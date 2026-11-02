@@ -61,7 +61,8 @@ def normalize_delivery_channels(value, company=None):
     ``value`` (a stored string or a list of keys) as the string to store.
 
     Returns ``(stored, unknown)``: the keys registered and available to
-    ``company``, comma-separated in registry order, and the keys that are not.
+    ``company``, comma-separated in ``get_delivery_channels()`` order (each
+    channel's ``order``, then registration order), and the keys that are not.
     """
     if not isinstance(value, str):
         value = ",".join(str(key) for key in value or [])
@@ -144,7 +145,7 @@ class HorillaAutomation(HorillaCoreModel):
         ),
     )
     # The keys of the selected delivery channels (horilla.registry.delivery),
-    # comma-separated in registry order: "mail", "mail,notification",
+    # comma-separated in get_delivery_channels() order: "mail", "mail,notification",
     # "mail,sms". No fixed choices: a channel added by another app must not
     # change this field, so it never needs a migration here.
     delivery_channel = models.CharField(

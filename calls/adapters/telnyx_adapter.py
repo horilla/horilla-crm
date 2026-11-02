@@ -26,10 +26,13 @@ class TelnyxAdapter(BaseCallAdapter):
         api_secret     — Telnyx API Key (starts with KEY...)
         caller_id      — default outbound number (Telnyx DID in E.164)
 
-    Optional:
+    Required:
         webhook_secret — Telnyx public key for Ed25519 signature verification
                          (found in Telnyx Portal → API Keys → Webhook public key)
     """
+
+    # Ed25519 public key from the Telnyx portal.
+    WEBHOOK_SECRET_FIELD = "webhook_secret"
 
     CAPABILITIES = {
         "click_to_call": True,
@@ -103,12 +106,10 @@ class TelnyxAdapter(BaseCallAdapter):
         import base64
         import time
 
-        public_key_b64 = self.provider.webhook_secret
+        public_key_b64 = self.webhook_secret()
         if not public_key_b64:
-            logger.warning(
-                "Telnyx webhook_secret (public key) not configured — skipping validation"
-            )
-            return True
+            logger.error("Telnyx webhook_secret (public key) not configured")
+            return False
 
         timestamp = request.headers.get("telnyx-timestamp", "")
         signature_b64 = request.headers.get("telnyx-signature-ed25519-v1", "")
@@ -142,8 +143,11 @@ class TelnyxAdapter(BaseCallAdapter):
         except Exception:
             body = {}
         payload = body.get("data", {}).get("payload", {})
-        raw_status = payload.get("state", "initiated")
-        status = self._map_status(raw_status)
+        status = self._map_event(
+            body.get("data", {}).get("event_type", ""),
+            payload.get("state", "initiated"),
+            payload.get("hangup_cause", ""),
+        )
         return {
             "call_id": payload.get("call_leg_id", ""),
             "direction": payload.get("direction", "outbound"),
@@ -183,6 +187,22 @@ class TelnyxAdapter(BaseCallAdapter):
             }
         except requests.RequestException as exc:
             return {"success": False, "error": str(exc)}
+
+    @classmethod
+    def _map_event(cls, event_type: str, state: str, hangup_cause: str) -> str:
+        """Map a Telnyx webhook event to a CallLog status, using the hangup cause on call.hangup."""
+        if event_type == "call.hangup":
+            hangup_map = {
+                "call_rejected": "busy",
+                "user_busy": "busy",
+                "timeout": "no_answer",
+                "no_answer": "no_answer",
+                "originator_cancel": "cancelled",
+            }
+            return hangup_map.get(hangup_cause, "completed")
+        if event_type == "call.answered":
+            return "in_progress"
+        return cls._map_status(state)
 
     @staticmethod
     def _map_status(raw: str) -> str:

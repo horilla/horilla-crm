@@ -4,6 +4,7 @@
 import logging
 import re
 from functools import cached_property
+from urllib.parse import urlsplit
 
 # Third-party imports (Django)
 from asgiref.sync import async_to_sync
@@ -105,7 +106,6 @@ class CallProviderFormView(LoginRequiredMixin, HorillaSingleFormView):
 
     model = CallProvider
     form_class = CallProviderForm
-    form_title = _("Call Provider")
     save_and_new = False
 
     @cached_property
@@ -127,18 +127,7 @@ class CallProviderFieldsView(LoginRequiredMixin, View):
     Triggered by provider_type select on change and load.
     """
 
-    PROVIDER_FIELDS = {
-        CallProvider.PROVIDER_TWILIO: ["account_sid", "webhook_secret"],
-        CallProvider.PROVIDER_SIGNALWIRE: [
-            "account_sid",
-            "api_base_url",
-            "webhook_secret",
-        ],
-        CallProvider.PROVIDER_TELNYX: ["api_key", "webhook_secret"],
-        CallProvider.PROVIDER_SINCH: ["account_sid"],
-        CallProvider.PROVIDER_EXOTEL: ["account_sid", "api_key"],
-        CallProvider.PROVIDER_MOCK: [],
-    }
+    PROVIDER_FIELDS = CallProviderForm.PROVIDER_FIELDS
 
     def get(self, request, *args, **kwargs):
         """Return the form fields relevant to the selected provider type, so they can be swapped in via HTMX."""
@@ -219,6 +208,14 @@ class CallProviderStatusUpdateView(LoginRequiredMixin, View):
             return HttpResponse("")
         status = request.POST.get("status", "")
         if status in dict(CallProvider.STATUS_CHOICES):
+            error = (
+                provider.webhook_secret_error()
+                if status == CallProvider.STATUS_ACTIVE
+                else None
+            )
+            if error:
+                messages.error(request, error)
+                return ScriptResponse(reload=True, msgs=True)
             provider.status = status
             provider.save(update_fields=["status"])
             messages.success(request, _("Provider status updated successfully."))
@@ -277,8 +274,20 @@ class ProviderWebhookView(View):
     URL: calls/webhook/<provider_type>/<provider_pk>/
 
     No LoginRequiredMixin — these are external HTTP POSTs from the provider.
-    Validates signature via adapter.validate_webhook() before processing.
+    Validates signature via adapter.validate_webhook() before processing; requests
+    are rejected, never accepted, when no verification key is configured.
     """
+
+    @staticmethod
+    def _safe_recording_url(url):
+        """Keep only https recording URLs; anything else is dropped."""
+        if not url:
+            return None
+        parts = urlsplit(url)
+        if parts.scheme != "https" or not parts.netloc:
+            logger.warning("Ignoring non-https recording URL in webhook payload")
+            return None
+        return url
 
     def post(self, request, provider_type, provider_pk, *args, **kwargs):
         """Receive a lifecycle webhook POST from a provider, validate it, and update/create the corresponding CallLog entry."""
@@ -294,9 +303,17 @@ class ProviderWebhookView(View):
             logger.error("Webhook for unknown provider type: %s", exc)
             return JsonResponse({"error": str(exc)}, status=400)
 
+        if adapter.webhook_secret_missing():
+            logger.error("Webhook rejected: no verification key set for %s", provider)
+            return JsonResponse(
+                {"error": str(provider.webhook_secret_error())}, status=403
+            )
+
         if not adapter.validate_webhook(request):
             logger.warning("Webhook signature invalid for provider %s", provider)
-            return JsonResponse({"error": "Invalid signature"}, status=403)
+            return JsonResponse(
+                {"error": str(_("Invalid or missing webhook signature."))}, status=403
+            )
 
         try:
             payload = adapter.parse_webhook_payload(request)
@@ -311,6 +328,7 @@ class ProviderWebhookView(View):
         call_id = payload.get("call_id", "")
         status = payload.get("status", CallLog.STATUS_INITIATED)
         direction = payload.get("direction", CallLog.DIRECTION_OUTBOUND)
+        recording_url = self._safe_recording_url(payload.get("recording_url"))
 
         call_log = CallLog.all_objects.filter(
             provider=provider, provider_call_id=call_id
@@ -319,17 +337,22 @@ class ProviderWebhookView(View):
         terminal_statuses = (
             CallLog.STATUS_COMPLETED,
             CallLog.STATUS_NO_ANSWER,
+            CallLog.STATUS_BUSY,
             CallLog.STATUS_FAILED,
             CallLog.STATUS_CANCELLED,
         )
         if call_log:
             # Don't downgrade a terminal status (e.g. recording callback arrives after completion).
-            if call_log.status not in terminal_statuses:
+            # A finished call may still receive its duration/recording once, but never overwrite them.
+            is_terminal = call_log.status in terminal_statuses
+            if not is_terminal:
                 call_log.status = status
-            if payload.get("duration"):
+            if payload.get("duration") and (
+                not is_terminal or not call_log.duration_seconds
+            ):
                 call_log.duration_seconds = payload["duration"]
-            if payload.get("recording_url"):
-                call_log.recording_url = payload["recording_url"]
+            if recording_url and (not is_terminal or not call_log.recording_url):
+                call_log.recording_url = recording_url
             if status in terminal_statuses and not call_log.ended_at:
                 call_log.ended_at = timezone.now()
             call_log.save(
@@ -354,12 +377,14 @@ class ProviderWebhookView(View):
                 to_number=to_number,
                 provider_call_id=call_id,
                 duration_seconds=payload.get("duration"),
-                recording_url=payload.get("recording_url"),
+                recording_url=recording_url,
                 started_at=timezone.now(),
                 related_model_name=related_model_name or "",
                 related_object_id=related_object_id,
                 company=provider.company,
             )
+
+        self._push_call_status(call_log)
 
         if (
             direction == CallLog.DIRECTION_INBOUND
@@ -388,6 +413,26 @@ class ProviderWebhookView(View):
                 pass
 
         return None, None
+
+    @staticmethod
+    def _push_call_status(call_log):
+        """Notify the caller's browser that the call changed so the status modal refreshes."""
+        try:
+            user_ids = {call_log.created_by_id}
+            if call_log.agent is not None:
+                user_ids.add(call_log.agent.user_id)
+            channel_layer = get_channel_layer()
+            for user_id in filter(None, user_ids):
+                async_to_sync(channel_layer.group_send)(
+                    f"calls_{user_id}",
+                    {
+                        "type": "call_status",
+                        "call_log_id": call_log.pk,
+                        "status": call_log.status,
+                    },
+                )
+        except Exception as exc:
+            logger.warning("Failed to push call status update: %s", exc)
 
     @staticmethod
     def _push_incoming_call(call_log):

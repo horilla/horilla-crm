@@ -3,7 +3,7 @@
     id="call-status-modal"
     {% if not is_terminal %}
         hx-get="{% url 'calls:call_status' pk=call_log.pk %}"
-        hx-trigger="every 2s"
+        hx-trigger="call-status-changed, every 10s"
         hx-target="#call-status-modal"
         hx-swap="outerHTML"
     {% endif %}
@@ -26,6 +26,10 @@
         <h2 class="text-md font-semibold text-gray-800 mb-1">{{ status_label }}</h2>
         <p class="text-sm text-gray-500 mt-1">{{ call_log.to_number }}</p>
         <p class="text-xs text-gray-400 mt-1">{% trans "via" %} {{ call_log.provider }}</p>
+
+        {% if error %}
+            <p class="text-xs text-red-500 mt-2">{{ error }}</p>
+        {% endif %}
 
         {% if not is_terminal %}
             <div class="flex justify-center gap-1 mt-4 mb-2">
@@ -69,8 +73,40 @@
     </div>
 </div>
 
-{% if is_terminal %}
-    <script>
-        setTimeout(function () { closeModal(); }, 3000);
-    </script>
-{% endif %}
+<script>
+    (function () {
+        var callLogId = {{ call_log.pk }};
+        var terminal = {{ is_terminal|yesno:"true,false" }};
+
+        if (terminal) {
+            if (window.callStatusSocket) {
+                window.callStatusSocket.close();
+                window.callStatusSocket = null;
+            }
+            setTimeout(function () { closeModal(); }, 3000);
+            return;
+        }
+        if (window.callStatusSocket) {
+            if (window.callStatusLogId === callLogId) return;
+            window.callStatusSocket.close();
+        }
+
+        var protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        var socket = new WebSocket(protocol + "//" + window.location.host + "/ws/calls/");
+        window.callStatusSocket = socket;
+        window.callStatusLogId = callLogId;
+        socket.onmessage = function (event) {
+            var data = JSON.parse(event.data);
+            if (data.type !== "call_status" || data.call_log_id !== callLogId) return;
+            var modal = document.getElementById("call-status-modal");
+            if (!modal) {
+                socket.close();
+                return;
+            }
+            htmx.trigger(modal, "call-status-changed");
+        };
+        socket.onclose = function () {
+            if (window.callStatusSocket === socket) window.callStatusSocket = null;
+        };
+    })();
+</script>

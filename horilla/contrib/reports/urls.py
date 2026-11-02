@@ -111,6 +111,21 @@ urlpatterns = [
         name="update_filter_value",
     ),
     path(
+        "apply-filters/<int:pk>/",
+        views.ApplyFiltersView.as_view(),
+        name="apply_filters",
+    ),
+    path(
+        "filter-row/<int:pk>/",
+        views.ReportFilterRowView.as_view(),
+        name="filter_row",
+    ),
+    path(
+        "filter-row-body/<int:pk>/",
+        views.ReportFilterRowBodyView.as_view(),
+        name="filter_row_body",
+    ),
+    path(
         "remove-filter/<int:pk>/",
         views.RemoveFilterView.as_view(),
         name="remove_filter",

@@ -1,14 +1,14 @@
 {% load reports_tags %}
 {% for field in available_fields %}
-    <div class="mb-1 flex items-center justify-between bg-dark-50 rounded-md px-1.5 py-2 text-xs font-medium w-full text-start relative">
+    <div class="mb-1 flex items-center justify-between bg-primary-200 text-primary-600 rounded-md px-1.5 py-2 text-xs font-medium w-full text-start relative">
         <span>{{ field.verbose_name|title }}</span>
-        <div class="flex border border-dark-100 rounded-md">
+        <div class="flex border border-primary-600 rounded-md overflow-hidden">
             {% with row_count=report.row_groups_list|length %}
                 {% with col_count=report.column_groups_list|length %}
                     {% with total_count=row_count|add:col_count %}
                         {% if total_count < 3 %}
                             <button
-                                class="font-bold px-1.5 py-1 {% if field.name in report.row_groups_list %}text-primary-600{% else %}text-[#979797]{% endif %}"
+                                class="font-bold px-1.5 py-1 bg-primary-600 text-white"{% if field.name in report.row_groups_list %} style="background:#a62b1f"{% endif %}
                                 hx-post="{% url 'reports:toggle_row_group' report.pk %}"
                                 hx-vals='{"field_name": "{{ field.name }}"}'
                                 hx-target="#report-content"
@@ -19,7 +19,7 @@
                                 {% trans "R" %}
                             </button>
                             <button
-                                class="font-bold px-1.5 py-1 border-s-[1px] border-e-[1px] border-dark-100 {% if field.name in report.column_groups_list %}text-primary-600{% else %}text-[#979797]{% endif %}"
+                                class="font-bold px-1.5 py-1 border-s-[1px] border-e-[1px] border-primary-600 bg-primary-600 text-white"{% if field.name in report.column_groups_list %} style="background:#a62b1f"{% endif %}
                                 hx-post="{% url 'reports:toggle_column_group' report.pk %}"
                                 hx-vals='{"field_name": "{{ field.name }}"}'
                                 hx-target="#report-content"
@@ -35,7 +35,7 @@
             {% endwith %}
             {% if field.name|is_aggregatable:report.model_class %}
                 <button
-                    class="font-bold px-1.5 py-1 {% if report.aggregate_columns_dict.field == field.name %}text-primary-600{% else %}text-[#979797]{% endif %}"
+                    class="font-bold px-1.5 py-1 bg-primary-600 text-white"{% if report.aggregate_columns_dict.field == field.name %} style="background:#a62b1f"{% endif %}
                     hx-post="{% url 'reports:toggle_aggregate' report.pk %}"
                     hx-vals='{"field_name": "{{ field.name }}"}'
                     hx-target="#report-content"

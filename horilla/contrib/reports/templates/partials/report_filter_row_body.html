@@ -1,0 +1,52 @@
+{% load i18n reports_tags %}
+{# Operator + value cells of one filter row (grid children of .rf-row) #}
+{% if field %}
+    {% with ftype=report|filter_field_type:field %}
+        <div style="min-width:0">
+            <select class="js-example-basic-single w-full report-filter-operator" name="operator__{{ row_key }}">
+                {% for op_value, op_label in report|filter_operators:field %}
+                    <option value="{{ op_value }}" {% if op == op_value %}selected{% endif %}>{{ op_label }}</option>
+                {% endfor %}
+                {% if op == 'in' %}<option value="in" selected>{% trans "In" %}</option>{% endif %}
+            </select>
+        </div>
+        <div class="report-filter-values" style="min-width:0">
+            <div data-section="value" {% if op|is_no_value_operator or op == 'between' %}style="display:none"{% endif %}>
+                {% if ftype == 'choice' or ftype == 'foreignkey' %}
+                    <select multiple data-placeholder="{% trans 'Select Value(s)' %}" class="js-example-basic-multiple w-full" name="value__{{ row_key }}">
+                        {% for choice in report|get_field_choices:field %}
+                            <option value="{{ choice.value }}" {% if value|csv_contains:choice.value %}selected{% endif %}>{{ choice.display }}</option>
+                        {% endfor %}
+                    </select>
+                {% elif ftype == 'date' or ftype == 'datetime' %}
+                    <input type="date" name="value__{{ row_key }}" value="{{ value }}" class="text-xs px-2 rounded-md border border-[#d9d9d9]" style="width:100%;height:38px;box-sizing:border-box">
+                {% elif ftype == 'number' or ftype == 'float' or ftype == 'decimal' %}
+                    <input type="number" step="any" name="value__{{ row_key }}" value="{{ value }}" class="text-xs px-2 rounded-md border border-[#d9d9d9]" style="width:100%;height:38px;box-sizing:border-box">
+                {% else %}
+                    <input type="text" name="value__{{ row_key }}" value="{{ value }}" placeholder="{% trans 'Value' %}" class="text-xs px-2 rounded-md border border-[#d9d9d9]" style="width:100%;height:38px;box-sizing:border-box">
+                {% endif %}
+            </div>
+            {% if ftype == 'date' or ftype == 'datetime' or ftype == 'number' or ftype == 'float' or ftype == 'decimal' %}
+                <div data-section="between" {% if op != 'between' %}style="display:none"{% endif %}>
+                    <div style="display:flex;gap:6px;min-width:0">
+                        <input type="{% if ftype == 'date' or ftype == 'datetime' %}date{% else %}number{% endif %}" step="any" name="start__{{ row_key }}" value="{{ value|csv_part:0 }}" aria-label="{% trans 'Start' %}" class="text-xs px-1 rounded-md border border-[#d9d9d9]" style="flex:1;min-width:0;height:38px;box-sizing:border-box">
+                        <input type="{% if ftype == 'date' or ftype == 'datetime' %}date{% else %}number{% endif %}" step="any" name="end__{{ row_key }}" value="{{ value|csv_part:1 }}" aria-label="{% trans 'End' %}" class="text-xs px-1 rounded-md border border-[#d9d9d9]" style="flex:1;min-width:0;height:38px;box-sizing:border-box">
+                    </div>
+                </div>
+            {% endif %}
+            <div data-section="none" {% if not op|is_no_value_operator %}style="display:none"{% endif %}>
+                <span class="text-xs text-gray-500 select-none" style="display:flex;align-items:center;gap:8px;height:38px;box-sizing:border-box;padding:0 8px;background:#f9fafb;border:1px dashed #d9d9d9;border-radius:6px">
+                    <i class="fas fa-circle-minus" style="font-size:11px" aria-hidden="true"></i>{% trans "No Value Needed" %}
+                </span>
+            </div>
+        </div>
+    {% endwith %}
+{% else %}
+    {# Placeholders shown until a field is picked (as in the list filter) #}
+    <div class="col">
+        <select disabled aria-label="{% trans 'Operator' %}" class="w-full text-sm" style="height:38px;border:1px solid #d9d9d9;border-radius:6px;background:#fff"></select>
+    </div>
+    <div class="col">
+        <input disabled type="text" placeholder="{% trans 'Enter Value' %}" aria-label="{% trans 'Value' %}" class="w-full text-sm px-2 rounded-md border border-[#d9d9d9]" style="height:38px;box-sizing:border-box">
+    </div>
+{% endif %}

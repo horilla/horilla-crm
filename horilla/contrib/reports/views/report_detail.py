@@ -16,7 +16,7 @@ from horilla.auth.mixins import login_redirect
 from horilla.contrib.generics.mixins import RecentlyViewedMixin
 from horilla.contrib.generics.views import HorillaListView
 from horilla.contrib.utils.methods import get_section_info_for_model
-from horilla.db.models import ForeignKey, Q
+from horilla.db.models import ForeignKey
 from horilla.shortcuts import render
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import method_decorator, permission_required_or_denied
@@ -27,11 +27,12 @@ from horilla.web import HttpNotFound, HttpResponse, RefreshResponse
 # Local imports
 from ..models import Report
 from ..utils import (
+    NO_VALUE_OPERATORS,
     annotate_virtual_fields,
+    build_report_filter_q,
     coerce_virtual_filter_value,
     get_virtual_field,
     is_duration_virtual_field,
-    parse_in_operator_value,
     resolve_report_field,
 )
 from ..views.toolkit.report_detail_mixin import ReportDetailDataMixin
@@ -210,7 +211,10 @@ class ReportDetailView(ReportDetailDataMixin, RecentlyViewedMixin, DetailView):
         if filters:
             query = None
             for index, (field_name, filter_data) in enumerate(filters.items()):
-                if not filter_data.get("value"):
+                if (
+                    not filter_data.get("value")
+                    and filter_data.get("operator") not in NO_VALUE_OPERATORS
+                ):
                     continue  # Skip empty filters
                 operator = filter_data.get("operator", "exact")
                 value = filter_data.get("value")
@@ -226,29 +230,13 @@ class ReportDetailView(ReportDetailDataMixin, RecentlyViewedMixin, DetailView):
                 # collects a plain number of days, so convert it here.
                 value = coerce_virtual_filter_value(model_class, actual_field, value)
 
-                # Construct filter kwargs
-                filter_kwargs = {}
-                if operator == "exact":
-                    filter_kwargs[f"{actual_field}"] = value
-                elif operator == "icontains":
-                    filter_kwargs[f"{actual_field}__icontains"] = value
-                elif operator == "gt":
-                    filter_kwargs[f"{actual_field}__gt"] = value
-                elif operator == "lt":
-                    filter_kwargs[f"{actual_field}__lt"] = value
-                elif operator == "gte":
-                    filter_kwargs[f"{actual_field}__gte"] = value
-                elif operator == "lte":
-                    filter_kwargs[f"{actual_field}__lte"] = value
-                elif operator == "in":
-                    filter_kwargs[f"{actual_field}__in"] = parse_in_operator_value(
-                        value
-                    )
-
+                built_query = build_report_filter_q(
+                    model_class, actual_field, operator, value
+                )
                 # Combine filters with AND or OR
-                if not filter_kwargs:
+                if built_query is None:
                     continue
-                current_query = Q(**filter_kwargs)
+                current_query = built_query
 
                 if query is None:
                     query = current_query
@@ -296,6 +284,7 @@ class ReportDetailView(ReportDetailDataMixin, RecentlyViewedMixin, DetailView):
         panel_open = self.request.GET.get("panel_open") == "true" or bool(preview_data)
         context["panel_open"] = panel_open
         context["has_unsaved_changes"] = bool(preview_data)
+        context["temp_report"] = temp_report
 
         # Add verbose names for row and column groups
         context["row_group_verbose_names"] = [

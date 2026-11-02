@@ -320,4 +320,5 @@ class TicketTimelineView(HorillaTimelineView):
 
 - `HorillaTimelineView` intentionally reuses list-level filtering and permissions, so timeline reflects exactly the same data scope as list/kanban/split views.
 - Group ordering for FK group fields respects related model `order` when present.
+- On RTL pages (`dir="rtl"`) time runs right to left: the axis row is mirrored, bars and grid lines are offset from the right edge, and the initial scroll counts from the right.
 - `timeline_fallback_end_field` exists as config but current span logic no longer swaps to fallback when end < start.

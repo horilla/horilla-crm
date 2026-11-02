@@ -2,7 +2,8 @@
 Tests for the automations app: delivery channels.
 
 Mail and notification are registered channels (``horilla.registry.delivery``)
-and a fake phone channel stands in for one another app would add. An
+and a fake phone channel stands in for one another app would add; channels
+that other installed apps register are hidden from these tests. An
 automation stores the selected channel keys comma-separated, in
 ``get_delivery_channels()`` order (mail, notification, then the rest).
 """
@@ -81,8 +82,28 @@ def register_fake(test, channel=None):
     return channel
 
 
+def only_builtin_channels(test):
+    """
+    Leave only mail and notification registered for one test.
+
+    Channels that other installed apps register are hidden, so they neither
+    change the channel lists compared here nor query the database from their
+    ``is_available()`` in a SimpleTestCase.
+    """
+    builtins = {key: get_delivery_channel(key) for key in ("mail", "notification")}
+    patcher = mock.patch.dict(
+        "horilla.registry.delivery._channels", builtins, clear=True
+    )
+    patcher.start()
+    test.addCleanup(patcher.stop)
+
+
 class RegistryTests(SimpleTestCase):
     """horilla.registry.delivery."""
+
+    def setUp(self):
+        super().setUp()
+        only_builtin_channels(self)
 
     def test_mail_and_notification_are_registered(self):
         """The built-in channels register themselves; "both" is not a channel."""
@@ -191,6 +212,10 @@ class RegistryTests(SimpleTestCase):
 class StoredValueTests(SimpleTestCase):
     """The comma-separated delivery_channel value."""
 
+    def setUp(self):
+        super().setUp()
+        only_builtin_channels(self)
+
     def test_split_reads_tokens_not_substrings(self):
         """Tokens are stripped and kept once; "both" is mail and notification."""
         self.assertEqual(split_delivery_channels(" mail , ,sms,mail"), ["mail", "sms"])
@@ -241,6 +266,7 @@ class AutomationTestCase(TestCase):
 
     def setUp(self):
         super().setUp()
+        only_builtin_channels(self)
         self.fake = register_fake(self)
         self.company = Company.objects.create(name="Delivery Co")
         self.user = User.objects.create_user(

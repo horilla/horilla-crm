@@ -24,7 +24,7 @@ cron_descriptor==2.0.6
 cryptography==46.0.5
 daphne==4.2.1
 dj-user-login-history==1.0.6
-Django==6.0.4
+Django>=6.1
 django-auditlog==3.4.0
 django-colorfield==0.14.0
 django-countries==8.2.0
@@ -33,8 +33,8 @@ django-filter==25.2
 django-money==3.5.4
 django-multiselectfield==1.0.1
 django-summernote==0.8.20.0
-django-timezone-field==7.2.1
-djangorestframework==3.16.1
+django-timezone-field==7.2.2
+djangorestframework==3.18.3
 djangorestframework_simplejwt==5.5.1
 dnspython==2.8.0
 drf-yasg==1.21.11

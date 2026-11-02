@@ -103,6 +103,11 @@ enrollment table, drop the unique first follow-up constraint on cadence
 follow-ups, and update field labels and help text; no existing data is
 removed.
 
+Horilla CRM 1.17.1 requires **Django 6.1 or later**. The Docker image already
+includes it. If you run from source, reinstall with
+`pip install -r requirements.txt`, which also moves `django-timezone-field` to
+7.2.2 and `djangorestframework` to 3.18.3, the releases that support Django 6.1.
+
 ## [1.17.0] — 2026-10-24
 
 ### Added

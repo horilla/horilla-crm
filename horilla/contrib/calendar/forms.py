@@ -8,10 +8,10 @@ from django import forms
 
 # First party imports (Horilla)
 from horilla.auth.models import User
-from horilla.contrib.core.models import HorillaContentType
+from horilla.contrib.core.models import HorillaContentType, Role
 from horilla.contrib.generics.forms import HorillaModelForm
 from horilla.core.exceptions import ValidationError
-from horilla.urls import reverse
+from horilla.urls import reverse, reverse_lazy
 from horilla.utils import timezone
 from horilla.utils.translation import gettext_lazy as _
 
@@ -280,3 +280,88 @@ class GoogleCredentialsUploadForm(forms.Form):
                 )
             )
         return data  # Returns parsed dict, not the raw file
+
+
+_SINGLE_FORM_VIEW_KWARGS = (
+    "full_width_fields",
+    "dynamic_create_fields",
+    "hidden_fields",
+    "condition_fields",
+    "condition_model",
+    "condition_field_choices",
+    "condition_hx_include",
+    "condition_related_name",
+    "condition_related_name_candidates",
+    "field_permissions",
+    "duplicate_mode",
+    "request",
+)
+
+
+def _pop_single_form_view_kwargs(form_instance, kwargs):
+    """Remove all extra kwargs injected by HorillaSingleFormView.get_form_kwargs()."""
+    for key in _SINGLE_FORM_VIEW_KWARGS:
+        val = kwargs.pop(key, None)
+        if val is not None:
+            setattr(form_instance, key, val)
+
+
+class GoogleAccessRolesForm(forms.Form):
+    """Select roles that can connect Google Calendar."""
+
+    allowed_roles = forms.ModelMultipleChoiceField(
+        queryset=Role.objects.none(),
+        label=_("Roles"),
+        widget=forms.SelectMultiple(
+            attrs={
+                "class": "select2-pagination w-full",
+                "data-url": reverse_lazy(
+                    "generics:model_select2",
+                    kwargs={"app_label": "core", "model_name": "role"},
+                ),
+                "data-placeholder": _("Select roles"),
+                "multiple": "multiple",
+                "data-field-name": "allowed_roles",
+                "id": "id_allowed_roles",
+            }
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        _pop_single_form_view_kwargs(self, kwargs)
+        super().__init__(*args, **kwargs)
+
+
+class GoogleAccessUsersForm(forms.Form):
+    """Select users that can connect Google Calendar."""
+
+    allowed_users = forms.ModelMultipleChoiceField(
+        queryset=User.objects.none(),
+        label=_("Users"),
+        widget=forms.SelectMultiple(
+            attrs={
+                "class": "select2-pagination w-full",
+                "data-url": reverse_lazy(
+                    "generics:model_select2",
+                    kwargs={
+                        "app_label": User._meta.app_label,
+                        "model_name": User._meta.model_name,
+                    },
+                ),
+                "data-placeholder": _("Select users"),
+                "multiple": "multiple",
+                "data-field-name": "allowed_users",
+                "id": "id_allowed_users",
+            }
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        request = kwargs.pop("request", None)
+        _pop_single_form_view_kwargs(self, kwargs)
+        super().__init__(*args, **kwargs)
+        if request is not None:
+            company = getattr(request, "active_company", None) or request.user.company
+            self.fields["allowed_users"].queryset = User.objects.filter(
+                company=company, is_active=True
+            )

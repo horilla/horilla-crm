@@ -20,21 +20,36 @@ from datetime import timezone as dt_timezone
 # Third-party imports (Django)
 from django.contrib import messages
 from django.db import IntegrityError
+from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from requests_oauthlib import OAuth2Session
 
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
+from horilla.auth.models import User
+from horilla.contrib.generics.templatetags.horilla_tags.display_tags import (
+    render_user_chip,
+)
+from horilla.contrib.generics.views.single_form import HorillaSingleFormView
 from horilla.shortcuts import redirect, render
 from horilla.urls import reverse, reverse_lazy
 from horilla.utils import timezone
-from horilla.utils.decorators import method_decorator, permission_required_or_denied
+from horilla.utils.decorators import (
+    htmx_required,
+    method_decorator,
+    permission_required_or_denied,
+)
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
-from horilla.web import HttpResponse
+from horilla.web import HttpResponse, RefreshResponse
 
 # Local imports
-from ..forms import GoogleCredentialsUploadForm, GoogleSyncDirectionForm
+from ..forms import (
+    GoogleAccessRolesForm,
+    GoogleAccessUsersForm,
+    GoogleCredentialsUploadForm,
+    GoogleSyncDirectionForm,
+)
 from ..models import GoogleCalendarConfig, GoogleIntegrationSetting
 from .client_settings import GOOGLE_SCOPES
 from .service import (
@@ -75,7 +90,72 @@ def _is_integration_enabled(request):
     return bool(setting and setting.is_google_calendar_enabled)
 
 
-class GoogleCalendarSettingsView(LoginRequiredMixin, View):
+def _user_has_google_access(user):
+    """True when the company's Google integration is on and ``user`` is allowed."""
+    company = getattr(user, "company", None)
+    return bool(company and GoogleIntegrationSetting.user_can_access(user, company))
+
+
+def _get_active_company(request):
+    return getattr(request, "active_company", None) or request.user.company
+
+
+class GoogleCalendarAccessMixin(LoginRequiredMixin):
+    """Login required, and the user must be allowed by the company's Google access setting."""
+
+    def dispatch(self, request, *args, **kwargs):
+        """Reject users the admin has not granted Google Calendar access to."""
+        if request.user.is_authenticated and not _user_has_google_access(request.user):
+            messages.error(
+                request,
+                _("You do not have access to Google Calendar integration."),
+            )
+            return redirect(reverse_lazy("core:my_settings_view"))
+        return super().dispatch(request, *args, **kwargs)
+
+
+def _disconnect_users_without_access(setting, company):
+    """Disconnect every connected user in ``company`` who the access setting no longer allows."""
+    _disconnect_google_configs(
+        [
+            config
+            for config in GoogleCalendarConfig.all_objects.filter(
+                company=company
+            ).select_related("user")
+            if config.is_connected() and not setting.user_has_access(config.user)
+        ]
+    )
+
+
+def _disconnect_google_configs(configs):
+    """Stop watch channels and clear all OAuth tokens/credentials for the given configs."""
+    for config in configs:
+        try:
+            if config.watch_channel_id:
+                stop_watch_channel(config)
+        except Exception:
+            logger.warning(
+                "Failed to stop watch channel for user %s during bulk disconnect.",
+                config.user,
+                exc_info=True,
+            )
+    GoogleCalendarConfig.all_objects.filter(
+        pk__in=[config.pk for config in configs]
+    ).update(
+        token=None,
+        google_email=None,
+        google_sync_token=None,
+        oauth_state=None,
+        credentials_json=None,
+        redirect_uri=None,
+        watch_channel_id=None,
+        watch_resource_id=None,
+        watch_expiration=None,
+        watch_token=None,
+    )
+
+
+class GoogleCalendarSettingsView(GoogleCalendarAccessMixin, View):
     """
     My Settings page for Google Calendar.
 
@@ -211,7 +291,7 @@ class GoogleCalendarSettingsView(LoginRequiredMixin, View):
         return self._render(request, form=form)
 
 
-class GoogleCalendarAuthorizeView(LoginRequiredMixin, View):
+class GoogleCalendarAuthorizeView(GoogleCalendarAccessMixin, View):
     """
     Redirect the user to Google's OAuth2 consent screen.
 
@@ -290,11 +370,20 @@ class GoogleCalendarCallbackView(View):
             return redirect(reverse_lazy("core:my_settings_view"))
 
         try:
-            config = GoogleCalendarConfig.all_objects.get(oauth_state=state)
+            config = GoogleCalendarConfig.all_objects.select_related("user").get(
+                oauth_state=state
+            )
         except Exception:
             messages.error(
                 request,
                 _("OAuth state mismatch or invalid OAuth state. Please try again."),
+            )
+            return redirect(reverse_lazy("core:my_settings_view"))
+
+        if not _user_has_google_access(config.user):
+            messages.error(
+                request,
+                _("You do not have access to Google Calendar integration."),
             )
             return redirect(reverse_lazy("core:my_settings_view"))
 
@@ -371,7 +460,7 @@ class GoogleCalendarCallbackView(View):
         return redirect(reverse_lazy("calendar:google_calendar_settings"))
 
 
-class GoogleCalendarSyncDirectionView(LoginRequiredMixin, View):
+class GoogleCalendarSyncDirectionView(GoogleCalendarAccessMixin, View):
     """Save the user's chosen sync direction (one-way or two-way)."""
 
     def post(self, request, *args, **kwargs):
@@ -385,7 +474,7 @@ class GoogleCalendarSyncDirectionView(LoginRequiredMixin, View):
         return GoogleCalendarSettingsView()._render(request, sync_direction_form=form)
 
 
-class GoogleCalendarDisconnectView(LoginRequiredMixin, View):
+class GoogleCalendarDisconnectView(GoogleCalendarAccessMixin, View):
     """Clear the Google OAuth token and reset the connection."""
 
     def post(self, request, *args, **kwargs):
@@ -435,7 +524,7 @@ class GoogleCalendarDisconnectView(LoginRequiredMixin, View):
         return render(request, _SETTINGS_TEMPLATE, context)
 
 
-class GoogleCalendarRegisterWebhookView(LoginRequiredMixin, View):
+class GoogleCalendarRegisterWebhookView(GoogleCalendarAccessMixin, View):
     """(Re-)register the Google Calendar push-notification watch channel."""
 
     def post(self, request, *args, **kwargs):
@@ -581,6 +670,10 @@ class GoogleCalendarWebhookView(View):
 
         logger.debug("Webhook config found: user=%s", config.user)
 
+        if not _user_has_google_access(config.user):
+            logger.info("Webhook ignored: user=%s has no Google access", config.user)
+            return HttpResponse(status=200)
+
         stored_token = config.watch_token or ""
         if stored_token and not hmac.compare_digest(stored_token, token or ""):
             logger.warning("Webhook rejected: token mismatch for user=%s", config.user)
@@ -658,6 +751,20 @@ class GoogleCalendarWebhookView(View):
 
 
 _INTEGRATION_SETTINGS_TEMPLATE = "google_calendar/google_integration_settings.html"
+_DISABLED_MSG = _(
+    "Google Calendar integration is disabled. Enable it to change access."
+)
+
+
+def _settings_context(setting):
+    """Template context for the admin Google integration page."""
+    if setting is None:
+        return {"integration_setting": None}
+    return {
+        "integration_setting": setting,
+        "selected_role_ids": list(setting.allowed_roles.values_list("pk", flat=True)),
+        "selected_user_ids": list(setting.allowed_users.values_list("pk", flat=True)),
+    }
 
 
 @method_decorator(
@@ -668,64 +775,54 @@ class GoogleIntegrationSettingsView(LoginRequiredMixin, View):
     """
     Admin Settings page for Google Integration (Settings → Integrations → Google Integration).
 
-    Allows admins to enable/disable Google Calendar integration for all users in the company.
-    GET  — render the toggle page.
-    POST — save the toggle and re-render.
+    Allows admins to enable/disable Google Calendar integration for the company and
+    choose who can use it (all users, specific roles or specific users).
+    GET  — render the page (``?check=1`` is the stale-page pre-check for access changes).
+    POST — save the toggle or the "All Users" access type and re-render.
     """
 
     def _get_or_create_setting(self, request):
-        company = getattr(request, "active_company", None) or request.user.company
-        if not company:
-            return None
-        setting, _ = GoogleIntegrationSetting.all_objects.get_or_create(company=company)
-        return setting
+        return GoogleIntegrationSetting.get_for_company(_get_active_company(request))
+
+    def _render(self, request, setting):
+        return render(
+            request, _INTEGRATION_SETTINGS_TEMPLATE, _settings_context(setting)
+        )
 
     def get(self, request, *args, **kwargs):
-        """Render the company Google integration toggle for admins."""
+        """Render the company Google integration page for admins."""
         setting = self._get_or_create_setting(request)
-        return render(
-            request,
-            _INTEGRATION_SETTINGS_TEMPLATE,
-            {"integration_setting": setting},
-        )
+        if request.GET.get("check"):
+            if setting and setting.is_google_calendar_enabled:
+                return HttpResponse(status=204)
+            messages.warning(request, _DISABLED_MSG)
+        return self._render(request, setting)
 
     def _disconnect_all_company_users(self, company):
         """
         Stop watch channels and clear all OAuth tokens/credentials for every user
         in the company when the admin disables Google Calendar integration.
         """
-        configs = GoogleCalendarConfig.objects.filter(company=company)
-        for config in configs:
-            try:
-                if config.watch_channel_id:
-                    stop_watch_channel(config)
-            except Exception:
-                logger.warning(
-                    "Failed to stop watch channel for user %s during bulk disconnect.",
-                    config.user,
-                    exc_info=True,
-                )
-        configs.update(
-            token=None,
-            google_email=None,
-            google_sync_token=None,
-            oauth_state=None,
-            credentials_json=None,
-            redirect_uri=None,
-            watch_channel_id=None,
-            watch_resource_id=None,
-            watch_expiration=None,
-            watch_token=None,
+        _disconnect_google_configs(
+            list(GoogleCalendarConfig.objects.filter(company=company))
         )
 
     def post(self, request, *args, **kwargs):
-        """Persist admin toggle and optionally disconnect all users in the company."""
+        """Persist admin toggle / access type and optionally disconnect all users."""
         setting = self._get_or_create_setting(request)
         if setting is None:
             messages.error(request, _("No active company found. Cannot save settings."))
-            return render(
-                request, _INTEGRATION_SETTINGS_TEMPLATE, {"integration_setting": None}
-            )
+            return self._render(request, None)
+
+        if request.POST.get("access_type") == "all":
+            if not setting.is_google_calendar_enabled:
+                messages.warning(request, _DISABLED_MSG)
+                return self._render(request, setting)
+            setting.access_type = "all"
+            setting.save(update_fields=["access_type"])
+            messages.success(request, _("Access set to All Users."))
+            return self._render(request, setting)
+
         is_enabled = request.POST.get("is_google_calendar_enabled") == "true"
         if is_enabled == setting.is_google_calendar_enabled:
             # Another tab/user already changed it; the page is stale.
@@ -737,11 +834,7 @@ class GoogleIntegrationSettingsView(LoginRequiredMixin, View):
                 messages.warning(
                     request, _("Google Calendar integration is already disabled.")
                 )
-            return render(
-                request,
-                _INTEGRATION_SETTINGS_TEMPLATE,
-                {"integration_setting": setting},
-            )
+            return self._render(request, setting)
         setting.is_google_calendar_enabled = is_enabled
         setting.updated_by = request.user
         setting.save()
@@ -758,8 +851,212 @@ class GoogleIntegrationSettingsView(LoginRequiredMixin, View):
                     "Google Calendar integration has been disabled. All user connections have been removed."
                 ),
             )
-        return render(
-            request,
-            _INTEGRATION_SETTINGS_TEMPLATE,
-            {"integration_setting": setting},
+        return self._render(request, setting)
+
+
+class _GoogleAllowedAccessModalView(LoginRequiredMixin, View):
+    """Read-only modal listing who can use Google Calendar integration, as pills in a grid."""
+
+    title = ""
+    show_search = True
+    list_class = "grid grid-cols-3"
+    # Below this many people the search box and grid only add empty space
+    compact_threshold = 9
+
+    @method_decorator(
+        permission_required_or_denied("calendar.change_googleintegrationsetting")
+    )
+    def dispatch(self, request, *args, **kwargs):
+        """Require Google integration settings change permission before dispatch."""
+        if request.user.is_authenticated:
+            setting = GoogleIntegrationSetting.get_for_company(
+                _get_active_company(request)
+            )
+            if setting and not setting.is_google_calendar_enabled:
+                messages.warning(request, _DISABLED_MSG)
+                return RefreshResponse(request=request)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_items(self, request, setting, company):
+        """Return a list of ``{"name", "chip"}`` dicts for everyone with access."""
+        raise NotImplementedError
+
+    def get(self, request, *args, **kwargs):
+        """Render the modal, or only the pill list when the search box asks for it."""
+        company = _get_active_company(request)
+        setting = GoogleIntegrationSetting.get_for_company(company)
+        items = self.get_items(request, setting, company) if setting else []
+        total = len(items)
+        query = request.GET.get("q", "").strip().lower()
+        items = [item for item in items if query in item["name"].lower()]
+        compact = total <= self.compact_threshold
+        context = {
+            "title": self.title,
+            "items": items,
+            "total": total,
+            "show_search": self.show_search and not compact,
+            "list_class": "flex flex-wrap" if compact else self.list_class,
+            "empty_msg": (
+                _("No Matching Results") if total else _("Nothing Selected Yet")
+            ),
+        }
+        # The search box swaps only the pill list; the first load gets the whole modal
+        template = (
+            "partials/chip_list.html"
+            if request.headers.get("HX-Target") == "accessList"
+            else "google_calendar/allowed_access_modal.html"
         )
+        return render(request, template, context)
+
+
+@method_decorator(htmx_required, name="dispatch")
+class GoogleAllowedUsersListView(_GoogleAllowedAccessModalView):
+    """Read-only modal of the users allowed to use Google Calendar integration."""
+
+    title = _("Users With Access")
+
+    def get_items(self, request, setting, company):
+        users = (
+            User.objects.filter(
+                company=company,
+                is_active=True,
+                pk__in=setting.allowed_users.values_list("pk", flat=True),
+            )
+            .select_related("role")
+            .order_by("first_name", "last_name")
+        )
+        return [
+            {
+                "name": user.get_full_name() or user.username,
+                "chip": render_user_chip(user, request.user),
+            }
+            for user in users
+        ]
+
+
+@method_decorator(htmx_required, name="dispatch")
+class GoogleAllowedRolesListView(_GoogleAllowedAccessModalView):
+    """Read-only modal of the roles allowed to use Google Calendar integration."""
+
+    title = _("Roles With Access")
+    show_search = False
+    list_class = "flex flex-wrap"
+
+    def get_items(self, request, setting, company):
+        from horilla.contrib.core.models import Role
+
+        roles = Role.objects.filter(
+            company=company, pk__in=setting.allowed_roles.values_list("pk", flat=True)
+        ).order_by("role_name")
+        return [
+            {
+                "name": role.role_name,
+                "chip": render_to_string(
+                    "partials/role_pill.html", {"role_name": role.role_name}
+                ),
+            }
+            for role in roles
+        ]
+
+
+class _GoogleAccessFormView(LoginRequiredMixin, HorillaSingleFormView):
+    """Shared dispatch guard for the roles / users access modals."""
+
+    model = GoogleIntegrationSetting
+    modal_height = False
+    save_and_new = False
+
+    @method_decorator(
+        permission_required_or_denied("calendar.change_googleintegrationsetting")
+    )
+    def dispatch(self, request, *args, **kwargs):
+        """Require Google integration settings change permission before dispatch."""
+        if request.user.is_authenticated:
+            setting = GoogleIntegrationSetting.get_for_company(
+                _get_active_company(request)
+            )
+            if setting and not setting.is_google_calendar_enabled:
+                messages.warning(request, _DISABLED_MSG)
+                return RefreshResponse(request=request)
+        return super().dispatch(request, *args, **kwargs)
+
+
+@method_decorator(htmx_required, name="dispatch")
+class GoogleAccessRolesView(_GoogleAccessFormView):
+    """Modal form: select which roles can connect Google Calendar."""
+
+    form_class = GoogleAccessRolesForm
+    form_title = _("Select Roles")
+    form_url = reverse_lazy("calendar:google_access_roles")
+    full_width_fields = ["allowed_roles"]
+
+    def _get_m2m_picker_info(self):
+        return {}
+
+    def get_form(self, form_class=None):
+        """Scope allowed_roles queryset and initial values to the active company."""
+        from horilla.contrib.core.models import Role
+
+        form = super().get_form(form_class)
+        company = _get_active_company(self.request)
+        setting = GoogleIntegrationSetting.get_for_company(company)
+        form.fields["allowed_roles"].queryset = Role.objects.filter(company=company)
+        form.fields["allowed_roles"].initial = setting.allowed_roles.all()
+        return form
+
+    def form_valid(self, form):
+        company = _get_active_company(self.request)
+        setting = GoogleIntegrationSetting.get_for_company(company)
+        if not setting.is_google_calendar_enabled:
+            messages.warning(self.request, _DISABLED_MSG)
+            return RefreshResponse(request=self.request)
+        new_roles = form.cleaned_data["allowed_roles"]
+
+        setting.access_type = "roles"
+        setting.save(update_fields=["access_type"])
+        setting.allowed_roles.set(new_roles)
+
+        # Users no longer covered by the selected roles lose access
+        _disconnect_users_without_access(setting, company)
+
+        messages.success(self.request, _("Allowed roles updated."))
+        return RefreshResponse(request=self.request)
+
+
+@method_decorator(htmx_required, name="dispatch")
+class GoogleAccessUsersView(_GoogleAccessFormView):
+    """Modal form: select which users can connect Google Calendar."""
+
+    form_class = GoogleAccessUsersForm
+    form_title = _("Select Users")
+    form_url = reverse_lazy("calendar:google_access_users")
+    full_width_fields = ["allowed_users"]
+
+    def get_form(self, form_class=None):
+        """Scope allowed_users queryset and initial values to the active company."""
+        form = super().get_form(form_class)
+        company = _get_active_company(self.request)
+        setting = GoogleIntegrationSetting.get_for_company(company)
+        form.fields["allowed_users"].queryset = User.objects.filter(
+            company=company, is_active=True
+        )
+        form.fields["allowed_users"].initial = setting.allowed_users.all()
+        return form
+
+    def form_valid(self, form):
+        company = _get_active_company(self.request)
+        setting = GoogleIntegrationSetting.get_for_company(company)
+        if not setting.is_google_calendar_enabled:
+            messages.warning(self.request, _DISABLED_MSG)
+            return RefreshResponse(request=self.request)
+        new_users = form.cleaned_data["allowed_users"]
+
+        setting.access_type = "users"
+        setting.save(update_fields=["access_type"])
+        setting.allowed_users.set(new_users)
+
+        # Users no longer in the allowed list lose access
+        _disconnect_users_without_access(setting, company)
+
+        messages.success(self.request, _("Allowed users updated."))
+        return RefreshResponse(request=self.request)

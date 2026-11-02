@@ -1,0 +1,44 @@
+<script>
+    (function() {
+        var box = document.getElementById('contentModalBox');
+        if (box) box.classList.add('!max-w-[600px]');
+    })();
+</script>
+<div class="p-5 max-w-full">
+    <div class="flex justify-between items-center mb-4">
+        <div class="flex items-center gap-2">
+            <h3 class="text-sm font-semibold text-gray-800">{{ title }}</h3>
+            <span
+                class="inline-flex items-center text-xs font-semibold text-white bg-primary-600 px-2 py-0.5 rounded-full"
+            >{{ total }}</span>
+        </div>
+        <button
+            type="button"
+            onclick="closeContentModal()"
+            class="text-gray-500 hover:text-red-500 text-xl cursor-pointer"
+        >
+            <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
+        </button>
+    </div>
+    {% if total and show_search %}
+        <div class="relative mb-3">
+            <input
+                type="text"
+                name="q"
+                autocomplete="off"
+                placeholder="{% trans 'Search' %}"
+                hx-get="{{ request.path }}"
+                hx-trigger="keyup changed delay:300ms"
+                hx-target="#accessList"
+                hx-swap="innerHTML"
+                class="text-color-600 horilla-search-input--toolbar py-1.5 w-full border border-dark-50 rounded-md focus-visible:outline-0 placeholder:text-[#d3d3d3] placeholder:text-xs text-sm transition duration-300 focus:border-primary-600"
+            >
+            <button type="button" class="horilla-search-btn-end" tabindex="-1">
+                <img src="{% static 'assets/icons/search.svg' %}" alt="" width="16">
+            </button>
+        </div>
+    {% endif %}
+    <div id="accessList" class="max-h-80 overflow-y-auto custom-scroll pe-1">
+        {% include "partials/chip_list.html" %}
+    </div>
+</div>

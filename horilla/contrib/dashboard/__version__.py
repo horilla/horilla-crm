@@ -12,7 +12,7 @@ __version__ = "1.11.11"
 __module_name__ = "Dashboards"
 __release_date__ = ""
 __description__ = _("Module for building and customizing interactive dashboards.")
-__icon__ = "assets/icons/icon6.svg"
+__icon__ = "dashboard/assets/icons/icon6.svg"
 
 __1_11_11__ = _(
     "Use the generic navbar on the dashboard detail page and the shared "

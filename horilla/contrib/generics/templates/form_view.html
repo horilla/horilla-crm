@@ -438,17 +438,7 @@
 
         <div class="flex justify-end p-5 pt-0 gap-2">
             {% if current_step > 1 %}
-                <button
-                    type="button"
-                    name="previous"
-                    value="previous"
-                    hx-post="{{ form_url }}"
-                    hx-target="#modalBox"
-                    hx-swap="innerHTML"
-                    class="outline outline-1 outline-offset-[-1px] outline-primary-600 hover:bg-primary-300 transition duration-300 text-primary-600 rounded-[5px] flex gap-3 btn-with-icon transition-[.3s] text-sm px-4 py-2"
-                >
-                    {% trans "Previous" %}
-                </button>
+                {% btn _("Previous") variant="outline" extra_class="flex gap-3 btn-with-icon" type="button" name="previous" value="previous" hx_post=form_url hx_target="#modalBox" hx_swap="innerHTML" %}
             {% endif %}
             {% if current_step < total_steps %}
                 {% btn _("Next") type="submit" %}

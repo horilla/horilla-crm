@@ -212,6 +212,7 @@ class ModelFieldsModalView(LoginRequiredMixin, TemplateView):
             "role_id": role_id,
             "user_id": user_id,
             "is_bulk": context_type == "bulk",
+            "no_users_selected": context_type == "bulk" and selected_users_count == 0,
             "selected_user_ids": (
                 ",".join(map(str, selected_user_ids)) if selected_user_ids else ""
             ),

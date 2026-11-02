@@ -14,7 +14,7 @@ class FieldSettings:
     """Single Settings dropdown grouping the field configuration pages."""
 
     title = _("Field Management")
-    icon = "/assets/icons/field-requirement.svg"
+    icon = "/field_management/assets/icons/field-requirement.svg"
     order = 6
     items = [
         {

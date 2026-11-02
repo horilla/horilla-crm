@@ -164,6 +164,33 @@ If no items:
 
 fallback: `months`.
 
+### Calendar system (axis)
+
+The axis is drawn in the browser by the script in `timeline_view.html`. Every
+calendar-specific step goes through one calendar object: where month and quarter
+columns start, and how the header range, column labels and tooltips read. It is
+Gregorian by default.
+
+A calendar extension app (for example a Shamsi calendar) overrides it by setting
+`window.horillaTimelineCalendar` from its own script before the timeline draws.
+Keys it leaves out keep the Gregorian behavior. All dates are local-midnight
+`Date` objects:
+
+| Key | Returns |
+|-----|---------|
+| `monthStart(date)` | First day of the month that holds `date`. |
+| `addMonths(monthStart, count)` | First day of the month `count` months later. |
+| `quarterStart(date)` | Where the first quarter column starts for a range starting on `date`. The default is that month's first day. |
+| `formatDate(date)` | Tooltip date for a day or week column. |
+| `formatDay(date)` | Day number in the `days` scale. |
+| `formatMonth(date)` | Month column label (and the month line in `days`). |
+| `formatWeek(date)` | Week column label (its first day). |
+| `formatQuarter(monthStart)` | Quarter column label. |
+| `formatRange(start, end)` | Header range text. `null` (the default) keeps the server-rendered range. |
+
+Bars always use the Gregorian `start_iso` / `end_iso` dates from the server, so the
+view, its queries and the stored values stay the same for every calendar.
+
 ### Group row assembly
 
 - preserves FK order by related model `order` when available, else `pk`,

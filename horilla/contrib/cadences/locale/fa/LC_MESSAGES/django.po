@@ -667,3 +667,6 @@ msgstr "تاریخ خروج از توالی"
 #: horilla/contrib/cadences/views/record_tab.py:166
 msgid "Last Follow-up"
 msgstr "آخرین پیگیری"
+
+msgid "Follow Up"
+msgstr "پیگیری"

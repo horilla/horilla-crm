@@ -13,10 +13,14 @@ from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.generics.forms import HorillaModelForm
 from horilla.registry.feature import FEATURE_REGISTRY
 from horilla.urls import reverse_lazy
-from horilla.utils.choices import DISPLAYABLE_FIELD_TYPES
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
+from .field_choice_helpers import (
+    add_current_metric_choice,
+    get_displayable_field_choices,
+    get_metric_choices,
+)
 from .models import ComponentCriteria, Dashboard, DashboardComponent, DashboardFolder
 
 logger = logging.getLogger(__name__)
@@ -285,63 +289,9 @@ class DashboardCreateForm(HorillaModelForm):
                                     except LookupError:
                                         continue
 
-                metric_choices = [("count", "Count of records")]
-
-                if model:
-                    numeric_internal_types = {
-                        "IntegerField",
-                        "BigIntegerField",
-                        "SmallIntegerField",
-                        "PositiveIntegerField",
-                        "PositiveSmallIntegerField",
-                        "DecimalField",
-                        "FloatField",
-                    }
-
-                    for field in model._meta.get_fields():
-                        if not getattr(field, "concrete", False) or getattr(
-                            field, "is_relation", False
-                        ):
-                            continue
-
-                        field_type = (
-                            field.get_internal_type()
-                            if hasattr(field, "get_internal_type")
-                            else ""
-                        )
-
-                        if field_type not in numeric_internal_types:
-                            continue
-
-                        field_name = field.name
-                        field_label = getattr(field, "verbose_name", field_name)
-                        field_label_str = str(field_label)
-
-                        # Store as "<agg>__<field_name>" so the view can
-                        # unambiguously parse the metric configuration.
-                        metric_choices.extend(
-                            [
-                                (f"sum__{field_name}", f"Sum of {field_label_str}"),
-                                (
-                                    f"average__{field_name}",
-                                    f"Average of {field_label_str}",
-                                ),
-                                (f"min__{field_name}", f"Minimum of {field_label_str}"),
-                                (f"max__{field_name}", f"Maximum of {field_label_str}"),
-                            ]
-                        )
-
-                for field_name, field_label in (
-                    self.get_extra_choices(model, "numeric") if model else []
-                ):
-                    metric_choices.extend(
-                        [
-                            (f"sum__{field_name}", f"Sum of {field_label}"),
-                            (f"average__{field_name}", f"Average of {field_label}"),
-                            (f"min__{field_name}", f"Minimum of {field_label}"),
-                            (f"max__{field_name}", f"Maximum of {field_label}"),
-                        ]
-                    )
+                metric_choices = get_metric_choices(
+                    model, self.get_extra_choices(model, "numeric") if model else ()
+                )
 
                 current_metric = (
                     (self.data.get("metric_type") or "").strip()
@@ -361,23 +311,7 @@ class DashboardCreateForm(HorillaModelForm):
                         else ""
                     )
 
-                if current_metric and current_metric not in {
-                    value for value, _ in metric_choices
-                }:
-                    # Use a readable label derived from the stored key.
-                    parts = current_metric.split("__", 1)
-                    if len(parts) == 2:
-                        agg_key, field_name = parts
-                        agg_label = (
-                            "Average"
-                            if agg_key == "average"
-                            else agg_key.replace("_", " ").title()
-                        )
-                        field_label = field_name.replace("_", " ").title()
-                        label = f"{agg_label} of {field_label}"
-                    else:
-                        label = current_metric.replace("_", " ").title()
-                    metric_choices.append((current_metric, label))
+                add_current_metric_choice(metric_choices, current_metric)
 
                 self.fields["metric_type"] = forms.ChoiceField(
                     choices=metric_choices,
@@ -453,61 +387,9 @@ class DashboardCreateForm(HorillaModelForm):
                                     except LookupError:
                                         continue
 
-                y_metric_choices = [("count", "Count of records")]
-
-                if model:
-                    numeric_internal_types = {
-                        "IntegerField",
-                        "BigIntegerField",
-                        "SmallIntegerField",
-                        "PositiveIntegerField",
-                        "PositiveSmallIntegerField",
-                        "DecimalField",
-                        "FloatField",
-                    }
-
-                    for field in model._meta.get_fields():
-                        if not getattr(field, "concrete", False) or getattr(
-                            field, "is_relation", False
-                        ):
-                            continue
-
-                        field_type = (
-                            field.get_internal_type()
-                            if hasattr(field, "get_internal_type")
-                            else ""
-                        )
-
-                        if field_type not in numeric_internal_types:
-                            continue
-
-                        field_name = field.name
-                        field_label = getattr(field, "verbose_name", field_name)
-                        field_label_str = str(field_label)
-
-                        y_metric_choices.extend(
-                            [
-                                (f"sum__{field_name}", f"Sum of {field_label_str}"),
-                                (
-                                    f"average__{field_name}",
-                                    f"Average of {field_label_str}",
-                                ),
-                                (f"min__{field_name}", f"Minimum of {field_label_str}"),
-                                (f"max__{field_name}", f"Maximum of {field_label_str}"),
-                            ]
-                        )
-
-                for field_name, field_label in (
-                    self.get_extra_choices(model, "numeric") if model else []
-                ):
-                    y_metric_choices.extend(
-                        [
-                            (f"sum__{field_name}", f"Sum of {field_label}"),
-                            (f"average__{field_name}", f"Average of {field_label}"),
-                            (f"min__{field_name}", f"Minimum of {field_label}"),
-                            (f"max__{field_name}", f"Maximum of {field_label}"),
-                        ]
-                    )
+                y_metric_choices = get_metric_choices(
+                    model, self.get_extra_choices(model, "numeric") if model else ()
+                )
 
                 current_y_metric = (
                     (self.data.get("y_axis_metric_type") or "").strip()
@@ -529,22 +411,7 @@ class DashboardCreateForm(HorillaModelForm):
                         else ""
                     )
 
-                if current_y_metric and current_y_metric not in {
-                    value for value, _ in y_metric_choices
-                }:
-                    parts = current_y_metric.split("__", 1)
-                    if len(parts) == 2:
-                        agg_key, field_name = parts
-                        agg_label = (
-                            "Average"
-                            if agg_key == "average"
-                            else agg_key.replace("_", " ").title()
-                        )
-                        field_label = field_name.replace("_", " ").title()
-                        label = f"{agg_label} of {field_label}"
-                    else:
-                        label = current_y_metric.replace("_", " ").title()
-                    y_metric_choices.append((current_y_metric, label))
+                add_current_metric_choice(y_metric_choices, current_y_metric)
 
                 self.fields["y_axis_metric_type"] = forms.ChoiceField(
                     choices=y_metric_choices,
@@ -608,31 +475,7 @@ class DashboardCreateForm(HorillaModelForm):
                                 continue
 
                         if model:
-                            column_choices = []
-                            for field in model._meta.get_fields():
-                                if field.concrete and not field.is_relation:
-                                    field_name = field.name
-                                    field_label = field.verbose_name or field.name
-                                    if hasattr(field, "get_internal_type"):
-                                        field_type = field.get_internal_type()
-                                        if field_type in DISPLAYABLE_FIELD_TYPES:
-                                            column_choices.append(
-                                                (field_name, field_label)
-                                            )
-                                        elif (
-                                            hasattr(field, "choices") and field.choices
-                                        ):
-                                            column_choices.append(
-                                                (field_name, field_label)
-                                            )
-                                elif (
-                                    hasattr(field, "related_model")
-                                    and field.many_to_one
-                                ):
-                                    field_name = field.name
-                                    field_label = field.verbose_name or field.name
-                                    column_choices.append((field_name, field_label))
-
+                            column_choices = get_displayable_field_choices(model)
                             column_choices.extend(
                                 self.get_extra_choices(model, "detail")
                             )
@@ -748,24 +591,7 @@ class DashboardCreateForm(HorillaModelForm):
 
             # Only initialize grouping_field if component_type is 'chart'
             if "grouping_field" in self.fields and component_type == "chart":
-                grouping_fields = []
-                for field in model._meta.get_fields():
-                    if field.concrete and not field.is_relation:
-                        field_name = field.name
-                        field_label = field.verbose_name or field.name
-
-                        if hasattr(field, "get_internal_type"):
-                            field_type = field.get_internal_type()
-                            if field_type in DISPLAYABLE_FIELD_TYPES:
-                                grouping_fields.append((field_name, field_label))
-                            elif hasattr(field, "choices") and field.choices:
-                                grouping_fields.append((field_name, f"{field_label}"))
-
-                    elif hasattr(field, "related_model") and field.many_to_one:
-                        field_name = field.name
-                        field_label = field.verbose_name or field.name
-                        grouping_fields.append((field_name, f"{field_label}"))
-
+                grouping_fields = get_displayable_field_choices(model)
                 grouping_fields.extend(self.get_extra_choices(model, "grouping"))
 
                 current_value = (
@@ -800,26 +626,7 @@ class DashboardCreateForm(HorillaModelForm):
                 and component_type == "chart"
                 and (chart_type or "") in two_group_chart_types
             ):
-                secondary_grouping_fields = []
-                for field in model._meta.get_fields():
-                    if field.concrete and not field.is_relation:
-                        field_name = field.name
-                        field_label = field.verbose_name or field.name
-                        if hasattr(field, "get_internal_type"):
-                            field_type = field.get_internal_type()
-                            if field_type in DISPLAYABLE_FIELD_TYPES:
-                                secondary_grouping_fields.append(
-                                    (field_name, field_label)
-                                )
-                            elif hasattr(field, "choices") and field.choices:
-                                secondary_grouping_fields.append(
-                                    (field_name, f"{field_label}")
-                                )
-                    elif hasattr(field, "related_model") and field.many_to_one:
-                        field_name = field.name
-                        field_label = field.verbose_name or field.name
-                        secondary_grouping_fields.append((field_name, f"{field_label}"))
-
+                secondary_grouping_fields = get_displayable_field_choices(model)
                 secondary_grouping_fields.extend(
                     self.get_extra_choices(model, "grouping")
                 )

@@ -56,8 +56,15 @@ class RoleSerializer(CompanyScopedSerializerMixin, serializers.ModelSerializer):
         fields = "__all__"
 
 
-class HorillaUserSerializer(serializers.ModelSerializer):
+class HorillaUserSerializer(CompanyScopedSerializerMixin, serializers.ModelSerializer):
     """Serializer for HorillaUser model"""
+
+    def validate(self, attrs):
+        """Force ``company`` to the requester's company; superusers may choose one."""
+        request = self.context.get("request")
+        if request is not None and request.user.is_superuser:
+            return super(CompanyScopedSerializerMixin, self).validate(attrs)
+        return super().validate(attrs)
 
     class Meta:
         """Meta class for HorillaUserSerializer"""

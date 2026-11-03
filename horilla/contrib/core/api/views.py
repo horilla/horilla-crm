@@ -156,12 +156,26 @@ class HorillaUserViewSet(SearchFilterMixin, BulkOperationsMixin, viewsets.ModelV
     serializer_class = HorillaUserSerializer
     permission_classes = [
         permissions.IsAuthenticated,
+        IsCompanyMember,
         IsOwnerOrAdmin,
         HorillaModelPermissions,
     ]
     scope_list_to_view_permission = True
     search_fields = ["username", "email", "first_name", "last_name"]
     filterset_fields = ["is_active", "company", "department", "role"]
+
+    def get_queryset(self):
+        """Limit users to the requester's active company; only superusers see all."""
+        queryset = super().get_queryset()
+        user = self.request.user
+        if user.is_superuser:
+            return queryset
+        company = getattr(self.request, "active_company", None) or getattr(
+            user, "company", None
+        )
+        if company is None:
+            return queryset.none()
+        return queryset.filter(company=company)
 
     @action(detail=False, methods=["get"])
     def me(self, request):

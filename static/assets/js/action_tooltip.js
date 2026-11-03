@@ -38,7 +38,9 @@
         el.style.whiteSpace = "normal";
         el.style.overflowWrap = "break-word";
         el.style.wordBreak = "break-word";
-        el.style.textAlign = "left";
+        // Follow the text: Persian/Arabic titles read right to left, English left to right
+        el.dir = "auto";
+        el.style.textAlign = "start";
         el.style.lineHeight = "1.4";
         return el;
     }

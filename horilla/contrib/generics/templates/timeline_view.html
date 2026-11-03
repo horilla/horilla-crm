@@ -179,7 +179,7 @@
             <div class="flex flex-1 min-h-0">
                 <div class="w-60 min-w-60 flex flex-col border-e border-primary-300 bg-white dark:bg-gray-950 shrink-0">
                     <div class="timeline-header-left min-h-[52px] box-border flex flex-col justify-center px-3 ps-5 py-1.5 font-bold text-xs text-primary border-b border-primary-300 bg-white dark:bg-gray-950 gap-0.5">
-                        <span class="block leading-tight">
+                        <span class="block leading-tight" id="timeline-range-label-{{ view_id|safe }}">
                             {% if timeline_range_start and timeline_range_end %}
                                 {{ timeline_range_start|date:"d M Y" }} – {{ timeline_range_end|date:"d M Y" }}
                             {% else %}
@@ -418,6 +418,58 @@
                     "flex-1 min-w-[120px] text-center py-0 px-1.5 box-border border-l border-gray-200 dark:border-gray-600",
             };
 
+            function fmtYmd(d) {
+                return (
+                    d.getFullYear() +
+                    "-" +
+                    String(d.getMonth() + 1).padStart(2, "0") +
+                    "-" +
+                    String(d.getDate()).padStart(2, "0")
+                );
+            }
+
+            /**
+             * Calendar behind the axis: where month/quarter columns start and how
+             * every label reads. Gregorian by default. A calendar extension sets
+             * window.horillaTimelineCalendar to override any of these keys; bars
+             * keep the Gregorian ISO dates the server sends.
+             */
+            var GREGORIAN_CALENDAR = {
+                monthStart: function (d) {
+                    return new Date(d.getFullYear(), d.getMonth(), 1);
+                },
+                addMonths: function (monthStart, count) {
+                    return new Date(monthStart.getFullYear(), monthStart.getMonth() + count, 1);
+                },
+                /* First quarter column starts at the range's first month */
+                quarterStart: function (d) {
+                    return this.monthStart(d);
+                },
+                formatDate: fmtYmd,
+                formatDay: function (d) {
+                    return d.getDate();
+                },
+                formatMonth: function (d) {
+                    return d.toLocaleDateString(undefined, {
+                        month: "short",
+                        year: "numeric",
+                    });
+                },
+                formatWeek: function (d) {
+                    return d.getDate() + " " + d.toLocaleDateString(undefined, { month: "short" });
+                },
+                formatQuarter: function (monthStart) {
+                    var quarter = Math.floor(monthStart.getMonth() / 3) + 1;
+                    return "Q" + quarter + " " + monthStart.getFullYear().toString().slice(-2);
+                },
+                /* (start, end) -> header text; null keeps the server-rendered range */
+                formatRange: null,
+            };
+
+            function getTimelineCalendar() {
+                return Object.assign({}, GREGORIAN_CALENDAR, window.horillaTimelineCalendar || {});
+            }
+
             function positionTimelineBars(viewId) {
                 var track = document.getElementById("timeline-track-" + viewId);
                 var axisLabels = document.getElementById("timeline-axis-labels-" + viewId);
@@ -464,6 +516,7 @@
                     return x;
                 }
 
+                var cal = getTimelineCalendar();
                 var rangeStartDate = parseYmdLocal(track.dataset.rangeStart || "");
                 var rangeEndDate = parseYmdLocal(track.dataset.rangeEnd || "");
 
@@ -471,6 +524,11 @@
                     var t = new Date();
                     rangeStartDate = new Date(t.getFullYear(), t.getMonth(), t.getDate() - 90, 0, 0, 0, 0);
                     rangeEndDate = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 30, 0, 0, 0, 0);
+                } else if (cal.formatRange) {
+                    var rangeLabel = document.getElementById("timeline-range-label-" + viewId);
+                    if (rangeLabel) {
+                        rangeLabel.textContent = cal.formatRange(rangeStartDate, rangeEndDate);
+                    }
                 }
 
                 var rangeStart = rangeStartDate;
@@ -489,16 +547,6 @@
                 var DAY_COL_PX = 56;
                 var WEEK_COL_PX = 120;
                 var MONTH_MIN_PX = 96;
-
-                function fmtYmd(d) {
-                    return (
-                        d.getFullYear() +
-                        "-" +
-                        String(d.getMonth() + 1).padStart(2, "0") +
-                        "-" +
-                        String(d.getDate()).padStart(2, "0")
-                    );
-                }
 
                 function countDaysInclusive(startD, endD) {
                     var n = 0;
@@ -627,16 +675,12 @@
                     }
                 } else if (scale === "quarters") {
                     var qCount = 0;
-                    var qq = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
-                    var qEnd = new Date(
-                        rangeEndInclusiveForCount.getFullYear(),
-                        rangeEndInclusiveForCount.getMonth(),
-                        1
-                    );
+                    var qq = cal.quarterStart(rangeStart);
+                    var qEnd = cal.monthStart(rangeEndInclusiveForCount);
 
                     while (qq <= qEnd) {
                         qCount++;
-                        qq.setMonth(qq.getMonth() + 3);
+                        qq = cal.addMonths(qq, 3);
                     }
 
                     qCount = Math.max(qCount, 1);
@@ -653,18 +697,13 @@
                     axisTotalPx = viewportWQ > nominalQPx ? viewportWQ : nominalQPx;
                     usePixelBars = true;
                 } else {
-                    var m0 = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
-                    var mEnd = new Date(
-                        rangeEndInclusiveForCount.getFullYear(),
-                        rangeEndInclusiveForCount.getMonth(),
-                        1
-                    );
+                    var mm = cal.monthStart(rangeStart);
+                    var mEnd = cal.monthStart(rangeEndInclusiveForCount);
                     var monthCount = 0;
-                    var mm = new Date(m0.getTime());
 
                     while (mm <= mEnd) {
                         monthCount++;
-                        mm.setMonth(mm.getMonth() + 1);
+                        mm = cal.addMonths(mm, 1);
                     }
 
                     monthCount = Math.max(monthCount, 1);
@@ -690,15 +729,15 @@
 
                 if (scale === "months" && usePixelBars && axisTotalPx > 0) {
                     monthColumnLayout = [];
-                    var mBuild = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
+                    var mBuild = cal.monthStart(rangeStart);
                     var rangeEndInclusiveMBuild = new Date(rangeEndExclusive.getTime());
                     rangeEndInclusiveMBuild.setDate(rangeEndInclusiveMBuild.getDate() - 1);
                     var mkBuild = 0;
-                    var mCount = new Date(mBuild.getTime());
+                    var mCount = mBuild;
 
                     while (mCount <= rangeEndInclusiveMBuild) {
                         mkBuild++;
-                        mCount.setMonth(mCount.getMonth() + 1);
+                        mCount = cal.addMonths(mCount, 1);
                     }
 
                     mkBuild = Math.max(mkBuild, 1);
@@ -706,38 +745,35 @@
                     var baseMBuild = Math.floor(axisTotalPx / mkBuild);
                     var remMBuild = axisTotalPx - baseMBuild * mkBuild;
                     var cumMBuild = 0;
-                    mBuild = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
 
                     while (mBuild <= rangeEndInclusiveMBuild) {
                         var colMB = baseMBuild + (monthColumnLayout.length < remMBuild ? 1 : 0);
-                        var yB = mBuild.getFullYear();
-                        var moB = mBuild.getMonth();
-                        var dimB = new Date(yB, moB + 1, 0).getDate();
+                        var nextMB = cal.addMonths(mBuild, 1);
 
                         monthColumnLayout.push({
-                            y: yB,
-                            m: moB,
+                            start: mBuild,
+                            end: nextMB,
                             left: cumMBuild,
                             width: colMB,
-                            daysInMonth: dimB,
+                            daysInMonth: Math.round((nextMB - mBuild) / dayMs),
                         });
 
                         cumMBuild += colMB;
-                        mBuild.setMonth(mBuild.getMonth() + 1);
+                        mBuild = nextMB;
                     }
                 }
 
                 if (scale === "quarters" && usePixelBars && axisTotalPx > 0) {
                     quarterColumnLayout = [];
-                    var qBuild = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
+                    var qBuild = cal.quarterStart(rangeStart);
                     var rangeEndInclusiveQBuild = new Date(rangeEndExclusive.getTime());
                     rangeEndInclusiveQBuild.setDate(rangeEndInclusiveQBuild.getDate() - 1);
                     var qkBuild = 0;
-                    var qCount = new Date(qBuild.getTime());
+                    var qCount = qBuild;
 
                     while (qCount <= rangeEndInclusiveQBuild) {
                         qkBuild++;
-                        qCount.setMonth(qCount.getMonth() + 3);
+                        qCount = cal.addMonths(qCount, 3);
                     }
 
                     qkBuild = Math.max(qkBuild, 1);
@@ -745,48 +781,46 @@
                     var baseQBuild = Math.floor(axisTotalPx / qkBuild);
                     var remQBuild = axisTotalPx - baseQBuild * qkBuild;
                     var cumQBuild = 0;
-                    qBuild = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
 
                     while (qBuild <= rangeEndInclusiveQBuild) {
                         var colQB = baseQBuild + (quarterColumnLayout.length < remQBuild ? 1 : 0);
-                        var qEndInner = new Date(qBuild.getTime());
-                        qEndInner.setMonth(qEndInner.getMonth() + 3);
-                        qEndInner.setDate(0);
-                        var qStart = new Date(qBuild.getTime());
-                        var qDays = Math.max(
-                            1,
-                            Math.round((qEndInner - qStart) / dayMs) + 1
-                        );
+                        var nextQB = cal.addMonths(qBuild, 3);
+                        var qDays = Math.max(1, Math.round((nextQB - qBuild) / dayMs));
 
                         quarterColumnLayout.push({
-                            start: new Date(qBuild.getTime()),
+                            start: qBuild,
+                            end: nextQB,
                             left: cumQBuild,
                             width: colQB,
                             daysApprox: qDays,
                         });
 
                         cumQBuild += colQB;
-                        qBuild.setMonth(qBuild.getMonth() + 3);
+                        qBuild = nextQB;
                     }
+                }
+
+                /* Column holding d, and d's 0-based day index inside it */
+                function findMonthColumn(d) {
+                    for (var i = 0; i < monthColumnLayout.length; i++) {
+                        var c = monthColumnLayout[i];
+                        if (d >= c.start && d < c.end) {
+                            return { column: c, dayIndex: Math.round((d - c.start) / dayMs) };
+                        }
+                    }
+                    return null;
                 }
 
                 function dateToPxMonths(d) {
                     if (!monthColumnLayout || monthColumnLayout.length === 0) return null;
 
-                    var y = d.getFullYear();
-                    var mo = d.getMonth();
-                    var day = d.getDate();
-
-                    for (var i = 0; i < monthColumnLayout.length; i++) {
-                        var c = monthColumnLayout[i];
-                        if (c.y === y && c.m === mo) {
-                            return c.left + ((day - 1) / c.daysInMonth) * c.width;
-                        }
+                    var hit = findMonthColumn(d);
+                    if (hit) {
+                        return hit.column.left + (hit.dayIndex / hit.column.daysInMonth) * hit.column.width;
                     }
 
                     var first = monthColumnLayout[0];
-                    var firstOfFirst = new Date(first.y, first.m, 1);
-                    if (d < firstOfFirst) return first.left;
+                    if (d < first.start) return first.left;
 
                     var last = monthColumnLayout[monthColumnLayout.length - 1];
                     return last.left + last.width;
@@ -797,10 +831,8 @@
 
                     for (var i = 0; i < quarterColumnLayout.length; i++) {
                         var c = quarterColumnLayout[i];
-                        var qEnd = new Date(c.start.getTime());
-                        qEnd.setMonth(qEnd.getMonth() + 3);
 
-                        if (d >= c.start && d < qEnd) {
+                        if (d >= c.start && d < c.end) {
                             var daysFromStart = Math.max(
                                 0,
                                 Math.round((d - c.start) / dayMs)
@@ -913,17 +945,12 @@
                         }
 
                         var endPx = dateToPxMonths(endDateInclusive);
-                        var yE = endDateInclusive.getFullYear();
-                        var moE = endDateInclusive.getMonth();
-
-                        for (var ie = 0; ie < monthColumnLayout.length; ie++) {
-                            var ce = monthColumnLayout[ie];
-                            if (ce.y === yE && ce.m === moE) {
-                                endPx =
-                                    ce.left +
-                                    (endDateInclusive.getDate() / ce.daysInMonth) * ce.width;
-                                break;
-                            }
+                        var endHit = findMonthColumn(endDateInclusive);
+                        if (endHit) {
+                            endPx =
+                                endHit.column.left +
+                                ((endHit.dayIndex + 1) / endHit.column.daysInMonth) *
+                                    endHit.column.width;
                         }
 
                         leftPx = startPx;
@@ -1028,26 +1055,19 @@
                         rangeEndInclusiveForCount.getMonth(),
                         rangeEndInclusiveForCount.getDate()
                     );
-                    var prevMonth = -1;
-                    var prevYear = -1;
+                    var prevMonthStart = null;
 
                     while (d <= rangeEndInclusive) {
-                        var showMonth =
-                            d.getMonth() !== prevMonth || d.getFullYear() !== prevYear;
-                        prevMonth = d.getMonth();
-                        prevYear = d.getFullYear();
+                        var monthStartTime = cal.monthStart(d).getTime();
+                        var showMonth = monthStartTime !== prevMonthStart;
+                        prevMonthStart = monthStartTime;
 
-                        var monthLine = showMonth
-                            ? d.toLocaleDateString(undefined, {
-                                  month: "short",
-                                  year: "numeric",
-                              })
-                            : "\u00a0";
+                        var monthLine = showMonth ? cal.formatMonth(d) : "\u00a0";
 
                         dayLabels.push({
-                            title: fmtYmd(d),
+                            title: cal.formatDate(d),
                             monthLine: monthLine,
-                            dayNum: d.getDate(),
+                            dayNum: cal.formatDay(d),
                         });
 
                         d.setDate(d.getDate() + 1);
@@ -1136,11 +1156,8 @@
                             wEnd = new Date(rangeEndInclusiveW.getTime());
                         }
 
-                        var label =
-                            wStart.getDate() +
-                            " " +
-                            wStart.toLocaleDateString(undefined, { month: "short" });
-                        var titleRange = fmtYmd(wStart) + " – " + fmtYmd(wEnd);
+                        var label = cal.formatWeek(wStart);
+                        var titleRange = cal.formatDate(wStart) + " – " + cal.formatDate(wEnd);
 
                         weekLabels.push({ label: label, title: titleRange });
                         wStart.setDate(wStart.getDate() + 7);
@@ -1200,19 +1217,13 @@
                 } else if (scale === "quarters") {
                     var QUARTER_COL_PX2 = 120;
                     var qLabels = [];
-                    var q = new Date(
-                        rangeStart.getFullYear(),
-                        rangeStart.getMonth(),
-                        1
-                    );
+                    var q = cal.quarterStart(rangeStart);
                     var rangeEndInclusiveQ = new Date(rangeEndExclusive.getTime());
                     rangeEndInclusiveQ.setDate(rangeEndInclusiveQ.getDate() - 1);
 
                     while (q <= rangeEndInclusiveQ) {
-                        var month = q.getMonth();
-                        var quarter = Math.floor(month / 3) + 1;
-                        qLabels.push("Q" + quarter + " " + q.getFullYear().toString().slice(-2));
-                        q.setMonth(q.getMonth() + 3);
+                        qLabels.push(cal.formatQuarter(q));
+                        q = cal.addMonths(q, 3);
                     }
 
                     if (qLabels.length === 0) qLabels.push("\u00a0");
@@ -1261,22 +1272,13 @@
                 } else {
                     /* Months: equal-width columns + pixel grid — header lines align with body (same as weeks) */
                     var monthLabels = [];
-                    var mInner = new Date(
-                        rangeStart.getFullYear(),
-                        rangeStart.getMonth(),
-                        1
-                    );
+                    var mInner = cal.monthStart(rangeStart);
                     var rangeEndInclusiveM = new Date(rangeEndExclusive.getTime());
                     rangeEndInclusiveM.setDate(rangeEndInclusiveM.getDate() - 1);
 
                     while (mInner <= rangeEndInclusiveM) {
-                        monthLabels.push(
-                            mInner.toLocaleDateString(undefined, {
-                                month: "short",
-                                year: "numeric",
-                            })
-                        );
-                        mInner.setMonth(mInner.getMonth() + 1);
+                        monthLabels.push(cal.formatMonth(mInner));
+                        mInner = cal.addMonths(mInner, 1);
                     }
 
                     if (monthLabels.length === 0) monthLabels.push("\u00a0");

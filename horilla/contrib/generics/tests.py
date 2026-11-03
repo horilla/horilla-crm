@@ -1168,3 +1168,56 @@ class TimelineRtlTests(SimpleTestCase):
         with override("fa"):
             caption = gettext("From %(start)s → %(end)s") % {"start": "A", "end": "B"}
         self.assertEqual(caption, "از A ← B")
+
+
+class TimelineCalendarHookTests(SimpleTestCase):
+    """The timeline axis takes its calendar from ``window.horillaTimelineCalendar``,
+    so another calendar system plugs in without the template naming it."""
+
+    template_path = Path(__file__).parent / "templates" / "timeline_view.html"
+
+    def render(self):
+        """Render the timeline with one bar from 2026-09-23 to 2026-10-22."""
+        bar = {
+            "title": "Renewal",
+            "start_iso": "2026-09-23",
+            "end_iso": "2026-10-22",
+            "detail_url": "",
+        }
+        context = {
+            "request": RequestFactory().get("/leads/"),
+            "view_id": "lead-timeline",
+            "timeline_items": [bar],
+            "timeline_group_rows": [
+                {"group": {"key": "all", "label": "All", "count": 1}, "items": [bar]}
+            ],
+            "timeline_range_start": date(2026, 9, 9),
+            "timeline_range_end": date(2026, 11, 5),
+            "timeline_scale": "months",
+        }
+        with override("en"):
+            return " ".join(render_to_string("timeline_view.html", context).split())
+
+    def test_header_range_keeps_the_gregorian_text_and_gets_an_id(self):
+        """The server still renders the Gregorian range; the id lets a calendar
+        hook replace it in the browser."""
+        html = self.render()
+        self.assertIn(
+            '<span class="block leading-tight" id="timeline-range-label-lead-timeline">'
+            " 09 Sep 2026 – 05 Nov 2026 </span>",
+            html,
+        )
+        self.assertIn('data-range-start="2026-09-09"', html)
+        self.assertIn('data-start="2026-09-23" data-end="2026-10-22"', html)
+
+    def test_axis_reads_the_calendar_hook(self):
+        """Columns and labels go through the hook, with Gregorian as default."""
+        html = self.render()
+        self.assertIn("var GREGORIAN_CALENDAR = {", html)
+        self.assertIn("window.horillaTimelineCalendar", html)
+
+    def test_template_names_no_calendar_extension(self):
+        """Calendar systems plug in through the hook, not template code."""
+        source = self.template_path.read_text(encoding="utf-8").lower()
+        for name in ("jalali", "shamsi", "jdatetime"):
+            self.assertNotIn(name, source)

@@ -10,6 +10,7 @@
  * Year view: twelve exact Shamsi month profiles rendered by FullCalendar's
  * native responsive multi-month component.
  * Step 6: Popover dates, Jalali today highlight, modal picker hooks.
+ * Timeline view: Shamsi month/season columns via window.horillaTimelineCalendar.
  * Events stay Gregorian ISO in the API/DB.
  */
 (function (window) {
@@ -1435,6 +1436,94 @@
                 document.getElementById("calendarGrid")
             );
         }
+    }
+
+    var JALALI_MONTH_NAMES = [
+        "فروردین",
+        "اردیبهشت",
+        "خرداد",
+        "تیر",
+        "مرداد",
+        "شهریور",
+        "مهر",
+        "آبان",
+        "آذر",
+        "دی",
+        "بهمن",
+        "اسفند",
+    ];
+    var JALALI_SEASON_NAMES = ["بهار", "تابستان", "پاییز", "زمستان"];
+
+    function toPersianDigits(value) {
+        return String(value).replace(/\d/g, function (digit) {
+            return "۰۱۲۳۴۵۶۷۸۹".charAt(Number(digit));
+        });
+    }
+
+    /** Local-midnight Date for a Shamsi day (the timeline compares local dates). */
+    function jalaliPartsToLocalDate(year, month, day) {
+        var parts = jalaliToGregorianParts(year, month, day);
+        return new Date(parts.year, parts.month - 1, parts.day);
+    }
+
+    /** e.g. ۱۱ آبان ۱۴۰۵ */
+    function formatJalaliDayMonthYear(date) {
+        var parts = getJalaliPartsFromDate(date);
+        return toPersianDigits(
+            parts.day + " " + JALALI_MONTH_NAMES[parts.month - 1] + " " + parts.year
+        );
+    }
+
+    /**
+     * Calendar for the generic timeline view (timeline_view.html): Shamsi
+     * month and season columns, Persian labels. Bars stay on the
+     * Gregorian ISO dates the server sends.
+     */
+    var JALALI_TIMELINE_CALENDAR = {
+        monthStart: function (date) {
+            var parts = getJalaliPartsFromDate(date);
+            return jalaliPartsToLocalDate(parts.year, parts.month, 1);
+        },
+        addMonths: function (monthStart, count) {
+            var parts = getJalaliPartsFromDate(monthStart);
+            var target = addJalaliMonths(parts.year, parts.month, count);
+            return jalaliPartsToLocalDate(target.year, target.month, 1);
+        },
+        /* Quarter columns are whole seasons: Farvardin, Tir, Mehr, Dey. */
+        quarterStart: function (date) {
+            var parts = getJalaliPartsFromDate(date);
+            var seasonMonth = Math.floor((parts.month - 1) / 3) * 3 + 1;
+            return jalaliPartsToLocalDate(parts.year, seasonMonth, 1);
+        },
+        formatDate: function (date) {
+            var parts = getJalaliPartsFromDate(date);
+            return toPersianDigits(
+                parts.year + "/" + padDatePart(parts.month) + "/" + padDatePart(parts.day)
+            );
+        },
+        formatDay: function (date) {
+            return toPersianDigits(getJalaliPartsFromDate(date).day);
+        },
+        formatMonth: function (date) {
+            var parts = getJalaliPartsFromDate(date);
+            return toPersianDigits(JALALI_MONTH_NAMES[parts.month - 1] + " " + parts.year);
+        },
+        formatWeek: function (date) {
+            var parts = getJalaliPartsFromDate(date);
+            return toPersianDigits(parts.day + " " + JALALI_MONTH_NAMES[parts.month - 1]);
+        },
+        formatQuarter: function (monthStart) {
+            var parts = getJalaliPartsFromDate(monthStart);
+            var season = JALALI_SEASON_NAMES[Math.floor((parts.month - 1) / 3)];
+            return toPersianDigits(season + " " + parts.year);
+        },
+        formatRange: function (start, end) {
+            return formatJalaliDayMonthYear(start) + " – " + formatJalaliDayMonthYear(end);
+        },
+    };
+
+    if (usesJalaliCalendar()) {
+        window.horillaTimelineCalendar = JALALI_TIMELINE_CALENDAR;
     }
 
     window.HorillaCalendarJalali = {

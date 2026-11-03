@@ -12,6 +12,11 @@ from horilla.contrib.mail.models import HorillaMailConfiguration
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
+from .action_types import (
+    get_action_channel,
+    get_channel_template_kind,
+    is_builtin_action_type,
+)
 from .models import WorkflowAction, WorkflowRule, WorkflowTimeTriggerAction
 
 
@@ -63,7 +68,55 @@ _ACTION_CONFIG_FIELD_NAMES = [
     "notification_to",
     "notification_also_notify_to",
     "notification_custom_message",
+    "channel_template_id",
+    "channel_to",
+    "channel_also_send_to",
 ]
+
+
+def action_config_initials(action_type, config, default_due_basis):
+    """
+    The hidden compose fields of an action form for a saved ``action_config``.
+
+    ``default_due_basis`` is the task due basis shown when none is saved.
+    A delivery channel action's ``{template_id, to, also_send_to}`` fill the
+    ``channel_*`` fields.
+    """
+    cfg = config or {}
+    if action_type == "update_field":
+        return {
+            "update_field": cfg.get("field", ""),
+            "update_value": cfg.get("value", ""),
+        }
+    if action_type == "assign_task":
+        return {
+            "task_title": cfg.get("title", ""),
+            "task_due_basis": cfg.get("due_basis", default_due_basis),
+            "task_due_in_days": cfg.get("due_in_days", "1"),
+            "task_status": cfg.get("status", "not_started"),
+            "task_priority": cfg.get("priority", "low"),
+            "task_description": cfg.get("description", ""),
+        }
+    if action_type == "email":
+        return {
+            "email_template_id": cfg.get("template_id", ""),
+            "email_to": cfg.get("to", ""),
+            "email_also_send_to": cfg.get("also_send_to", ""),
+        }
+    if action_type == "notification":
+        return {
+            "notification_template_id": cfg.get("template_id", ""),
+            "notification_to": cfg.get("to", ""),
+            "notification_also_notify_to": cfg.get("also_notify_to", ""),
+            "notification_custom_message": cfg.get("custom_message", ""),
+        }
+    if action_type:
+        return {
+            "channel_template_id": cfg.get("template_id", ""),
+            "channel_to": cfg.get("to", ""),
+            "channel_also_send_to": cfg.get("also_send_to", ""),
+        }
+    return {}
 
 
 class ActionConfigMixin:
@@ -80,31 +133,11 @@ class ActionConfigMixin:
         """Populate hidden-field initials from the saved action_config on the instance."""
         if not (self.instance and self.instance.pk):
             return
-        cfg = self.instance.action_config or {}
-        at = self.instance.action_type
-        if at == "update_field":
-            self.fields["update_field"].initial = cfg.get("field", "")
-            self.fields["update_value"].initial = cfg.get("value", "")
-        elif at == "assign_task":
-            self.fields["task_title"].initial = cfg.get("title", "")
-            self.fields["task_due_basis"].initial = cfg.get("due_basis", "")
-            self.fields["task_due_in_days"].initial = cfg.get("due_in_days", "1")
-            self.fields["task_status"].initial = cfg.get("status", "not_started")
-            self.fields["task_priority"].initial = cfg.get("priority", "low")
-            self.fields["task_description"].initial = cfg.get("description", "")
-        elif at == "email":
-            self.fields["email_template_id"].initial = cfg.get("template_id", "")
-            self.fields["email_to"].initial = cfg.get("to", "")
-            self.fields["email_also_send_to"].initial = cfg.get("also_send_to", "")
-        elif at == "notification":
-            self.fields["notification_template_id"].initial = cfg.get("template_id", "")
-            self.fields["notification_to"].initial = cfg.get("to", "")
-            self.fields["notification_also_notify_to"].initial = cfg.get(
-                "also_notify_to", ""
-            )
-            self.fields["notification_custom_message"].initial = cfg.get(
-                "custom_message", ""
-            )
+        initials = action_config_initials(
+            self.instance.action_type, self.instance.action_config, ""
+        )
+        for name, value in initials.items():
+            self.fields[name].initial = value
 
     def _build_action_config(self, cleaned_data):
         """Return the action_config dict built from cleaned hidden fields."""
@@ -138,11 +171,44 @@ class ActionConfigMixin:
                 "also_notify_to": cleaned_data.get("notification_also_notify_to", ""),
                 "custom_message": cleaned_data.get("notification_custom_message", ""),
             }
+        if get_action_channel(action_type) is not None:
+            return {
+                "template_id": cleaned_data.get("channel_template_id", ""),
+                "to": cleaned_data.get("channel_to", ""),
+                "also_send_to": cleaned_data.get("channel_also_send_to", ""),
+            }
         return {}
+
+    def _clean_action_type(self, cleaned_data):
+        """
+        ``action_type`` is a built-in or a delivery channel registered and
+        available to the action's company; a channel needs its template.
+        """
+        action_type = cleaned_data.get("action_type")
+        if not action_type or is_builtin_action_type(action_type):
+            return
+        channel = get_action_channel(action_type)
+        company = getattr(self.instance, "company", None) or getattr(
+            cleaned_data.get("rule"), "company", None
+        )
+        if channel is None or not channel.is_available(company):
+            # action_type and the compose fields are hidden inputs: the
+            # templates show non-field errors.
+            self.add_error(
+                None,
+                _("%(action_type)s is not an available action.")
+                % {"action_type": action_type},
+            )
+            return
+        if get_channel_template_kind(channel) and not cleaned_data.get(
+            "channel_template_id"
+        ):
+            self.add_error(None, _("Select a template."))
 
     def clean(self):
         """Build action_config from hidden fields and attach it to cleaned_data."""
         cleaned_data = super().clean()
+        self._clean_action_type(cleaned_data)
         cleaned_data["action_config"] = self._build_action_config(cleaned_data)
         if (
             cleaned_data.get("action_type") == "email"

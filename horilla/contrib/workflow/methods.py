@@ -8,6 +8,7 @@ import sys
 import threading
 
 # Third-party imports (Django)
+from django.db.models import Q
 from django.template import engines
 
 from horilla.auth.models import User
@@ -27,6 +28,12 @@ from horilla.db import connection, transaction
 from horilla.utils import timezone
 
 # Local imports
+from .action_types import (
+    TEMPLATE_MAIL,
+    TEMPLATE_NOTIFICATION,
+    get_action_channel,
+    get_channel_template_kind,
+)
 from .models import ScheduledWorkflowExecution, WorkflowRule
 
 logger = logging.getLogger(__name__)
@@ -732,6 +739,181 @@ def _execute_notification(action, instance, user):
         )
 
 
+class ChannelActionMessage:
+    """
+    What a delivery channel's ``send()`` reads for one workflow action.
+
+    Channels are written for Automations and read the message settings from
+    the ``HorillaAutomation`` they get as ``automation``: ``title``, ``pk``,
+    ``company``, ``mail_template``, ``notification_template``,
+    ``mail_server``, ``mail_to``, ``created_by``, ``updated_by``. A workflow
+    action passes this object instead, built from its ``action_config``.
+    ``action`` and ``rule`` are the workflow action and its rule.
+    """
+
+    def __init__(self, action, channel, template=None):
+        config = action.action_config or {}
+        rule = getattr(action, "rule", None)
+        kind = get_channel_template_kind(channel)
+        self.action = action
+        self.rule = rule
+        self.pk = action.pk
+        self.title = getattr(rule, "name", None) or str(action)
+        self.company = getattr(action, "company", None) or getattr(
+            rule, "company", None
+        )
+        self.mail_template = template if kind == TEMPLATE_MAIL else None
+        self.notification_template = template if kind == TEMPLATE_NOTIFICATION else None
+        # No mail server is chosen on a workflow action: the mail channel
+        # picks the company's outgoing server.
+        self.mail_server = None
+        self.mail_to = config.get("to", "") or ""
+        self.created_by = getattr(rule, "created_by", None)
+        self.updated_by = getattr(rule, "updated_by", None)
+        self.additional_info = {}
+
+    def __str__(self):
+        return str(self.title)
+
+
+def _get_channel_template(action, channel, company):
+    """
+    The template ``action_config["template_id"]`` points to for ``channel``,
+    or ``None``. Returns ``(template, ok)``: ``ok`` is false when the channel
+    needs a template and it is missing. Only a template of ``company`` (or of
+    no company) is used, as the action form lists.
+    """
+    from horilla.contrib.notifications.models import NotificationTemplate
+
+    kind = get_channel_template_kind(channel)
+    if kind is None:
+        return None, True
+    template_id = (action.action_config or {}).get("template_id")
+    model = (
+        NotificationTemplate if kind == TEMPLATE_NOTIFICATION else HorillaMailTemplate
+    )
+    templates = model.all_objects.all()
+    if company is not None:
+        templates = templates.filter(Q(company=company) | Q(company__isnull=True))
+    try:
+        template = templates.filter(pk=int(template_id)).first()
+    except (ValueError, TypeError):
+        template = None
+    return template, template is not None
+
+
+def _also_send_to_users(also_send_to):
+    """The users of a comma-separated list of user PKs (``also_send_to``)."""
+    ids = []
+    for part in str(also_send_to or "").split(","):
+        part = part.strip()
+        if part.isdigit():
+            ids.append(int(part))
+    if not ids:
+        return []
+    users = User.objects.in_bulk(ids)
+    return [users[pk] for pk in dict.fromkeys(ids) if pk in users]
+
+
+def _execute_channel(action, channel, instance, user):
+    """
+    Send through a registered delivery channel (``action_type`` is its key).
+
+    ``action_config`` is ``{"template_id", "to", "also_send_to"}``: the
+    channel resolves ``to`` for its own address kind (emails, users, phone
+    numbers), adds the users of ``also_send_to`` (user PKs), and sends the
+    template as it does for an automation.
+    """
+    config = action.action_config or {}
+
+    rule = getattr(action, "rule", None)
+    company = getattr(action, "company", None) or getattr(rule, "company", None)
+    template, ok = _get_channel_template(action, channel, company)
+    if not ok:
+        logger.warning(
+            "%s action %s: template %s not found",
+            channel.key,
+            action.pk,
+            config.get("template_id"),
+        )
+        return
+
+    recipients = channel.resolve_recipients(config.get("to", "") or "", instance, user)
+    recipients = channel.add_also_sent_to(
+        recipients, _also_send_to_users(config.get("also_send_to"))
+    )
+    if not recipients:
+        logger.warning("%s action %s: no recipients resolved", channel.key, action.pk)
+        return
+
+    message = ChannelActionMessage(action, channel, template)
+
+    # The same context Automations renders templates with.
+    request = getattr(_thread_local, "request", None)
+    actor = (
+        user
+        or getattr(instance, "updated_by", None)
+        or getattr(instance, "created_by", None)
+        or message.updated_by
+        or message.created_by
+    )
+    active_company = getattr(request, "active_company", None) or (
+        getattr(actor, "company", None) if actor else None
+    )
+    context = {
+        "instance": instance,
+        "user": actor,
+        "self": user,
+        "active_company": active_company,
+    }
+    if request:
+        context["request"] = request
+
+    channel.send(message, instance, recipients, context, user)
+    logger.info(
+        "Workflow %s sent: action=%s instance=%s recipients=%s",
+        channel.key,
+        action.pk,
+        instance.pk,
+        len(recipients),
+    )
+
+
+#: The built-in action types and the function that runs each.
+BUILTIN_EXECUTORS = {
+    "update_field": _execute_update_field,
+    "assign_task": _execute_assign_task,
+    "email": _execute_email,
+    "notification": _execute_notification,
+}
+
+
+def execute_action(action, instance, user):
+    """
+    Run one ``WorkflowAction`` or ``WorkflowTimeTriggerAction``.
+
+    A built-in runs its executor; any other ``action_type`` is a delivery
+    channel key and is sent through the registered channel. Returns False
+    when ``action_type`` is neither (the channel's app is gone): the action is
+    logged and skipped.
+    """
+    executor = BUILTIN_EXECUTORS.get(action.action_type)
+    if executor is not None:
+        executor(action, instance, user)
+        return True
+    channel = get_action_channel(action.action_type)
+    if channel is None:
+        logger.error(
+            "Workflow action %s: action type %r is not a built-in or a "
+            "registered delivery channel",
+            action.pk,
+            action.action_type,
+        )
+        return False
+    _execute_channel(action, channel, instance, user)
+    return True
+
+
 # ---------------------------------------------------------------------------
 # Rule execution
 # ---------------------------------------------------------------------------
@@ -770,20 +952,7 @@ def execute_workflow_rule(rule, instance, user, trigger_type):
     actions = rule.actions.filter(is_active=True).order_by("order", "created_at")
     for action in actions:
         try:
-            if action.action_type == "update_field":
-                _execute_update_field(action, instance, user)
-            elif action.action_type == "assign_task":
-                _execute_assign_task(action, instance, user)
-            elif action.action_type == "email":
-                _execute_email(action, instance, user)
-            elif action.action_type == "notification":
-                _execute_notification(action, instance, user)
-            else:
-                logger.debug(
-                    "Workflow action type '%s' not yet implemented (action pk=%s)",
-                    action.action_type,
-                    action.pk,
-                )
+            execute_action(action, instance, user)
         except Exception as exc:
             logger.error(
                 "Error executing workflow action %s (%s): %s",

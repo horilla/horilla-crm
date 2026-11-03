@@ -13,6 +13,9 @@ from horilla.urls import reverse_lazy
 from horilla.utils.choices import OPERATOR_CHOICES
 from horilla.utils.translation import gettext_lazy as _
 
+# Local imports
+from .action_types import ACTION_TYPE_MAX_LENGTH, get_action_type_label
+
 
 class WorkflowRule(HorillaCoreModel):
     """
@@ -159,18 +162,12 @@ class WorkflowAction(HorillaCoreModel):
     """
     One action to execute when a WorkflowRule fires.
 
-    action_type selects one of: update_field, assign_task, email, notification.
-    All type-specific config is stored in action_config (JSONField), keeping the
-    table schema flat — same pattern as ApprovalProcessRule.rule_config.
-
+    action_type is one key: a built-in (update_field, assign_task, email,
+    notification) or the key of a registered delivery channel (see
+    ``action_types.py``). It has no fixed choices. All type-specific config is
+    stored in action_config (JSONField), keeping the table schema flat — same
+    pattern as ApprovalProcessRule.rule_config.
     """
-
-    ACTION_TYPE_CHOICES = [
-        ("update_field", _("Edit Field")),
-        ("assign_task", _("Assign Task")),
-        ("email", _("Email")),
-        ("notification", _("Notification")),
-    ]
 
     rule = models.ForeignKey(
         WorkflowRule,
@@ -179,8 +176,7 @@ class WorkflowAction(HorillaCoreModel):
         verbose_name=_("Workflow Rule"),
     )
     action_type = models.CharField(
-        max_length=20,
-        choices=ACTION_TYPE_CHOICES,
+        max_length=ACTION_TYPE_MAX_LENGTH,
         verbose_name=_("Action"),
     )
     action_config = models.JSONField(
@@ -189,9 +185,10 @@ class WorkflowAction(HorillaCoreModel):
         help_text=_(
             "Type-specific configuration. "
             "update_field: {field, value}. "
-            "assign_task: {subject, due_days, priority, owner_id}. "
-            "email: {template_id, to}. "
-            "notification: {message, user_ids}."
+            "assign_task: {title, due_basis, due_in_days, status, priority, description}. "
+            "email: {template_id, to, also_send_to}. "
+            "notification: {template_id, to, also_notify_to, custom_message}. "
+            "A delivery channel: {template_id, to, also_send_to}."
         ),
     )
     order = models.PositiveIntegerField(
@@ -206,6 +203,10 @@ class WorkflowAction(HorillaCoreModel):
         verbose_name_plural = _("Workflow Actions")
         ordering = ["order", "created_at"]
 
+    def get_action_type_display(self):
+        """The built-in's or the delivery channel's label (the key if its app is gone)."""
+        return get_action_type_label(self.action_type)
+
     def __str__(self):
         return f"{self.rule.name} — {self.get_action_type_display()}"
 
@@ -218,7 +219,7 @@ class WorkflowTimeTriggerAction(HorillaCoreModel):
     Fires `delay_value` `delay_unit` (after/before) a `trigger_date_field`
     on the target record (or 'rule_trigger_date' for the moment the rule fired).
 
-    action_config keys follow the same schema as WorkflowAction.action_config.
+    action_type and action_config follow the same schema as WorkflowAction.
     """
 
     DELAY_UNIT_CHOICES = [
@@ -230,13 +231,6 @@ class WorkflowTimeTriggerAction(HorillaCoreModel):
     DELAY_DIRECTION_CHOICES = [
         ("after", _("After")),
         ("before", _("Before")),
-    ]
-
-    ACTION_TYPE_CHOICES = [
-        ("update_field", _("Edit Field")),
-        ("assign_task", _("Assign Task")),
-        ("email", _("Email")),
-        ("notification", _("Notification")),
     ]
 
     rule = models.ForeignKey(
@@ -270,8 +264,7 @@ class WorkflowTimeTriggerAction(HorillaCoreModel):
         ),
     )
     action_type = models.CharField(
-        max_length=20,
-        choices=ACTION_TYPE_CHOICES,
+        max_length=ACTION_TYPE_MAX_LENGTH,
         verbose_name=_("Action Type"),
     )
     action_config = models.JSONField(
@@ -290,6 +283,10 @@ class WorkflowTimeTriggerAction(HorillaCoreModel):
         verbose_name = _("Workflow Time Trigger Action")
         verbose_name_plural = _("Workflow Time Trigger Actions")
         ordering = ["order", "created_at"]
+
+    def get_action_type_display(self):
+        """The built-in's or the delivery channel's label (the key if its app is gone)."""
+        return get_action_type_label(self.action_type)
 
     def __str__(self):
         return (

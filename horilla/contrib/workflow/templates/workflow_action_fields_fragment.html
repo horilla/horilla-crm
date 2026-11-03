@@ -305,6 +305,117 @@
             initNotifFields();
         })();
     </script>
+{% elif channel %}
+    {# A registered delivery channel: action_config is {template_id, to, also_send_to} #}
+    <div class="grid grid-cols-1 gap-3 mt-3">
+        {% if channel_template_kind %}
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-color-600">
+                    {% if channel_template_kind == "mail" %}
+                        {% trans "Mail template" %}
+                    {% else %}
+                        {% trans "Notification template" %}
+                    {% endif %}
+                </label>
+                <select
+                    id="wf-channel-template-sel"
+                    name="channel_template_id"
+                    class="js-example-basic-single headselect w-full border border-dark-50 rounded-md text-sm text-color-600 p-2 focus-visible:outline-0 focus:border-primary-600"
+                >
+                    <option value="">{% trans "Select template" %}</option>
+                    {% if channel_template_kind == "mail" %}
+                        {% for t in mail_templates %}
+                            <option
+                                value="{{ t.pk }}"
+                                {% if current_values.channel_template_id|stringformat:"s" == t.pk|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ t.title }}
+                            </option>
+                        {% endfor %}
+                    {% else %}
+                        {% for t in notification_templates %}
+                            <option
+                                value="{{ t.pk }}"
+                                {% if current_values.channel_template_id|stringformat:"s" == t.pk|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ t.title }}
+                            </option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+        {% endif %}
+        <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-color-600">{% trans "To" %}</label>
+            <input
+                type="hidden"
+                name="channel_to"
+                id="wf-channel-to-val"
+                value="{{ current_values.channel_to|default:'' }}"
+            >
+            <select
+                id="wf-channel-to-sel"
+                multiple
+                class="js-example-basic-multiple headselect w-full border border-dark-50 rounded-md text-sm text-color-600 p-2 focus-visible:outline-0 focus:border-primary-600"
+            >
+                {% for value, label in channel_to_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-color-600">{% trans "Also send to" %}</label>
+            <input
+                type="hidden"
+                name="channel_also_send_to"
+                id="wf-channel-also-val"
+                value="{{ current_values.channel_also_send_to|default:'' }}"
+            >
+            <select
+                id="wf-channel-also-sel"
+                multiple
+                class="js-example-basic-multiple headselect w-full border border-dark-50 rounded-md text-sm text-color-600 p-2 focus-visible:outline-0 focus:border-primary-600"
+            >
+                {% for u in users %}
+                    <option value="{{ u.pk }}">{{ u.get_full_name|default:u.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <script>
+        (function () {
+            function initChannelFields() {
+                if (!(window.$ && $.fn.select2)) { setTimeout(initChannelFields, 100); return; }
+                var toSel = $("#wf-channel-to-sel");
+                var alsoSel = $("#wf-channel-also-sel");
+                var toVal = document.getElementById("wf-channel-to-val");
+                var alsoVal = document.getElementById("wf-channel-also-val");
+
+                // tags: a phone number or address can be typed, like in Automations.
+                toSel.select2({ width: "100%", tags: true });
+                alsoSel.select2({ width: "100%", tags: false });
+
+                var existing = (toVal.value || "").split(",").map(function(s){return s.trim();}).filter(Boolean);
+                existing.forEach(function (value) {
+                    if (!toSel.find("option").filter(function () { return this.value === value; }).length) {
+                        toSel.append(new Option(value, value, false, false));
+                    }
+                });
+                if (existing.length) { toSel.val(existing).trigger("change"); }
+
+                var existingAlso = (alsoVal.value || "").split(",").map(function(s){return s.trim();}).filter(Boolean);
+                if (existingAlso.length) { alsoSel.val(existingAlso).trigger("change"); }
+
+                toSel.on("change", function () { toVal.value = (toSel.val() || []).join(","); });
+                alsoSel.on("change", function () { alsoVal.value = (alsoSel.val() || []).join(","); });
+            }
+            initChannelFields();
+        })();
+    </script>
 {% endif %}
 
 {% if action %}

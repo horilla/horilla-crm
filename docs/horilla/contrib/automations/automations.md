@@ -97,7 +97,7 @@ The registry module (`horilla/registry/delivery.py`) imports no app: `register_d
 
 **Form.** The recipient picker (`mail_to`) shows the union of the selected channels' `get_recipient_choices(model)` and is refreshed by `TemplateFieldsView` whenever the selection or the module changes. `TemplateFieldsView` reads every selected key (`request.GET.getlist("delivery_channel")`) and shows the mail template and mail server when any selected channel's `shows_mail_fields()` is true, the notification template when any `shows_notification_fields()` is true.
 
-**Adding a channel** (an SMS gateway, a messenger) is a new app: no change in Automations and no migration anywhere.
+**Adding a channel** (an SMS gateway, a messenger) is a new app: no change in Automations and no migration anywhere. The channel is also offered as a Workflow action type (see [Workflow: actions and delivery channels](../workflow/workflow.md#actions-and-delivery-channels)), one channel per action.
 
 ```python
 # myapp/delivery.py

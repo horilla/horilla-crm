@@ -1,5 +1,4 @@
 {% load i18n %}
-{% trans "Discard your unsaved changes?" as discard_confirm %}
 <form
     id="form-layout-form"
     class="flex-1 min-h-0 flex flex-col"
@@ -208,27 +207,6 @@
             <i class="fas fa-circle-exclamation"></i>
             {% trans "You have unsaved changes." %}
         </span>
-        <span class="hidden items-center gap-2 ms-auto">
-            <button
-                type="button"
-                class="outline outline-1 outline-offset-[-1px] outline-primary-600 rounded-md hover:bg-primary-300 transition duration-300 text-primary-600 text-sm px-4 py-2"
-                hx-get="{% url 'field_management:form_layout_editor' %}?model={{ selected_content_type.pk }}"
-                hx-target="#form-layout-editor"
-                hx-swap="outerHTML"
-                hx-trigger="confirmed"
-                data-layout-cancel
-                data-confirm="{{ discard_confirm }}"
-            >
-                {% trans "Cancel" %}
-            </button>
-            <button
-                type="submit"
-                class="bg-primary-600 rounded-md hover:bg-primary-800 transition duration-300 text-white text-sm px-4 py-2 inline-flex items-center gap-2"
-            >
-                <i class="fas fa-check text-xs"></i>
-                {% trans "Save Layout" %}
-            </button>
-        </span>
     </div>
 </form>
 
@@ -236,6 +214,15 @@
     (function () {
         if (!window.horillaFormLayouts) {
             window.horillaFormLayouts = {
+                // Navbar Cancel: confirm if there are unsaved changes, then reload the editor.
+                cancel: function (button) {
+                    var form = document.getElementById("form-layout-form");
+                    if (form && form.dataset.dirty === "true" && typeof hxConfirm === "function") {
+                        hxConfirm(button, button.dataset.confirm);
+                    } else {
+                        htmx.trigger(button, "confirmed");
+                    }
+                },
                 init: function (form) {
                     if (!form || form.dataset.layoutReady === "1") {
                         return;
@@ -296,6 +283,7 @@
 
                     function markDirty() {
                         dirty = true;
+                        form.dataset.dirty = "true";
                         var note = form.querySelector("[data-layout-dirty-note]");
                         if (note) {
                             note.classList.remove("hidden");
@@ -427,19 +415,20 @@
                             searchBox.focus();
                             return;
                         }
-                        var cancel = event.target.closest("[data-layout-cancel]");
-                        if (cancel) {
-                            if (dirty && typeof hxConfirm === "function") {
-                                hxConfirm(cancel, cancel.dataset.confirm);
-                            } else {
-                                htmx.trigger(cancel, "confirmed");
-                            }
-                        }
                     });
 
                     refresh();
                 },
             };
+            document.addEventListener("confirmed", function (event) {
+                var button = event.target.closest && event.target.closest("[data-layout-cancel]");
+                if (button) {
+                    htmx.ajax("GET", button.dataset.cancelUrl, {
+                        target: "#form-layout-editor",
+                        swap: "outerHTML",
+                    });
+                }
+            });
             document.addEventListener("htmx:historyRestore", function () {
                 window.horillaFormLayouts.init(document.getElementById("form-layout-form"));
             });

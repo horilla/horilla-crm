@@ -1,0 +1,42 @@
+{% load i18n reports_tags %}
+{# One filter row of the report filter panel (same layout as the list filter row) #}
+<div class="rf-row filter-row flex items-start gap-2 mb-2" id="rf-row-{{ row_key }}">
+    <input type="hidden" name="filter_key" value="{{ row_key }}">
+    {% if is_first %}
+        <input type="hidden" name="logic__{{ row_key }}" value="and">
+    {% else %}
+        <div class="w-20 shrink-0">
+            <select name="logic__{{ row_key }}" class="js-example-basic-single w-full">
+                <option value="and" {% if logic|default:'and' == 'and' %}selected{% endif %}>{% trans "AND" %}</option>
+                <option value="or" {% if logic == 'or' %}selected{% endif %}>{% trans "OR" %}</option>
+            </select>
+        </div>
+    {% endif %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1" style="min-width:0">
+        <div class="col">
+            <select
+                name="field__{{ row_key }}"
+                class="js-example-basic-single w-full"
+                hx-get="{% url 'reports:filter_row_body' report.pk %}"
+                hx-vals='{"row_key": "{{ row_key }}"}'
+                hx-target="#rf-body-{{ row_key }}"
+                hx-swap="innerHTML"
+                hx-trigger="change"
+                hx-push-url="false"
+            >
+                <option value="">{% trans "Select Field" %}</option>
+                {% for f in grouping_fields %}
+                    <option value="{{ f.name }}" {% if f.name == field %}selected{% endif %}>{{ f.verbose_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div id="rf-body-{{ row_key }}" style="display:contents">
+            {% include "partials/report_filter_row_body.html" %}
+        </div>
+    </div>
+    {% if not is_first %}
+    <button type="button" aria-label="{% trans 'Remove Filter' %}" class="hover:bg-gray-100 rounded-full shrink-0" style="width:28px;height:38px;display:flex;align-items:center;justify-content:center" onclick="removeReportFilterRow(this)">
+        <i class="fas fa-times text-red-600 text-xs"></i>
+    </button>
+    {% endif %}
+</div>

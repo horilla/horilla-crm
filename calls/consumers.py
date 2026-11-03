@@ -1,4 +1,4 @@
-"""WebSocket consumers for real-time incoming call notifications."""
+"""WebSocket consumers for real-time incoming call and call status notifications."""
 
 import json
 
@@ -43,6 +43,21 @@ class IncomingCallConsumer(AsyncWebsocketConsumer):
                     "provider_name": event["provider_name"],
                     "call_log_id": event["call_log_id"],
                     "related_name": event.get("related_name"),
+                }
+            )
+        )
+
+    async def call_status(self, event):
+        """
+        Called by group_send with type='call_status'.
+        Tells the calling modal that a call changed state so it can refresh itself.
+        """
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": "call_status",
+                    "call_log_id": event["call_log_id"],
+                    "status": event["status"],
                 }
             )
         )

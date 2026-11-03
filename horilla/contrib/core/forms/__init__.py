@@ -15,6 +15,7 @@ from horilla.contrib.core.forms.shift_hour import ShiftHourForm
 from horilla.contrib.core.forms.users import (
     UserFormClass,
     UserFormSingle,
+    UserDetailsInlineForm,
     UserFormClassSingle,
     ChangeUserCompanyForm,
 )
@@ -29,6 +30,7 @@ from horilla.contrib.core.forms.company import (
     CompanyMultistepFormClass,
     CompanyFormClass,
     CompanyFormClassSingle,
+    CompanyDetailsInlineForm,
 )
 
 from horilla.contrib.core.forms.permission import (
@@ -53,11 +55,13 @@ __all__ = [
     # User forms
     "UserFormClass",
     "UserFormSingle",
+    "UserDetailsInlineForm",
     "UserFormClassSingle",
     # Company forms
     "CompanyMultistepFormClass",
     "CompanyFormClass",
     "CompanyFormClassSingle",
+    "CompanyDetailsInlineForm",
     # Permission forms
     "AddUsersToRoleForm",
     "AddSuperUsersForm",

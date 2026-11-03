@@ -9,7 +9,7 @@ __release_date__ = ""
 __description__ = _(
     "Module for creating and customizing reports across all system modules."
 )
-__icon__ = "assets/icons/icon5.svg"
+__icon__ = "reports/assets/icons/icon5.svg"
 
 __1_11_14__ = _("Show the close button as soon as the report edit panel opens.")
 

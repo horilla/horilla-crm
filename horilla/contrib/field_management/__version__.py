@@ -13,7 +13,7 @@ __description__ = _(
     "fields are required or optional, and set which fields appear on a form "
     "and in what order, per company."
 )
-__icon__ = "assets/icons/field-requirement.svg"
+__icon__ = "field_management/assets/icons/field-requirement.svg"
 
 __1_0_1__ = _(
     "Offer this fiscal period, quarter and year on custom date and datetime "

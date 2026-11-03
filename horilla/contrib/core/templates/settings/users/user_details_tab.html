@@ -1,0 +1,30 @@
+<div id="user-detail-view" class="h-full overflow-y-auto overflow-hidden custom-scroll p-3">
+    {% url 'core:user_details_tab' obj.pk as tab_url %}
+    {% if form %}
+        <form
+            id="user-details-form"
+            hx-post="{{ tab_url }}"
+            hx-target="#user-detail-view"
+            hx-swap="outerHTML"
+            hx-encoding="multipart/form-data"
+            hx-push-url="false"
+        >
+            {% csrf_token %}
+            {% include "partials/inline_edit_banner.html" with cancel_url=tab_url target="#user-detail-view" %}
+
+            {% if form.non_field_errors %}
+                <div class="text-xs text-red-600 mb-3">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            {% include "partials/inline_edit_form_sections.html" %}
+        </form>
+    {% else %}
+        {% if obj.last_login %}
+            {% blocktrans with time=obj.last_login|timesince asvar last_login_text %}Last login {{ time }} ago{% endblocktrans %}
+        {% else %}
+            {% trans "Never logged in" as last_login_text %}
+        {% endif %}
+        {% include "partials/inline_edit_banner.html" with banner_subtitle=last_login_text edit_url=tab_url|add:"?edit=true" target="#user-detail-view" %}
+        {% include "partials/inline_edit_view_sections.html" %}
+    {% endif %}
+</div>

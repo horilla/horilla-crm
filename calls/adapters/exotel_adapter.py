@@ -5,6 +5,8 @@ Unlike Twilio, Exotel's Connect API first calls the agent, then bridges to the c
 Flow: Exotel calls agent (From) → agent answers → Exotel calls customer (To).
 """
 
+import hashlib
+import hmac
 import logging
 
 import requests
@@ -117,10 +119,25 @@ class ExotelAdapter(BaseCallAdapter):
             logger.error("Exotel initiate_call failed: %s", exc)
             raise
 
+    def webhook_token(self) -> str:
+        """Per-provider token derived from SECRET_KEY; Exotel cannot sign its webhooks."""
+        from django.conf import settings
+
+        return hmac.new(
+            settings.SECRET_KEY.encode("utf-8"),
+            f"calls-webhook:{self.provider.pk}".encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest()
+
+    def sign_callback_url(self, url: str) -> str:
+        """Append the webhook token, since Exotel does not sign its callbacks."""
+        separator = "&" if "?" in url else "?"
+        return f"{url}{separator}token={self.webhook_token()}"
+
     def validate_webhook(self, request) -> bool:
-        # Exotel does not send signed webhooks — accept all POSTs from their IPs.
-        # For production, restrict via firewall to Exotel IP ranges.
-        return True
+        """Exotel sends no signature, so authenticate the token embedded in the callback URL."""
+        supplied = request.GET.get("token", "")
+        return bool(supplied) and hmac.compare_digest(supplied, self.webhook_token())
 
     def parse_webhook_payload(self, request) -> dict:
         data = request.POST

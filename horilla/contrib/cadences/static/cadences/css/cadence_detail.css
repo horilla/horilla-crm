@@ -70,31 +70,6 @@
     flex-direction: column;
 }
 
-.cadence-child-down-indicator {
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    transform: translate(-50%, 50%);
-    z-index: 3;
-    pointer-events: none;
-}
-
-.cadence-child-down-indicator img {
-    width: 30px;
-    height: 30px;
-    display: block;
-}
-
-.cadence-child-down-indicator .cadence-child-arrow-wrap {
-    width: 27px;
-    height: 26px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transform: rotate(90deg);
-    z-index: 2;
-}
-
 .cadence-card-bottom-add {
     position: relative;
     min-height: 32px;

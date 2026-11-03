@@ -1,6 +1,18 @@
 <div class="flex items-center gap-2 mb-2 condition-row" data-row-id="{{ row_id }}" id="condition-row-{{ row_id }}">
+    {% if "logical_operator" in condition_fields %}
+        <div id="id_logical_operator_{{ row_id }}_cell" class="w-20 shrink-0">
+            <div id="id_logical_operator_{{ row_id }}_container">
+                {% if submitted_condition_data and row_id in submitted_condition_data and "logical_operator" in submitted_condition_data|get_item_form:row_id %}
+                    {% render_field_with_name form "logical_operator" row_id submitted_condition_data|get_item_form:row_id|get_item_form:"logical_operator" %}
+                {% else %}
+                    {% render_field_with_name form "logical_operator" row_id %}
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
     <div class="flex gap-2 flex-1">
         {% for field_name in condition_fields %}
+          {% if field_name != "logical_operator" %}
             <div id="id_{{ field_name }}_{{ row_id }}_cell" class="flex-1 min-w-0">
                 {% if form and field_name in form.fields %}
                     <div id="id_{{ field_name }}_{{ row_id }}_container">
@@ -25,6 +37,7 @@
                     </div>
                 {% endif %}
             </div>
+          {% endif %}
         {% endfor %}
     </div>
     <button

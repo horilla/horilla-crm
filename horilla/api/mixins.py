@@ -302,9 +302,16 @@ class BulkOperationsMixin:
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Perform bulk update within a transaction
+        # Save per instance rather than queryset.update() so model-level
+        # clean()/save() sanitization (e.g. HTML stripping on rich-text
+        # fields) runs exactly as it does for a single PATCH.
         with transaction.atomic():
-            updated_count = queryset.update(**update_data)
+            updated_count = 0
+            for instance in queryset:
+                for field_name, value in update_data.items():
+                    setattr(instance, field_name, value)
+                instance.save(update_fields=list(update_data))
+                updated_count += 1
 
         return Response(
             {

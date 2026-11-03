@@ -13,6 +13,7 @@ Lead and Opportunity scenarios live next to their registration, in
 """
 
 # Standard library imports
+import html
 import re
 from pathlib import Path
 from types import SimpleNamespace
@@ -858,9 +859,15 @@ class FormLayoutSettingsViewTests(LoginSignalsMixin, CompanyOptInMixin, TestCase
         )
         self.assertContains(response, "fa-grip-vertical")
         self.assertContains(response, 'data-layout-move="up"')
-        self.assertContains(response, "data-layout-cancel")
-        self.assertContains(response, "Save Layout")
-        self.assertNotContains(response, "Edit Layout")
+        # Save and Cancel live in the navbar, which the editor loads over HTMX.
+        navbar_url = re.search(r'id="navBar".*?hx-get="([^"]+)"', content, re.S)
+        self.assertIsNotNone(navbar_url)
+        navbar = self.client.get(
+            html.unescape(navbar_url.group(1)), HTTP_HX_REQUEST="true"
+        )
+        self.assertContains(navbar, "data-layout-cancel")
+        self.assertContains(navbar, "Save Layout")
+        self.assertNotContains(navbar, "Edit Layout")
         # The drag handle must not be a natively draggable image.
         self.assertNotContains(response, "drag.svg")
 

@@ -197,7 +197,6 @@ class HolidayFormView(LoginRequiredMixin, HorillaSingleFormView):
     model = Holiday
     form_class = HolidayForm
     view_id = "holiday-form-view"
-    form_title = _("Holiday Form")
     full_width_fields = ["name", "weekly_days"]
     return_response = ScriptResponse(
         close=True,

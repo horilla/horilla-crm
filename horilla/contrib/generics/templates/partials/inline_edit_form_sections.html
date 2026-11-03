@@ -1,0 +1,96 @@
+{% for fieldset in form.get_fieldsets %}
+    <div class="mb-4 rounded-md border border-primary-300">
+        <h3 class="text-sm font-semibold bg-primary-100 text-primary-600 rounded-t-md p-3">
+            {{ fieldset.name }}
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+            {% for field in fieldset.fields %}
+                <div data-field-name="{{ field.name }}">
+                    {% if field.field.widget.input_type == 'file' and field.field|is_image_field %}
+                        <label class="text-xs text-color-600 mb-1 block">{{ field.label }}</label>
+                        <div class="flex items-center gap-3">
+                            <div
+                                id="{{ field.id_for_label }}-dropzone"
+                                class="relative w-16 h-16 flex-shrink-0 cursor-pointer"
+                                onclick="document.getElementById('{{ field.id_for_label }}').click()"
+                            >
+                                <div class="relative w-16 h-16 rounded-full overflow-hidden bg-gray-100 border border-dark-50 shadow-sm transition hover:shadow-md flex items-center justify-center">
+                                    <img
+                                        id="{{ field.id_for_label }}-preview"
+                                        src="{% if field.value %}{{ field.value.url }}{% endif %}"
+                                        alt=""
+                                        class="absolute top-0 start-0 w-16 h-16 object-cover"
+                                        style="{% if not field.value %}display:none;{% endif %}"
+                                        onload="this.style.removeProperty('display'); this.nextElementSibling.style.display='none';"
+                                        onerror="this.style.display='none';"
+                                    >
+                                    <div
+                                        id="{{ field.id_for_label }}-placeholder"
+                                        class="flex items-center justify-center pointer-events-none"
+                                        style="{% if field.value %}display:none;{% endif %}"
+                                    >
+                                        <i class="fa-solid fa-image text-lg text-gray-400"></i>
+                                    </div>
+                                </div>
+                                <span class="absolute bottom-0 end-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary-600 text-white border-2 border-white shadow-sm pointer-events-none">
+                                    <i class="fa-solid fa-camera text-[9px]"></i>
+                                </span>
+                            </div>
+                            <div class="flex flex-col">
+                                <p class="text-[11px] text-gray-500">{% trans "JPG or PNG" %}</p>
+                                <button
+                                    type="button"
+                                    id="{{ field.id_for_label }}-clear"
+                                    class="text-xs text-primary-600 hover:text-primary-700 font-medium transition-colors text-start"
+                                    style="{% if field.value %}display:block;{% else %}display:none;{% endif %}"
+                                >
+                                    {% trans "Remove photo" %}
+                                </button>
+                            </div>
+                        </div>
+                        <div style="display: none">{{ field }}</div>
+                        <input type="hidden" name="id_{{ field.name }}_clear" id="{{ field.id_for_label }}_clear_input" value="false">
+                        <script>
+                            (function () {
+                                const input = document.getElementById('{{ field.id_for_label }}');
+                                const clearBtn = document.getElementById('{{ field.id_for_label }}-clear');
+                                const clearInput = document.getElementById('{{ field.id_for_label }}_clear_input');
+                                const preview = document.getElementById('{{ field.id_for_label }}-preview');
+                                const placeholder = document.getElementById('{{ field.id_for_label }}-placeholder');
+                                if (!input || !clearBtn || !clearInput || !preview || !placeholder) return;
+                                input.addEventListener('change', function () {
+                                    if (input.files.length > 0) {
+                                        clearInput.value = 'false';
+                                        const reader = new FileReader();
+                                        reader.onload = function (e) {
+                                            preview.src = e.target.result;
+                                            preview.style.removeProperty('display');
+                                            placeholder.style.display = 'none';
+                                            clearBtn.style.removeProperty('display');
+                                        };
+                                        reader.readAsDataURL(input.files[0]);
+                                    }
+                                });
+                                clearBtn.addEventListener('click', function (event) {
+                                    event.stopPropagation();
+                                    input.value = '';
+                                    preview.style.display = 'none';
+                                    preview.removeAttribute('src');
+                                    placeholder.style.removeProperty('display');
+                                    clearBtn.style.display = 'none';
+                                    clearInput.value = 'true';
+                                });
+                            })();
+                        </script>
+                    {% else %}
+                        <label class="text-xs text-color-600" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="text-xs text-red-600 mt-1">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endfor %}

@@ -29,10 +29,10 @@ def _condition_field_label(model_field, field_name):
 
 
 def _condition_select_attrs(field_name, row_id, data_placeholder=None):
-    placeholder = data_placeholder or f"Select {field_name.replace('_', ' ').title()}"
+    # No data-placeholder: Select2 would treat the empty option as the placeholder
+    # and hide it, leaving no way to clear the row's selection.
     return {
         "class": "js-example-basic-single headselect",
-        "data-placeholder": placeholder,
         "id": f"id_{field_name}_{row_id}",
         "name": f"{field_name}_{row_id}",
     }
@@ -716,6 +716,36 @@ def get_extension_field_choices(model):
 _get_extension_field_choices = get_extension_field_choices
 
 
+# Fields never offered in condition field dropdowns
+CONDITION_EXCLUDED_FIELDS = frozenset(
+    {
+        "id",
+        "pk",
+        "company",
+        "additional_info",
+        "password",
+        "last_login",
+        "date_joined",
+        "groups",
+        "user_permissions",
+        "is_staff",
+    }
+)
+
+# Non-editable audit fields that are still valid in conditions
+AUDIT_FIELDS = ("created_at", "updated_at", "created_by", "updated_by")
+
+
+def get_condition_model_fields(model, exclude=CONDITION_EXCLUDED_FIELDS):
+    """Forward fields of ``model`` usable in conditions (no reverse relations, no excluded, editable or audit)."""
+    return [
+        field
+        for field in list(model._meta.fields) + list(model._meta.many_to_many)
+        if field.name not in exclude
+        and (getattr(field, "editable", True) or field.name in AUDIT_FIELDS)
+    ]
+
+
 def get_model_field_choices(form, model_name):
     """Get field choices for a model (excluding reverse relations and common non-editable)."""
     field_choices = [("", "---------")]
@@ -732,19 +762,7 @@ def get_model_field_choices(form, model_name):
             except (LookupError, ValueError):
                 continue
         if model:
-            skip = {
-                "id",
-                "pk",
-                "created_at",
-                "updated_at",
-                "created_by",
-                "updated_by",
-                "company",
-                "additional_info",
-            }
-            for field in list(model._meta.fields) + list(model._meta.many_to_many):
-                if field.name in skip or not getattr(field, "editable", True):
-                    continue
+            for field in get_condition_model_fields(model):
                 verbose_name = (
                     getattr(field, "verbose_name", None)
                     or field.name.replace("_", " ").title()

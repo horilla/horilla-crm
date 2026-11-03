@@ -61,7 +61,7 @@ class GoogleCalendarSettings:
         "hx-select": "#google-calendar-settings-view",
         "hx-select-oob": "#my-settings-sidebar",
     }
-    condition = staticmethod(GoogleIntegrationSetting.google_calendar_enabled)
+    condition = staticmethod(GoogleIntegrationSetting.user_has_menu_access)
 
 
 @sub_section_menu.register

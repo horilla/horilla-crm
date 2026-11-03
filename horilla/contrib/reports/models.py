@@ -11,7 +11,11 @@ import json
 from django.conf import settings
 
 from horilla.contrib.core.models import HorillaContentType, HorillaCoreModel
-from horilla.contrib.reports.utils import _virtual_fields_for, resolve_report_field
+from horilla.contrib.reports.utils import (
+    _virtual_fields_for,
+    get_report_related_fields,
+    resolve_report_field,
+)
 from horilla.contrib.utils.methods import render_template
 
 # First party imports (Horilla)
@@ -331,6 +335,20 @@ class Report(HorillaCoreModel):
             "BigIntegerField",
         ]
 
+        # Never expose these through a related-field path (e.g. owner__password)
+        sensitive_field_names = {
+            "password",
+            "last_login",
+            "date_joined",
+            "is_superuser",
+            "is_staff",
+            "user_permissions",
+            "groups",
+            "token",
+            "secret",
+            "api_key",
+        }
+
         def _is_excluded(field):
             if field.name in ("id", "pk"):
                 return True
@@ -359,12 +377,28 @@ class Report(HorillaCoreModel):
                     }
                 )
                 related_model = field.related_model
+                # Django's ContentType internals (app label, model name) are
+                # not meaningful report fields.
+                if related_model._meta.label in (
+                    "contenttypes.ContentType",
+                    "core.HorillaContentType",
+                ):
+                    continue
+                # Only relations the report model registers are expanded, and only
+                # with the fields registered for them.
+                useful_names = set(
+                    get_report_related_fields(
+                        self.model_class, field.name, related_model
+                    )
+                )
                 for related_field in related_model._meta.get_fields():
                     if related_field.many_to_many or related_field.one_to_many:
                         continue
-                    if isinstance(
-                        related_field, (models.ForeignKey, models.OneToOneField)
-                    ):
+                    if related_field.name not in useful_names:
+                        continue
+                    # A related model's own FKs (e.g. owner -> role) are listed
+                    # as leaves; credentials/permission internals never are.
+                    if related_field.name in sensitive_field_names:
                         continue
                     if _is_excluded(related_field):
                         continue
@@ -435,6 +469,12 @@ class Report(HorillaCoreModel):
                 ]
             if hasattr(field, "related_model") and field.related_model:
                 related_objects = field.related_model.objects.all()
+                # Honour the field's own limit_choices_to (e.g. Activity's
+                # related content type only offers models registered for it).
+                if hasattr(field, "get_limit_choices_to"):
+                    limit = field.get_limit_choices_to()
+                    if limit:
+                        related_objects = related_objects.complex_filter(limit)
                 return [
                     {"value": obj.pk, "display": str(obj)} for obj in related_objects
                 ]

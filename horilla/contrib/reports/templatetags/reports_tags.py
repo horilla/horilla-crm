@@ -11,7 +11,12 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from horilla.contrib.core.models import MultipleCurrency
-from horilla.contrib.reports.utils import resolve_report_field
+from horilla.contrib.reports.utils import (
+    NO_VALUE_OPERATORS,
+    get_report_filter_field_type,
+    get_report_filter_operators,
+    resolve_report_field,
+)
 from horilla.db.models import (
     BigIntegerField,
     DecimalField,
@@ -576,6 +581,11 @@ def get_field_verbose_name(field_name, model_class):
     """Get verbose name for a field"""
     try:
         field = resolve_report_field(model_class, field_name)
+        if "__" in field_name:
+            # Prefix the relation (e.g. "Activity Owner - Role") so identical
+            # related fields (owner / created by / meeting host) stay distinguishable.
+            relation = model_class._meta.get_field(field_name.split("__", 1)[0])
+            return f"{relation.verbose_name} - {field.verbose_name}"
         return field.verbose_name
     except Exception:
         return field_name.replace("__", " - ").replace("_", " ").title()
@@ -703,6 +713,12 @@ def is_choice_or_foreign(report, field_name):
 
 
 @register.filter
+def csv_contains(csv_value, item):
+    """Return True when `item` is one of the comma-separated values in `csv_value`."""
+    return str(item) in [v.strip() for v in str(csv_value or "").split(",")]
+
+
+@register.filter
 def get_field_choices(report, field_name):
     """Return choices or related object options for the report's given field."""
     return report.get_field_choices(field_name)
@@ -748,3 +764,94 @@ def is_aggregatable(field_name, model_class):
         return False
     except Exception:
         return False
+
+
+@register.filter
+def filter_operators(report, field_name):
+    """Operators offered for a report filter field (same as the list filter)."""
+    return get_report_filter_operators(report.model_class, field_name)
+
+
+@register.filter
+def filter_field_type(report, field_name):
+    """List-filter field type key ("text", "number", "date", ...) for a report field."""
+    return get_report_filter_field_type(report.model_class, field_name)
+
+
+@register.filter
+def csv_part(csv_value, index):
+    """Return the `index`-th comma-separated part of a value (for "between")."""
+    parts = str(csv_value or "").split(",", 1)
+    index = int(index)
+    return parts[index].strip() if index < len(parts) else ""
+
+
+@register.filter
+def is_no_value_operator(operator):
+    """True for operators that need no value input (is empty, today, ...)."""
+    return operator in NO_VALUE_OPERATORS
+
+
+@register.filter
+def filter_summary(filter_value, report):
+    """Pill text for an applied filter, e.g. "Activity Owner - Role Equals CEO, Sales Manager".
+
+    Returns "" for a filter that has no effect yet (no value and a value-needing operator).
+    """
+    operator = filter_value.get("operator", "exact")
+    value = filter_value.get("value", "")
+    if not value and operator not in NO_VALUE_OPERATORS:
+        return ""
+    field = filter_value.get("original_field")
+    label = get_field_verbose_name(field, report.model_class)
+    op_label = dict(get_report_filter_operators(report.model_class, field)).get(
+        operator, operator
+    )
+    if operator in NO_VALUE_OPERATORS:
+        return f"{label} {op_label}"
+    if operator == "between":
+        start, _sep, end = str(value).partition(",")
+        return f"{label} {op_label} {start.strip()} - {end.strip()}"
+    if report.is_choice_or_foreign_key_field(field):
+        names = {
+            str(c["value"]): str(c["display"]) for c in report.get_field_choices(field)
+        }
+        value = ", ".join(
+            names.get(v.strip(), v.strip()) for v in str(value).split(",") if v.strip()
+        )
+    return f"{label} {op_label} {value}"
+
+
+@register.filter
+def has_applied_filters(report):
+    """True when at least one filter row has an effect (shows as a pill)."""
+    return any(
+        filter_summary(fv, report)
+        for fv in report.filters_dict.values()
+        if isinstance(fv, dict)
+    )
+
+
+@register.filter
+def has_pending_filters(report):
+    """True when a filter row was added but still has no value (still being edited)."""
+    return any(
+        isinstance(fv, dict) and not filter_summary(fv, report)
+        for fv in report.filters_dict.values()
+    )
+
+
+@register.filter
+def applied_filter_count(report):
+    """Number of filter rows that currently have an effect."""
+    return sum(
+        1
+        for fv in report.filters_dict.values()
+        if isinstance(fv, dict) and filter_summary(fv, report)
+    )
+
+
+@register.filter
+def grouping_count(report):
+    """Number of row groups plus column groups."""
+    return len(report.row_groups_list) + len(report.column_groups_list)

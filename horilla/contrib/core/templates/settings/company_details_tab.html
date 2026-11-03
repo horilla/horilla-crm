@@ -1,4 +1,5 @@
-<div id="company-detail-view">
+<div id="company-detail-view" class="h-full overflow-y-auto overflow-hidden custom-scroll p-3">
+    {% comment %}After a save this refreshes the page section and the company dropdown so the new name and logo show everywhere.{% endcomment %}
     <button
         id="reloadButton"
         hidden
@@ -7,48 +8,33 @@
         hx-swap="outerHTML"
         hx-select="#company-information"
         hx-select-oob="#dropdown-companies"
+        {% if saved %}hx-trigger="load"{% endif %}
     >
         click
     </button>
-    <div class="bg-white">
-        <div class="flex flex-wrap justify-between items-center h-14 mb-3">
-            <div class="flex items-center gap-2">
-                {% if obj.icon %}
-                    <img src="{{ obj.icon.url }}" alt="{% trans 'Logo' %}" class="w-11 h-11 rounded-full">
-                {% else %}
-                    <img src="{{ obj.get_avatar }}" alt="{% trans 'Logo' %}" class="w-11 h-11 rounded-full">
-                {% endif %}
-                <h3 class="text-md font-semibold">
-                    {{ obj.name }}
-                </h3>
-            </div>
-            {% has_perm "core.change_company" as can_change_company %}
-            {% if request.active_company %}
-                {% if can_change_company %}
-                    <button
-                        id="profile-edit-btn"
-                        hx-get="{% url 'core:edit_company' obj.pk %}?details=true"
-                        hx-on:click="openModal()"
-                        hx-target="#modalBox"
-                    >
-                        <img src="{% static 'assets/icons/edit.svg' %}" alt="{% trans 'Edit' %}" width="15">
-                    </button>
-                {% endif %}
+
+    {% url 'core:company_details_tab' as tab_url %}
+    {% if obj.icon %}{% firstof obj.icon.url as logo %}{% else %}{% firstof obj.get_avatar as logo %}{% endif %}
+    {% if form %}
+        <form
+            id="company-details-form"
+            hx-post="{{ tab_url }}"
+            hx-target="#company-detail-view"
+            hx-swap="outerHTML"
+            hx-encoding="multipart/form-data"
+            hx-push-url="false"
+        >
+            {% csrf_token %}
+            {% include "partials/inline_edit_banner.html" with banner_title=obj.name banner_image=logo cancel_url=tab_url target="#company-detail-view" %}
+
+            {% if form.non_field_errors %}
+                <div class="text-xs text-red-600 mb-3">{{ form.non_field_errors }}</div>
             {% endif %}
-        </div>
-        <div class="grid columns-1 lg:grid-cols-2 gap-4">
-            {% for label, field, icon in detail_fields %}
-                <div class="text-sm flex flex-col sm:flex-row">
-                    <span class="text-dark-200 font-semibold w-40 flex items-center gap-2">
-                        {% if icon %}<i class="{{ icon }} text-xs text-gray-400 w-4"></i>{% endif %}
-                        {{ label }}
-                    </span>
-                    <span class="flex-1 text-dark-200">
-                        <span class="pe-2">:</span>
-                        {% display_field_value obj field request.user %}
-                    </span>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
+
+            {% include "partials/inline_edit_form_sections.html" %}
+        </form>
+    {% else %}
+        {% include "partials/inline_edit_banner.html" with banner_title=obj.name banner_image=logo edit_url=tab_url|add:"?edit=true" target="#company-detail-view" %}
+        {% include "partials/inline_edit_view_sections.html" %}
+    {% endif %}
 </div>

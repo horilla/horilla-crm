@@ -278,11 +278,18 @@ class AssignmentFixtureMixin:
             )
         return condition
 
-    def make_rule(self, name="Website leads", *, active=True, **condition_kwargs):
-        """Create a rule with one condition and return the condition."""
-        rule = LeadAssignmentRule.objects.create(
-            name=name, company=self.company, is_active=active
-        )
+    def make_rule(
+        self, name="Website leads", *, active=True, rule=None, **condition_kwargs
+    ):
+        """Create a rule with one condition and return the condition.
+
+        Only one rule of a company can be active, so pass ``rule`` to add a
+        further condition to an existing rule.
+        """
+        if rule is None:
+            rule = LeadAssignmentRule.objects.create(
+                name=name, company=self.company, is_active=active
+            )
         return self.add_condition(rule, **condition_kwargs)
 
     def lead_payload(self, **overrides):
@@ -420,7 +427,7 @@ class ResolveTests(AssignmentFixtureMixin, TestCase):
     def test_first_matching_condition_wins(self):
         """Rules are tried by creation date; the first match decides."""
         first = self.make_rule("First", users=[self.direct])
-        self.make_rule("Second", users=[self.outsider])
+        self.make_rule("Second", rule=first.rule, users=[self.outsider])
         result = resolve_for_data({"lead_source": "website"}, final=True)
         self.assertEqual(result.condition, first)
 
@@ -462,7 +469,9 @@ class ResolveTests(AssignmentFixtureMixin, TestCase):
             ],
             users=[self.direct],
         )
-        second = self.make_rule("Second", criteria=[], users=[self.outsider])
+        second = self.make_rule(
+            "Second", rule=first.rule, criteria=[], users=[self.outsider]
+        )
         result = resolve_for_data({"lead_source": "website"}, final=False)
 
         self.assertEqual(result.state, UNDETERMINED)
@@ -567,9 +576,10 @@ class SingleFormTests(AssignmentFixtureMixin, TestCase):
 
     def test_owner_must_be_in_the_matching_pool(self):
         """A person of another condition is not accepted for this lead."""
-        self.make_rule("Website", users=[self.direct])
+        website = self.make_rule("Website", users=[self.direct])
         self.make_rule(
             "Referral",
+            rule=website.rule,
             criteria=[("lead_source", "exact", "referral")],
             users=[self.outsider],
         )
@@ -1126,13 +1136,14 @@ class WizardTests(ViewFixtureMixin, TransactionTestCase):
 
     def test_owner_must_still_be_in_the_pool_at_the_end(self):
         """Later steps can change the pool; the owner is checked at the end."""
-        self.make_rule(
+        us = self.make_rule(
             "US",
             criteria=[("country", "exact", "US")],
             users=[self.direct],
         )
         self.make_rule(
             "Elsewhere",
+            rule=us.rule,
             criteria=[("country", "exact", "GB")],
             users=[self.outsider],
         )

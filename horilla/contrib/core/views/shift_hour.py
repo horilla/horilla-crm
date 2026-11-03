@@ -120,7 +120,6 @@ class ShiftHourFormView(LoginRequiredMixin, HorillaSingleFormView):
     model = ShiftHour
     form_class = ShiftHourForm
     view_id = "shift-hour-form-view"
-    form_title = _("Shift Hour")
     full_width_fields = [
         "timing_type",
         "week_days",

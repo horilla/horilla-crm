@@ -94,7 +94,7 @@ Same shape as `ZoomOAuthConfig` plus `tenant_id` (Azure AD tenant or `"common"`)
 
 **`MeetingAllowedUsersListView`** / **`MeetingAllowedRolesListView`** — `@method_decorator(htmx_required)` so the allowed-users/roles pickers only render as HTMX fragments (not as full-page navigations).
 
-**`MeetingUserSettingsView`** — GET builds provider cards via `_build_provider_cards()` (Zoom, Google Meet, Teams) when the user has access. When meeting integration is off, the page shows `components/empty_states/feature_disabled.html`. POST dispatches on `provider` + `action`:
+**`MeetingUserSettingsView`** — GET builds provider cards via `_build_provider_cards()` (Zoom, Google Meet, Teams) when the user has access. When meeting integration is off, the page shows `components/empty_state.html` with `feature_disabled=True`. POST dispatches on `provider` + `action`:
 
 | Provider | Action | Effect |
 |----------|--------|--------|

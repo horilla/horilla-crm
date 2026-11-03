@@ -17,7 +17,6 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
-from horilla.db.models import Q
 from horilla.shortcuts import get_object_or_404
 from horilla.utils.decorators import method_decorator, permission_required_or_denied
 from horilla.utils.translation import gettext_lazy as _
@@ -27,11 +26,12 @@ from horilla.web import HttpNotFound, HttpResponse, RefreshResponse
 # Local imports
 from ..models import Report
 from ..utils import (
+    NO_VALUE_OPERATORS,
     annotate_virtual_fields,
+    build_report_filter_q,
     coerce_virtual_filter_value,
     get_virtual_field,
     is_duration_virtual_field,
-    parse_in_operator_value,
     resolve_report_field,
 )
 from ..views.report_detail import ReportDetailView
@@ -142,7 +142,10 @@ class ReportExportView(ReportPreviewMixin, LoginRequiredMixin, View):
         if filters:
             query = None
             for index, (field_name, filter_data) in enumerate(filters.items()):
-                if not filter_data.get("value"):
+                if (
+                    not filter_data.get("value")
+                    and filter_data.get("operator") not in NO_VALUE_OPERATORS
+                ):
                     continue
 
                 operator = filter_data.get("operator", "exact")
@@ -151,26 +154,11 @@ class ReportExportView(ReportPreviewMixin, LoginRequiredMixin, View):
                 actual_field = filter_data.get("original_field", field_name)
                 value = coerce_virtual_filter_value(model_class, actual_field, value)
 
-                filter_kwargs = {}
-                if operator == "exact":
-                    filter_kwargs[f"{actual_field}"] = value
-                elif operator == "icontains":
-                    filter_kwargs[f"{actual_field}__icontains"] = value
-                elif operator == "gt":
-                    filter_kwargs[f"{actual_field}__gt"] = value
-                elif operator == "lt":
-                    filter_kwargs[f"{actual_field}__lt"] = value
-                elif operator == "gte":
-                    filter_kwargs[f"{actual_field}__gte"] = value
-                elif operator == "lte":
-                    filter_kwargs[f"{actual_field}__lte"] = value
-                elif operator == "in":
-                    filter_kwargs[f"{actual_field}__in"] = parse_in_operator_value(
-                        value
-                    )
-
-                if filter_kwargs:
-                    current_query = Q(**filter_kwargs)
+                built_query = build_report_filter_q(
+                    model_class, actual_field, operator, value
+                )
+                if built_query is not None:
+                    current_query = built_query
                     if query is None:
                         query = current_query
                     elif logic == "or":
@@ -291,6 +279,20 @@ class ReportExportView(ReportPreviewMixin, LoginRequiredMixin, View):
         "gte": "is at least",
         "lte": "is at most",
         "in": "is one of",
+        "ne": "does not equal",
+        "istartswith": "starts with",
+        "iendswith": "ends with",
+        "between": "is between",
+        "isnull": "is empty",
+        "isnotnull": "is not empty",
+        "today": "is today",
+        "yesterday": "was yesterday",
+        "this_week": "is this week",
+        "this_month": "is this month",
+        "this_year": "is this year",
+        "this_fiscal_period": "is this fiscal period",
+        "this_fiscal_quarter": "is this fiscal quarter",
+        "this_fiscal_year": "is this fiscal year",
     }
 
     def _build_filters_sentences(self, filters_summary):
@@ -351,6 +353,28 @@ class ReportExportView(ReportPreviewMixin, LoginRequiredMixin, View):
             return value.strftime("%d-%b-%Y")
         return str(value)
 
+    def _collect_aggregate_values(self, nodes, name):
+        """Walk nested group data and gather every numeric `aggregate_values[name]`."""
+        found = []
+
+        def walk(node):
+            if isinstance(node, dict):
+                agg_values = node.get("aggregate_values")
+                if isinstance(agg_values, dict):
+                    v = agg_values.get(name)
+                    if isinstance(v, (int, float, Decimal)):
+                        found.append(float(v))
+                for child in node.values():
+                    if isinstance(child, (dict, list)):
+                        walk(child)
+            elif isinstance(node, list):
+                for child in node:
+                    walk(child)
+
+        for node in nodes:
+            walk(node)
+        return found
+
     def _build_summary_kpis(self, detail_context):
         """Build a generic KPI summary: total records + each aggregate's overall value.
 
@@ -382,8 +406,42 @@ class ReportExportView(ReportPreviewMixin, LoginRequiredMixin, View):
                 else:
                     total = sum(values)
                 total = self._round_for_display(total)
+            elif "value" in agg:
+                total = agg["value"]
             else:
-                total = agg.get("value", 0)
+                # Pivot configs (e.g. 1 row x 1 column) keep an aggregate as a pivot
+                # column with no value/data of its own: reapply its function over
+                # that column, the same way the pivot's Total row does.
+                pivot_table = detail_context.get("pivot_table") or {}
+                values = [
+                    float(v)
+                    for v in (
+                        pivot_table.get(row_key, {}).get(agg["name"])
+                        for row_key in detail_context.get("pivot_index") or []
+                    )
+                    if isinstance(v, (int, float, Decimal))
+                ]
+                if not values:
+                    # Multi-level layouts keep the figures per group item instead
+                    values = self._collect_aggregate_values(
+                        (
+                            detail_context.get("hierarchical_data"),
+                            detail_context.get("three_level_data"),
+                        ),
+                        agg["name"],
+                    )
+                aggfunc = agg.get("function", "sum")
+                if not values:
+                    total = 0
+                elif aggfunc == "avg":
+                    total = sum(values) / len(values)
+                elif aggfunc == "min":
+                    total = min(values)
+                elif aggfunc == "max":
+                    total = max(values)
+                else:
+                    total = sum(values)
+                total = self._round_for_display(total)
             kpis.append((agg["name"], total))
         return kpis
 

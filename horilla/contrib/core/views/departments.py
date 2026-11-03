@@ -166,7 +166,6 @@ class DepartmentFormView(LoginRequiredMixin, HorillaSingleFormView):
     fields = ["department_name", "description"]
     full_width_fields = ["department_name", "description"]
     modal_height = False
-    form_title = _("Department")
 
     @cached_property
     def form_url(self):

@@ -1,14 +1,22 @@
 """Miscellaneous template tags."""
 
 from django.utils.encoding import force_str
+from django.utils.safestring import mark_safe
 
 # First party imports (Horilla)
 from horilla.auth.models import User
+from horilla.contrib.utils.methods import sanitize_html as _sanitize_html
 from horilla.utils.translation import gettext as _
 
 # Local imports
 from ...forms.rich_text import HorillaSummernoteWidget
 from ._registry import register
+
+
+@register.filter(is_safe=True)
+def sanitize_html(value):
+    """Sanitize stored rich text before it is rendered as trusted HTML."""
+    return mark_safe(_sanitize_html(value or ""))
 
 
 @register.simple_tag

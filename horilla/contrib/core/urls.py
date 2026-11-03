@@ -325,6 +325,26 @@ urlpatterns = [
         name="user_detail_view",
     ),
     path(
+        "user-detail-nav/<int:pk>/",
+        views.UserDetailNavbar.as_view(),
+        name="user_detail_nav",
+    ),
+    path(
+        "user-detail-tab-view/<int:pk>/",
+        views.UserDetailTabView.as_view(),
+        name="user_detail_tab_view",
+    ),
+    path(
+        "user-details-tab/<int:pk>/",
+        views.UserDetailsTab.as_view(),
+        name="user_details_tab",
+    ),
+    path(
+        "user-login-history-tab/<int:pk>/",
+        views.UserLoginHistoryTab.as_view(),
+        name="user_login_history_tab",
+    ),
+    path(
         "my-profile-view/",
         views.MyProfileView.as_view(),
         name="my_profile_view",
@@ -405,6 +425,21 @@ urlpatterns = [
         "branch-detail-view/<int:pk>/",
         views.BranchDetailView.as_view(),
         name="branch_detail_view",
+    ),
+    path(
+        "branch-detail-nav/<int:pk>/",
+        views.BranchDetailNavbar.as_view(),
+        name="branch_detail_nav",
+    ),
+    path(
+        "branch-details-content/<int:pk>/",
+        views.BranchDetailContent.as_view(),
+        name="branch_details_content",
+    ),
+    path(
+        "branch-details-edit/<int:pk>/",
+        views.BranchDetailContent.as_view(edit=True),
+        name="branch_details_edit",
     ),
     path(
         "branch-delete/<int:pk>/",

@@ -84,6 +84,45 @@ def register_virtual_field(
     )
 
 
+# Per report model: {"app_label.model_name": {relation_name: fields}} overrides.
+_REPORT_RELATIONS = {}
+# Per target model: the fields worth showing when reached through a relation.
+_RELATED_DEFAULT_FIELDS = {}
+
+
+def register_report_related_fields(app_label, model_name, relations):
+    """Override the related fields shown for relations of a report model.
+
+    `relations` is ``{relation_name: [field_names]}``. Relations don't need
+    registering: by default only models with registered default fields
+    (e.g. the user) expand. Use this only to show different fields, or an empty list to show none (the
+    relation itself stays selectable). Call from the report model's app
+    `registration.py`.
+    """
+    _REPORT_RELATIONS.setdefault(f"{app_label}.{model_name.lower()}", {}).update(
+        {name: list(fields) for name, fields in relations.items()}
+    )
+
+
+def register_report_default_related_fields(app_label, model_name, fields):
+    """Default fields of app_label.model_name when reached through a relation
+    that has no override (e.g. the User's department/role for owners)."""
+    _RELATED_DEFAULT_FIELDS[f"{app_label}.{model_name.lower()}"] = list(fields)
+
+
+def get_report_related_fields(model_class, relation_name, related_model):
+    """Field names of related_model to list behind `relation_name` of
+    model_class: the override, else the model's registered default, else none."""
+    key = f"{model_class._meta.app_label}.{model_class._meta.model_name}"
+    overrides = _REPORT_RELATIONS.get(key, {})
+    if relation_name in overrides:
+        return overrides[relation_name]
+    key = f"{related_model._meta.app_label}.{related_model._meta.model_name}"
+    if key in _RELATED_DEFAULT_FIELDS:
+        return _RELATED_DEFAULT_FIELDS[key]
+    return []
+
+
 class ReportFieldProvider(View):
     """
     Extension seam for report fields that depend on who is asking.
@@ -246,3 +285,127 @@ def parse_in_operator_value(value):
         except (json.JSONDecodeError, TypeError):
             pass
     return [v.strip() for v in value.split(",") if v.strip()]
+
+
+# Operators that need no value input (same set the list filter uses)
+NO_VALUE_OPERATORS = (
+    "isnull",
+    "isnotnull",
+    "today",
+    "yesterday",
+    "this_week",
+    "this_month",
+    "this_year",
+    "this_fiscal_period",
+    "this_fiscal_quarter",
+    "this_fiscal_year",
+)
+
+
+def get_report_filter_field_type(model_class, field_name):
+    """Return the list-filter field type key ("text", "number", "date", "choice",
+    "foreignkey", ...) for a report field, including one-level related paths."""
+    # First party imports (Horilla)
+    from horilla.utils.choices import FIELD_TYPE_MAP
+
+    try:
+        field = resolve_report_field(model_class, field_name)
+    except Exception:
+        return "other"
+    if isinstance(field, VirtualField):
+        return "number"
+    class_name = field.__class__.__name__
+    if class_name == "ForeignKey":
+        return "foreignkey"
+    if getattr(field, "choices", None):
+        return "choice"
+    if class_name in ("BooleanField", "NullBooleanField"):
+        return "boolean"
+    return FIELD_TYPE_MAP.get(class_name, "other")
+
+
+def get_report_filter_operators(model_class, field_name):
+    """Operators offered for a report field - identical to the list filter's."""
+    # First party imports (Horilla)
+    from horilla.contrib.generics.filters import OPERATOR_CHOICES
+
+    field_type = get_report_filter_field_type(model_class, field_name)
+    return OPERATOR_CHOICES.get(field_type, OPERATOR_CHOICES["other"])
+
+
+def build_report_filter_q(model_class, field, operator, value):
+    """Build the Q for one report filter row, or None when it contributes nothing.
+
+    Supports the same operators as the list filter (not-equals, starts/ends
+    with, is empty, between, relative dates) plus the report-only "in".
+    """
+    # Third-party imports (Django)
+    from django.db.models import Q
+
+    # First party imports (Horilla)
+    from horilla.contrib.core.services.relative_dates import get_relative_date_bounds
+
+    try:
+        field_obj = resolve_report_field(model_class, field)
+    except Exception:
+        field_obj = None
+    is_datetime = field_obj.__class__.__name__ == "DateTimeField"
+    is_string = field_obj.__class__.__name__ in (
+        "CharField",
+        "TextField",
+        "EmailField",
+        "URLField",
+        "SlugField",
+    )
+    date_lookup = "__date" if is_datetime else ""
+
+    if operator == "isnull":
+        if is_string:
+            return Q(**{f"{field}__isnull": True}) | Q(**{f"{field}__exact": ""})
+        return Q(**{f"{field}__isnull": True})
+    if operator == "isnotnull":
+        if is_string:
+            return ~Q(**{f"{field}__isnull": True}) & ~Q(**{f"{field}__exact": ""})
+        return Q(**{f"{field}__isnull": False})
+
+    if operator in NO_VALUE_OPERATORS:  # relative dates
+        start, end = get_relative_date_bounds(operator)
+        if start is None:
+            return None
+        if start == end:
+            return Q(**{f"{field}{date_lookup}": start})
+        return Q(
+            **{f"{field}{date_lookup}__gte": start, f"{field}{date_lookup}__lte": end}
+        )
+
+    if value in (None, ""):
+        return None
+
+    if operator == "between":
+        parts = [p.strip() for p in str(value).split(",", 1)]
+        start = parts[0] if parts else ""
+        end = parts[1] if len(parts) > 1 else ""
+        kwargs = {}
+        if start:
+            kwargs[f"{field}{date_lookup}__gte"] = start
+        if end:
+            kwargs[f"{field}{date_lookup}__lte"] = end
+        return Q(**kwargs) if kwargs else None
+    if operator == "in":
+        return Q(**{f"{field}__in": parse_in_operator_value(value)})
+    if operator == "ne":
+        return ~Q(**{f"{field}{date_lookup}": value})
+    if operator == "exact":
+        is_choice_or_fk = bool(getattr(field_obj, "choices", None)) or (
+            field_obj.__class__.__name__ == "ForeignKey"
+        )
+        if is_choice_or_fk:
+            values = [v for v in str(value).split(",") if v]
+            if len(values) > 1:
+                return Q(**{f"{field}__in": values})
+        return Q(**{f"{field}{date_lookup}": value})
+    if operator in ("gt", "lt", "gte", "lte"):
+        return Q(**{f"{field}{date_lookup}__{operator}": value})
+    if operator in ("icontains", "istartswith", "iendswith"):
+        return Q(**{f"{field}__{operator}": value})
+    return None

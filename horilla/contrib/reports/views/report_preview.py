@@ -19,7 +19,12 @@ from horilla.web import RefreshResponse
 
 # Local imports
 from ..models import Report
-from ..utils import get_virtual_field, resolve_report_field
+from ..utils import (
+    NO_VALUE_OPERATORS,
+    get_report_filter_operators,
+    get_virtual_field,
+    resolve_report_field,
+)
 from ..views.report_detail import ReportDetailView
 from .toolkit.report_helper import (
     TEMP_REPORT_FIELDS,
@@ -309,7 +314,9 @@ class AddFilterFieldView(LoginRequiredMixin, View):
         # Add new filter with default logic 'and'
         filters_dict[unique_field_name] = {
             "value": "",
-            "operator": "exact",
+            "operator": get_report_filter_operators(
+                report.model_class, base_field_name
+            )[0][0],
             "logic": "and",
             "original_field": base_field_name,
         }
@@ -403,6 +410,8 @@ class UpdateFilterOperatorView(View):
         # Update operator and preserve or set default logic
         if field_name in filters_dict:
             if isinstance(filters_dict[field_name], dict):
+                if filters_dict[field_name].get("operator") != operator:
+                    filters_dict[field_name]["value"] = ""
                 filters_dict[field_name]["operator"] = operator
                 filters_dict[field_name].setdefault(
                     "logic", "and"
@@ -478,6 +487,131 @@ class UpdateFilterOperatorView(View):
     permission_required_or_denied(["reports.view_report", "reports.view_own_report"]),
     name="dispatch",
 )
+class ApplyFiltersView(LoginRequiredMixin, View):
+    """Replace the report's filters with the rows of the filter panel (Apply)."""
+
+    @method_decorator(require_POST)
+    def dispatch(self, *args, **kwargs):
+        """Restrict to POST and delegate to parent dispatch."""
+        return super().dispatch(*args, **kwargs)
+
+    def post(self, request, pk):
+        """Rebuild the filters from the submitted rows, then re-render the report."""
+        report = get_object_or_404(Report, pk=pk)
+        session_key = f"report_preview_{report.pk}"
+        preview_data = request.session.get(session_key, {})
+        current_filters = preview_data.get("filters", report.filters)
+        try:
+            old_filters = json.loads(current_filters) if current_filters else {}
+        except (json.JSONDecodeError, TypeError):
+            old_filters = {}
+
+        new_filters = {}
+        if not request.POST.get("clear_all"):
+            for key in request.POST.getlist("filter_key"):
+                old = (
+                    old_filters.get(key)
+                    if isinstance(old_filters.get(key), dict)
+                    else {}
+                )
+                field = request.POST.get(f"field__{key}") or old.get("original_field")
+                if not field:
+                    continue
+                try:
+                    resolve_report_field(report.model_class, field)
+                except Exception:  # unknown field: skip the row
+                    continue
+                operator = request.POST.get(f"operator__{key}") or "exact"
+                if operator == "between":
+                    start = request.POST.get(f"start__{key}", "").strip()
+                    end = request.POST.get(f"end__{key}", "").strip()
+                    value = f"{start},{end}" if (start or end) else ""
+                elif operator in NO_VALUE_OPERATORS:
+                    # No value is needed; a marker keeps the row active
+                    value = "1"
+                else:
+                    values = [
+                        v for v in request.POST.getlist(f"value__{key}") if v != ""
+                    ]
+                    value = ",".join(values)
+                if not value:
+                    continue  # an unfilled row contributes nothing
+                unique_key, index = field, 1
+                while unique_key in new_filters:
+                    unique_key = f"{field}_{index}"
+                    index += 1
+                new_filters[unique_key] = {
+                    "value": value,
+                    "operator": operator,
+                    "logic": request.POST.get(f"logic__{key}") or "and",
+                    "original_field": field,
+                }
+
+        preview_data["filters"] = json.dumps(new_filters)
+        request.session[session_key] = preview_data
+        try:
+            return render_report_detail_with_preview(
+                self, request, report, preview_data
+            )
+        except (ValueError, TypeError) as e:
+            messages.error(request, _("Invalid filter value: {}").format(str(e)))
+            return RefreshResponse(request)
+
+    def create_temp_report(self, original_report, preview_data):
+        """Return a copy of the report with the preview data applied."""
+        return create_temp_report_with_preview(original_report, preview_data)
+
+
+class ReportFilterRowView(LoginRequiredMixin, View):
+    """Return one blank filter row ("Add more filter") for the filter panel."""
+
+    def get(self, request, pk):
+        """Render an empty row with the given client-generated key."""
+        report = get_object_or_404(Report, pk=pk)
+        row_key = "".join(
+            c for c in request.GET.get("row_key", "n0") if c.isalnum() or c == "_"
+        )
+        return render(
+            request,
+            "partials/report_filter_row.html",
+            {
+                "report": report,
+                "row_key": row_key or "n0",
+                "field": "",
+                "op": "exact",
+                "value": "",
+                "is_first": False,
+                "grouping_fields": report.get_available_grouping_fields(),
+            },
+        )
+
+
+class ReportFilterRowBodyView(LoginRequiredMixin, View):
+    """Return the operator and value cells of a row after its field changes."""
+
+    def get(self, request, pk):
+        """Render operator/value widgets for the field picked in a row."""
+        report = get_object_or_404(Report, pk=pk)
+        row_key = "".join(
+            c for c in request.GET.get("row_key", "n0") if c.isalnum() or c == "_"
+        )
+        field = request.GET.get(f"field__{row_key}", "")
+        operators = (
+            get_report_filter_operators(report.model_class, field) if field else []
+        )
+        return render(
+            request,
+            "partials/report_filter_row_body.html",
+            {
+                "report": report,
+                "row_key": row_key,
+                "field": field,
+                "op": operators[0][0] if operators else "exact",
+                "value": "",
+            },
+        )
+
+
 class UpdateFilterValueView(LoginRequiredMixin, View):
     """View for updating the value of a report filter."""
 
@@ -495,7 +629,14 @@ class UpdateFilterValueView(LoginRequiredMixin, View):
             return RefreshResponse(request)
 
         field_name = request.POST.get("field_name")
-        value = request.POST.get("value")
+        # A multi-select posts several "value" params; store them comma-joined
+        # (the operator stays "Equals", as in the list filter panel).
+        values = [v for v in request.POST.getlist("value") if v != ""]
+        value = ",".join(values) if len(values) > 1 else request.POST.get("value")
+        # "Between" posts a start and an end value; store them as "start,end"
+        end_value = request.POST.get("end_value")
+        if end_value is not None:
+            value = f"{request.POST.get('value', '')},{end_value}"
         session_key = f"report_preview_{report.pk}"
 
         # Get current preview data or start from original

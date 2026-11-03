@@ -18,7 +18,7 @@ from horilla.contrib.generics.templatetags.horilla_tags.display_tags import (
 from horilla.contrib.generics.views import HorillaSingleFormView
 from horilla.contrib.generics.views.core import HorillaTabView
 from horilla.shortcuts import render
-from horilla.urls import reverse, reverse_lazy
+from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
     method_decorator,

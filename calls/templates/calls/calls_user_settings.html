@@ -10,7 +10,7 @@
         <div class="overflow-y-auto custom-scroll h-[calc(100vh-210px)]">
             {% if not has_access %}
                 {% trans "Call integration is not currently enabled for your account. Please contact your administrator." as disabled_message %}
-                {% include "components/empty_states/feature_disabled.html" with message=disabled_message %}
+                {% include "components/empty_state.html" with feature_disabled=True message=disabled_message %}
             {% elif not provider_cards %}
                 {% trans "No calling provider is available yet. Please contact your administrator." as empty_state_message %}
                 {% include "components/empty_state.html" with message=empty_state_message %}

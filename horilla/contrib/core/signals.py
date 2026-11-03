@@ -186,7 +186,10 @@ def create_company_fiscal_config(sender, instance, created, **kwargs):
         try:
             config = FiscalYear.objects.get(company=instance)
         except FiscalYear.DoesNotExist:
-            config = FiscalYearService.get_or_create_company_configuration(instance)
+            # Creating the configuration generates the fiscal years through
+            # generate_fiscal_years_on_config_save.
+            FiscalYearService.get_or_create_company_configuration(instance)
+            return
 
         FiscalYearService.generate_fiscal_years(config)
 
@@ -194,10 +197,18 @@ def create_company_fiscal_config(sender, instance, created, **kwargs):
 @receiver(post_save, sender="core.FiscalYear")
 def generate_fiscal_years_on_config_save(sender, instance, created, **kwargs):
     """
-    Generate fiscal years when configuration is saved.
+    Generate fiscal years when configuration is created, or when an update
+    changes how the years are structured (or none exist yet). Saves that
+    change nothing skip the rebuild, which would delete forecasts and targets.
     Uses transaction.on_commit to avoid database locking issues.
     """
-    if not created and instance.company:  # Only run on updates, not creation
+    if not instance.company:
+        return
+    needs_generation = (
+        created or instance.structure_changed() or not instance.year_instances.exists()
+    )
+    instance._structure_snapshot = instance.get_structure_snapshot()
+    if needs_generation:
         transaction.on_commit(lambda: FiscalYearService.generate_fiscal_years(instance))
 
 

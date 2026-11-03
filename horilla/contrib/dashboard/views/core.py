@@ -146,7 +146,7 @@ class DashboardDetailNavbar(LoginRequiredMixin, HorillaNavView):
         ):
             return None
         return {
-            "title": _("Add components"),
+            "title": _("Add Components"),
             "url": reverse_lazy("dashboard:component_create"),
             "attrs": {"id": "addComponentBtn"},
         }

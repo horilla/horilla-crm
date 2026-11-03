@@ -19,5 +19,7 @@ register_model_for_feature(
         "mail_template",
         "export_data",
         "notification_template",
+        "report_choices",
+        "dashboard_component",
     ],
 )

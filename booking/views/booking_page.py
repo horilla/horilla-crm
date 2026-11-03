@@ -234,7 +234,6 @@ class BookingPageCreateView(LoginRequiredMixin, HorillaSingleFormView):
 
     model = BookingPage
     form_class = BookingPageForm
-    form_title = _("New Booking Page")
     modal_height_class = "h-[600px]"
     full_width_fields = ["description"]
 

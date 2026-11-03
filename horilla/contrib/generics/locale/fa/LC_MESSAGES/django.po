@@ -1202,7 +1202,7 @@ msgstr "نوارها استفاده می‌کنند: %(field)s"
 
 #, python-format
 msgid "From %(start)s → %(end)s"
-msgstr "از %(start)s → %(end)s"
+msgstr "از %(start)s ← %(end)s"
 
 msgid "No rows selected for deletion."
 msgstr "هیچ ردیفی برای حذف انتخاب نشده است."
@@ -1459,3 +1459,12 @@ msgstr "انتخاب %(name)s"
 #: horilla/contrib/generics/templates/related_list_content.html:9
 msgid "View and manage %(title)s related to this %(name)s."
 msgstr "%(title)s مرتبط با این %(name)s را مشاهده و مدیریت کنید."
+
+msgid "Add Filter"
+msgstr "افزودن فیلتر"
+
+msgid "Add More Filter"
+msgstr "افزودن فیلتر بیشتر"
+
+msgid "No Value Needed"
+msgstr "هیچ مقداری نیاز نیست"

@@ -4,7 +4,7 @@
 from django.conf import settings
 
 from horilla.apps import apps
-from horilla.contrib.core.models import HorillaContentType, HorillaCoreModel
+from horilla.contrib.core.models import HorillaContentType, HorillaCoreModel, Role
 from horilla.contrib.utils.middlewares import _thread_local
 from horilla.db import models
 from horilla.registry.limiters import limit_content_types
@@ -201,6 +201,17 @@ class CustomCalendarCondition(HorillaCoreModel):
         return f"{self.custom_calendar_id} - {self.field} {self.operator} {self.value}"
 
 
+ACCESS_ALL = "all"
+ACCESS_ROLES = "roles"
+ACCESS_USERS = "users"
+
+ACCESS_CHOICES = [
+    (ACCESS_ALL, _("All Users")),
+    (ACCESS_ROLES, _("Specific Roles")),
+    (ACCESS_USERS, _("Specific Users")),
+]
+
+
 class GoogleIntegrationSetting(HorillaCoreModel):
     """Per-company admin toggle to enable/disable Google Calendar integration for users."""
 
@@ -213,12 +224,75 @@ class GoogleIntegrationSetting(HorillaCoreModel):
             "When enabled, users in this company can connect their Google Calendar."
         ),
     )
+    access_type = models.CharField(
+        max_length=10,
+        choices=ACCESS_CHOICES,
+        default=ACCESS_ALL,
+        verbose_name=_("Access Type"),
+        help_text=_("Who can connect Google Calendar."),
+    )
+    allowed_roles = models.ManyToManyField(
+        Role,
+        blank=True,
+        verbose_name=_("Allowed Roles"),
+        related_name="google_integrations",
+    )
+    allowed_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        verbose_name=_("Allowed Users"),
+        related_name="google_integrations",
+    )
 
     class Meta:
         """Company-scoped singleton metadata for enabling Google Calendar."""
 
         verbose_name = _("Google Integration Setting")
         verbose_name_plural = _("Google Integration Settings")
+
+    def user_has_access(self, user):
+        """Return True if *user* is allowed to use Google Calendar integration."""
+        if not self.is_google_calendar_enabled:
+            return False
+        if self.access_type == ACCESS_ALL:
+            return True
+        if self.access_type == ACCESS_ROLES:
+            user_role_id = getattr(user, "role_id", None)
+            if not user_role_id:
+                return False
+            return self.allowed_roles.filter(pk=user_role_id).exists()
+        if self.access_type == ACCESS_USERS:
+            return self.allowed_users.filter(pk=user.pk).exists()
+        return False
+
+    @classmethod
+    def get_for_company(cls, company):
+        """Return the setting row for ``company``, creating it if missing."""
+        if not company:
+            return None
+        setting, _created = cls.all_objects.get_or_create(company=company)
+        return setting
+
+    @classmethod
+    def user_can_access(cls, user, company, request=None):
+        """Return True if integration is enabled and ``user`` is allowed for ``company``."""
+        setting = cls._get_cached_setting(request, company)
+        return bool(setting and setting.user_has_access(user))
+
+    @classmethod
+    def user_has_menu_access(cls, request=None):
+        """Menu condition: integration enabled AND the current user has access."""
+        if request is None:
+            request = getattr(_thread_local, "request", None)
+        if request is None:
+            return False
+        user = getattr(request, "user", None)
+        if not user or not user.is_authenticated:
+            return False
+        company = getattr(user, "company", None)
+        if not company:
+            return False
+        return cls.user_can_access(user, company, request=request)
 
     @classmethod
     def _get_cached_setting(cls, request, company):

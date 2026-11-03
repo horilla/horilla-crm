@@ -45,6 +45,11 @@ def get_adapter(provider: "CallProvider") -> "BaseCallAdapter":
     return cls(provider)
 
 
+def get_adapter_class(provider_type: str) -> "type[BaseCallAdapter] | None":
+    """Return the adapter class registered for *provider_type*, or None."""
+    return _REGISTRY.get(provider_type)
+
+
 def registered_providers() -> list[str]:
     """Return all currently registered provider type keys."""
     return list(_REGISTRY.keys())

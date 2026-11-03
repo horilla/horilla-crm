@@ -16,16 +16,18 @@ from horilla.contrib.generics.mixins import RecentlyViewedMixin
 from horilla.contrib.generics.views import (
     HorillaDetailView,
     HorillaGroupByView,
+    HorillaInlineEditMixin,
     HorillaKanbanView,
     HorillaListView,
     HorillaMultiStepFormView,
     HorillaNavView,
     HorillaSingleDeleteView,
     HorillaSingleFormView,
+    HorillaTabView,
     HorillaView,
     resolves_within_settings_shell,
 )
-from horilla.shortcuts import render
+from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse, reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
@@ -33,13 +35,19 @@ from horilla.utils.decorators import (
     permission_required,
     permission_required_or_denied,
 )
+from horilla.utils.html import escape
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import TemplateView, View
-from horilla.web import HxTriggerResponse
+from horilla.web import HxTriggerResponse, ScriptResponse
 
 # Local imports
 from ..filters import UserFilter
-from ..forms import ChangeUserCompanyForm, UserFormClass, UserFormSingle
+from ..forms import (
+    ChangeUserCompanyForm,
+    UserDetailsInlineForm,
+    UserFormClass,
+    UserFormSingle,
+)
 from ..models import Company, Department, MultipleCurrency, Role
 
 
@@ -606,70 +614,10 @@ class UserDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
         return HxTriggerResponse()
 
 
-@method_decorator(
-    permission_required_or_denied(
-        f"{User._meta.app_label}.view_{User._meta.model_name}"
-    ),
-    name="dispatch",
-)
-class UserDetailView(RecentlyViewedMixin, LoginRequiredMixin, HorillaDetailView):
-    """
-    Detail view for user page
-    """
+class UserBackLinkMixin:
+    """Where the user detail page's back arrow goes: the page the user came from."""
 
-    template_name = "settings/users/user_detail_view.html"
     model = User
-    fieldsets = (
-        (
-            _("Personal Information"),
-            {
-                "fields": (
-                    "first_name",
-                    "last_name",
-                    "email",
-                    "contact_number",
-                ),
-                "icon": "fas fa-user",
-            },
-        ),
-        (
-            _("Address"),
-            {
-                "fields": (
-                    "city",
-                    "state",
-                    "country",
-                    "zip_code",
-                ),
-                "icon": "fas fa-map-marker-alt",
-            },
-        ),
-        (
-            _("Work Info"),
-            {
-                "fields": (
-                    "company",
-                    "department",
-                    "role",
-                ),
-                "icon": "fas fa-briefcase",
-            },
-        ),
-        (
-            _("Localization"),
-            {
-                "fields": (
-                    "language",
-                    "time_zone",
-                    "currency",
-                    "date_time_format",
-                    "date_format",
-                    "time_format",
-                ),
-                "icon": "fas fa-globe",
-            },
-        ),
-    )
 
     def _referer_from_referrer_params(self):
         """Rebuild the source record's own detail URL from referrer_* GET params.
@@ -698,9 +646,12 @@ class UserDetailView(RecentlyViewedMixin, LoginRequiredMixin, HorillaDetailView)
         except Exception:
             return None
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        obj = context.get("obj") or self.get_object()
+    def get_previous_url(self, obj):
+        """Return ``(url, is_external)`` for the back arrow of ``obj``'s detail page.
+
+        ``is_external`` is True when the previous page lives outside the
+        Settings shell, so it needs a full page navigation instead of an htmx swap.
+        """
         referer_session_key = f"detail_referer_{self.model._meta.model_name}_{obj.pk}"
         explicit_referer = self._referer_from_referrer_params()
         if explicit_referer:
@@ -715,15 +666,179 @@ class UserDetailView(RecentlyViewedMixin, LoginRequiredMixin, HorillaDetailView)
             referer_path = parsed.path
             stored_referer = referer_path + (f"?{parsed.query}" if parsed.query else "")
             if "login-history-view" in referer_path:
-                context["previous_url"] = user_view_url
-                context["previous_url_is_external"] = False
                 self.request.session[referer_session_key] = user_view_url
-                return context
+                return user_view_url, False
         previous_url = stored_referer or user_view_url
-        context["previous_url"] = previous_url
-        context["previous_url_is_external"] = not resolves_within_settings_shell(
+        return previous_url, not resolves_within_settings_shell(
             urlparse(previous_url).path
         )
+
+
+@method_decorator(
+    permission_required_or_denied(
+        f"{User._meta.app_label}.view_{User._meta.model_name}"
+    ),
+    name="dispatch",
+)
+class UserDetailView(
+    UserBackLinkMixin, RecentlyViewedMixin, LoginRequiredMixin, HorillaDetailView
+):
+    """
+    Detail view for user page: a navbar and the Details / Login History tabs.
+    """
+
+    template_name = "settings/users/user_detail_view.html"
+    model = User
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = context.get("obj") or self.get_object()
+        context["previous_url"], context["previous_url_is_external"] = (
+            self.get_previous_url(obj)
+        )
+        return context
+
+
+@method_decorator(htmx_required, name="dispatch")
+@method_decorator(
+    permission_required_or_denied(
+        f"{User._meta.app_label}.view_{User._meta.model_name}"
+    ),
+    name="dispatch",
+)
+class UserDetailNavbar(UserBackLinkMixin, LoginRequiredMixin, HorillaNavView):
+    """Navbar of the user detail page: back arrow, avatar and name."""
+
+    model_name = str(User.__name__)
+    model_app_label = str(User._meta.app_label)
+    navbar_indication = True
+    nav_width = False
+    one_view_only = True
+    all_view_types = False
+    reload_option = False
+    filter_option = False
+    search_option = False
+    recently_viewed_option = False
+
+    @cached_property
+    def nav_object(self):
+        """The user named in the URL."""
+        return get_object_or_404(User, pk=self.kwargs["pk"])
+
+    @property
+    def nav_title(self):
+        """The user's full name."""
+        return self.nav_object.get_full_name()
+
+    @property
+    def nav_avatar(self):
+        """The user's profile image, or their generated avatar."""
+        user = self.nav_object
+        return user.profile.url if user.profile else user.get_avatar()
+
+    def get_navbar_indication_attrs(self):
+        """Back arrow to the page the user came from."""
+        url, is_external = self.get_previous_url(self.nav_object)
+        title = escape(str(_("Back")))
+        if is_external:
+            return {
+                "onclick": "window.location.assign(this.dataset.href)",
+                "data-href": escape(url),
+                "title": title,
+            }
+        return {
+            "hx-get": escape(url),
+            "hx-target": "#mainContent",
+            "hx-swap": "outerHTML",
+            "hx-select": "#mainContent",
+            "hx-push-url": "true",
+            "title": title,
+        }
+
+
+@method_decorator(htmx_required, name="dispatch")
+@method_decorator(
+    permission_required_or_denied(
+        f"{User._meta.app_label}.view_{User._meta.model_name}"
+    ),
+    name="dispatch",
+)
+class UserDetailTabView(LoginRequiredMixin, HorillaTabView):
+    """Details and Login History tabs of the user detail page."""
+
+    view_id = "user-detail-tab-view"
+    background_class = "bg-primary-100 rounded-md"
+
+    def get_tabs(self):
+        """Build the tab list for the user named in the URL."""
+        pk = self.kwargs["pk"]
+        return [
+            {
+                "title": _("Details"),
+                "url": reverse_lazy("core:user_details_tab", kwargs={"pk": pk}),
+                "target": "user-details-view-content",
+                "id": "user-details-view",
+            },
+            {
+                "title": _("Login History"),
+                "url": reverse_lazy("core:user_login_history_tab", kwargs={"pk": pk}),
+                "target": "user-login-history-view-content",
+                "id": "user-login-history-view",
+            },
+        ]
+
+
+@method_decorator(htmx_required, name="dispatch")
+@method_decorator(
+    permission_required_or_denied(
+        f"{User._meta.app_label}.view_{User._meta.model_name}"
+    ),
+    name="dispatch",
+)
+class UserDetailsTab(LoginRequiredMixin, HorillaInlineEditMixin, TemplateView):
+    """
+    User details tab, shown read-only and switched to an inline form by
+    ``?edit=true``. Saving reloads the page so the navbar refreshes too.
+    """
+
+    template_name = "settings/users/user_details_tab.html"
+    model = User
+    form_class = UserDetailsInlineForm
+    success_message = _("User details updated successfully.")
+
+    def get_sections(self, obj):
+        """Add the (read-only) company to the Work Info section."""
+        company = obj._meta.get_field("company")
+        sections = super().get_sections(obj)
+        return [
+            (
+                (title, [(company.verbose_name, "company"), *rows])
+                if str(title) == str(_("Work Info"))
+                else (title, rows)
+            )
+            for title, rows in sections
+        ]
+
+    def on_saved(self, request, obj):
+        """Reload the page so the navbar and sections all refresh."""
+        return ScriptResponse(reload=True)
+
+
+@method_decorator(htmx_required, name="dispatch")
+@method_decorator(
+    permission_required_or_denied(
+        f"{User._meta.app_label}.view_{User._meta.model_name}"
+    ),
+    name="dispatch",
+)
+class UserLoginHistoryTab(LoginRequiredMixin, TemplateView):
+    """Login History tab of the user detail page, listing that user's sign-ins."""
+
+    template_name = "settings/users/user_login_history_tab.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["user_pk"] = self.kwargs["pk"]
         return context
 
 

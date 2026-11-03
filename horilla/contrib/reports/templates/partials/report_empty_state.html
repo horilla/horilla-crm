@@ -1,0 +1,11 @@
+{% load i18n %}
+{# Compact empty state for the report panel lists #}
+<div class="flex items-center gap-2 rounded-md bg-white" style="border:1px dashed #d9d9d9;padding:10px">
+    <span style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:#fdecea;color:#E54F38;display:flex;align-items:center;justify-content:center">
+        <i class="fas {{ icon }}" style="font-size:12px" aria-hidden="true"></i>
+    </span>
+    <div class="min-w-0">
+        <p class="text-xs font-semibold m-0">{{ title }}</p>
+        <p class="text-[11px] text-gray-500 m-0">{{ hint }}</p>
+    </div>
+</div>

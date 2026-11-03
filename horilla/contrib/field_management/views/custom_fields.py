@@ -145,7 +145,6 @@ class CustomFieldFormView(LoginRequiredMixin, HorillaSingleFormView):
     model = CustomFieldDefinition
     form_class = CustomFieldDefinitionForm
     modal_height = False
-    form_title = _("Custom Field")
     save_and_new = False
     full_width_fields = ["choices"]
 

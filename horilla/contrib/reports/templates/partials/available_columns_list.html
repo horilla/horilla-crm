@@ -2,7 +2,7 @@
 {% for field in available_fields %}
     {% if field.name not in report.selected_columns_list %}
         <button
-            class="mb-1 bg-dark-50 rounded-md px-1.5 py-2 text-xs font-medium w-full text-start relative before:content-['+'] before:end-2 before:absolute before:text-lg before:top-0 before:bottom-0 before:m-auto"
+            class="mb-1 bg-primary-200 text-primary-600 rounded-md px-1.5 py-2 text-xs font-medium w-full text-start relative before:content-['+'] before:end-2 before:absolute before:text-lg before:top-0 before:bottom-0 before:m-auto"
             hx-post="{% url 'reports:add_column' report.pk %}"
             hx-vals='{"field_name": "{{ field.name }}"}'
             hx-target="#report-content"
@@ -13,10 +13,6 @@
         >
             {{ field.verbose_name|title }}
         </button>
-    {% else %}
-        <div class="text-center text-gray-500 py-4 text-xs">
-            {% trans "You are already selected this field" %}
-        </div>
     {% endif %}
 {% empty %}
     <div class="text-center text-gray-500 py-4 text-xs">

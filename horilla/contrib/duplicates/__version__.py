@@ -9,7 +9,7 @@ __release_date__ = ""
 __description__ = _(
     "Module for detecting potential duplicate records and supporting merge workflows."
 )
-__icon__ = "assets/icons/clone.svg"
+__icon__ = "duplicates/assets/icons/clone.svg"
 
 __1_11_13__ = _(
     "Match custom fields in duplicate rules instead of reading them as model "

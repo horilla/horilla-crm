@@ -2,11 +2,15 @@
 Feature registration for Opportunities app.
 """
 
-# Third-party imports (Django)
 from django.db.models.functions import Cast, Now, TruncMonth
 
 from horilla.contrib.cadences.registration import register_cadence_tab
-from horilla.contrib.reports.utils import register_virtual_field
+
+# Third-party imports (Django)
+from horilla.contrib.reports.utils import (
+    register_report_related_fields,
+    register_virtual_field,
+)
 
 # First party imports (Horilla)
 from horilla.db.models import DateTimeField, DurationField, ExpressionWrapper, F
@@ -82,4 +86,9 @@ register_virtual_field(
         Cast("close_date", output_field=DateTimeField()) - F("created_at"),
         output_field=DurationField(),
     ),
+)
+
+# The Win/Loss Analysis report filters on the stage type
+register_report_related_fields(
+    "opportunities", "opportunity", {"stage": ["stage_type"]}
 )

@@ -64,6 +64,26 @@ urlpatterns = [
         gcal_views.GoogleIntegrationSettingsView.as_view(),
         name="google_integration_settings",
     ),
+    path(
+        "google-integration/allowed-users/",
+        gcal_views.GoogleAllowedUsersListView.as_view(),
+        name="google_allowed_users_list",
+    ),
+    path(
+        "google-integration/allowed-roles/",
+        gcal_views.GoogleAllowedRolesListView.as_view(),
+        name="google_allowed_roles_list",
+    ),
+    path(
+        "google-integration/access-roles/",
+        gcal_views.GoogleAccessRolesView.as_view(),
+        name="google_access_roles",
+    ),
+    path(
+        "google-integration/access-users/",
+        gcal_views.GoogleAccessUsersView.as_view(),
+        name="google_access_users",
+    ),
     # Google Calendar integration
     path(
         "google-calendar/settings/",

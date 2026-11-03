@@ -176,3 +176,55 @@ class CompanyFormClassSingle(HorillaModelForm):
             self.fields["state"].initial = resolve_subdivision_choice(
                 self.fields["state"].choices, self.instance.state
             )
+
+
+class CompanyDetailsInlineForm(CompanyFormClassSingle):
+    """Form used by the Details tab to edit the company profile in place."""
+
+    fieldsets = (
+        (
+            _("Branch Information"),
+            {
+                "fields": (
+                    "icon",
+                    "name",
+                    "email",
+                    "website",
+                    "contact_number",
+                    "fax",
+                    "no_of_employees",
+                    "annual_revenue",
+                )
+            },
+        ),
+        (
+            _("Address"),
+            {"fields": ("country", "state", "city", "zip_code")},
+        ),
+        (
+            _("Localization"),
+            {"fields": ("time_zone", "language", "currency")},
+        ),
+    )
+
+    class Meta:
+        """Meta options for CompanyDetailsInlineForm."""
+
+        model = Company
+        fields = [
+            "icon",
+            "name",
+            "email",
+            "website",
+            "contact_number",
+            "fax",
+            "no_of_employees",
+            "annual_revenue",
+            "city",
+            "state",
+            "country",
+            "zip_code",
+            "time_zone",
+            "language",
+            "currency",
+        ]

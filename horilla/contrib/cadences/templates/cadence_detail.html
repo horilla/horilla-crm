@@ -204,18 +204,6 @@
                                                             </span>
                                                         </button>
                                                     {% endif %}
-                                                    {% if row.show_child_down_arrow %}
-                                                        <div class="cadence-child-down-indicator">
-                                                            <span class="cadence-child-arrow-wrap">
-                                                                <img
-                                                                    src="{% static 'assets/icons/right1.svg' %}"
-                                                                    alt=""
-                                                                    width="30"
-                                                                    height="30"
-                                                                >
-                                                            </span>
-                                                        </div>
-                                                    {% endif %}
                                                 </div>
                                                 <div class="cadence-card-bottom-add w-full">
                                                     {% if can_update and row.show_card_add_below_next %}
@@ -299,7 +287,7 @@
                                                     height="15"
                                                     class="brightness-0 invert"
                                                 >
-                                                {% if conditions %}{% trans "Add Follow Ups" %}{% else %}{% trans "Add Follow-up" %}{% endif %}
+                                                {% if conditions %}{% trans "Add Follow Ups" %}{% else %}{% trans "Add Follow Up" %}{% endif %}
                                             </button>
                                         {% endif %}
                                     </div>

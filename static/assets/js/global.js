@@ -1366,6 +1366,13 @@ $(document).on("change", ".filterMultiSelect", function () {
     joinMultiSelectValue(this);
 });
 
+// Condition rows (single-form views): same idea as .filterMultiSelect - join the
+// chosen options into the sibling hidden .conditionValue input ("value_<row>").
+$(document).on("change", ".conditionMultiSelect", function () {
+    const $hidden = $(this).parent().find("input.conditionValue");
+    $hidden.val(($(this).val() || []).join(","));
+});
+
 function safeInitializeSelect2() {
     const elementsToInitialize = $('.select2-pagination:not(.select2-hidden-accessible)');
 

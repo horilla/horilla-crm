@@ -14,6 +14,7 @@ from django.utils.safestring import mark_safe
 from horilla.auth.mixins import LoginRequiredMixin, login_redirect
 from horilla.contrib.generics.views import (
     HorillaDetailView,
+    HorillaInlineEditNavMixin,
     HorillaListView,
     HorillaMultiStepFormView,
     HorillaNavView,
@@ -22,6 +23,7 @@ from horilla.contrib.generics.views import (
     HorillaTabView,
     HorillaView,
 )
+from horilla.shortcuts import get_object_or_404
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
@@ -41,6 +43,7 @@ from ..filters import CompanyFilter
 from ..forms import CompanyFormClassSingle, CompanyMultistepFormClass
 from ..models import Company
 from ..signals import company_created
+from .core import CompanyDetailsTab
 
 
 @method_decorator(
@@ -274,6 +277,59 @@ class BranchDetailView(HorillaDetailView):
                 return RefreshResponse(request)
             raise HttpNotFound(e) from e
         return super().dispatch(request, *args, **kwargs)
+
+
+@method_decorator(htmx_required, name="dispatch")
+@method_decorator(permission_required_or_denied("core.view_company"), name="dispatch")
+class BranchDetailNavbar(LoginRequiredMixin, HorillaInlineEditNavMixin, HorillaNavView):
+    """Navbar of the branch detail page: back arrow, branch name and Edit/Save/Cancel."""
+
+    model = Company
+    model_name = "Company"
+    model_app_label = "core"
+    navbar_indication = True
+    content_url_name = "core:branch_details_content"
+    edit_url_name = "core:branch_details_edit"
+    content_target = "#branch-detail-content"
+    form_id = "branch-details-form"
+
+    @property
+    def nav_title(self):
+        """Branch name."""
+        return self.nav_object.name
+
+    @property
+    def nav_avatar(self):
+        """Branch logo, or its generated avatar."""
+        company = self.nav_object
+        return company.icon.url if company.icon else company.get_avatar()
+
+    def get_navbar_indication_attrs(self):
+        """Back arrow to the branches list."""
+        return {
+            "hx-get": str(reverse_lazy("core:branches_view")),
+            "hx-target": "#branches-view",
+            "hx-select": "#branches-view",
+            "hx-swap": "outerHTML",
+            "hx-push-url": "true",
+            "title": str(_("All branches")),
+        }
+
+
+@method_decorator(htmx_required, name="dispatch")
+@method_decorator(permission_required_or_denied("core.view_company"), name="dispatch")
+class BranchDetailContent(CompanyDetailsTab):
+    """Branch detail sections, read-only or as an inline form (``branch_details_edit``)."""
+
+    template_name = "branches/branch_details_content.html"
+
+    def get_object(self):
+        """The branch named in the URL."""
+        return get_object_or_404(Company, pk=self.kwargs["pk"])
+
+    def on_saved(self, request, obj):
+        """Reload the page so the navbar, dropdown and sections all refresh."""
+        return ScriptResponse(reload=True)
 
 
 @method_decorator(htmx_required, name="dispatch")

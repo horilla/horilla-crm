@@ -56,24 +56,11 @@
         </div>
 
         <div class="flex justify-end p-5 pt-0 gap-2">
-            <button
-                type="submit"
-                class="bg-primary-600 rounded-md hover:bg-primary-800 transition duration-300 text-white text-sm px-4 py-2 "
-                {% if not available_fields %}
-                    disabled
-                {% endif %}
-            >
-                <span class="flex items-center gap-2">
-                    <span id="add-quick-filter-spinner" class="htmx-indicator">
-                        <img
-                            src="{% static 'assets/icons/spinner.svg' %}"
-                            alt="{% trans 'Loading...' %}"
-                            width="25"
-                        >
-                    </span>
-                    {% trans "Save" %}
-                </span>
-            </button>
+            {% if available_fields %}
+                {% btn type="submit" loading_id="add-quick-filter-spinner" %}
+            {% else %}
+                {% btn type="submit" loading_id="add-quick-filter-spinner" disabled=True %}
+            {% endif %}
         </div>
     </form>
 </div>

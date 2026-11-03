@@ -29,6 +29,7 @@ class ContactOnThePhoneTests(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        """Disconnect the login/logout signals so that the test client can log in."""
         super().setUpClass()
         # django-login-history reads request.META['HTTP_USER_AGENT'] on
         # login/logout, which the test client's bare request doesn't set.
@@ -37,11 +38,14 @@ class ContactOnThePhoneTests(TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        """Reconnect the login/logout signals so that the test client can log in."""
         user_logged_in.connect(post_login)
         user_logged_out.connect(post_logout)
         super().tearDownClass()
 
     def setUp(self):
+        """Set up a company, a seller user, and an contact owned by that user."""
+
         self.company = Company.objects.create(
             name="Acme", email="acme@example.com", country="US"
         )
@@ -70,12 +74,16 @@ class ContactOnThePhoneTests(TestCase):
         self.client.force_login(self.seller)
 
     def test_the_list_shows_the_name_the_job_title_and_a_call_button(self):
+        """The contact list page shows the contacts's job title and a call button."""
+
         response = self.client.get("/m/records/", {"model": "contacts.contact"})
         self.assertContains(response, "Maryam Tavakoli")
         self.assertContains(response, "<bdi>CFO</bdi>")
         self.assertContains(response, 'href="tel:09120001111"')
 
     def test_two_numbers_ask_which_one_to_call(self):
+        """The contact detail page opens and shows a call button."""
+
         response = self.client.get(f"/m/records/contacts/contact/{self.contact.pk}/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context["phones"]), 2)

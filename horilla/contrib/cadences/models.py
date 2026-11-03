@@ -532,3 +532,64 @@ class CadenceEnrollment(HorillaCoreModel):
     def member_status_col(self):
         """Enrolled while the record is in the cadence, Un-enrolled afterwards."""
         return _("Un-enrolled") if self.status == "unenrolled" else _("Enrolled")
+
+
+@permission_exempt_model
+class CadenceScheduledFollowUp(HorillaCoreModel):
+    """
+    A follow-up waiting for its "Do This" delay to pass.
+
+    Created when a follow-up with a delay is triggered; the Celery periodic task
+    creates the real task / call / email once ``scheduled_at`` has passed.
+    """
+
+    STATUS_CHOICES = [
+        ("pending", _("Pending")),
+        ("completed", _("Completed")),
+        ("failed", _("Failed")),
+        ("cancelled", _("Cancelled")),
+    ]
+
+    enrollment = models.ForeignKey(
+        CadenceEnrollment,
+        on_delete=models.CASCADE,
+        related_name="scheduled_followups",
+        verbose_name=_("Enrollment"),
+    )
+    followup = models.ForeignKey(
+        CadenceFollowUp,
+        on_delete=models.CASCADE,
+        related_name="scheduled_runs",
+        verbose_name=_("Follow Up"),
+    )
+    scheduled_at = models.DateTimeField(db_index=True, verbose_name=_("Scheduled At"))
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+        db_index=True,
+        verbose_name=_("Status"),
+    )
+    executed_at = models.DateTimeField(
+        null=True, blank=True, verbose_name=_("Executed At")
+    )
+    error_message = models.TextField(blank=True, verbose_name=_("Error"))
+
+    class Meta:
+        """Meta class for CadenceScheduledFollowUp"""
+
+        verbose_name = _("Cadence Scheduled Follow Up")
+        verbose_name_plural = _("Cadence Scheduled Follow Ups")
+        ordering = ["scheduled_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["enrollment", "followup"],
+                name="unique_scheduled_followup_per_enrollment",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["status", "scheduled_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.enrollment} | {self.followup} | {self.scheduled_at}"

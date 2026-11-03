@@ -10,7 +10,6 @@ from django.utils.encoding import force_str
 from horilla.apps import apps
 from horilla.contrib.core.models import HorillaContentType
 from horilla.shortcuts import render
-from horilla.utils.choices import DISPLAYABLE_FIELD_TYPES
 from horilla.utils.decorators import (
     htmx_required,
     method_decorator,
@@ -21,6 +20,11 @@ from horilla.views.generic import View
 from horilla.web import HttpResponse
 
 # Local imports
+from ..field_choice_helpers import (
+    add_current_metric_choice,
+    get_displayable_field_choices,
+    get_metric_choices,
+)
 from ..forms import get_dashboard_component_models
 
 logger = logging.getLogger(__name__)
@@ -54,11 +58,6 @@ def _resolve_model_from_module(module):
     return None
 
 
-def _append_grouping_choice(grouping_fields, field_name, field_label):
-    """Append (name, str_label) so templates/JSON never get lazy __proxy__."""
-    grouping_fields.append((field_name, force_str(field_label)))
-
-
 class ExtraFieldChoicesView(View):
     """
     Base of the dashboard field-picker views.
@@ -73,6 +72,20 @@ class ExtraFieldChoicesView(View):
     def get_extra_choices(self, model, purpose):
         """Extra ``(name, label)`` pairs for ``purpose``; none by default."""
         return []
+
+    def get_displayable_choices(self, model, purpose):
+        """Model field choices for ``purpose`` followed by the extension's extras."""
+        return get_displayable_field_choices(model) + [
+            (name, force_str(label))
+            for name, label in self.get_extra_choices(model, purpose)
+        ]
+
+    def get_numeric_metric_choices(self, model, current_metric):
+        """Metric choices for ``model``, keeping ``current_metric`` selectable."""
+        extra_fields = self.get_extra_choices(model, "numeric") if model else ()
+        return add_current_metric_choice(
+            get_metric_choices(model, extra_fields), current_metric
+        )
 
 
 @method_decorator(htmx_required, name="dispatch")
@@ -110,37 +123,38 @@ class ModuleFieldChoicesView(ExtraFieldChoicesView):
                 {"field_name": field_name, "field_id": field_id},
             )
 
-        try:
-            model = None
-            for app_config in apps.get_app_configs():
-                try:
-                    model = apps.get_model(
-                        app_label=app_config.label, model_name=module.lower()
-                    )
-                    break
-                except LookupError:
-                    continue
-            if not model:
-                return render(
-                    request,
-                    "partials/field_select_empty.html",
-                    {"field_name": field_name, "field_id": field_id},
-                )
-        except Exception:
+        model = _resolve_model_from_module(module)
+        if not model:
             return render(
                 request,
                 "partials/field_select_empty.html",
                 {"field_name": field_name, "field_id": field_id},
             )
-        model_fields = []
-        for field in model._meta.get_fields():
-            if field.concrete or field.is_relation:
-                verbose_name = getattr(field, "verbose_name", field.name)
-                if field.is_relation:
-                    verbose_name = f"{verbose_name}"
-                model_fields.append((field.name, verbose_name))
 
-        model_fields.extend(self.get_extra_choices(model, "condition"))
+        # Same rules as the generic condition field list: forward fields only
+        # (no reverse relations), editable, and without the default excludes.
+        default_exclude = {
+            "id",
+            "pk",
+            "additional_info",
+        }
+        model_fields = []
+        for field in list(model._meta.fields) + list(model._meta.many_to_many):
+            if field.name in default_exclude:
+                continue
+            if not getattr(field, "editable", True):
+                continue
+            verbose_name = (
+                getattr(field, "verbose_name", None)
+                or field.name.replace("_", " ").title()
+            )
+            model_fields.append((field.name, force_str(verbose_name)))
+
+        model_fields.extend(
+            (name, force_str(label))
+            for name, label in self.get_extra_choices(model, "condition")
+            if name not in default_exclude
+        )
 
         field_choices = [("", "Select Field")] + model_fields
 
@@ -182,25 +196,7 @@ class ColumnFieldChoicesView(ExtraFieldChoicesView):
                 "partials/column_field_select_empty.html",
             )
 
-        column_fields = []
-        for field in model._meta.get_fields():
-            if field.concrete and not field.is_relation:
-                field_name = field.name
-                field_label = field.verbose_name or field.name
-
-                if hasattr(field, "get_internal_type"):
-                    field_type = field.get_internal_type()
-                    if field_type in DISPLAYABLE_FIELD_TYPES:
-                        column_fields.append((field_name, field_label))
-                    elif hasattr(field, "choices") and field.choices:
-                        column_fields.append((field_name, f"{field_label}"))
-            # Include ForeignKey fields for grouping
-            elif hasattr(field, "related_model") and field.many_to_one:
-                field_name = field.name
-                field_label = field.verbose_name or field.name
-                column_fields.append((field_name, f"{field_label}"))
-
-        column_fields.extend(self.get_extra_choices(model, "detail"))
+        column_fields = self.get_displayable_choices(model, "detail")
 
         field_choices = [("", "Add Columns")] + column_fields
 
@@ -232,32 +228,7 @@ class GroupingFieldChoicesView(ExtraFieldChoicesView):
                 "partials/grouping_field_select_empty.html",
             )
 
-        # Get fields suitable for grouping (labels forced to str for JSON/template safety)
-        grouping_fields = []
-        for field in model._meta.get_fields():
-            if field.concrete and not field.is_relation:
-                field_name = field.name
-                field_label = field.verbose_name or field.name
-
-                if hasattr(field, "get_internal_type"):
-                    field_type = field.get_internal_type()
-                    if field_type in DISPLAYABLE_FIELD_TYPES:
-                        _append_grouping_choice(
-                            grouping_fields, field_name, field_label
-                        )
-                    elif hasattr(field, "choices") and field.choices:
-                        _append_grouping_choice(
-                            grouping_fields, field_name, f"{field_label}"
-                        )
-
-            # Include ForeignKey fields for grouping
-            elif hasattr(field, "related_model") and field.many_to_one:
-                field_name = field.name
-                field_label = field.verbose_name or field.name
-                _append_grouping_choice(grouping_fields, field_name, field_label)
-
-        for field_name, field_label in self.get_extra_choices(model, "grouping"):
-            _append_grouping_choice(grouping_fields, field_name, field_label)
+        grouping_fields = self.get_displayable_choices(model, "grouping")
 
         field_choices = [("", force_str(_("Select Grouping Field")))] + grouping_fields
 
@@ -292,30 +263,7 @@ class SecondaryGroupingFieldChoicesView(ExtraFieldChoicesView):
                 "partials/secondary_grouping_field_select_empty.html",
             )
 
-        grouping_fields = []
-        for field in model._meta.get_fields():
-            if field.concrete and not field.is_relation:
-                field_name = field.name
-                field_label = field.verbose_name or field.name
-
-                if hasattr(field, "get_internal_type"):
-                    field_type = field.get_internal_type()
-                    if field_type in DISPLAYABLE_FIELD_TYPES:
-                        _append_grouping_choice(
-                            grouping_fields, field_name, field_label
-                        )
-                    elif hasattr(field, "choices") and field.choices:
-                        _append_grouping_choice(
-                            grouping_fields, field_name, f"{field_label}"
-                        )
-
-            elif hasattr(field, "related_model") and field.many_to_one:
-                field_name = field.name
-                field_label = field.verbose_name or field.name
-                _append_grouping_choice(grouping_fields, field_name, field_label)
-
-        for field_name, field_label in self.get_extra_choices(model, "grouping"):
-            _append_grouping_choice(grouping_fields, field_name, field_label)
+        grouping_fields = self.get_displayable_choices(model, "grouping")
 
         field_choices = [
             ("", force_str(_("Select Secondary Grouping Field")))
@@ -353,74 +301,7 @@ class MetricFieldChoicesView(ExtraFieldChoicesView):
         current_metric = (request.GET.get("metric_type") or "").strip()
 
         model = _resolve_model_from_module(module)
-        metric_choices = [("count", "Count of records")]
-
-        if model:
-            numeric_internal_types = {
-                "IntegerField",
-                "BigIntegerField",
-                "SmallIntegerField",
-                "PositiveIntegerField",
-                "PositiveSmallIntegerField",
-                "DecimalField",
-                "FloatField",
-            }
-
-            for field in model._meta.get_fields():
-                if not getattr(field, "concrete", False) or getattr(
-                    field, "is_relation", False
-                ):
-                    continue
-
-                field_type = (
-                    field.get_internal_type()
-                    if hasattr(field, "get_internal_type")
-                    else ""
-                )
-
-                if field_type not in numeric_internal_types:
-                    continue
-
-                field_name = field.name
-                field_label = getattr(field, "verbose_name", field_name)
-                field_label_str = force_str(field_label)
-
-                metric_choices.extend(
-                    [
-                        (f"sum__{field_name}", f"Sum of {field_label_str}"),
-                        (f"average__{field_name}", f"Average of {field_label_str}"),
-                        (f"min__{field_name}", f"Minimum of {field_label_str}"),
-                        (f"max__{field_name}", f"Maximum of {field_label_str}"),
-                    ]
-                )
-
-        for field_name, field_label in (
-            self.get_extra_choices(model, "numeric") if model else []
-        ):
-            metric_choices.extend(
-                [
-                    (f"sum__{field_name}", f"Sum of {field_label}"),
-                    (f"average__{field_name}", f"Average of {field_label}"),
-                    (f"min__{field_name}", f"Minimum of {field_label}"),
-                    (f"max__{field_name}", f"Maximum of {field_label}"),
-                ]
-            )
-
-        # Ensure the currently selected metric is always included
-        if current_metric and current_metric not in {v for v, _ in metric_choices}:
-            parts = current_metric.split("__", 1)
-            if len(parts) == 2:
-                agg_key, field_name = parts
-                agg_label = (
-                    "Average"
-                    if agg_key == "average"
-                    else agg_key.replace("_", " ").title()
-                )
-                field_label = field_name.replace("_", " ").title()
-                label = f"{agg_label} of {field_label}"
-            else:
-                label = current_metric.replace("_", " ").title()
-            metric_choices.append((current_metric, label))
+        metric_choices = self.get_numeric_metric_choices(model, current_metric)
 
         return render(
             request,
@@ -462,73 +343,7 @@ class YAxisMetricFieldChoicesView(ExtraFieldChoicesView):
         current_metric = (request.GET.get("y_axis_metric_type") or "").strip()
 
         model = _resolve_model_from_module(module)
-        metric_choices = [("count", "Count of records")]
-
-        if model:
-            numeric_internal_types = {
-                "IntegerField",
-                "BigIntegerField",
-                "SmallIntegerField",
-                "PositiveIntegerField",
-                "PositiveSmallIntegerField",
-                "DecimalField",
-                "FloatField",
-            }
-
-            for field in model._meta.get_fields():
-                if not getattr(field, "concrete", False) or getattr(
-                    field, "is_relation", False
-                ):
-                    continue
-
-                field_type = (
-                    field.get_internal_type()
-                    if hasattr(field, "get_internal_type")
-                    else ""
-                )
-
-                if field_type not in numeric_internal_types:
-                    continue
-
-                field_name = field.name
-                field_label = getattr(field, "verbose_name", field_name)
-                field_label_str = force_str(field_label)
-
-                metric_choices.extend(
-                    [
-                        (f"sum__{field_name}", f"Sum of {field_label_str}"),
-                        (f"average__{field_name}", f"Average of {field_label_str}"),
-                        (f"min__{field_name}", f"Minimum of {field_label_str}"),
-                        (f"max__{field_name}", f"Maximum of {field_label_str}"),
-                    ]
-                )
-
-        for field_name, field_label in (
-            self.get_extra_choices(model, "numeric") if model else []
-        ):
-            metric_choices.extend(
-                [
-                    (f"sum__{field_name}", f"Sum of {field_label}"),
-                    (f"average__{field_name}", f"Average of {field_label}"),
-                    (f"min__{field_name}", f"Minimum of {field_label}"),
-                    (f"max__{field_name}", f"Maximum of {field_label}"),
-                ]
-            )
-
-        if current_metric and current_metric not in {v for v, _ in metric_choices}:
-            parts = current_metric.split("__", 1)
-            if len(parts) == 2:
-                agg_key, field_name = parts
-                agg_label = (
-                    "Average"
-                    if agg_key == "average"
-                    else agg_key.replace("_", " ").title()
-                )
-                field_label = field_name.replace("_", " ").title()
-                label = f"{agg_label} of {field_label}"
-            else:
-                label = current_metric.replace("_", " ").title()
-            metric_choices.append((current_metric, label))
+        metric_choices = self.get_numeric_metric_choices(model, current_metric)
 
         return render(
             request,

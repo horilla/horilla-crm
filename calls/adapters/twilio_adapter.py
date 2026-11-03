@@ -1,7 +1,5 @@
 """Twilio adapter for Horilla Calls Integration."""
 
-import hashlib
-import hmac
 import logging
 
 import requests
@@ -24,6 +22,9 @@ class TwilioAdapter(BaseCallAdapter):
         api_secret   — Twilio Auth Token  (stored via EncryptedCharField)
         caller_id    — default outbound number / Twilio phone number
     """
+
+    # Twilio signs webhooks with the account Auth Token, not a separate secret.
+    WEBHOOK_SECRET_FIELD = "api_secret"
 
     CAPABILITIES = {
         "click_to_call": True,
@@ -86,29 +87,10 @@ class TwilioAdapter(BaseCallAdapter):
 
     def validate_webhook(self, request) -> bool:
         """
-        Validate X-Twilio-Signature against HMAC-SHA1 of URL + sorted POST params.
+        Validate X-Twilio-Signature (HMAC-SHA1 of URL + sorted POST params) keyed by the Auth Token.
         https://www.twilio.com/docs/usage/webhooks/webhooks-security
         """
-        signature = request.headers.get("X-Twilio-Signature", "")
-        secret = self.provider.webhook_secret
-        if not secret:
-            logger.warning("Twilio webhook_secret not configured — skipping validation")
-            return True
-
-        full_url = request.build_absolute_uri()
-        if request.method == "POST":
-            params = sorted(request.POST.items())
-            full_url += "".join(f"{k}{v}" for k, v in params)
-
-        expected = hmac.new(
-            secret.encode("utf-8"),
-            full_url.encode("utf-8"),
-            hashlib.sha1,
-        ).digest()
-        import base64
-
-        expected_b64 = base64.b64encode(expected).decode("utf-8")
-        return hmac.compare_digest(signature, expected_b64)
+        return self.verify_twilio_style_signature(request, "X-Twilio-Signature")
 
     def parse_webhook_payload(self, request) -> dict:
         """Map Twilio POST fields to canonical dict."""

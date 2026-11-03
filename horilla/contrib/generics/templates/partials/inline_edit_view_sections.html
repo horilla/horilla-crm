@@ -1,0 +1,15 @@
+{% for title, rows in sections %}
+    <div class="mb-4 rounded-md border border-primary-300">
+        <h3 class="text-sm font-semibold bg-primary-100 text-primary-600 rounded-t-md p-3">{{ title }}</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+            {% for label, field_name in rows %}
+                <div>
+                    <label class="text-xs text-color-600">{{ label }}</label>
+                    <div class="text-color-600 p-2 font-normal w-full border border-dark-50 bg-gray-50 rounded-md mt-1 text-sm cursor-default break-words min-h-[2.5rem] flex items-center">
+                        {% display_field_value obj field_name request.user style="detail" %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endfor %}

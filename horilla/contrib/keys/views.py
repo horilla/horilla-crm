@@ -177,7 +177,6 @@ class ShortKeyFormView(LoginRequiredMixin, HorillaSingleFormView):
     model = ShortcutKey
     form_class = ShortcutKeyForm
     modal_height = False
-    form_title = _("Short Key")
     full_width_fields = ["page"]
     hidden_fields = ["is_active", "user", "company"]
 

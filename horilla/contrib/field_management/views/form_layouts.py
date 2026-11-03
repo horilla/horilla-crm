@@ -184,7 +184,7 @@ class FormLayoutCreateView(LoginRequiredMixin, HorillaSingleFormView):
     form_class = FormLayoutCreateForm
     fields = ["content_type"]
     modal_height = False
-    form_title = _("Form Layout")
+    form_title = _("Create Form Layout")
     save_and_new = False
     form_url = CREATE_URL
     full_width_fields = ["content_type"]
@@ -380,11 +380,15 @@ class FormLayoutDetailNavbar(LoginRequiredMixin, FormLayoutEditorMixin, HorillaN
             return {
                 "url": reverse("field_management:form_layout_save"),
                 "title": _("Cancel"),
-                "onclick": (
-                    "document.querySelector('#form-layout-form [data-layout-cancel]')"
-                    ".click()"
-                ),
-                "attrs": {"hx-trigger": "never"},
+                "onclick": "window.horillaFormLayouts.cancel(this)",
+                "attrs": {
+                    # never fires: the click is handled by horillaFormLayouts.cancel()
+                    "hx-trigger": "never",
+                    "data-layout-cancel": "",
+                    "data-cancel-url": "%s?model=%s"
+                    % (reverse("field_management:form_layout_editor"), content_type.pk),
+                    "data-confirm": _("Discard your unsaved changes?"),
+                },
             }
         if not self.request.user.has_perm(DELETE_PERM):
             return None

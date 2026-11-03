@@ -5,13 +5,19 @@ Version information for the cadences app
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.10"
+__version__ = "1.11.11"
 __module_name__ = "Cadences"
 __release_date__ = ""
 __description__ = _(
     "Module for managing cadence workflows and runtime activity sequences."
 )
 __icon__ = "cadences/assets/icons/cadence.svg"
+
+__1_11_11__ = _(
+    "Honor the Do This delay (minutes, hours, days, months) of a follow-up. "
+    "Delayed follow-ups are scheduled and created by a Celery beat task, and "
+    "the enrollment stays ongoing while one is pending."
+)
 
 __1_11_10__ = _(
     "Add cadence enrollments, so a record can be enrolled and un-enrolled "

@@ -215,6 +215,16 @@ class LeadAssignmentForm(LoginRequiredMixin, HorillaSingleFormView):
             return reverse_lazy("leads:lead_assignment_update", kwargs={"pk": pk})
         return reverse_lazy("leads:lead_assignment_create")
 
+    def form_valid(self, form):
+        """
+        A new rule starts inactive; the toggle in the list activates it, which
+        deactivates the rule that is active now. ``is_active`` is not a form
+        field (generic forms exclude it), so the model default would apply.
+        """
+        if not form.instance.pk:
+            form.instance.is_active = False
+        return super().form_valid(form)
+
     def get(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
         if pk:

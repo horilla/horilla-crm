@@ -4,8 +4,6 @@ SignalWire is Twilio-compatible: same REST format, same TwiML XML, same status v
 The only difference is the API base URL (project-specific) and the credential names.
 """
 
-import hashlib
-import hmac
 import logging
 
 import requests
@@ -27,6 +25,9 @@ class SignalWireAdapter(BaseCallAdapter):
         api_base_url — SignalWire Space URL (e.g. https://yourspace.signalwire.com)
         caller_id    — default outbound number (SignalWire DID)
     """
+
+    # Twilio-compatible signature, keyed by the project Signing Key.
+    WEBHOOK_SECRET_FIELD = "webhook_secret"
 
     CAPABILITIES = {
         "click_to_call": True,
@@ -125,28 +126,8 @@ class SignalWireAdapter(BaseCallAdapter):
             raise
 
     def validate_webhook(self, request) -> bool:
-        signature = request.headers.get("X-SignalWire-Signature", "")
-        secret = self.provider.webhook_secret
-        if not secret:
-            logger.warning(
-                "SignalWire webhook_secret not configured — skipping validation"
-            )
-            return True
-
-        full_url = request.build_absolute_uri()
-        if request.method == "POST":
-            params = sorted(request.POST.items())
-            full_url += "".join(f"{k}{v}" for k, v in params)
-
-        import base64
-
-        expected = hmac.new(
-            secret.encode("utf-8"),
-            full_url.encode("utf-8"),
-            hashlib.sha1,
-        ).digest()
-        expected_b64 = base64.b64encode(expected).decode("utf-8")
-        return hmac.compare_digest(signature, expected_b64)
+        """Validate X-SignalWire-Signature keyed by the project Signing Key (webhook_secret)."""
+        return self.verify_twilio_style_signature(request, "X-SignalWire-Signature")
 
     def parse_webhook_payload(self, request) -> dict:
         data = request.POST

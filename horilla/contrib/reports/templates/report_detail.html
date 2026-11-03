@@ -158,7 +158,7 @@
             style="flex: 1 1 0%"
         >
             {% if has_unsaved_changes %}
-                <div class="bg-primary-300 rounded-lg p-3 mb-3">
+                <div class="bg-primary-300 rounded-lg p-3 mb-3" id="rpt-banner">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <svg class="h-5 w-5 text-primary-600" viewBox="0 0 20 20" fill="currentColor">
@@ -181,17 +181,47 @@
                     </div>
                 </div>
             {% endif %}
-            <div class="flex justify-between items-center mb-3">
-                <ul class="flex gap-3 text-sm items-center">
-                    <li>
-                        <a
-                            href=""
-                            class="bg-[#25c32417] border border-[solid] border-[#25c32429] text-[#21b320] font-medium text-xs px-3 py-1.5 flex items-center justify-center rounded-md"
-                        >
-                            {% trans "Total Count" %} - {{ total_count }}
-                        </a>
-                    </li>
-                </ul>
+            {# What this report is built from: columns, grouping, filters. Click a group to edit it. #}
+            <div id="rpt-summary" class="flex items-start gap-3 mb-3{% if panel_open %} rpt-compact{% endif %}">
+                <div class="rpt-summary-group flex items-stretch gap-2 min-w-0 flex-1">
+                <div class="rpt-summary-chip" style="cursor:default">
+                    <span class="rpt-summary-label">{% trans "Total Count" %}</span>
+                    <span class="rpt-summary-value" style="font-weight:600">{{ total_count }}</span>
+                </div>
+                <button type="button" class="rpt-summary-chip" data-edit-tab="grouping" title="{% trans 'Edit Grouping' %}">
+                    <span class="rpt-summary-label">{% trans "Grouping" %}</span>
+                    <span class="rpt-summary-count">{{ temp_report|grouping_count }}</span>
+                    <span class="rpt-summary-value">
+                        {% if temp_report.row_groups_list or temp_report.column_groups_list %}
+                            {% if temp_report.row_groups_list %}{% trans "Rows" %}: {% for g in temp_report.row_groups_list %}{{ g|get_field_verbose_name:temp_report.model_class }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}
+                            {% if temp_report.row_groups_list and temp_report.column_groups_list %} · {% endif %}
+                            {% if temp_report.column_groups_list %}{% trans "Columns" %}: {% for g in temp_report.column_groups_list %}{{ g|get_field_verbose_name:temp_report.model_class }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}
+                        {% else %}
+                            <i>{% trans "None" %}</i>
+                        {% endif %}
+                    </span>
+                </button>
+                <button type="button" class="rpt-summary-chip" data-edit-tab="filter" title="{% trans 'Edit Filters' %}">
+                    <span class="rpt-summary-label">{% trans "Filters" %}</span>
+                    <span class="rpt-summary-count">{{ temp_report|applied_filter_count }}</span>
+                    <span class="rpt-summary-value">
+                        {% if temp_report|has_applied_filters %}
+                            {% for fk, fv in temp_report.filters_dict.items %}{% with t=fv|filter_summary:temp_report %}{% if t %}<span class="rpt-filter-pill">{{ t }}</span>{% endif %}{% endwith %}{% endfor %}
+                        {% else %}
+                            <i>{% trans "None" %}</i>
+                        {% endif %}
+                    </span>
+                </button>
+                </div>
+                {% if total_count %}
+                    <div class="flex bg-white rounded-lg p-0.5 flex-shrink-0 ms-auto" style="box-shadow:0 1px 3px rgba(0,0,0,.06)" role="tablist">
+                        <button type="button" role="tab" class="rpt-tab text-sm font-semibold rounded-md px-4 py-1.5" data-view="pivot">{% trans "Pivot" %}</button>
+                        {% if columns %}
+                            <button type="button" role="tab" class="rpt-tab text-sm font-semibold rounded-md px-4 py-1.5" data-view="detail">{% trans "Details" %}</button>
+                        {% endif %}
+                        <button type="button" role="tab" class="rpt-tab text-sm font-semibold rounded-md px-4 py-1.5" data-view="chart">{% trans "Chart" %}</button>
+                    </div>
+                {% endif %}
             </div>
             {% if not total_count %}
                 <div class="[box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] bg-white rounded-lg p-3 mb-4">
@@ -199,23 +229,23 @@
                     {% include "components/empty_state.html" with message=no_data_msg %}
                 </div>
             {% else %}
-                <div class="grid grid-cols-12 gap-4 mb-4">
+                <div class="grid grid-cols-12 gap-4 mb-4" id="rpt-grid">
                     {% if columns %}
-                        <div class="col-span-12">
+                        <div class="col-span-12" data-rpt-section="detail">
                             <div class="[box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] bg-white rounded-lg p-3 h-full">
                                 <div class="flex items-center gap-3 mb-3">
-                                    <h3 class="text-sm font-semibold">{% trans "Detail table" %}</h3>
+                                    <h3 class="text-sm font-semibold">{% trans "Detail Table" %}</h3>
                                     <span
                                         id="pivot-filter-badge"
                                         class="items-center gap-1.5 bg-primary-300 border border-primary-500 text-primary-600 text-xs font-medium px-2.5 py-1 rounded-full"
                                     >
                                         <i class="fas fa-filter text-primary-600" style="font-size: 10px"></i>
-                                        {% trans "Filtered by pivot:" %}
+                                        {% trans "Filtered By Pivot:" %}
                                         <span id="pivot-filter-badge-label" class="font-semibold"></span>
                                         <button
                                             id="pivot-filter-clear"
                                             class="ms-1 text-primary-600 hover:text-primary-800"
-                                            title="{% trans 'Clear pivot filter' %}"
+                                            title="{% trans 'Clear Pivot Filter' %}"
                                             style="line-height: 1"
                                         >
                                             &times;
@@ -226,12 +256,14 @@
                             </div>
                         </div>
                     {% endif %}
-                    <div class="col-span-12">
+                    <div class="col-span-12" data-rpt-section="pivot">
                         <div
                             class="h-full overflow-x-auto custom-scroll [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] bg-white rounded-lg z-0 p-4"
                             id="pivot-table"
                         >
-                            <h3 class="text-sm font-semibold mb-3">{% trans "Pivot table" %}</h3>
+                            <div class="flex items-center mb-3">
+                                <h3 class="text-sm font-semibold">{% trans "Pivot Table" %}</h3>
+                            </div>
                             <div
                                 id="pivot-table-wrap"
                                 data-reset-url="{% url 'reports:report_detail_filtered' report.pk %}?{{request.GET.urlencode}}"
@@ -240,13 +272,14 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-span-12 min-w-0">
+                    <div class="col-span-12 min-w-0" data-rpt-section="chart">
                         <div
                             class="[box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] bg-white rounded-lg p-3 h-full min-w-0"
                             id="chart-container"
                         >
                             <div class="flex justify-between">
                                 <h3 class="text-sm font-semibold mb-3">{% trans "Report Chart" %}</h3>
+                                <div class="flex items-start gap-1">
                                 <div class="relative dropdown-wrapper">
                                     <button
                                         id="dropdownLeftEndButton"
@@ -304,12 +337,13 @@
                                         </ul>
                                     </div>
                                 </div>
+                                </div>
                             </div>
                             <p class="text-xs mb-2">{% trans "Record Count:" %} {{ total_count }}</p>
                             {% if chart_data.error %}
                                 <p class="text-red-500">{{ chart_data.error }}</p>
                             {% else %}
-                                <div class="flex justify-between items-center min-h-[420px]">
+                                <div class="flex justify-between items-center min-h-[420px] rpt-chart-wrap">
                                     <div
                                         id="chart-{{ report.pk }}"
                                         class="w-full min-h-[400px]"
@@ -323,6 +357,95 @@
                 </div>
             {% endif %}
         </div>
+        <style>
+            .rpt-summary-chip { display: flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%; background: #fff; color: #1f2430; border: 1px solid #e3e5ea; box-shadow: 0 1px 2px rgba(0,0,0,.04); border-radius: 8px; padding: 6px 10px; font-size: 12px; text-align: start; }
+            /* Edit panel open: only counts are shown (Grouping 2, Filters 1), details are in the panel */
+            .rpt-summary-count { display: none; font-weight: 600; }
+            #rpt-summary.rpt-compact [data-edit-tab] .rpt-summary-value { display: none; }
+            #rpt-summary.rpt-compact .rpt-summary-count { display: inline; }
+            #rpt-summary.rpt-compact .rpt-summary-chip { padding: 3px 10px; font-size: 11px; gap: 6px; }
+            #rpt-summary.rpt-compact .rpt-summary-group > .rpt-summary-chip, #rpt-summary.rpt-compact .rpt-summary-group > [data-edit-tab="filter"] { flex: 0 0 auto; }
+            #rpt-summary.rpt-compact .rpt-tab { font-size: 12px; padding: 5px 12px; }
+            /* Keep Total Count, Grouping and Filters on one row at their natural width; they only shrink (and wrap their text) when space runs out */
+            .rpt-summary-group { flex-wrap: nowrap; }
+            .rpt-summary-group > .rpt-summary-chip { flex: 0 1 auto; }
+            .rpt-summary-group > .rpt-summary-chip:first-child { flex-shrink: 0; }
+            [data-edit-tab="filter"] .rpt-summary-value { display: flex; flex-wrap: wrap; gap: 4px; }
+            .rpt-filter-pill { margin-inline-end: 0; }
+            button.rpt-summary-chip:hover { border-color: #E54F38; }
+            .rpt-summary-label { flex-shrink: 0; font-weight: 700; color: #E54F38; }
+            .rpt-summary-value { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+            .rpt-summary-value i { opacity: .7; }
+            .rpt-filter-pill { display: inline-block; margin-inline-end: 6px; border-radius: 6px; padding: 1px 8px; background: #25c32417; border: 1px solid #25c32429; color: #177a16; }
+            /* One view at a time (Chart / Pivot / Details); the active one fills the report area */
+            .sec1 [data-rpt-section]:not(.rpt-active) { display: none; }
+            .sec1 #rpt-grid { flex: 1 1 0%; min-height: 0; margin-bottom: 0; grid-template-rows: minmax(0, 1fr); }
+            .sec1 [data-rpt-section].rpt-active { min-height: 0; height: 100%; }
+            .sec1 [data-rpt-section].rpt-active > div { height: 100%; overflow-y: auto; }
+            /* Detail table: let flex fill the card instead of the fixed 200px */
+            .sec1 [data-rpt-section="detail"].rpt-active > div { display: flex; flex-direction: column; overflow: hidden; }
+            .sec1 [data-rpt-section="detail"].rpt-active #details-table { flex: 1 1 0%; min-height: 0; }
+            .sec1 [data-rpt-section="detail"].rpt-active #details-table > div { height: 100%; display: flex; flex-direction: column; }
+            .sec1 [data-rpt-section="detail"].rpt-active [id^="tableview-"] { flex: 1 1 0%; min-height: 0; display: flex; flex-direction: column; }
+            .sec1 [data-rpt-section="detail"].rpt-active [id^="table-container-"] { flex: 1 1 0%; min-height: 0; height: auto !important; max-height: none !important; }
+            /* Chart: flex-fill the card, no scrollbar */
+            .sec1 [data-rpt-section="chart"].rpt-active > div { display: flex; flex-direction: column; overflow: hidden; }
+            .rpt-chart-wrap { flex: 1 1 0%; min-height: 0 !important; }
+            .sec1 [data-rpt-section="chart"].rpt-active [id^="chart-"] { height: 100% !important; min-height: 0 !important; }
+        </style>
+        <script>
+            // View tabs (Chart / Pivot / Details).
+            (function () {
+                function apply() {
+                    var sec = document.querySelector('.sec1');
+                    if (!sec) return;
+                    var present = {};
+                    document.querySelectorAll('[data-rpt-section]').forEach(function (el) { present[el.getAttribute('data-rpt-section')] = true; });
+                    var view = window.reportView;
+                    if (!present[view]) view = present.pivot ? 'pivot' : (present.detail ? 'detail' : 'chart');
+                    window.reportView = view;
+                    document.querySelectorAll('[data-rpt-section]').forEach(function (el) {
+                        el.classList.toggle('rpt-active', el.getAttribute('data-rpt-section') === view);
+                    });
+                    document.querySelectorAll('.rpt-tab').forEach(function (t) {
+                        var on = t.getAttribute('data-view') === view;
+                        t.setAttribute('aria-selected', on ? 'true' : 'false');
+                        t.style.background = on ? '#E54F38' : 'transparent';
+                        t.style.color = on ? '#fff' : '#3b4150';
+                    });
+                    var inst = window['reportChartInstance_{{ report.pk }}'];
+                    if (inst && inst.resize) setTimeout(function () { inst.resize(); }, 60);
+                }
+                if (!window.reportCollapseBound) {
+                    window.reportCollapseBound = true;
+                    document.addEventListener('click', function (e) {
+                        var tab = e.target.closest('.rpt-tab');
+                        if (tab) { window.reportView = tab.getAttribute('data-view'); window.reportApplyFocus(); return; }
+                        var chip = e.target.closest('[data-edit-tab]');
+                        if (chip) {
+                            // Open the edit panel on the clicked tab (Columns / Grouping / Filter).
+                            var name = chip.getAttribute('data-edit-tab');
+                            try { sessionStorage.setItem('activeReportTab', name); } catch (err) {}
+                            var tabBtn = document.querySelector('#panel .tab-button[data-tab-name="' + name + '"]');
+                            if (tabBtn) { tabBtn.click(); return; }
+                            var edit = document.getElementById('toggleBtn');
+                            if (edit) edit.click();
+                        }
+                    });
+                    document.body.addEventListener('htmx:afterSettle', function () { window.reportApplyFocus(); });
+                    // Clicking a pivot cell loads its rows into the detail table: show the Details tab.
+                    document.body.addEventListener('htmx:afterSwap', function (e) {
+                        var t = e.detail && e.detail.target;
+                        if (t && t.id === 'details-table' && document.querySelector('[data-rpt-section="detail"]')) {
+                            window.reportView = 'detail';
+                            window.reportApplyFocus();
+                        }
+                    });
+                }
+                window.reportApplyFocus = apply;
+                apply();
+            })();
+        </script>
         <div
             id="panel"
             class="transition-all duration-300 overflow-hidden overflow-x-auto {% if panel_open %}w-80{% else %}w-0{% endif %} bg-white [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] rounded-lg h-[calc(100vh_-_200px)] ms-4"

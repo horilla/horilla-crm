@@ -1,0 +1,53 @@
+{% comment %}
+Sticky banner for inline edit (see HorillaInlineEditMixin). Read mode shows the
+title (and image) with an Edit Details button; edit mode shows only the editing notice with Cancel and Save (submits the
+enclosing form). Include inside the scrolling container (padding p-3) with:
+banner_title, banner_image (optional), banner_subtitle (optional, read mode), edit_url, cancel_url, target,
+and the view's `form` / `can_change`.
+{% endcomment %}
+<div class="sticky -top-3 z-10 -mt-3 pt-3 pb-4 bg-white">
+    {% if form %}
+        <div class="flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-primary-100 border border-primary-300 text-xs text-primary-600">
+            <span class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                {% trans "Editing — unsaved changes" %}
+            </span>
+            <div class="flex items-center gap-2">
+                <button
+                    type="button"
+                    class="outline outline-1 outline-offset-[-1px] outline-primary-600 hover:bg-primary-300 transition duration-300 text-primary-600 flex items-center gap-1.5 bg-white rounded transition-colors text-sm px-3 py-1"
+                    hx-get="{{ cancel_url }}"
+                    hx-target="{{ target }}"
+                    hx-swap="outerHTML"
+                    hx-push-url="false"
+                >
+                    {% trans "Cancel" %}
+                </button>
+                {% btn sizing="text-sm px-3 py-1" extra_class="gap-1.5" type="submit" %}
+            </div>
+        </div>
+    {% else %}
+        <div class="flex flex-wrap justify-between items-center bg-gray-50 border border-dark-50 rounded-md px-3 py-2">
+            <div class="flex items-center gap-3">
+                {% if banner_image %}<img src="{{ banner_image }}" alt="" class="w-9 h-9 rounded-full">{% endif %}
+                <div class="flex flex-col">
+                    {% if banner_title %}<h3 class="text-sm font-semibold">{{ banner_title }}</h3>{% endif %}
+                    {% if banner_subtitle %}<span class="text-xs text-color-600">{{ banner_subtitle }}</span>{% endif %}
+                </div>
+            </div>
+            {% if can_change %}
+                <button
+                    type="button"
+                    class="flex items-center gap-1.5 px-3 py-1 bg-primary-300 text-primary-600 text-sm rounded hover:bg-gray-100 transition-colors"
+                    hx-get="{{ edit_url }}"
+                    hx-target="{{ target }}"
+                    hx-swap="outerHTML"
+                    hx-push-url="false"
+                >
+                    <i class="fa-solid fa-pen"></i>
+                    <span>{% trans "Edit Details" %}</span>
+                </button>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>

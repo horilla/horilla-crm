@@ -85,7 +85,6 @@ class BusinessHourFormView(LoginRequiredMixin, HorillaSingleFormView):
     model = BusinessHour
     form_class = BusinessHourForm
     view_id = "business-hour-form-view"
-    form_title = _("Business Hour Form")
     full_width_fields = ["timing_type", "week_days"]
     hidden_fields = ["company"]
     save_and_new = False

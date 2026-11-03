@@ -152,7 +152,7 @@
             {% blocktrans trimmed with model=model_verbose_name obj=object %}Are you sure you want to delete the {{ model }} "{{ obj }}"?{% endblocktrans %}
         </p>
         <div class="flex justify-end gap-2">
-            {% btn _("Cancel") variant="outline" sizing="text-sm px-6 py-2" onclick="closeDeleteModal();closeDeleteModeModal()" %}
+            {% btn _("Cancel") variant="outline" sizing="text-sm px-6 py-2" onclick="closeModal();" %}
             <form
                 hx-post="{{ search_url }}"
                 hx-push-url="false"

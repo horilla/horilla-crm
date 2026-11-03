@@ -17,7 +17,7 @@ from horilla.contrib.activity.models import Activity
 from horilla.utils import timezone
 
 # Local imports
-from ..models import GoogleCalendarConfig
+from ..models import GoogleCalendarConfig, GoogleIntegrationSetting
 from .service import (
     delete_event_from_google,
     delete_task_from_google_tasks,
@@ -37,6 +37,12 @@ def is_pulling_from_google():
 
 
 logger = logging.getLogger(__name__)
+
+
+def user_has_google_access(user):
+    """True when the company's Google integration is on and ``user`` is allowed to sync."""
+    company = getattr(user, "company", None)
+    return bool(company and GoogleIntegrationSetting.user_can_access(user, company))
 
 
 # ---- helpers for Google Tasks pull ----------------------------------------
@@ -213,6 +219,8 @@ def push_activity_to_google(activity, user):
     Silently skips if the user has no configured / connected GoogleCalendarConfig.
     Saves the returned Google ID back to activity.google_event_id.
     """
+    if not user_has_google_access(user):
+        return
     try:
         config = GoogleCalendarConfig.all_objects.get(user=user)
     except GoogleCalendarConfig.DoesNotExist:
@@ -278,6 +286,8 @@ def push_unavailability_to_google(ua):
 
     Saves the returned Google event ID back to ua.google_event_id.
     """
+    if not user_has_google_access(ua.user):
+        return
     try:
         config = GoogleCalendarConfig.all_objects.get(user=ua.user)
     except GoogleCalendarConfig.DoesNotExist:
@@ -487,6 +497,9 @@ def pull_google_events_to_horilla(config, initial_sync_only=False):
     """
     # Only pull from Google when the user has chosen two-way sync.
     # One-way (horilla_to_google) skips the pull entirely.
+    if not user_has_google_access(config.user):
+        logger.debug("Skipping pull for user=%s: no Google access", config.user)
+        return
     if config.sync_direction != "both":
         logger.debug(
             "Skipping pull for user=%s: sync_direction=%r",

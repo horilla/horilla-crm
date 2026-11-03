@@ -540,6 +540,10 @@
                 var dayMs = 24 * 60 * 60 * 1000;
                 var totalDays = Math.max(1, Math.round(totalMs / dayMs));
 
+                /* RTL: the axis row runs right to left, so bars and grid lines are offset from the right */
+                var isRtl = getComputedStyle(track).direction === "rtl";
+                var startEdge = isRtl ? "right" : "left";
+
                 var DAY_COL_PX = 56;
                 var WEEK_COL_PX = 120;
                 var MONTH_MIN_PX = 96;
@@ -1000,7 +1004,7 @@
                         }
 
                         if (widthPx < minPx) widthPx = minPx;
-                        bar.style.left = leftPx + "px";
+                        bar.style[startEdge] = leftPx + "px";
                         bar.style.width = widthPx + "px";
                     } else {
                         var leftRatio2 = (start - rangeStart) / totalMs;
@@ -1017,7 +1021,7 @@
                         var leftPct = leftRatio2 * 100;
                         var widthPct = Math.max(widthRatio2 * 100, 0.5);
                         if (widthPct < 3) widthPct = 3;
-                        bar.style.left = leftPct + "%";
+                        bar.style[startEdge] = leftPct + "%";
                         bar.style.width = widthPct + "%";
                     }
                 }
@@ -1084,7 +1088,9 @@
                         gridHtml +=
                             '<div class="' +
                             TL.gridLine +
-                            '" style="left:' +
+                            '" style="' +
+                            startEdge +
+                            ":" +
                             cumD +
                             'px"></div>';
 
@@ -1121,7 +1127,9 @@
                     gridHtml +=
                         '<div class="' +
                         TL.gridLine +
-                        '" style="left:' +
+                        '" style="' +
+                        startEdge +
+                        ":" +
                         cumD +
                         'px"></div>';
                     axisLabels.classList.add("flex-nowrap", "items-stretch");
@@ -1170,7 +1178,9 @@
                         gridHtml +=
                             '<div class="' +
                             TL.gridLine +
-                            '" style="left:' +
+                            '" style="' +
+                            startEdge +
+                            ":" +
                             cum +
                             'px"></div>';
 
@@ -1198,7 +1208,9 @@
                     gridHtml +=
                         '<div class="' +
                         TL.gridLine +
-                        '" style="left:' +
+                        '" style="' +
+                        startEdge +
+                        ":" +
                         cum +
                         'px"></div>';
                     axisLabels.classList.add("flex-nowrap", "items-stretch");
@@ -1226,7 +1238,9 @@
                         gridHtml +=
                             '<div class="' +
                             TL.gridLine +
-                            '" style="left:' +
+                            '" style="' +
+                            startEdge +
+                            ":" +
                             cumQ +
                             'px"></div>';
                         axisHtml +=
@@ -1249,7 +1263,9 @@
                     gridHtml +=
                         '<div class="' +
                         TL.gridLine +
-                        '" style="left:' +
+                        '" style="' +
+                        startEdge +
+                        ":" +
                         cumQ +
                         'px"></div>';
                     axisLabels.classList.add("flex-nowrap", "items-stretch");
@@ -1277,7 +1293,9 @@
                         gridHtml +=
                             '<div class="' +
                             TL.gridLine +
-                            '" style="left:' +
+                            '" style="' +
+                            startEdge +
+                            ":" +
                             cumM +
                             'px"></div>';
                         axisHtml +=
@@ -1300,7 +1318,9 @@
                     gridHtml +=
                         '<div class="' +
                         TL.gridLine +
-                        '" style="left:' +
+                        '" style="' +
+                        startEdge +
+                        ":" +
                         cumM +
                         'px"></div>';
                     axisLabels.classList.add("flex-nowrap", "items-stretch");
@@ -1420,11 +1440,13 @@
                 }
 
                 var scrollEl = document.getElementById("timeline-scroll-" + viewId);
+                /* RTL scrollLeft is 0 at the right edge and negative towards the left */
+                var scrollSign = isRtl ? -1 : 1;
                 if (scrollEl) {
                     if (usePixelBars && axisTotalPx > 0) {
                         var earliestLeftPx = axisTotalPx;
                         bars.forEach(function (bar) {
-                            var leftStr = bar.style.left || "";
+                            var leftStr = bar.style[startEdge] || "";
                             if (leftStr.indexOf("px") !== -1) {
                                 var leftPx = parseFloat(leftStr);
                                 if (!isNaN(leftPx) && leftPx < earliestLeftPx) {
@@ -1441,23 +1463,22 @@
                             }
                         });
 
-                        scrollEl.scrollLeft = Math.max(earliestLeftPx - 40, 0);
+                        scrollEl.scrollLeft = scrollSign * Math.max(earliestLeftPx - 40, 0);
                     } else {
                         var trackWidthFallback2 = Math.max(totalDays * 10, 800);
                         var earliestLeftPct = 100;
 
                         bars.forEach(function (bar) {
-                            var leftStr = (bar.style.left || "").replace("%", "");
+                            var leftStr = (bar.style[startEdge] || "").replace("%", "");
                             var leftVal = parseFloat(leftStr);
                             if (!isNaN(leftVal) && leftVal < earliestLeftPct) {
                                 earliestLeftPct = leftVal;
                             }
                         });
 
-                        scrollEl.scrollLeft = Math.max(
-                            (earliestLeftPct / 100) * trackWidthFallback2 - 40,
-                            0
-                        );
+                        scrollEl.scrollLeft =
+                            scrollSign *
+                            Math.max((earliestLeftPct / 100) * trackWidthFallback2 - 40, 0);
                     }
                 }
             }

@@ -6,76 +6,20 @@
         <div id="users-view" class="h-full flex flex-col" data-viewport-fit>
             {% include "messages.html" %}
             {% reload_button "#users-view" %}
-            <div class="mb-4">
-                <div class="flex flex-wrap gap-y-3 justify-between items-center mb-2">
-                    <div class="flex gap-4 items-center relative">
-                        {% if previous_url_is_external %}
-                            <a class="" href="{{ previous_url }}">
-                                <i class="fas {% if LANGUAGE_BIDI %}fa-arrow-right{% else %}fa-arrow-left{% endif %} me-2"></i>
-                            </a>
-                        {% else %}
-                            <button
-                                class=""
-                                hx-get="{{ previous_url }}"
-                                hx-target="#mainContent"
-                                hx-swap="outerHTML"
-                                hx-select="#mainContent"
-                                hx-push-url="true"
-                            >
-                                <i class="fas {% if LANGUAGE_BIDI %}fa-arrow-right{% else %}fa-arrow-left{% endif %} me-2"></i>
-                            </button>
-                        {% endif %}
-                        <div class="relative flex items-center">
-                            {% if obj.profile %}
-                                <img
-                                    src="{{ obj.profile.url }}"
-                                    alt="{% trans 'Profile Image' %}"
-                                    class="w-[35px] h-[35px] rounded-full object-cover"
-                                >
-                            {% else %}
-                                <img
-                                    src="{{ obj.get_avatar }}"
-                                    alt="{% trans 'Avatar' %}"
-                                    class="w-[35px] h-[35px] rounded-full object-cover"
-                                >
-                            {% endif %}
-                        </div>
-                        <div class="font-semibold transition duration-300">{{ obj.get_full_name }}</div>
-                    </div>
-                    <div class="flex gap-2 mb-2">
-                        {% has_perm user_meta.app_label|add:".change_"|add:user_meta.model_name as can_change_user %}
-                        {% if can_change_user %}
-                            <button
-                                class="border rounded-md p-3 border-dark-50"
-                                hx-get="{% url 'core:user_edit_form' obj.pk %}"
-                                hx-target="#modalBox"
-                                hx-swap="innerHTML"
-                                onclick="openModal()"
-                            >
-                                <img src="{% static 'assets/icons/edit.svg' %}" alt="{% trans 'Edit' %}" width="15">
-                            </button>
-                        {% endif %}
-                        {% if can_view_user %}
-                            <button
-                                class="bg-primary-600 rounded-md hover:bg-primary-800 transition duration-300 text-white text-sm px-4 py-1.5 "
-                                hx-get="{% url 'core:login_history_view' %}?pk={{obj.pk}}"
-                                hx-target="#users-view"
-                                hx-swap="innerHTML"
-                                hx-push-url="true"
-                                hx-select="#users-view"
-                            >
-                                {% trans "View Login History" %}
-                            </button>
-                        {% endif %}
-                    </div>
-                </div>
+            <div
+                id="navBar"
+                class="flex-shrink-0"
+                hx-get="{% url 'core:user_detail_nav' obj.pk %}?{{ request.GET.urlencode }}"
+                hx-trigger="load"
+            >
             </div>
             <div
-                id="details-content"
-                class="custom-scroll overflow-hidden overflow-y-auto flex flex-col gap-5 pe-2"
-                data-viewport-flex
+                id="user-detail-content"
+                class="border border-primary-300 rounded-lg border-t-0 pb-2 flex-1 min-h-0 flex flex-col"
+                hx-push-url="false"
+                hx-get="{% url 'core:user_detail_tab_view' obj.pk %}?{{ request.GET.urlencode }}"
+                hx-trigger="load"
             >
-                {% include "detail_fieldset.html" %}
             </div>
         </div>
     {% else %}

@@ -4,132 +4,108 @@
     <div id="call-integration-settings-view" class="h-full flex flex-col">
         {% include "messages.html" %}
 
-        {% if not setting.is_enabled %}
-            {# ── DISABLED STATE ── #}
-            <h3 class="text-md font-semibold">{% trans "Call Integration" %}</h3>
-            <p class="text-xs text-gray-500 mb-4">
-                {% trans "Connect a calling provider to make and log calls from Horilla." %}
-            </p>
-            <div class="rounded-md mb-4 border border-primary-400">
-                <h3 class="text-md font-semibold mb-0 border-b border-primary-400 p-2 bg-primary-100 text-primary-600">
-                    {% trans "Call Settings" %}
-                </h3>
-                <div class="p-4">
-                    <p class="text-sm text-gray-600 mb-4">
-                        {% trans "Enable call integration to allow users to make and receive calls directly from any record." %}
-                    </p>
-                    <div class="text-sm font-semibold flex gap-2 items-center mb-3">
-                        {% trans "Enable Call Integration" %}
-                        <label class="inline-flex items-center cursor-pointer">
-                            {% csrf_token %}
-                            <input
-                                type="checkbox"
-                                class="sr-only peer"
-                                data-enabled="false"
-                                onclick="event.preventDefault();
-                        hxConfirm(document.getElementById('calls-enable-btn'), '{% trans "Enable Call Integration?" %}')"
-                            >
-                            <div class="relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6">
-                            </div>
-                        </label>
-                        <button
-                            id="calls-enable-btn"
-                            type="button"
-                            class="hidden"
-                            hx-post="{% url 'calls:integration_settings' %}"
-                            hx-trigger="confirmed"
-                            hx-target="#call-integration-settings-view"
-                            hx-select="#call-integration-settings-view"
-                            hx-swap="outerHTML"
-                            hx-vals='{"is_enabled": "true", "access_type": "all", "toggle": "true"}'
-                            hx-include="[name=csrfmiddlewaretoken]"
+        <h3 class="text-md font-semibold">{% trans "Call Integration" %}</h3>
+        <p class="text-xs text-gray-500 mb-4">
+            {% trans "Connect a calling provider to make and log calls from Horilla." %}
+        </p>
+
+        {# ── Enable / Disable toggle ── #}
+        <div class="rounded-md mb-4 border border-primary-400 flex-shrink-0">
+            <h3 class="text-md font-semibold mb-0 border-b border-primary-400 p-2 bg-primary-100 text-primary-600">
+                {% trans "Call Settings" %}
+            </h3>
+            <div class="p-4">
+                <p class="text-sm text-gray-600 mb-4">
+                    {% trans "Enable call integration to allow users to make and receive calls directly from any record." %}
+                </p>
+                <div class="text-sm font-semibold flex gap-2 items-center mb-3">
+                    {% trans "Enable Call Integration" %}
+                    <label class="inline-flex items-center cursor-pointer">
+                        {% csrf_token %}
+                        <input
+                            type="checkbox"
+                            class="sr-only peer"
+                            {% if setting.is_enabled %}
+                                checked
+                            {% endif %}
+                            data-enabled="{{ setting.is_enabled|yesno:'true,false' }}"
+                            onclick="event.preventDefault();
+                            if (this.dataset.enabled === 'true') {
+                                hxConfirm(document.getElementById('calls-disable-btn'), '{% trans "Disable Call Integration?" %}', '{% trans "Users will no longer be able to make calls from the CRM." %}');
+                            } else {
+                                hxConfirm(document.getElementById('calls-enable-btn'), '{% trans "Enable Call Integration?" %}');
+                            }"
                         >
-                        </button>
-                    </div>
-                    <span
-                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500"
+                        <div class="relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6">
+                        </div>
+                    </label>
+                    <button
+                        id="calls-enable-btn"
+                        type="button"
+                        class="hidden"
+                        hx-post="{% url 'calls:integration_settings' %}"
+                        hx-trigger="confirmed"
+                        hx-target="#call-integration-settings-view"
+                        hx-select="#call-integration-settings-view"
+                        hx-swap="outerHTML"
+                        hx-vals='{"is_enabled": "true", "access_type": "all", "toggle": "true"}'
+                        hx-include="[name=csrfmiddlewaretoken]"
                     >
-                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                                fill-rule="evenodd"
-                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                clip-rule="evenodd"
-                            />
-                        </svg>
-                        {% trans "Disabled — users cannot make calls" %}
-                    </span>
+                    </button>
+                    <button
+                        id="calls-disable-btn"
+                        type="button"
+                        class="hidden"
+                        hx-post="{% url 'calls:integration_settings' %}"
+                        hx-trigger="confirmed"
+                        hx-target="#call-integration-settings-view"
+                        hx-select="#call-integration-settings-view"
+                        hx-swap="outerHTML"
+                        hx-vals='{"is_enabled": "false", "access_type": "all", "toggle": "true"}'
+                        hx-include="[name=csrfmiddlewaretoken]"
+                    >
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    {% if setting.is_enabled %}
+                        <span
+                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700"
+                        >
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                            {% trans "Enabled — users can make and receive calls" %}
+                        </span>
+                    {% else %}
+                        <span
+                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500"
+                        >
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                            {% trans "Disabled — users cannot make calls" %}
+                        </span>
+                    {% endif %}
                 </div>
             </div>
-        {% else %}
-            {# ── ENABLED STATE ── #}
-            <div class="flex flex-col h-full min-h-0">
-                {# ── Header bar ── #}
-                <div class="rounded-md border border-primary-400 mb-4 flex-shrink-0">
-                    <div class="flex items-center justify-between px-4 py-3 flex-shrink-0">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-md bg-primary-100 flex items-center justify-center">
-                                <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-sm font-semibold text-gray-800">{% trans "Call Integration" %}</p>
-                                <p class="text-xs text-gray-400">
-                                    {% trans "Let users make & receive calls directly from any record." %}
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            {% csrf_token %}
-                            <span
-                                class="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-100 px-2.5 py-1 rounded-full"
-                            >
-                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path
-                                        fill-rule="evenodd"
-                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                        clip-rule="evenodd"
-                                    />
-                                </svg>
-                                {% trans "Enabled — users can make and receive calls" %}
-                            </span>
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    class="sr-only peer"
-                                    checked
-                                    data-enabled="true"
-                                    onclick="event.preventDefault();
-                        hxConfirm(document.getElementById('calls-disable-btn'), '{% trans "Disable Call Integration?" %}', '{% trans "Users will no longer be able to make calls from the CRM." %}')"
-                                >
-                                <div class="relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6">
-                                </div>
-                            </label>
-                            <button
-                                id="calls-disable-btn"
-                                type="button"
-                                class="hidden"
-                                hx-post="{% url 'calls:integration_settings' %}"
-                                hx-trigger="confirmed"
-                                hx-target="#call-integration-settings-view"
-                                hx-select="#call-integration-settings-view"
-                                hx-swap="outerHTML"
-                                hx-vals='{"is_enabled": "false", "access_type": "all", "toggle": "true"}'
-                                hx-include="[name=csrfmiddlewaretoken]"
-                            >
-                            </button>
-                        </div>
-                    </div>
-                </div>
+        </div>
 
-                {# ── Tab view loaded via HorillaTabView ── #}
-                <div
-                    id="call-settings-tab-content"
-                    class="flex-1 min-h-0 flex flex-col"
-                    hx-get="{% url 'calls:settings_tabs' %}"
-                    hx-trigger="load"
-                >
-                </div>
+        {% if setting.is_enabled %}
+            {# ── Tab view loaded via HorillaTabView ── #}
+            <div
+                id="call-settings-tab-content"
+                class="flex-1 min-h-0 flex flex-col"
+                hx-get="{% url 'calls:settings_tabs' %}"
+                hx-trigger="load"
+            >
             </div>
         {% endif %}
     </div>

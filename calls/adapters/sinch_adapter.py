@@ -23,6 +23,9 @@ class SinchAdapter(BaseCallAdapter):
         caller_id    — default outbound number (Sinch DID in E.164)
     """
 
+    # Sinch signs callbacks with the Application Secret.
+    WEBHOOK_SECRET_FIELD = "api_secret"
+
     CAPABILITIES = {
         "click_to_call": True,
         "inbound": True,
@@ -85,12 +88,10 @@ class SinchAdapter(BaseCallAdapter):
         import hashlib
         import hmac as hmac_mod
 
-        app_secret = self.provider.api_secret
+        app_secret = self.webhook_secret()
         if not app_secret:
-            logger.warning(
-                "Sinch api_secret not configured — skipping webhook validation"
-            )
-            return True
+            logger.error("Sinch api_secret not configured")
+            return False
 
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("application "):
@@ -123,14 +124,14 @@ class SinchAdapter(BaseCallAdapter):
                 request.path,
             ]
         )
-        expected = base64.b64encode(
-            hmac_mod.new(
-                base64.b64decode(self._val("api_secret")),
-                string_to_sign.encode("utf-8"),
-                hashlib.sha256,
-            ).digest()
-        ).decode()
         try:
+            expected = base64.b64encode(
+                hmac_mod.new(
+                    base64.b64decode(app_secret),
+                    string_to_sign.encode("utf-8"),
+                    hashlib.sha256,
+                ).digest()
+            ).decode()
             return hmac_mod.compare_digest(provided_sig, expected)
         except Exception:
             return False

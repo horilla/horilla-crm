@@ -15,7 +15,7 @@ class DuplicateManagementSettings:
     """Settings menu entries for the duplicate management module."""
 
     title = _("Duplicate Control")
-    icon = "/assets/icons/clone.svg"
+    icon = "/duplicates/assets/icons/clone.svg"
     order = 5
     items = [
         {

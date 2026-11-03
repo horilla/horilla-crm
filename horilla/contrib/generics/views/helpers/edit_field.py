@@ -573,6 +573,7 @@ def build_edit_all_fields_context(
     )
 
     return {
+        "obj": obj,
         "object_id": obj.pk,
         "fields": fields,
         "app_label": app_label,

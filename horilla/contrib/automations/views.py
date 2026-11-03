@@ -6,13 +6,15 @@ Views for the automations app
 import json
 from functools import cached_property
 
-# Third-party imports (Django)
-from django.conf import settings
-
 from horilla.apps import apps
 from horilla.auth.mixins import LoginRequiredMixin
-from horilla.auth.models import User
 from horilla.contrib.core.models import HorillaContentType
+
+# Local imports
+from horilla.contrib.generics.forms.condition_fields import (
+    CONDITION_EXCLUDED_FIELDS,
+    get_model_field_choices,
+)
 from horilla.contrib.generics.views import (
     HorillaListView,
     HorillaNavView,
@@ -24,8 +26,8 @@ from horilla.contrib.mail.models import HorillaMailConfiguration, HorillaMailTem
 from horilla.contrib.notifications.models import NotificationTemplate
 
 # First party imports (Horilla)
-from horilla.db import models
 from horilla.db.models import Q
+from horilla.registry.delivery import get_delivery_channel
 from horilla.shortcuts import render
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
@@ -33,28 +35,13 @@ from horilla.utils.decorators import (
     method_decorator,
     permission_required_or_denied,
 )
-from horilla.utils.html import escape
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
 from horilla.web import ScriptResponse
 
-# Local imports
 from .filters import HorillaAutomationFilter
-from .forms import HorillaAutomationForm
-from .models import AutomationCondition, HorillaAutomation
-
-# Fields that must not appear in condition field choices or in existing conditions (edit form)
-AUTOMATION_CONDITION_EXCLUDED_FIELDS = [
-    "id",
-    "pk",
-    "created_at",
-    "updated_at",
-    "created_by",
-    "updated_by",
-    "company",
-    "additional_info",
-    "password",
-]
+from .forms import HorillaAutomationForm, get_model_class, get_recipient_choices
+from .models import AutomationCondition, HorillaAutomation, split_delivery_channels
 
 
 @method_decorator(
@@ -154,7 +141,7 @@ class HorillaAutomationListView(LoginRequiredMixin, HorillaListView):
         "trigger",
         "model",
         (_("Template"), "get_template"),
-        "delivery_channel",
+        (_("Choose Delivery Channel"), "get_delivery_channel_display"),
     ]
 
     def get_queryset(self):
@@ -239,7 +226,7 @@ class HorillaAutomationFormView(LoginRequiredMixin, HorillaSingleFormView):
         qs = super().get_existing_conditions()
         if qs is None:
             return None
-        return qs.exclude(field__in=AUTOMATION_CONDITION_EXCLUDED_FIELDS)
+        return qs.exclude(field__in=CONDITION_EXCLUDED_FIELDS)
 
     @cached_property
     def form_url(self):
@@ -392,27 +379,8 @@ class AutomationFieldChoicesView(LoginRequiredMixin, View):
                 {"field_name": field_name, "field_id": field_id},
             )
 
-        model_fields = []
-        # Use _meta.fields and _meta.many_to_many to get only forward fields (not reverse relations)
-        # This excludes one-to-many and many-to-many reverse relationships
-        all_forward_fields = list(model._meta.fields) + list(model._meta.many_to_many)
-
-        for field in all_forward_fields:
-            # Skip excluded fields (same list as edit form existing conditions filter)
-            if field.name in AUTOMATION_CONDITION_EXCLUDED_FIELDS:
-                continue
-            # Skip non-editable fields (e.g. editable=False on the model)
-            if not getattr(field, "editable", True):
-                continue
-
-            verbose_name = (
-                getattr(field, "verbose_name", None)
-                or field.name.replace("_", " ").title()
-            )
-            model_fields.append((field.name, verbose_name))
-        model_fields.extend(self.get_extra_field_choices(model))
-
-        field_choices = [("", "---------")] + model_fields
+        field_choices = get_model_field_choices(None, model_name)
+        field_choices.extend(self.get_extra_field_choices(model))
 
         condition_model_str = (
             f"{AutomationCondition._meta.app_label}."
@@ -426,9 +394,6 @@ class AutomationFieldChoicesView(LoginRequiredMixin, View):
             }
         )
 
-        # Also update mail_to field using hx-swap-oob (pure HTMX)
-        mail_to_html = self._get_mail_to_select_html(model_name, request)
-
         return render(
             request,
             "partials/automation_field_select_response.html",
@@ -439,125 +404,8 @@ class AutomationFieldChoicesView(LoginRequiredMixin, View):
                 "hx_get_url": reverse_lazy("generics:get_field_value_widget"),
                 "hx_vals_json": hx_vals_json,
                 "field_choices": field_choices,
-                "mail_to_html": mail_to_html,
             },
         )
-
-    def _get_mail_to_select_html(self, model_name, request):
-        """Helper method to generate mail_to select HTML with hx-swap-oob"""
-
-        # Get current selected values if editing
-        selected_values = []
-        automation_id = request.GET.get("automation_id")
-        if automation_id:
-            try:
-                automation = HorillaAutomation.objects.get(pk=automation_id)
-                if automation.mail_to:
-                    selected_values = [
-                        v.strip() for v in automation.mail_to.split(",") if v.strip()
-                    ]
-            except HorillaAutomation.DoesNotExist:
-                pass
-
-        user_fields = [("self", "Self (User who triggered)")]
-
-        if model_name:
-            try:
-                model = None
-                for app_config in apps.get_app_configs():
-                    try:
-                        model = apps.get_model(
-                            app_label=app_config.label, model_name=model_name.lower()
-                        )
-                        break
-                    except LookupError:
-                        continue
-
-                if model:
-                    for field in model._meta.get_fields():
-                        if not hasattr(field, "name"):
-                            continue
-
-                        # Check if it's a ForeignKey to User
-                        if isinstance(field, models.ForeignKey):
-                            try:
-                                related_model = field.related_model
-                                is_user_model = False
-                                if related_model:
-                                    if related_model == User:
-                                        is_user_model = True
-                                    elif hasattr(related_model, "__bases__"):
-                                        try:
-                                            is_user_model = issubclass(
-                                                related_model, User
-                                            )
-                                        except (TypeError, AttributeError):
-                                            pass
-                                    if not is_user_model:
-                                        try:
-                                            user_content_type = HorillaContentType.objects.get_for_model(
-                                                User
-                                            )
-                                            field_content_type = HorillaContentType.objects.get_for_model(
-                                                related_model
-                                            )
-                                            if user_content_type == field_content_type:
-                                                is_user_model = True
-                                        except Exception:
-                                            pass
-                                    if not is_user_model:
-                                        user_model_names = ["user", "horillauser"]
-                                        if hasattr(settings, "AUTH_USER_MODEL"):
-                                            user_model_names.append(
-                                                settings.AUTH_USER_MODEL.split(".")[
-                                                    -1
-                                                ].lower()
-                                            )
-                                        if (
-                                            related_model.__name__.lower()
-                                            in user_model_names
-                                        ):
-                                            is_user_model = True
-
-                                if is_user_model:
-                                    verbose_name = (
-                                        getattr(field, "verbose_name", None)
-                                        or field.name.replace("_", " ").title()
-                                    )
-                                    user_fields.append(
-                                        (f"instance.{field.name}", verbose_name)
-                                    )
-                            except Exception:
-                                continue
-
-                        # Also check for email fields (EmailField or CharField with 'email' in name)
-                        elif isinstance(field, (models.EmailField, models.CharField)):
-                            if "email" in field.name.lower():
-                                verbose_name = (
-                                    getattr(field, "verbose_name", None)
-                                    or field.name.replace("_", " ").title()
-                                )
-                                user_fields.append(
-                                    (f"instance.{field.name}", verbose_name)
-                                )
-            except Exception:
-                pass
-
-        # Build options HTML
-        options_html = ""
-        for value, label in user_fields:
-            selected = ' selected="selected"' if value in selected_values else ""
-            escaped_value = escape(str(value))
-            escaped_label = escape(str(label))
-            options_html += (
-                f'<option value="{escaped_value}"{selected}>{escaped_label}</option>'
-            )
-
-        # Return select with hx-swap-oob for out-of-band swap
-        # The target selector is #mail_to_container select, so HTMX will find it and swap it
-        select_html = f'<select name="mail_to" id="id_mail_to" class="js-example-basic-multiple headselect w-full" multiple="multiple" data-placeholder="{_("Select user fields")}" hx-swap-oob="outerHTML">{options_html}</select>'
-
-        return select_html
 
 
 @method_decorator(htmx_required, name="dispatch")
@@ -572,132 +420,23 @@ class AutomationFieldChoicesView(LoginRequiredMixin, View):
 )
 class MailToChoicesView(LoginRequiredMixin, View):
     """
-    Class-based view to return User ForeignKey field choices for mail_to field via HTMX.
+    Class-based view to return the delivery channel's recipient choices for the mail_to field via HTMX.
     """
 
     def get(self, request, *args, **kwargs):
         """
-        Handle GET request to return a <select multiple> element with User ForeignKey field choices.
+        Handle GET request to return a <select multiple> element with the recipient
+        choices of the delivery channels given (mail by default). A multi-select
+        sends delivery_channel once per selected key, hence getlist().
         """
         model_id = request.GET.get("model")
+        model = None
         if model_id and model_id.isdigit():
-            try:
-                content_type = HorillaContentType.objects.get(pk=model_id)
-                model_name = content_type.model
-            except HorillaContentType.DoesNotExist:
-                model_name = None
-        else:
-            model_name = None
-
-        if not model_name:
-            # Return empty select with just self option (template renders safely)
-            return render(
-                request,
-                "partials/mail_to_select_response.html",
-                {
-                    "user_fields": [("self", "Self (User who triggered)")],
-                    "selected_values": [],
-                    "include_select2_script": True,
-                },
-            )
-
-        try:
-            model = None
-            for app_config in apps.get_app_configs():
-                try:
-                    model = apps.get_model(
-                        app_label=app_config.label, model_name=model_name.lower()
-                    )
-                    break
-                except LookupError:
-                    continue
-            if not model:
-                return render(
-                    request,
-                    "partials/mail_to_select_response.html",
-                    {
-                        "user_fields": [("self", "Self (User who triggered)")],
-                        "selected_values": [],
-                        "include_select2_script": True,
-                    },
-                )
-        except Exception:
-            return render(
-                request,
-                "partials/mail_to_select_response.html",
-                {
-                    "user_fields": [("self", "Self (User who triggered)")],
-                    "selected_values": [],
-                    "include_select2_script": True,
-                },
-            )
-
-        # Get User ForeignKey fields
-        user_fields = [("self", "Self (User who triggered)")]
-
-        for field in model._meta.get_fields():
-            if not hasattr(field, "name"):
-                continue
-            # Check if it's a ForeignKey to User
-            if isinstance(field, models.ForeignKey):
-                try:
-                    related_model = field.related_model
-                    # Check if related_model is User or a subclass
-                    is_user_model = False
-                    if related_model:
-                        # Direct comparison
-                        if related_model == User:
-                            is_user_model = True
-                        # Check if it's a subclass
-                        elif hasattr(related_model, "__bases__"):
-                            try:
-                                is_user_model = issubclass(related_model, User)
-                            except (TypeError, AttributeError):
-                                pass
-                        # Check using HorillaContentType (most reliable method)
-                        if not is_user_model:
-                            try:
-                                user_content_type = (
-                                    HorillaContentType.objects.get_for_model(User)
-                                )
-                                field_content_type = (
-                                    HorillaContentType.objects.get_for_model(
-                                        related_model
-                                    )
-                                )
-                                if user_content_type == field_content_type:
-                                    is_user_model = True
-                            except Exception:
-                                pass
-
-                        # Also check the model name and AUTH_USER_MODEL as fallback
-                        if not is_user_model:
-                            user_model_names = ["user", "horillauser"]
-                            if hasattr(settings, "AUTH_USER_MODEL"):
-                                user_model_names.append(
-                                    settings.AUTH_USER_MODEL.split(".")[-1].lower()
-                                )
-                            if related_model.__name__.lower() in user_model_names:
-                                is_user_model = True
-
-                    if is_user_model:
-                        verbose_name = (
-                            getattr(field, "verbose_name", None)
-                            or field.name.replace("_", " ").title()
-                        )
-                        user_fields.append((f"instance.{field.name}", verbose_name))
-                except Exception:
-                    # Print error for debugging but continue
-                    continue
-
-            # Also check for email fields (EmailField or CharField with 'email' in name)
-            elif isinstance(field, (models.EmailField, models.CharField)):
-                if "email" in field.name.lower():
-                    verbose_name = (
-                        getattr(field, "verbose_name", None)
-                        or field.name.replace("_", " ").title()
-                    )
-                    user_fields.append((f"instance.{field.name}", verbose_name))
+            content_type = HorillaContentType.objects.filter(pk=model_id).first()
+            model = get_model_class(content_type.model) if content_type else None
+        user_fields = get_recipient_choices(
+            request.GET.getlist("delivery_channel") or ["mail"], model
+        )
 
         # Get current selected values if editing
         selected_values = []
@@ -712,16 +451,13 @@ class MailToChoicesView(LoginRequiredMixin, View):
             except HorillaAutomation.DoesNotExist:
                 pass
 
-        if not user_fields:
-            user_fields = [("self", "Self (User who triggered)")]
-
         return render(
             request,
             "partials/mail_to_select_response.html",
             {
                 "user_fields": user_fields,
                 "selected_values": selected_values,
-                "include_select2_script": False,
+                "include_select2_script": model is None,
             },
         )
 
@@ -755,14 +491,25 @@ class HorillaAutomationDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
 )
 class TemplateFieldsView(LoginRequiredMixin, View):
     """
-    HTMX view to return template fields based on delivery_channel
+    HTMX view to return template fields based on the selected delivery channels.
+
+    A block shows when any selected channel asks for it: mail template and
+    mail server (``shows_mail_fields()``), notification template
+    (``shows_notification_fields()``). Mail and notification together show
+    both blocks; an unregistered key adds none. The recipient picker
+    (mail_to) is refreshed with the union of the channels' recipient choices.
     """
 
     def get(self, request, *args, **kwargs):
         """
         Handle GET request to return template field HTML based on delivery_channel
         """
-        delivery_channel = request.GET.get("delivery_channel", "mail")
+        # A multi-select sends delivery_channel once per selected key; a
+        # hidden field sends the stored comma-separated value. Mail when the
+        # parameter is missing, as before.
+        delivery_channels = split_delivery_channels(
+            ",".join(request.GET.getlist("delivery_channel", ["mail"]))
+        )
         automation_id = request.GET.get("automation_id")
         model_id = request.GET.get("model")
 
@@ -816,9 +563,11 @@ class TemplateFieldsView(LoginRequiredMixin, View):
         mail_template_id = None
         notification_template_id = None
         mail_server_id = None
+        saved_mail_to = ""
         if automation_id:
             try:
                 automation = HorillaAutomation.objects.get(pk=automation_id)
+                saved_mail_to = automation.mail_to
                 if automation.mail_template:
                     mail_template_id = automation.mail_template.pk
                 if automation.notification_template:
@@ -836,8 +585,27 @@ class TemplateFieldsView(LoginRequiredMixin, View):
         if not company:
             company = request.user.company
 
-        show_mail = delivery_channel in ["mail", "both"]
-        show_notification = delivery_channel in ["notification", "both"]
+        channels = [
+            channel
+            for channel in (get_delivery_channel(key) for key in delivery_channels)
+            if channel is not None
+        ]
+        show_mail = any(channel.shows_mail_fields() for channel in channels)
+        show_notification = any(
+            channel.shows_notification_fields() for channel in channels
+        )
+
+        # Recipient picker: keep what is selected in the form, else the saved value.
+        if "mail_to" in request.GET:
+            mail_to_selected = [v for v in request.GET.getlist("mail_to") if v]
+        else:
+            mail_to_selected = [
+                v.strip() for v in (saved_mail_to or "").split(",") if v.strip()
+            ]
+        mail_to_choices = get_recipient_choices(
+            delivery_channels,
+            get_model_class(content_type.model) if content_type else None,
+        )
 
         mail_templates_qs = HorillaMailTemplate.objects.none()
         if show_mail:
@@ -900,5 +668,7 @@ class TemplateFieldsView(LoginRequiredMixin, View):
                 "mail_template_errors": mail_template_errors,
                 "notification_template_errors": notification_template_errors,
                 "mail_server_errors": mail_server_errors,
+                "mail_to_choices": mail_to_choices,
+                "mail_to_selected": mail_to_selected,
             },
         )

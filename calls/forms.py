@@ -69,6 +69,20 @@ class CallProviderForm(HorillaModelForm):
     # Fields that store secrets — rendered as password inputs.
     SECRET_FIELDS = ["api_secret", "webhook_secret"]
 
+    # Which dynamic fields each provider type shows.
+    PROVIDER_FIELDS = {
+        CallProvider.PROVIDER_TWILIO: ["account_sid"],
+        CallProvider.PROVIDER_SIGNALWIRE: [
+            "account_sid",
+            "api_base_url",
+            "webhook_secret",
+        ],
+        CallProvider.PROVIDER_TELNYX: ["api_key", "webhook_secret"],
+        CallProvider.PROVIDER_SINCH: ["account_sid"],
+        CallProvider.PROVIDER_EXOTEL: ["account_sid", "api_key"],
+        CallProvider.PROVIDER_MOCK: [],
+    }
+
     class Meta:
         """Meta options for CallProviderForm."""
 
@@ -101,9 +115,17 @@ class CallProviderForm(HorillaModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Hide all dynamic fields initially — HTMX load trigger shows the right ones.
+        # Hide dynamic fields — the HTMX load trigger shows the right ones. A bound form
+        # (re-rendered after validation errors) shows them here instead, because the
+        # load swap would replace them with an unbound copy and drop the errors.
+        visible_fields = set()
+        if self.is_bound:
+            provider_type = self.data.get(self.add_prefix("provider_type"))
+            visible_fields = set(self.PROVIDER_FIELDS.get(provider_type, []))
+            if provider_type == CallProvider.PROVIDER_TELNYX:
+                self.fields["api_key"].label = _("Connection ID")
         for field_name in self.DYNAMIC_FIELDS:
-            if field_name in self.fields:
+            if field_name in self.fields and field_name not in visible_fields:
                 self.fields[field_name].widget.attrs["container_style"] = "display:none"
 
         # Build the provider_fields URL — include pk when editing so OOB view
@@ -117,7 +139,7 @@ class CallProviderForm(HorillaModelForm):
         self.fields["provider_type"].widget.attrs.update(
             {
                 "hx-get": fields_url,
-                "hx-trigger": "change, load",
+                "hx-trigger": "change" if self.is_bound else "change, load",
                 "hx-target": "body",
                 "hx-swap": "none",
                 "hx-include": "[name='provider_type']",
@@ -140,7 +162,26 @@ class CallProviderForm(HorillaModelForm):
             for field_name in self.SECRET_FIELDS:
                 if field_name in cleaned_data and not cleaned_data[field_name]:
                     cleaned_data.pop(field_name)
+        self._validate_webhook_secret(cleaned_data)
         return cleaned_data
+
+    def _validate_webhook_secret(self, cleaned_data):
+        """Require the webhook verification key on active providers that need one."""
+        if cleaned_data.get("status") != CallProvider.STATUS_ACTIVE:
+            return
+        provider = CallProvider(provider_type=cleaned_data.get("provider_type"))
+        for field_name in self.SECRET_FIELDS:
+            # A value left blank on edit keeps the stored one, so fall back to it.
+            value = cleaned_data.get(field_name) or getattr(
+                self.instance, field_name, ""
+            )
+            setattr(provider, field_name, value)
+        error = provider.webhook_secret_error()
+        if error:
+            from .adapters.factory import get_adapter_class
+
+            field_name = get_adapter_class(provider.provider_type).WEBHOOK_SECRET_FIELD
+            self.add_error(field_name, error)
 
     def save(self, commit=True):
         """Override save to handle secret fields left blank on edit (keep existing encrypted value)."""

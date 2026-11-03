@@ -44,7 +44,8 @@ class MockAdapter(BaseCallAdapter):
         }
 
     def validate_webhook(self, request) -> bool:
-        return True
+        # The mock provider never receives real callbacks, so reject them all.
+        return False
 
     def parse_webhook_payload(self, request) -> dict:
         return {

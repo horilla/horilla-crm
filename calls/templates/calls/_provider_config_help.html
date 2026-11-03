@@ -114,8 +114,8 @@
                     {% trans "Paste the Auth Token." %}
                 </li>
                 <li>
-                    <span class="font-medium">{% trans "Webhook Secret" %}</span> —
-                    {% trans "Leave this blank. Twilio signs its webhooks with your Auth Token and has no separate webhook secret setting. If you want signature checking, paste the same Auth Token here — any other value makes every status update fail with 403." %}
+                    <span class="font-medium">{% trans "Webhook verification" %}</span> —
+                    {% trans "Nothing extra to enter. Twilio signs its status callbacks with your Auth Token, and the CRM rejects any callback that is not signed with it. Trial accounts have an Auth Token too." %}
                 </li>
             </ul>
             <p class="text-xs mb-3">
@@ -243,7 +243,7 @@
                 </li>
                 <li>
                     <span class="font-medium">{% trans "Webhook Secret" %}</span> —
-                    {% trans "Leave this blank. A wrong value makes every status update from SignalWire fail with 403." %}
+                    {% trans "Required. Paste the Signing Key from your SignalWire project's API page. Status callbacks that are not signed with it are rejected." %}
                 </li>
             </ul>
             <p class="text-xs mb-3">
@@ -367,7 +367,7 @@
                 </li>
                 <li>
                     <span class="font-medium">{% trans "Webhook Secret" %}</span> —
-                    {% trans "Leave this blank. If you want signature checking, paste your Telnyx Public Key (profile icon → API keys → Public Key) — it is not a password you make up." %}
+                    {% trans "Required. Paste your Telnyx Public Key (profile icon → API keys → Public Key) — it is not a password you make up. Status callbacks that fail the signature check are rejected." %}
                 </li>
             </ul>
             <p class="text-xs mb-3">

@@ -53,7 +53,7 @@ from horilla.registry.history_registry import (
 )
 from horilla.urls import reverse
 from horilla.utils import timezone
-from horilla.utils.translation import override
+from horilla.utils.translation import gettext, override
 
 
 class GetViewColumnsVerboseNameTests(SimpleTestCase):
@@ -1138,3 +1138,33 @@ class EditDetailsFieldErrorTests(TestCase):
             submitted_values(field_info["phone_widget_html"]),
             {"contact_number_0": "+98", "contact_number_1": "12"},
         )
+
+
+class TimelineRtlTests(SimpleTestCase):
+    """On RTL pages the timeline axis row runs right to left, so bars and grid
+    lines must be offset from the same (right) edge."""
+
+    template_path = Path(__file__).parent / "templates" / "timeline_view.html"
+
+    def test_bars_and_grid_lines_use_the_start_edge(self):
+        """No bar or grid line is pinned to the left edge."""
+        source = self.template_path.read_text(encoding="utf-8")
+        self.assertIn(
+            'var isRtl = getComputedStyle(track).direction === "rtl";', source
+        )
+        self.assertIn('var startEdge = isRtl ? "right" : "left";', source)
+        self.assertNotIn("bar.style.left", source)
+        self.assertNotIn('style="left:', source)
+
+    def test_initial_scroll_is_mirrored(self):
+        """RTL scrollLeft counts negative from the right edge."""
+        source = self.template_path.read_text(encoding="utf-8")
+        self.assertIn("var scrollSign = isRtl ? -1 : 1;", source)
+        self.assertIn("scrollSign * Math.max(earliestLeftPx - 40, 0)", source)
+        self.assertNotIn("scrollEl.scrollLeft = Math.max(", source)
+
+    def test_persian_span_caption_arrow_points_to_the_end_field(self):
+        """The start field is on the right on RTL pages, so the arrow points left."""
+        with override("fa"):
+            caption = gettext("From %(start)s → %(end)s") % {"start": "A", "end": "B"}
+        self.assertEqual(caption, "از A ← B")

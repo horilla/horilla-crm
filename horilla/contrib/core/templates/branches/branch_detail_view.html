@@ -1,61 +1,23 @@
 {% extends "settings/settings.html" %}
 {% block settings %}
     {% has_perm "core.view_company" as can_view_company %}
-    {% has_perm "core.change_company" as can_change_company %}
     {% if can_view_company %}
         <div id="branches-view" class="h-full flex flex-col" data-viewport-fit>
             {% reload_button "#branches-view" hx_select_oob="#dropdown-companies" %}
-            <div class="mb-4">
-                <div class="flex justify-between items-center mb-2">
-                    <div class="flex gap-4 items-center relative">
-                        <button
-                            class=""
-                            hx-get="{% url 'core:branches_view' %}"
-                            hx-target="#branches-view"
-                            hx-swap="outerHTML"
-                            hx-select="#branches-view"
-                            hx-push-url="true"
-                        >
-                            <i class="fas {% if LANGUAGE_BIDI %}fa-arrow-right{% else %}fa-arrow-left{% endif %} me-2"></i>
-                        </button>
-                        <div class="relative flex items-center">
-                            {% if obj.icon %}
-                                <img
-                                    src="{{ obj.icon.url }}"
-                                    alt="{% trans 'Profile Image' %}"
-                                    class="w-[35px] h-[35px] rounded-full object-cover"
-                                >
-                            {% else %}
-                                <img
-                                    src="{{ obj.get_avatar }}"
-                                    alt="{% trans 'Avatar' %}"
-                                    class="w-[35px] h-[35px] rounded-full object-cover"
-                                >
-                            {% endif %}
-                        </div>
-                        <div class="font-semibold transition duration-300">{{ obj.name }}</div>
-                    </div>
-                    <div class="flex gap-2 mb-2">
-                        {% if can_change_company and request.active_company %}
-                            <button
-                                class="border rounded-md p-3 border-dark-50"
-                                hx-get="{% url 'core:edit_company' obj.pk %}?details=true"
-                                hx-target="#modalBox"
-                                hx-swap="innerHTML"
-                                onclick="openModal()"
-                            >
-                                <img src="{% static 'assets/icons/edit.svg' %}" alt="{% trans 'Edit' %}" width="15">
-                            </button>
-                        {% endif %}
-                    </div>
-                </div>
+            <div
+                id="navBar"
+                class="flex-shrink-0"
+                hx-get="{% url 'core:branch_detail_nav' obj.pk %}"
+                hx-trigger="load"
+            >
             </div>
             <div
-                id="details-content"
-                class="custom-scroll overflow-hidden overflow-y-auto flex flex-col gap-5 pe-2"
-                data-viewport-flex
+                id="branch-detail-content"
+                class="pt-1 flex-1 min-h-0"
+                hx-get="{% url 'core:branch_details_content' obj.pk %}"
+                hx-trigger="load"
+                hx-swap="outerHTML"
             >
-                {% include "detail_fieldset.html" %}
             </div>
         </div>
     {% else %}

@@ -30,6 +30,7 @@ from horilla import settings
 
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
+from horilla.contrib.generics.views import HorillaInlineEditMixin
 from horilla.contrib.mail.models import HorillaMailConfiguration
 from horilla.menu.settings_menu import get_settings_menu
 from horilla.shortcuts import redirect, render
@@ -51,11 +52,13 @@ from horilla.web import (
     HttpResponse,
     JsonResponse,
     RedirectResponse,
+    ScriptResponse,
     safe_url,
 )
 
+from ..forms import CompanyDetailsInlineForm
 from ..models import ActiveTab, Company, RecentlyViewed
-from ..signals import pre_login_render_signal, pre_logout_signal
+from ..signals import company_created, pre_login_render_signal, pre_logout_signal
 
 # Local imports
 from .initialiaze_database import InitializeDatabaseConditionView
@@ -711,41 +714,32 @@ class ToggleAllCompaniesView(LoginRequiredMixin, View):
 
 @method_decorator(htmx_required, name="dispatch")
 @method_decorator(permission_required_or_denied("core.view_company"), name="dispatch")
-class CompanyDetailsTab(LoginRequiredMixin, TemplateView):
+class CompanyDetailsTab(LoginRequiredMixin, HorillaInlineEditMixin, TemplateView):
     """
-    TemplateView for company details tab.
+    Company details tab, shown read-only and switched to an inline form by
+    ``?edit=true``. Saving re-renders the read-only card in place.
     """
 
     template_name = "settings/company_details_tab.html"
     model = Company
-    # (field_name, icon_class)
-    body = (
-        ("name", "fa-solid fa-building"),
-        ("contact_number", "fa-solid fa-phone"),
-        ("fax", "fa-solid fa-fax"),
-        ("website", "fa-solid fa-globe"),
-        ("email", "fa-solid fa-envelope"),
-        ("city", "fa-solid fa-location-dot"),
-        ("state", "fa-solid fa-map"),
-        ("country", "fa-solid fa-flag"),
-        ("zip_code", "fa-solid fa-location-dot"),
-        ("time_zone", "fa-regular fa-clock"),
-        ("language", "fa-solid fa-language"),
-        ("currency", "fa-solid fa-coins"),
-        ("no_of_employees", "fa-solid fa-users"),
-        ("annual_revenue", "fa-solid fa-chart-line"),
-    )
+    form_class = CompanyDetailsInlineForm
+    success_message = _("Company details updated successfully.")
 
-    def get_context_data(self, **kwargs):
-        """Add company object and flattened detail rows for the template."""
-        context = super().get_context_data(**kwargs)
-        obj = getattr(self.request, "active_company", None) or self.request.user.company
-        context["obj"] = obj
-        context["detail_fields"] = [
-            (obj._meta.get_field(name).verbose_name, name, icon)
-            for name, icon in self.body
-        ]
-        return context
+    def get_object(self):
+        """Return the active company, falling back to the user's company."""
+        return (
+            getattr(self.request, "active_company", None) or self.request.user.company
+        )
+
+    def after_save(self, request, obj):
+        """Notify ``company_created`` receivers that the company was updated."""
+        company_created.send(
+            sender=self.__class__,
+            instance=obj,
+            request=request,
+            view=self,
+            is_new=False,
+        )
 
 
 @method_decorator(htmx_required, name="dispatch")

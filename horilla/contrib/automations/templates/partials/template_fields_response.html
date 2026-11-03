@@ -124,3 +124,6 @@
 {% else %}
     <div id="mail_server_container" style="display: none" hx-swap-oob="outerHTML"></div>
 {% endif %}
+{% if mail_to_choices %}
+    {% include "partials/mail_to_select_response.html" with user_fields=mail_to_choices selected_values=mail_to_selected oob=True include_select2_script=False %}
+{% endif %}

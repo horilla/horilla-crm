@@ -8,17 +8,21 @@ from django.core.exceptions import ValidationError
 
 # First party imports (Horilla)
 from horilla.apps import apps
-from horilla.auth.models import User
 from horilla.contrib.core.mixins import OwnerQuerysetMixin
-from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.generics.forms import HorillaModelForm
 from horilla.contrib.mail.models import HorillaMailConfiguration
 from horilla.db import models
+from horilla.registry.delivery import get_delivery_channel, get_delivery_channels
 from horilla.urls import reverse_lazy
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
-from .models import AutomationCondition, HorillaAutomation
+from .models import (
+    AutomationCondition,
+    HorillaAutomation,
+    normalize_delivery_channels,
+    split_delivery_channels,
+)
 
 # Schedule fields shown only when trigger is "scheduled"
 SCHEDULE_FIELD_NAMES = [
@@ -28,6 +32,105 @@ SCHEDULE_FIELD_NAMES = [
     "schedule_offset_unit",
     "schedule_run_time",
 ]
+
+
+def get_model_class(model_name):
+    """The model class named ``model_name`` (lower case) in any app, or ``None``."""
+    if not model_name:
+        return None
+    for app_config in apps.get_app_configs():
+        try:
+            return apps.get_model(app_config.label, model_name.lower())
+        except (LookupError, ValueError):
+            continue
+    return None
+
+
+def get_delivery_channel_choices(company=None):
+    """``(key, label)`` of the channels available to ``company``, in ``get_delivery_channels()`` order."""
+    return [(channel.key, channel.label) for channel in get_delivery_channels(company)]
+
+
+def get_recipient_choices(delivery_channels, model):
+    """
+    Options for the recipient picker (``mail_to``) of the selected channels.
+
+    ``delivery_channels`` is a list of keys or a stored comma-separated
+    value. The union of each selected channel's ``get_recipient_choices(model)``;
+    only "self" when no selected channel is registered.
+    """
+    if not isinstance(delivery_channels, str):
+        delivery_channels = ",".join(str(key) for key in delivery_channels or [])
+    choices = {}
+    for key in split_delivery_channels(delivery_channels):
+        channel = get_delivery_channel(key)
+        if channel is not None:
+            for value, label in channel.get_recipient_choices(model):
+                choices.setdefault(value, label)
+    if not choices:
+        choices["self"] = _("Self (User who triggered)")
+    return list(choices.items())
+
+
+class DeliveryChannelsField(forms.Field):
+    """
+    The delivery channels an automation sends through, as a multi-select of
+    the registered channels.
+
+    Shows a stored ``"mail,notification"`` as two selected options and cleans
+    the selection to the string the model stores: the keys joined by a comma,
+    in ``get_delivery_channels()`` order. A plain ``Field`` (like the ``mail_to`` picker), not a
+    ``ChoiceField``: its cleaned value is that string, not one of the choices.
+    """
+
+    widget = forms.SelectMultiple
+    default_error_messages = {
+        "invalid_choice": _("Select a valid delivery channel: %(value)s."),
+    }
+
+    def __init__(self, *, company=None, **kwargs):
+        self.company = company
+        super().__init__(**kwargs)
+        self.choices = get_delivery_channel_choices(company)
+        self.widget.choices = self.choices
+
+    def prepare_value(self, value):
+        """A stored comma-separated value (or list) as the list of selected keys."""
+        if value is None:
+            return []
+        if not isinstance(value, str):
+            value = ",".join(str(key) for key in value)
+        return split_delivery_channels(value)
+
+    def to_python(self, value):
+        """The selected keys, as a list."""
+        if value in self.empty_values:
+            return []
+        if isinstance(value, (list, tuple)):
+            return [str(key) for key in value if key]
+        return [str(value)]
+
+    def validate(self, value):
+        """At least one key (when required), and only offered keys."""
+        super().validate(value)
+        offered = {key for key, _label in self.choices}
+        for key in value:
+            if key not in offered:
+                raise forms.ValidationError(
+                    self.error_messages["invalid_choice"],
+                    code="invalid_choice",
+                    params={"value": key},
+                )
+
+    def has_changed(self, initial, data):
+        """Compare keys, not the characters of the stored string."""
+        return set(self.prepare_value(initial)) != set(self.prepare_value(data))
+
+    def clean(self, value):
+        """The selected keys joined by a comma, in ``get_delivery_channels()`` order."""
+        keys = super().clean(value)
+        stored, _unknown = normalize_delivery_channels(keys, self.company)
+        return stored
 
 
 class HorillaAutomationForm(OwnerQuerysetMixin, HorillaModelForm):
@@ -98,6 +201,27 @@ class HorillaAutomationForm(OwnerQuerysetMixin, HorillaModelForm):
         # Add HTMX attributes to delivery_channel field
         # This field will also trigger when model changes (pure HTMX solution)
         if "delivery_channel" in self.fields:
+            # The model field is a plain CharField: offer a multi-select of
+            # the registered channels (unless a view hides the field).
+            field = self.fields["delivery_channel"]
+            if not isinstance(field.widget, forms.HiddenInput):
+                company = None
+                if request and not request.user.is_anonymous:
+                    company = getattr(request, "active_company", None) or getattr(
+                        request.user, "company", None
+                    )
+                self.fields["delivery_channel"] = DeliveryChannelsField(
+                    company=company,
+                    label=field.label,
+                    help_text=field.help_text,
+                    initial=field.initial,
+                    widget=forms.SelectMultiple(
+                        attrs={
+                            "class": "js-example-basic-multiple headselect w-full",
+                            "data-placeholder": _("Select delivery channels"),
+                        }
+                    ),
+                )
             automation_id = ""
             if self.instance_obj and self.instance_obj.pk:
                 automation_id = str(self.instance_obj.pk)
@@ -110,7 +234,7 @@ class HorillaAutomationForm(OwnerQuerysetMixin, HorillaModelForm):
                     "hx-get": reverse_lazy("automations:get_template_fields"),
                     "hx-target": "body",
                     "hx-swap": "none",
-                    "hx-include": "[name='delivery_channel'],[name='model']",
+                    "hx-include": "[name='delivery_channel'],[name='model'],[name='mail_to']",
                     "hx-vals": f'{{"automation_id": "{automation_id}"}}',
                     # Trigger on delivery_channel change, model change, and on load
                     "hx-trigger": f"change, change from:#{model_field_id}, load",
@@ -253,113 +377,32 @@ class HorillaAutomationForm(OwnerQuerysetMixin, HorillaModelForm):
             pass
         return field_choices
 
-    def _get_user_foreignkey_fields(self, model_name):
-        """Get all ForeignKey fields that point to User model"""
-        field_choices = []
-
-        if not model_name:
-            return field_choices
-
-        try:
-            # Get the model class from the app registry
-            model_class = None
-            for app_config in apps.get_app_configs():
-                try:
-                    model_class = apps.get_model(app_config.label, model_name.lower())
-                    break
-                except (LookupError, ValueError):
-                    continue
-
-            if model_class:
-                for field in model_class._meta.get_fields():
-                    # Skip reverse relations (they don't have a 'name' attribute)
-                    if not hasattr(field, "name"):
-                        continue
-
-                    # Check if it's a ForeignKey to User
-                    if isinstance(field, models.ForeignKey):
-                        try:
-                            # Get the related model
-                            related_model = field.related_model
-                            # Check if it's User or a subclass of User
-                            is_user_model = False
-                            if related_model:
-                                if related_model == User:
-                                    is_user_model = True
-                                elif hasattr(related_model, "__bases__"):
-                                    try:
-                                        is_user_model = issubclass(related_model, User)
-                                    except (TypeError, AttributeError):
-                                        pass
-                                # Check using HorillaContentType (most reliable method)
-                                if not is_user_model:
-                                    try:
-                                        user_content_type = (
-                                            HorillaContentType.objects.get_for_model(
-                                                User
-                                            )
-                                        )
-                                        field_content_type = (
-                                            HorillaContentType.objects.get_for_model(
-                                                related_model
-                                            )
-                                        )
-                                        if user_content_type == field_content_type:
-                                            is_user_model = True
-                                    except Exception:
-                                        pass
-                                # Also check the model name and AUTH_USER_MODEL as fallback
-                                if not is_user_model:
-                                    from django.conf import settings
-
-                                    user_model_names = ["user", "horillauser"]
-                                    if hasattr(settings, "AUTH_USER_MODEL"):
-                                        user_model_names.append(
-                                            settings.AUTH_USER_MODEL.split(".")[
-                                                -1
-                                            ].lower()
-                                        )
-                                    if (
-                                        related_model.__name__.lower()
-                                        in user_model_names
-                                    ):
-                                        is_user_model = True
-
-                            if is_user_model:
-                                verbose_name = (
-                                    getattr(field, "verbose_name", None)
-                                    or field.name.replace("_", " ").title()
-                                )
-                                # Return as 'instance.field_name' format for consistency
-                                field_choices.append(
-                                    (f"instance.{field.name}", verbose_name)
-                                )
-                        except Exception:
-                            continue
-
-                    # Also check for email fields (EmailField or CharField with 'email' in name)
-                    elif isinstance(field, (models.EmailField, models.CharField)):
-                        if "email" in field.name.lower():
-                            verbose_name = (
-                                getattr(field, "verbose_name", None)
-                                or field.name.replace("_", " ").title()
-                            )
-                            field_choices.append(
-                                (f"instance.{field.name}", verbose_name)
-                            )
-
-                # Also add 'self' option
-                field_choices.insert(0, ("self", _("Self (User who triggered)")))
-        except Exception:
-            pass
-
-        return field_choices
+    def _current_delivery_channels(self):
+        """The selected channel keys: submitted, reloaded, initial or saved."""
+        request = getattr(self, "request", None)
+        if getattr(self, "is_bound", False):
+            if hasattr(self.data, "getlist"):
+                selected = self.data.getlist("delivery_channel")
+            else:
+                selected = self.data.get("delivery_channel")
+            if selected:
+                return selected
+        if request and request.method == "GET":
+            selected = request.GET.getlist("delivery_channel")
+            if selected:
+                return selected
+        if self.initial.get("delivery_channel"):
+            return self.initial.get("delivery_channel")
+        if self.instance_obj and getattr(self.instance_obj, "pk", None):
+            return self.instance_obj.delivery_channel
+        return HorillaAutomation._meta.get_field("delivery_channel").default
 
     def _update_mail_to_field(self, model_name):
-        """Update mail_to field to show User ForeignKey fields from selected model"""
+        """Fill the mail_to picker with the selected delivery channels' recipient choices."""
         if "mail_to" in self.fields:
-            # Get User ForeignKey fields for the selected model
-            user_fields = self._get_user_foreignkey_fields(model_name)
+            user_fields = get_recipient_choices(
+                self._current_delivery_channels(), get_model_class(model_name)
+            )
 
             # Convert current value to list if it exists
             initial_value = []

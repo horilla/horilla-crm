@@ -47,6 +47,10 @@ from horilla.contrib.generics.views.related_list import (
 from horilla.contrib.generics.views.single_form import HorillaSingleFormView
 from horilla.contrib.generics.views.multi_form import HorillaMultiStepFormView
 from horilla.contrib.generics.views.navbar import HorillaNavView
+from horilla.contrib.generics.views.inline_edit import (
+    HorillaInlineEditMixin,
+    HorillaInlineEditNavMixin,
+)
 
 __all__ = [
     # Core Views
@@ -95,4 +99,6 @@ __all__ = [
     "HorillaMultiStepFormView",
     # Navbar View
     "HorillaNavView",
+    "HorillaInlineEditMixin",
+    "HorillaInlineEditNavMixin",
 ]

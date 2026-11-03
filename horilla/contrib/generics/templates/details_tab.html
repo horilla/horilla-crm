@@ -1,28 +1,17 @@
 <div class="h-full overflow-y-auto overflow-hidden custom-scroll p-3" id="details-tab-content">
     {% if edit_field and can_update %}
-        <div class="flex items-center justify-between gap-3 px-3 py-2 mb-3 rounded-md bg-gray-50 border border-dark-50 text-xs text-color-600">
-            <span>
-                {% if obj.updated_at %}
-                    {% if obj.updated_by %}
-                        {% blocktrans with time=obj.updated_at|timesince user=obj.updated_by %}Last edited {{ time }} ago by {{ user }}{% endblocktrans %}
-                    {% else %}
-                        {% blocktrans with time=obj.updated_at|timesince %}Last edited {{ time }} ago{% endblocktrans %}
-                    {% endif %}
-                {% else %}
-                    {% trans "Read-only" %}
-                {% endif %}
-            </span>
-            <button
-                type="button"
-                class="flex items-center gap-1.5 px-3 py-1 bg-primary-300 text-primary-600 text-sm rounded hover:bg-gray-100 transition-colors"
-                hx-get="{% url 'generics:edit_all_fields' pk=obj.pk app_label=app_label model_name=model_name %}?pipeline_field={{ pipeline_field }}&return_url={{ request.get_full_path|urlencode }}&detail_url_name={{ detail_url_name }}"
-                hx-target="closest #details-tab-content"
-                hx-swap="outerHTML"
-            >
-                <i class="fa-solid fa-pen"></i>
-                <span>{% trans "Edit Details" %}</span>
-            </button>
-        </div>
+        {% if obj.updated_at %}
+            {% if obj.updated_by %}
+                {% blocktrans with time=obj.updated_at|timesince user=obj.updated_by asvar edited_text %}Last edited {{ time }} ago by {{ user }}{% endblocktrans %}
+            {% else %}
+                {% blocktrans with time=obj.updated_at|timesince asvar edited_text %}Last edited {{ time }} ago{% endblocktrans %}
+            {% endif %}
+        {% else %}
+            {% trans "Read-only" as edited_text %}
+        {% endif %}
+        {% url 'generics:edit_all_fields' pk=obj.pk app_label=app_label model_name=model_name as edit_base %}
+        {% blocktrans trimmed with return_url=request.get_full_path|urlencode asvar edit_url %}{{ edit_base }}?pipeline_field={{ pipeline_field }}&return_url={{ return_url }}&detail_url_name={{ detail_url_name }}{% endblocktrans %}
+        {% include "partials/inline_edit_banner.html" with banner_subtitle=edited_text edit_url=edit_url target="closest #details-tab-content" can_change=True %}
     {% endif %}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         {% for col in body %}

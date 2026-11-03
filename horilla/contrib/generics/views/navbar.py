@@ -24,6 +24,7 @@ class HorillaNavView(TemplateView):
     template_name = "navbar.html"
     _nav_title: str = ""
     nav_description: str = ""
+    nav_avatar: str = ""  # Optional image URL shown before the title
     filterset_class = None
     search_url: str = ""
     main_url: str = ""
@@ -287,6 +288,7 @@ class HorillaNavView(TemplateView):
         )
         context["nav_title"] = self.nav_title
         context["nav_description"] = self.nav_description
+        context["nav_avatar"] = str(getattr(self, "nav_avatar", "") or "")
         context["main_session_id"] = getattr(self, "main_session_id", "mainSession")
         context["search_url"] = self.search_url or self.request.path
         context["search_push_url"] = "true" if self.search_push_url else "false"

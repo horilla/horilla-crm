@@ -197,6 +197,70 @@ class UserFormSingle(HorillaModelForm):
             )
 
 
+class UserDetailsInlineForm(UserFormSingle):
+    """Form used by the user detail page to edit a user's details in place."""
+
+    fieldsets = (
+        (
+            _("Personal Information"),
+            {
+                "fields": (
+                    "profile",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "contact_number",
+                )
+            },
+        ),
+        (
+            _("Address"),
+            {"fields": ("country", "state", "city", "zip_code")},
+        ),
+        (
+            _("Work Info"),
+            {"fields": ("department", "role")},
+        ),
+        (
+            _("Localization"),
+            {
+                "fields": (
+                    "language",
+                    "time_zone",
+                    "currency",
+                    "date_time_format",
+                    "date_format",
+                    "time_format",
+                )
+            },
+        ),
+    )
+
+    class Meta:
+        """Meta options for UserDetailsInlineForm."""
+
+        model = User
+        fields = [
+            "profile",
+            "first_name",
+            "last_name",
+            "email",
+            "contact_number",
+            "country",
+            "state",
+            "city",
+            "zip_code",
+            "department",
+            "role",
+            "language",
+            "time_zone",
+            "currency",
+            "date_time_format",
+            "date_format",
+            "time_format",
+        ]
+
+
 class UserFormClassSingle(HorillaModelForm):
     """Form class for User model with password fields."""
 

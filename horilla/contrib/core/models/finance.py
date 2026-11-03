@@ -630,6 +630,32 @@ class FiscalYear(HorillaCoreModel):
             **base_config,
         }
 
+    STRUCTURE_FIELDS = (
+        "fiscal_year_type",
+        "format_type",
+        "quarter_based_format",
+        "year_based_format",
+        "start_date_month",
+        "start_date_day",
+        "display_year_based_on",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._structure_snapshot = self.get_structure_snapshot()
+
+    def get_structure_snapshot(self):
+        """
+        Values that decide the stored years, quarters and periods. Week start
+        day, number weeks by and period display option only affect the calendar
+        preview, which is computed on the fly, so they are not tracked.
+        """
+        return tuple(self.__dict__.get(name) for name in self.STRUCTURE_FIELDS)
+
+    def structure_changed(self):
+        """True when a structural field differs from the value loaded from the database."""
+        return self.get_structure_snapshot() != self._structure_snapshot
+
     def save(self, *args, **kwargs):
         """Override save to handle format-specific logic"""
         if self.fiscal_year_type == "standard":
@@ -640,8 +666,9 @@ class FiscalYear(HorillaCoreModel):
             self.week_start_day = None
             self.number_weeks_by = None
             self.period_display_option = None
-            if not self.start_date_day:
-                self.start_date_day = 1
+            # Standard years always start on the 1st; the form hides the day,
+            # so a value left over from a custom year must not be kept.
+            self.start_date_day = 1
 
         super().save(*args, **kwargs)
 

@@ -17,10 +17,30 @@ from dateutil.relativedelta import relativedelta
 # First party imports (Horilla)
 from horilla.apps import apps
 from horilla.db import transaction
+from horilla.db.models import CASCADE
 from horilla.utils import timezone
 
 # Local imports
 from ..models import FiscalYear
+
+
+def fast_cascade_delete(queryset):
+    """
+    Delete ``queryset`` and everything cascading from it with one SQL DELETE per
+    table instead of loading every row, which is slow for forecasts and targets.
+    Falls back to the normal delete when a relation is not a plain cascade.
+    """
+    model = queryset.model
+    relations = list(model._meta.related_objects)
+    if any(rel.on_delete is not CASCADE or rel.many_to_many for rel in relations):
+        queryset.delete()
+        return
+    for rel in relations:
+        children = rel.related_model._base_manager.filter(
+            **{f"{rel.field.name}__in": queryset.values("pk")}
+        )
+        fast_cascade_delete(children)
+    queryset._raw_delete(queryset.db)
 
 
 class FiscalYearService:
@@ -61,8 +81,6 @@ class FiscalYearService:
         current_year = timezone.now().year
         years_to_generate = [current_year, current_year + 1]
 
-        FiscalYearInstance.objects.filter(company=config.company).delete()
-
         month_number = {
             "january": 1,
             "february": 2,
@@ -79,6 +97,11 @@ class FiscalYearService:
         }.get(config.start_date_month.lower(), 1)
 
         with transaction.atomic():
+            # Delete inside the transaction so a failed rebuild rolls back and
+            # keeps the previous instances instead of leaving none.
+            fast_cascade_delete(
+                FiscalYearInstance.all_objects.filter(company=config.company)
+            )
             previous_end_date = None
 
             for i, year in enumerate(years_to_generate):

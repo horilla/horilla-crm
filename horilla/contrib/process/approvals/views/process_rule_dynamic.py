@@ -214,22 +214,7 @@ class ApprovalProcessRuleActionFormView(LoginRequiredMixin, View):
             model_name = model_name or model_name_query or ""
             model_cls = self._resolve_model_by_name(model_name)
             if model_cls:
-                for f in list(model_cls._meta.fields) + list(
-                    model_cls._meta.many_to_many
-                ):
-                    if f.name in {
-                        "id",
-                        "pk",
-                        "created_at",
-                        "updated_at",
-                        "created_by",
-                        "updated_by",
-                        "company",
-                        "additional_info",
-                    }:
-                        continue
-                    if not getattr(f, "editable", True):
-                        continue
+                for f in condition_fields_module.get_condition_model_fields(model_cls):
                     dtype = "text"
                     if getattr(f, "choices", None):
                         dtype = "choice"

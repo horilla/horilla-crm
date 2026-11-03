@@ -9,6 +9,12 @@ from functools import cached_property
 from horilla.apps import apps
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.models import HorillaContentType
+
+# Local imports
+from horilla.contrib.generics.forms.condition_fields import (
+    CONDITION_EXCLUDED_FIELDS,
+    get_model_field_choices,
+)
 from horilla.contrib.generics.views import (
     HorillaListView,
     HorillaNavView,
@@ -33,23 +39,9 @@ from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
 from horilla.web import ScriptResponse
 
-# Local imports
 from .filters import HorillaAutomationFilter
 from .forms import HorillaAutomationForm, get_model_class, get_recipient_choices
 from .models import AutomationCondition, HorillaAutomation, split_delivery_channels
-
-# Fields that must not appear in condition field choices or in existing conditions (edit form)
-AUTOMATION_CONDITION_EXCLUDED_FIELDS = [
-    "id",
-    "pk",
-    "created_at",
-    "updated_at",
-    "created_by",
-    "updated_by",
-    "company",
-    "additional_info",
-    "password",
-]
 
 
 @method_decorator(
@@ -234,7 +226,7 @@ class HorillaAutomationFormView(LoginRequiredMixin, HorillaSingleFormView):
         qs = super().get_existing_conditions()
         if qs is None:
             return None
-        return qs.exclude(field__in=AUTOMATION_CONDITION_EXCLUDED_FIELDS)
+        return qs.exclude(field__in=CONDITION_EXCLUDED_FIELDS)
 
     @cached_property
     def form_url(self):
@@ -387,27 +379,8 @@ class AutomationFieldChoicesView(LoginRequiredMixin, View):
                 {"field_name": field_name, "field_id": field_id},
             )
 
-        model_fields = []
-        # Use _meta.fields and _meta.many_to_many to get only forward fields (not reverse relations)
-        # This excludes one-to-many and many-to-many reverse relationships
-        all_forward_fields = list(model._meta.fields) + list(model._meta.many_to_many)
-
-        for field in all_forward_fields:
-            # Skip excluded fields (same list as edit form existing conditions filter)
-            if field.name in AUTOMATION_CONDITION_EXCLUDED_FIELDS:
-                continue
-            # Skip non-editable fields (e.g. editable=False on the model)
-            if not getattr(field, "editable", True):
-                continue
-
-            verbose_name = (
-                getattr(field, "verbose_name", None)
-                or field.name.replace("_", " ").title()
-            )
-            model_fields.append((field.name, verbose_name))
-        model_fields.extend(self.get_extra_field_choices(model))
-
-        field_choices = [("", "---------")] + model_fields
+        field_choices = get_model_field_choices(None, model_name)
+        field_choices.extend(self.get_extra_field_choices(model))
 
         condition_model_str = (
             f"{AutomationCondition._meta.app_label}."

@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from horilla.apps import apps
 from horilla.contrib.core.mixins import OwnerQuerysetMixin
 from horilla.contrib.generics.forms import HorillaModelForm
+from horilla.contrib.generics.forms.condition_fields import get_model_field_choices
 from horilla.contrib.mail.models import HorillaMailConfiguration
 from horilla.db import models
 from horilla.registry.delivery import get_delivery_channel, get_delivery_channels
@@ -292,62 +293,8 @@ class HorillaAutomationForm(OwnerQuerysetMixin, HorillaModelForm):
                 self.fields[fname].required = False
 
     def _get_model_field_choices(self, model_name):
-        """Override to get field choices for automation conditions - exclude reverse relations"""
-        field_choices = [("", "---------")]
-
-        if not model_name:
-            return field_choices
-
-        try:
-            model = None
-            for app_config in apps.get_app_configs():
-                try:
-                    model = apps.get_model(
-                        app_label=app_config.label, model_name=model_name.lower()
-                    )
-                    break
-                except (LookupError, ValueError):
-                    continue
-
-            if model:
-                # Use _meta.fields and _meta.many_to_many to get only forward fields (not reverse relations)
-                # This excludes one-to-many and many-to-many reverse relationships
-                all_forward_fields = list(model._meta.fields) + list(
-                    model._meta.many_to_many
-                )
-
-                for field in all_forward_fields:
-                    # Skip excluded fields (must match AUTOMATION_CONDITION_EXCLUDED_FIELDS in views)
-                    if field.name in [
-                        "id",
-                        "pk",
-                        "created_at",
-                        "updated_at",
-                        "created_by",
-                        "updated_by",
-                        "company",
-                        "additional_info",
-                        "password",
-                    ]:
-                        continue
-                    # Skip non-editable fields (e.g. editable=False on the model)
-                    if not getattr(field, "editable", True):
-                        continue
-
-                    verbose_name = (
-                        getattr(field, "verbose_name", None)
-                        or field.name.replace("_", " ").title()
-                    )
-                    field_choices.append((field.name, verbose_name))
-        except Exception as e:
-            import logging
-
-            logger = logging.getLogger(__name__)
-            logger.error(
-                "Error fetching model %s: %s", model_name, str(e), exc_info=True
-            )
-
-        return field_choices
+        """Field choices for automation conditions (shared generic builder)."""
+        return get_model_field_choices(self, model_name)
 
     def _get_model_date_field_choices(self, model_name):
         """Return only date/datetime field choices for scheduled trigger."""

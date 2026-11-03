@@ -573,6 +573,7 @@ def build_edit_all_fields_context(
     )
 
     return {
+        "obj": obj,
         "object_id": obj.pk,
         "fields": fields,
         "app_label": app_label,
@@ -903,6 +904,12 @@ class UpdateAllFieldsView(LoginRequiredMixin, View):
             )
             return render(request, "partials/edit_all_fields.html", context)
 
+        for field_name, error in result.errors.items():
+            messages.error(
+                request,
+                _("%(field)s: %(message)s") % {"field": field_name, "message": error},
+            )
+
         from django.utils.http import url_has_allowed_host_and_scheme
 
         self_url = request.POST.get("return_url", "")
@@ -912,34 +919,6 @@ class UpdateAllFieldsView(LoginRequiredMixin, View):
             require_https=request.is_secure(),
         ):
             self_url = ""
-
-        errors = result.errors
-        if errors:
-            # Nothing was saved: keep the form open with what was typed and
-            # each error under its field, and say so right away, by the
-            # field's label.
-            context = build_edit_all_fields_context(
-                request,
-                obj,
-                app_label,
-                model_name,
-                pipeline_field=request.GET.get("pipeline_field"),
-                cancel_url=self_url,
-            )
-            labels = {}
-            for entry in context["fields"]:
-                field_info = entry["info"]
-                labels[field_info["name"]] = field_info["verbose_name"]
-                if field_info["name"] in errors:
-                    field_info["error"] = errors[field_info["name"]]
-                    keep_posted_value(field_info, request)
-            for field_name, error in errors.items():
-                messages.error(
-                    request,
-                    _("%(field)s: %(message)s")
-                    % {"field": labels.get(field_name, field_name), "message": error},
-                )
-            return render(request, "partials/edit_all_fields.html", context)
 
         context = section_view.get_context_data(object=obj)
         context["self_url"] = self_url

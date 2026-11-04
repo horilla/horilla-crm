@@ -80,10 +80,13 @@ class GetViewColumnsVerboseNameTests(SimpleTestCase):
         self.assertEqual(by_field_name["lead_status"], "Lead Stage")
 
     def test_method_based_column_falls_back_to_a_humanized_name(self):
-        """`CallProviderListView.columns` has `status_col`, a model method
-        with no corresponding `_meta` field, so it can't resolve a
-        verbose_name and must keep the humanized fallback."""
-        columns = get_view_columns("provider_list", "calls", "CallProvider")
+        """A plain string column such as `status_col`, a model method with no
+        corresponding `_meta` field, can't resolve a verbose_name and must keep
+        the humanized fallback."""
+        from calls.views import CallProviderListView
+
+        with mock.patch.object(CallProviderListView, "columns", ["name", "status_col"]):
+            columns = get_view_columns("provider_list", "calls", "CallProvider")
         by_field_name = {field_name: label for label, field_name in columns}
         self.assertEqual(by_field_name["status_col"], "Status Col")
 

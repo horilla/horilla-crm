@@ -3,55 +3,20 @@
     <div id="my-profile-view" class="h-full flex flex-col" data-viewport-fit>
         {% include "messages.html" %}
         {% reload_button "#my-profile-view" %}
-        <h3 class="text-md font-semibold mb-1">{% trans "My Profile" %}</h3>
-        <p class="text-xs text-gray-500 mb-4">{% trans "View and update your personal details." %}</p>
-        <div class="">
-            <div class="flex flex-wrap gap-y-3 justify-between items-center mb-2">
-                <div class="flex gap-4 items-center relative">
-                    <div class="relative flex items-center">
-                        {% if request.user.profile %}
-                            <img
-                                src="{{ request.user.profile.url }}"
-                                alt="{% trans 'Profile Image' %}"
-                                class="w-[35px] h-[35px] rounded-full object-cover"
-                            >
-                        {% else %}
-                            <img
-                                src="{{ request.user.get_avatar }}"
-                                alt="{% trans 'Avatar' %}"
-                                class="w-[35px] h-[35px] rounded-full object-cover"
-                            >
-                        {% endif %}
-                    </div>
-                    <div class="font-semibold transition duration-300">{{ request.user.get_full_name }}</div>
-                </div>
-                {% has_perm "core.can_change_profile" as can_change_profile %}
-                {% if can_change_profile %}
-                    <div class="flex gap-2 mb-2">
-                        <button
-                            class="border rounded-md p-3 border-dark-50"
-                            hx-get="{% url 'core:user_edit_form' request.user.pk %}"
-                            hx-target="#modalBox"
-                            hx-swap="innerHTML"
-                            onclick="openModal()"
-                        >
-                            <img
-                                src="{% static 'assets/icons/edit.svg' %}"
-                                alt="{% trans 'Edit' %}"
-                                width="15"
-                                class="my-profile-edit-icon"
-                            >
-                        </button>
-                    </div>
-                {% endif %}
-            </div>
+        <div
+            id="navBar"
+            class="flex-shrink-0"
+            hx-get="{% url 'core:my_profile_nav' request.user.pk %}"
+            hx-trigger="load"
+        >
         </div>
         <div
-            id="details-content"
-            class="custom-scroll overflow-hidden overflow-y-auto flex flex-col gap-5 pe-2"
-            data-viewport-flex
+            id="my-profile-content"
+            class="pt-1 flex-1 min-h-0"
+            hx-get="{% url 'core:my_profile_content' request.user.pk %}"
+            hx-trigger="load"
+            hx-swap="outerHTML"
         >
-            {% include "detail_fieldset.html" %}
         </div>
     </div>
 {% endblock %}

@@ -1,0 +1,29 @@
+<div id="my-profile-content" class="custom-scroll overflow-hidden overflow-y-auto pe-2 h-full" data-viewport-flex>
+    {% comment %}Reload the navbar so its buttons follow the mode (Edit Details vs Cancel/Save).{% endcomment %}
+    <div
+        id="navBar"
+        class="flex-shrink-0"
+        hx-swap-oob="true"
+        hx-get="{% url 'core:my_profile_nav' request.user.pk %}{% if form %}?mode=edit{% endif %}"
+        hx-trigger="load"
+    >
+    </div>
+    {% if form %}
+        <form
+            id="my-profile-form"
+            hx-post="{% url 'core:my_profile_content' request.user.pk %}"
+            hx-target="#my-profile-content"
+            hx-swap="outerHTML"
+            hx-encoding="multipart/form-data"
+            hx-push-url="false"
+        >
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="text-xs text-red-600 mb-3">{{ form.non_field_errors }}</div>
+            {% endif %}
+            {% include "partials/inline_edit_form_sections.html" %}
+        </form>
+    {% else %}
+        {% include "partials/inline_edit_view_sections.html" %}
+    {% endif %}
+</div>

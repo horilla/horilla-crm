@@ -350,6 +350,21 @@ urlpatterns = [
         name="my_profile_view",
     ),
     path(
+        "my-profile-nav/<int:pk>/",
+        views.MyProfileNavbar.as_view(),
+        name="my_profile_nav",
+    ),
+    path(
+        "my-profile-content/<int:pk>/",
+        views.MyProfileContent.as_view(),
+        name="my_profile_content",
+    ),
+    path(
+        "my-profile-edit/<int:pk>/",
+        views.MyProfileContent.as_view(edit=True),
+        name="my_profile_edit",
+    ),
+    path(
         "login-history-list/",
         views.LoginHistoryListView.as_view(),
         name="login_history_list",

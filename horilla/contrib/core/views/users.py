@@ -17,6 +17,7 @@ from horilla.contrib.generics.views import (
     HorillaDetailView,
     HorillaGroupByView,
     HorillaInlineEditMixin,
+    HorillaInlineEditNavMixin,
     HorillaKanbanView,
     HorillaListView,
     HorillaMultiStepFormView,
@@ -788,26 +789,11 @@ class UserDetailTabView(LoginRequiredMixin, HorillaTabView):
         ]
 
 
-@method_decorator(htmx_required, name="dispatch")
-@method_decorator(
-    permission_required_or_denied(
-        f"{User._meta.app_label}.view_{User._meta.model_name}"
-    ),
-    name="dispatch",
-)
-class UserDetailsTab(LoginRequiredMixin, HorillaInlineEditMixin, TemplateView):
-    """
-    User details tab, shown read-only and switched to an inline form by
-    ``?edit=true``. Saving reloads the page so the navbar refreshes too.
-    """
-
-    template_name = "settings/users/user_details_tab.html"
-    model = User
-    form_class = UserDetailsInlineForm
-    success_message = _("User details updated successfully.")
+class UserDetailSectionsMixin:
+    """Adds the (read-only) company to the Work Info section of the user details."""
 
     def get_sections(self, obj):
-        """Add the (read-only) company to the Work Info section."""
+        """Add the company to the Work Info section."""
         company = obj._meta.get_field("company")
         sections = super().get_sections(obj)
         return [
@@ -818,6 +804,27 @@ class UserDetailsTab(LoginRequiredMixin, HorillaInlineEditMixin, TemplateView):
             )
             for title, rows in sections
         ]
+
+
+@method_decorator(htmx_required, name="dispatch")
+@method_decorator(
+    permission_required_or_denied(
+        f"{User._meta.app_label}.view_{User._meta.model_name}"
+    ),
+    name="dispatch",
+)
+class UserDetailsTab(
+    UserDetailSectionsMixin, LoginRequiredMixin, HorillaInlineEditMixin, TemplateView
+):
+    """
+    User details tab, shown read-only and switched to an inline form by
+    ``?edit=true``. Saving reloads the page so the navbar refreshes too.
+    """
+
+    template_name = "settings/users/user_details_tab.html"
+    model = User
+    form_class = UserDetailsInlineForm
+    success_message = _("User details updated successfully.")
 
     def on_saved(self, request, obj):
         """Reload the page so the navbar and sections all refresh."""
@@ -846,68 +853,66 @@ class UserLoginHistoryTab(LoginRequiredMixin, TemplateView):
     permission_required_or_denied("core.can_view_profile"), name="dispatch"
 )
 class MyProfileView(LoginRequiredMixin, TemplateView):
-    """
-    my profile page
-    """
+    """My profile page: the navbar and the details load into this shell."""
 
     template_name = "settings/users/my_profile.html"
-    model = User
-    fieldsets = (
-        (
-            _("Personal Information"),
-            {
-                "fields": (
-                    "first_name",
-                    "last_name",
-                    "email",
-                    "contact_number",
-                ),
-                "icon": "fas fa-user",
-            },
-        ),
-        (
-            _("Address"),
-            {
-                "fields": (
-                    "city",
-                    "state",
-                    "country",
-                    "zip_code",
-                ),
-                "icon": "fas fa-map-marker-alt",
-            },
-        ),
-        (
-            _("Work Info"),
-            {
-                "fields": (
-                    "company",
-                    "department",
-                    "role",
-                ),
-                "icon": "fas fa-briefcase",
-            },
-        ),
-        (
-            _("Localization"),
-            {
-                "fields": (
-                    "language",
-                    "time_zone",
-                    "currency",
-                    "date_time_format",
-                    "date_format",
-                    "time_format",
-                ),
-                "icon": "fas fa-globe",
-            },
-        ),
-    )
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["obj"] = self.request.user
-        return context
+
+@method_decorator(htmx_required, name="dispatch")
+@method_decorator(
+    permission_required_or_denied("core.can_view_profile"), name="dispatch"
+)
+class MyProfileNavbar(LoginRequiredMixin, HorillaInlineEditNavMixin, HorillaNavView):
+    """Navbar of my profile: avatar, name and Edit/Save/Cancel."""
+
+    model = User
+    model_name = str(User.__name__)
+    model_app_label = str(User._meta.app_label)
+    navbar_indication = False
+    content_url_name = "core:my_profile_content"
+    edit_url_name = "core:my_profile_edit"
+    content_target = "#my-profile-content"
+    form_id = "my-profile-form"
+    change_perm = "core.can_change_profile"
+
+    def get_nav_object(self):
+        """The signed-in user, whatever ``pk`` the URL carries."""
+        return self.request.user
+
+    @property
+    def nav_title(self):
+        """The user's full name."""
+        return self.nav_object.get_full_name()
+
+    @property
+    def nav_avatar(self):
+        """The user's profile image, or their generated avatar."""
+        user = self.nav_object
+        return user.profile.url if user.profile else user.get_avatar()
+
+
+@method_decorator(htmx_required, name="dispatch")
+@method_decorator(
+    permission_required_or_denied("core.can_view_profile"), name="dispatch"
+)
+class MyProfileContent(
+    UserDetailSectionsMixin, LoginRequiredMixin, HorillaInlineEditMixin, TemplateView
+):
+    """My profile sections, read-only or as an inline form (``my_profile_edit``)."""
+
+    template_name = "settings/users/my_profile_content.html"
+    model = User
+    form_class = UserDetailsInlineForm
+    change_perm = "core.can_change_profile"
+    success_message = _("Profile updated successfully.")
+
+    def get_object(self):
+        """The signed-in user, whatever ``pk`` the URL carries."""
+        return self.request.user
+
+    def on_saved(self, request, obj):
+        """Reload the page so the navbar and sections all refresh."""
+        return ScriptResponse(reload=True)
 
 
 @method_decorator(

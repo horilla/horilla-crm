@@ -39,7 +39,8 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # Uploads stay on protected_media. django.views.static would return the
+    # file with no login check whenever DEBUG is on.
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Compose extensions once the app registry is fully populated.

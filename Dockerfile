@@ -70,8 +70,8 @@ RUN chmod +x /entrypoint.sh
 
 # The COPYs above already set --chown, so only the new dirs need ownership;
 # a recursive chown over /app would duplicate a whole layer for no gain.
-RUN mkdir -p staticfiles media \
-    && chown appuser:appuser staticfiles media
+RUN mkdir -p staticfiles media .secrets \
+    && chown appuser:appuser staticfiles media .secrets
 
 USER appuser
 

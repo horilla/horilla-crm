@@ -115,8 +115,8 @@ make logs
                │  ┌──────────────────────────────────┐  │
                │  │  Nginx (production profile only)  │  │
                │  │  - Static files (/static/)       │  │
-               │  │  - Media files (/media/)         │  │
                │  │  - Reverse proxy to web:8000     │  │
+               │  │    including /media/ (login)     │  │
                │  │  - WebSocket proxy (/ws/)        │  │
                │  │  - Gzip + security headers       │  │
                │  └──────────────┬───────────────────┘  │
@@ -184,8 +184,8 @@ make logs
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DEBUG` | `1` | Set to `0` for production |
-| `SECRET_KEY` | `dev-secret-key...` | **Change for production** — generate with `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"` |
+| `DEBUG` | `0` | Set `DEBUG=1` on the host only for a local Compose run. The production profile uses this default. |
+| `SECRET_KEY` | generated into the `secret_key` volume | Leave unset. A shipped placeholder is rejected. Set your own long random value to choose the key, and keep it stable across restarts. |
 | `ALLOWED_HOSTS` | `localhost,127.0.0.1` | Comma-separated hostnames. Add your domain for production |
 | `CSRF_TRUSTED_ORIGINS` | `http://localhost:8000` | Full URLs for CSRF validation. Must include protocol |
 | `DATABASE_URL` | `postgres://...@db:5432/...` | PostgreSQL connection string. `db` is the Docker service name |

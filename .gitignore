@@ -156,4 +156,5 @@ whoosh_index/
 .idea/
 
 .init_password
+.secret_key
 .encryption_key

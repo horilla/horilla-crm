@@ -102,11 +102,11 @@ docker run --rm --entrypoint python horilla/horilla-crm:latest \
 
 ### Required
 
-These have no defaults. The container will not start without them.
+`SECRET_KEY` may be omitted; the other variables still have to be set. The container will not start without them.
 
 | Variable | Notes |
 |---|---|
-| `SECRET_KEY` | Django signing key. 50+ random characters. **Not auto-generated** — you must supply one, and keep it stable across restarts or every session and signed token is invalidated. |
+| `SECRET_KEY` | Django signing key. Set a unique 50+ character value and keep it stable, or leave it unset. A shipped placeholder is rejected. When unset, a key is written to `SECRET_KEY_FILE` (Compose mounts one volume for web and Celery). |
 | `DEBUG` | `0` in production. `1` exposes tracebacks. |
 | `ALLOWED_HOSTS` | Comma-separated hostnames. Do not use `*` in production. |
 | `CSRF_TRUSTED_ORIGINS` | Comma-separated, **must include the scheme** (`https://crm.example.com`). |
@@ -187,7 +187,7 @@ docker compose exec web python manage.py createsuperuser
 
 - **Run behind a reverse proxy** that terminates TLS, and make sure it forwards WebSocket upgrade headers — real-time updates break silently without them.
 - **Pin an exact version** (`horilla/horilla-crm:__VERSION__`), not `latest`, so a deploy cannot pick up a new release unattended.
-- **Set `SECRET_KEY` from a secret store** and keep it stable. Unlike some deployments there is no fallback generation here; a changed key logs everyone out.
+- **Set `SECRET_KEY` from a secret store** and keep it stable. If it is unset, the first start writes one to `SECRET_KEY_FILE`; a later change logs everyone out and invalidates API tokens. A shipped placeholder is never used.
 - **Migrations run on every container start.** With more than one replica, start one first and let it finish before scaling up — nothing coordinates concurrent migrations.
 - The image runs as a **non-root user** (`appuser`, uid 1000). Mounted volumes must be writable by uid 1000.
 

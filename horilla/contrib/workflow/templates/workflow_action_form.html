@@ -27,28 +27,10 @@
                     hx-trigger="change"
                 >
                     <option value="">{% trans "Select action type" %}</option>
-                    <option
-                        value="update_field"
-                        {% if form.instance.action_type == 'update_field' %}
-                            selected
-                        {% endif %}
-                    >
-                        {% trans "Edit Field" %}
-                    </option>
-                    <option value="assign_task" {% if form.instance.action_type == 'assign_task' %}selected{% endif %}>
-                        {% trans "Assign Task" %}
-                    </option>
-                    <option value="email" {% if form.instance.action_type == 'email' %}selected{% endif %}>
-                        {% trans "Mail" %}
-                    </option>
-                    <option
-                        value="notification"
-                        {% if form.instance.action_type == 'notification' %}
-                            selected
-                        {% endif %}
-                    >
-                        {% trans "Notification" %}
-                    </option>
+                    {# The built-ins, then the delivery channels (action_types.get_action_type_choices) #}
+                    {% for value, label in action_type_choices %}
+                        <option value="{{ value }}" {% if form.instance.action_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
                 </select>
             </div>
 

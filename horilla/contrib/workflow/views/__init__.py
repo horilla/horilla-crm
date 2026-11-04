@@ -22,7 +22,7 @@ from horilla.contrib.workflow.views.actions import (
 from horilla.contrib.workflow.views.fragments import (
     _get_model_fields,
     _build_field_meta,
-    _build_tt_context,
+    _action_form_context,
     _get_date_field_choices,
     WorkflowActionFieldsView,
     WorkflowActionValueWidgetView,
@@ -48,7 +48,7 @@ __all__ = [
     "_get_model_fields",
     "_build_field_meta",
     "_get_date_field_choices",
-    "_build_tt_context",
+    "_action_form_context",
     "WorkflowActionFieldsView",
     "WorkflowActionValueWidgetView",
     "WorkflowActionSaveView",

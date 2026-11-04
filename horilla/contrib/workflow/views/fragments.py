@@ -26,7 +26,18 @@ from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
 from horilla.web import HttpResponse, ScriptResponse
 
-from ..forms import WorkflowActionForm, WorkflowTimeTriggerActionForm
+from ..action_types import (
+    get_action_channel,
+    get_action_type_choices,
+    get_action_type_label,
+    get_channel_template_kind,
+)
+from ..forms import (
+    _ACTION_CONFIG_FIELD_NAMES,
+    WorkflowActionForm,
+    WorkflowTimeTriggerActionForm,
+    action_config_initials,
+)
 
 # Local imports
 from ..models import WorkflowAction, WorkflowRule, WorkflowTimeTriggerAction
@@ -196,29 +207,94 @@ def _get_date_field_choices(rule):
     return choices
 
 
-def _build_tt_context(rule, instance=None, current_values=None):
-    """Build shared context dict for the time-trigger form template."""
+def _rule_model_class(rule):
+    """The model class of the rule's module, or None."""
+    if not rule or not rule.model_id:
+        return None
+    try:
+        model_cls = rule.model.model_class()
+    except Exception:
+        model_cls = None
+    if model_cls is None:
+        try:
+            model_cls = apps.get_model(rule.model.app_label, rule.model.model)
+        except Exception:
+            model_cls = None
+    return model_cls
 
+
+def _is_offered_action_type(action_type, company):
+    """Whether the action picker offers ``action_type`` to ``company``."""
+    return any(key == action_type for key, _label in get_action_type_choices(company))
+
+
+def _action_form_context(request, rule, action_type="", current_values=None):
+    """
+    Context for the action forms and the action fields fragment.
+
+    The action picker lists ``get_action_type_choices()``: the built-ins and
+    the delivery channels available to the active company. For a channel
+    action, ``channel`` is the channel, ``channel_template_kind`` says which
+    template list to show (``"mail"``, ``"notification"`` or none) and
+    ``channel_to_choices`` are its ``get_recipient_choices()``.
+    """
     field_meta, email_to_choices, notification_to_choices = _build_field_meta(rule)
     rule_ct = rule.model if rule and rule.model_id else None
-
     mail_templates = HorillaMailTemplate.objects.filter(
         Q(content_type__isnull=True) | Q(content_type=rule_ct)
     )
     notification_templates = NotificationTemplate.objects.filter(
         Q(content_type__isnull=True) | Q(content_type=rule_ct)
     )
+    active_company = getattr(request, "active_company", None)
     users = User.objects.filter(is_active=True)
+    if active_company is not None:
+        users = users.filter(company=active_company)
+        mail_templates = mail_templates.filter(
+            Q(company=active_company) | Q(company__isnull=True)
+        )
+        notification_templates = notification_templates.filter(
+            Q(company=active_company) | Q(company__isnull=True)
+        )
+
+    channel = get_action_channel(action_type)
+    channel_to_choices = (
+        channel.get_recipient_choices(_rule_model_class(rule)) if channel else []
+    )
     return {
         "rule": rule,
+        "rule_pk": rule.pk if rule else "",
+        "action_type_choices": get_action_type_choices(active_company),
         "field_meta": field_meta,
         "mail_templates": mail_templates.distinct(),
         "notification_templates": notification_templates.distinct(),
         "users": users,
         "email_to_choices": email_to_choices,
         "notification_to_choices": notification_to_choices,
+        "channel": channel,
+        "channel_template_kind": get_channel_template_kind(channel),
+        "channel_to_choices": channel_to_choices,
         "current_values": current_values or {},
     }
+
+
+def _keep_saved_action_type(context, action_type):
+    """
+    Keep a saved action's type in the picker when it is no longer offered
+    (its channel is not available, or its app is gone), so editing the action
+    does not silently change it.
+    """
+    if not action_type:
+        return
+    choices = context["action_type_choices"]
+    if not any(key == action_type for key, _label in choices):
+        label = get_action_type_label(action_type)
+        context["action_type_choices"] = choices + [(action_type, label)]
+
+
+def _posted_current_values(request):
+    """The compose fields as posted, to refill a form that did not validate."""
+    return {name: request.POST.get(name, "") for name in _ACTION_CONFIG_FIELD_NAMES}
 
 
 @method_decorator(htmx_required, name="dispatch")
@@ -233,7 +309,8 @@ class WorkflowActionFieldsView(LoginRequiredMixin, View):
         """Return the appropriate fields for the selected action type, which are rendered in the action configuration popup. The fields differ based on the action type (update_field, assign_task, email, notification) and may include dynamic options based on the rule's model."""
         action = request.GET.get("action_type", "") or request.GET.get("action", "")
         rule_pk = request.GET.get("rule_pk", "")
-        if action not in ("update_field", "assign_task", "email", "notification"):
+        active_company = getattr(request, "active_company", None)
+        if not _is_offered_action_type(action, active_company):
             return HttpResponse("")
 
         rule = (
@@ -241,41 +318,9 @@ class WorkflowActionFieldsView(LoginRequiredMixin, View):
             if rule_pk
             else None
         )
-        field_meta, email_to_choices, notification_to_choices = _build_field_meta(rule)
-
-        rule_ct = rule.model if rule and rule.model_id else None
-        mail_templates = HorillaMailTemplate.objects.filter(
-            Q(content_type__isnull=True) | Q(content_type=rule_ct)
-        )
-        notification_templates = NotificationTemplate.objects.filter(
-            Q(content_type__isnull=True) | Q(content_type=rule_ct)
-        )
-        active_company = getattr(request, "active_company", None)
-        users = User.objects.filter(is_active=True)
-        if active_company is not None:
-            users = users.filter(company=active_company)
-            mail_templates = mail_templates.filter(
-                Q(company=active_company) | Q(company__isnull=True)
-            )
-            notification_templates = notification_templates.filter(
-                Q(company=active_company) | Q(company__isnull=True)
-            )
-
-        return render(
-            request,
-            "workflow_action_fields_fragment.html",
-            {
-                "action": action,
-                "rule_pk": rule_pk,
-                "field_meta": field_meta,
-                "mail_templates": mail_templates.distinct(),
-                "notification_templates": notification_templates.distinct(),
-                "users": users,
-                "email_to_choices": email_to_choices,
-                "notification_to_choices": notification_to_choices,
-                "current_values": {},
-            },
-        )
+        context = _action_form_context(request, rule, action)
+        context.update({"action": action, "rule_pk": rule_pk})
+        return render(request, "workflow_action_fields_fragment.html", context)
 
 
 @method_decorator(htmx_required, name="dispatch")
@@ -392,75 +437,22 @@ class WorkflowActionSaveView(LoginRequiredMixin, View):
 
         next_order = rule.actions.count() + 1
         form = WorkflowActionForm(instance=instance)
-
-        current_values = {}
-        if instance and instance.action_type:
-            cfg = instance.action_config or {}
-            at = instance.action_type
-            if at == "update_field":
-                current_values = {
-                    "update_field": cfg.get("field", ""),
-                    "update_value": cfg.get("value", ""),
-                }
-            elif at == "assign_task":
-                current_values = {
-                    "task_title": cfg.get("title", ""),
-                    "task_due_basis": cfg.get("due_basis", "record_submission_date"),
-                    "task_due_in_days": cfg.get("due_in_days", "1"),
-                    "task_status": cfg.get("status", "not_started"),
-                    "task_priority": cfg.get("priority", "low"),
-                    "task_description": cfg.get("description", ""),
-                }
-            elif at == "email":
-                current_values = {
-                    "email_template_id": cfg.get("template_id", ""),
-                    "email_to": cfg.get("to", ""),
-                    "email_also_send_to": cfg.get("also_send_to", ""),
-                }
-            elif at == "notification":
-                current_values = {
-                    "notification_template_id": cfg.get("template_id", ""),
-                    "notification_to": cfg.get("to", ""),
-                    "notification_also_notify_to": cfg.get("also_notify_to", ""),
-                    "notification_custom_message": cfg.get("custom_message", ""),
-                }
-
-        field_meta, email_to_choices, notification_to_choices = _build_field_meta(rule)
-        rule_ct = rule.model if rule and rule.model_id else None
-        mail_templates = HorillaMailTemplate.objects.filter(
-            Q(content_type__isnull=True) | Q(content_type=rule_ct)
+        action_type = instance.action_type if instance else ""
+        current_values = action_config_initials(
+            action_type,
+            instance.action_config if instance else {},
+            "record_submission_date",
         )
-        notification_templates = NotificationTemplate.objects.filter(
-            Q(content_type__isnull=True) | Q(content_type=rule_ct)
-        )
-        active_company = getattr(request, "active_company", None)
-        users = User.objects.filter(is_active=True)
-        if active_company is not None:
-            users = users.filter(company=active_company)
-            mail_templates = mail_templates.filter(
-                Q(company=active_company) | Q(company__isnull=True)
-            )
-            notification_templates = notification_templates.filter(
-                Q(company=active_company) | Q(company__isnull=True)
-            )
-
-        return render(
-            request,
-            "workflow_action_form.html",
+        context = _action_form_context(request, rule, action_type, current_values)
+        _keep_saved_action_type(context, action_type)
+        context.update(
             {
                 "form": form,
-                "rule": rule,
                 "next_order": instance.order if instance else next_order,
                 "edit_pk": pk,
-                "current_values": current_values,
-                "field_meta": field_meta,
-                "mail_templates": mail_templates.distinct(),
-                "notification_templates": notification_templates.distinct(),
-                "users": users,
-                "email_to_choices": email_to_choices,
-                "notification_to_choices": notification_to_choices,
-            },
+            }
         )
+        return render(request, "workflow_action_form.html", context)
 
     def post(self, request, rule_pk=None, pk=None):
         """Save the WorkflowAction and return HTMX response to close modal and refresh action list."""
@@ -493,16 +485,19 @@ class WorkflowActionSaveView(LoginRequiredMixin, View):
             )
 
         next_order = rule.actions.count() + 1 if rule else 0
-        return render(
-            request,
-            "workflow_action_form.html",
+        action_type = request.POST.get("action_type", "")
+        context = _action_form_context(
+            request, rule, action_type, _posted_current_values(request)
+        )
+        _keep_saved_action_type(context, instance.action_type if instance else "")
+        context.update(
             {
                 "form": form,
-                "rule": rule,
                 "next_order": request.POST.get("order", next_order),
                 "edit_pk": pk,
-            },
+            }
         )
+        return render(request, "workflow_action_form.html", context)
 
 
 @method_decorator(htmx_required, name="dispatch")
@@ -539,55 +534,19 @@ class WorkflowTimeTriggerSaveView(LoginRequiredMixin, View):
             instance=instance, date_field_choices=date_choices
         )
 
-        current_values = {}
-        if instance and instance.action_type:
-            cfg = instance.action_config or {}
-            at = instance.action_type
-            if at == "update_field":
-                current_values = {
-                    "update_field": cfg.get("field", ""),
-                    "update_value": cfg.get("value", ""),
-                }
-            elif at == "assign_task":
-                current_values = {
-                    "task_title": cfg.get("title", ""),
-                    "task_due_basis": cfg.get("due_basis", "rule_trigger_date"),
-                    "task_due_in_days": cfg.get("due_in_days", "1"),
-                    "task_status": cfg.get("status", "not_started"),
-                    "task_priority": cfg.get("priority", "low"),
-                    "task_description": cfg.get("description", ""),
-                }
-            elif at == "email":
-                current_values = {
-                    "email_template_id": cfg.get("template_id", ""),
-                    "email_to": cfg.get("to", ""),
-                    "email_also_send_to": cfg.get("also_send_to", ""),
-                }
-            elif at == "notification":
-                current_values = {
-                    "notification_template_id": cfg.get("template_id", ""),
-                    "notification_to": cfg.get("to", ""),
-                    "notification_also_notify_to": cfg.get("also_notify_to", ""),
-                    "notification_custom_message": cfg.get("custom_message", ""),
-                }
-
-        ctx = _build_tt_context(rule, instance=instance, current_values=current_values)
-        active_company = getattr(request, "active_company", None)
-        if active_company is not None:
-            ctx["mail_templates"] = ctx["mail_templates"].filter(
-                Q(company=active_company) | Q(company__isnull=True)
-            )
-            ctx["notification_templates"] = ctx["notification_templates"].filter(
-                Q(company=active_company) | Q(company__isnull=True)
-            )
-            ctx["users"] = ctx["users"].filter(company=active_company)
-
+        action_type = instance.action_type if instance else ""
+        current_values = action_config_initials(
+            action_type,
+            instance.action_config if instance else {},
+            "rule_trigger_date",
+        )
+        ctx = _action_form_context(request, rule, action_type, current_values)
+        _keep_saved_action_type(ctx, action_type)
         ctx.update(
             {
                 "form": form,
                 "next_order": instance.order if instance else next_order,
                 "edit_pk": pk,
-                "rule_pk": rule.pk,
             }
         )
         return render(request, "workflow_time_trigger_form.html", ctx)
@@ -626,13 +585,18 @@ class WorkflowTimeTriggerSaveView(LoginRequiredMixin, View):
             )
 
         next_order = rule.time_trigger_actions.count() + 1 if rule else 0
-        ctx = _build_tt_context(rule, current_values={})
+        ctx = _action_form_context(
+            request,
+            rule,
+            request.POST.get("action_type", ""),
+            _posted_current_values(request),
+        )
+        _keep_saved_action_type(ctx, instance.action_type if instance else "")
         ctx.update(
             {
                 "form": form,
                 "next_order": request.POST.get("order", next_order),
                 "edit_pk": pk,
-                "rule_pk": rule.pk if rule else "",
             }
         )
         return render(request, "workflow_time_trigger_form.html", ctx)

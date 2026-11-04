@@ -44,12 +44,7 @@ def execute_workflow_time_trigger(self, execution_id):
     """
     Worker task: execute a single ScheduledWorkflowExecution.
     """
-    from .methods import (
-        _execute_assign_task,
-        _execute_email,
-        _execute_notification,
-        _execute_update_field,
-    )
+    from .methods import execute_action
     from .models import ScheduledWorkflowExecution
 
     try:
@@ -80,14 +75,16 @@ def execute_workflow_time_trigger(self, execution_id):
     user = rule.updated_by or rule.created_by
 
     try:
-        if time_trigger.action_type == "update_field":
-            _execute_update_field(time_trigger, instance, user)
-        elif time_trigger.action_type == "assign_task":
-            _execute_assign_task(time_trigger, instance, user)
-        elif time_trigger.action_type == "email":
-            _execute_email(time_trigger, instance, user)
-        elif time_trigger.action_type == "notification":
-            _execute_notification(time_trigger, instance, user)
+        if not execute_action(time_trigger, instance, user):
+            # The action type's app is gone: retrying will not bring it back.
+            execution.status = ScheduledWorkflowExecution.STATUS_FAILED
+            execution.error_message = (
+                f"Action type {time_trigger.action_type!r} is not a built-in "
+                "or a registered delivery channel."
+            )
+            execution.executed_at = timezone.now()
+            execution.save(update_fields=["status", "error_message", "executed_at"])
+            return
 
         execution.status = ScheduledWorkflowExecution.STATUS_COMPLETED
         execution.executed_at = timezone.now()

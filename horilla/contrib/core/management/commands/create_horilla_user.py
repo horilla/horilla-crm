@@ -10,6 +10,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 # First party imports (Horilla)
 from horilla.auth.models import User
+from horilla.utils.branding import load_branding
 
 
 class Command(BaseCommand):
@@ -59,15 +60,16 @@ class Command(BaseCommand):
                 last_name=last_name,
                 contact_number=phone,
             )
+            bot_username = f"{load_branding()['TITLE']} Bot"
             bot = User.objects.filter(
-                username="Horilla Bot",
+                username=bot_username,
                 is_active=False,
                 first_name="Bot",
                 last_name="User",
             ).first()
             if bot is None:
                 User.objects.create_user(
-                    username="Horilla Bot",
+                    username=bot_username,
                     password=str(uuid.uuid4()),
                 )
             self.stdout.write(

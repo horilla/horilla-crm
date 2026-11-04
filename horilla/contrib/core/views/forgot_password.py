@@ -24,6 +24,7 @@ from horilla.core.exceptions import ValidationError
 # First party imports (Horilla)
 from horilla.db.models import Q
 from horilla.shortcuts import redirect, render
+from horilla.utils.branding import load_branding
 from horilla.utils.html import strip_tags
 from horilla.utils.translation import gettext_lazy as _
 from horilla.utils.urls import build_absolute_url
@@ -78,10 +79,11 @@ class ForgotPasswordView(View):
                         is_primary=True, company=hq_company
                     ).first()
 
+            product_name = load_branding()["TITLE"]
             context = {
                 "user": user,
                 "reset_link": reset_link,
-                "site_name": getattr(settings, "SITE_NAME", "Horilla"),
+                "site_name": getattr(settings, "SITE_NAME", product_name),
             }
 
             html_message = render_to_string(
@@ -90,7 +92,7 @@ class ForgotPasswordView(View):
             plain_message = strip_tags(html_message)
 
             email = EmailMessage(
-                subject="Password Reset Request - Horilla",
+                subject=f"Password Reset Request - {product_name}",
                 body=plain_message,
                 from_email=(
                     primary_config.from_email

@@ -70,7 +70,7 @@
                 class="mt-6 text-center text-sm text-primary-600"
             >
                 {% if initialize_database %}
-                    {% trans "Set up Horilla on the full version" %}
+                    {% blocktrans with product=TITLE %}Set up {{ product }} on the full version{% endblocktrans %}
                 {% else %}
                     {% trans "Forgot password?" %}
                 {% endif %}

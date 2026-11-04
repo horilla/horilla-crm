@@ -49,7 +49,7 @@ class MailHistoryNavbar(LoginRequiredMixin, HorillaNavView):
     """
 
     nav_title = _("Outbox")
-    nav_description = _("Review emails sent through Horilla.")
+    nav_description = _("Review the emails sent from the system.")
     search_url = reverse_lazy("mail:mail_history_list_view")
     main_url = reverse_lazy("mail:mail_history_view")
     nav_width = False

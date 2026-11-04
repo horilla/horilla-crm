@@ -19,6 +19,7 @@ from horilla.contrib.core.models import HorillaContentType
 from horilla.db import connection, transaction
 from horilla.shortcuts import redirect, render
 from horilla.utils import timezone
+from horilla.utils.branding import load_branding
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
 from horilla.web import JsonResponse, safe_url
@@ -29,6 +30,19 @@ def set_sqlite_foreign_keys(enabled: bool):
     if connection.vendor == "sqlite":
         with connection.cursor() as cursor:
             cursor.execute(f"PRAGMA foreign_keys = {1 if enabled else 0};")
+
+
+def apply_product_name_to_companies(data):
+    """
+    Replace the leading "Horilla" in fixture company names with the
+    product name from the branding module.
+    """
+    product_name = str(load_branding()["TITLE"])
+    for item in data:
+        if isinstance(item, dict) and item.get("model") == "core.company":
+            name = item["fields"].get("name", "")
+            if name.startswith("Horilla"):
+                item["fields"]["name"] = product_name + name[len("Horilla") :]
 
 
 def inject_timestamps_into_fixture_data(data):
@@ -288,6 +302,7 @@ class LoadDemoDatabase(View):
 
         data_to_load = data[:limit] if limit is not None else data
         inject_timestamps_into_fixture_data(data_to_load)
+        apply_product_name_to_companies(data_to_load)
         resolve_content_type_refs_in_fixture_data(data_to_load)
 
         with tempfile.NamedTemporaryFile(

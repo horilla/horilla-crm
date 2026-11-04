@@ -54,7 +54,7 @@ class RecycleBinNavbar(LoginRequiredMixin, HorillaNavView):
     navbar for recyclebin
     """
 
-    nav_description = _("Restore or permanently delete records removed from Horilla.")
+    nav_description = _("Restore or permanently delete removed records.")
     main_url = reverse_lazy("core:recycle_bin_view")
     one_view_only = True
     all_view_types = False

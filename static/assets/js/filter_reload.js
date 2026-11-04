@@ -7,6 +7,55 @@
     return;
   }
 
+  // Keep the navbar filter count badge in sync with the list that was just rendered
+  // (the navbar isn't part of list responses). A MutationObserver is used because
+  // htmx events don't reliably reach document after outerHTML swaps.
+  if (!window._filterBadgeObserverAdded) {
+    window._filterBadgeObserverAdded = true;
+    let lastUrl = null;
+    let lastHasBadge = null;
+    const syncBadge = function () {
+      const reloadEl = document.querySelector("#mainSession [data-filter-reload-url]");
+      const wrapper = document.getElementById("filterToggleWrapper");
+      if (!reloadEl || !wrapper) return;
+      const reloadUrl = reloadEl.getAttribute("data-filter-reload-url");
+      const hasBadge = !!wrapper.querySelector(".filter-count-badge");
+      if (reloadUrl === lastUrl && hasBadge === lastHasBadge) return;
+      let params;
+      try {
+        params = new URL(reloadUrl, window.location.origin).searchParams;
+      } catch (e) {
+        return;
+      }
+      const operators = params.getAll("operator");
+      let count = 0;
+      params.getAll("field").forEach(function (f, i) {
+        if (f && operators[i]) count++;
+      });
+      if ((params.get("search") || "").trim()) count++;
+      let badge = wrapper.querySelector(".filter-count-badge");
+      if (!count) {
+        if (badge) badge.remove();
+        lastUrl = reloadUrl;
+        lastHasBadge = false;
+        return;
+      }
+      if (!badge) {
+        badge = document.createElement("span");
+        badge.className =
+          "filter-count-badge absolute -top-2 lg:-top-1 bg-red-500 text-white text-[10px] leading-none rounded-full min-w-[16px] h-4 flex items-center justify-center font-medium pt-0.5";
+        wrapper.appendChild(badge);
+      }
+      badge.textContent = count;
+      lastUrl = reloadUrl;
+      lastHasBadge = true;
+    };
+    new MutationObserver(syncBadge).observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
   if (!window._filterReloadHandlerAdded) {
     window._filterReloadHandlerAdded = true;
     window._filterReloadInProgress = false;

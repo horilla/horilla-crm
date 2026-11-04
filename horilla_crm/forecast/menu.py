@@ -47,7 +47,7 @@ class ForecastSettings:
     order = 6
     items = [
         {
-            "label": ForecastType()._meta.verbose_name,
+            "label": ForecastType()._meta.verbose_name_plural,
             "url": reverse_lazy("forecast:forecast_type_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",
@@ -56,7 +56,7 @@ class ForecastSettings:
             "perm": "forecast.view_forecasttype",
         },
         {
-            "label": ForecastTarget()._meta.verbose_name,
+            "label": ForecastTarget()._meta.verbose_name_plural,
             "url": reverse_lazy("forecast:forecast_target_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",

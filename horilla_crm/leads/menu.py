@@ -43,7 +43,7 @@ class LeadsSettings:
     order = 4
     items = [
         {
-            "label": LeadStatus()._meta.verbose_name,
+            "label": LeadStatus()._meta.verbose_name_plural,
             "url": reverse_lazy("leads:lead_stage_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",

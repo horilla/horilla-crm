@@ -89,7 +89,7 @@ class OpportunitiesSettings:
     order = 5
     items = [
         {
-            "label": OpportunityStage()._meta.verbose_name,
+            "label": OpportunityStage()._meta.verbose_name_plural,
             "url": reverse_lazy("opportunities:opportunity_stage_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",

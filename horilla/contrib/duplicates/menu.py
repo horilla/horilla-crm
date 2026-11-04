@@ -9,6 +9,9 @@ from horilla.menu import settings_menu
 from horilla.urls import reverse_lazy
 from horilla.utils.translation import gettext_lazy as _
 
+# Local imports
+from .models import DuplicateRule, MatchingRule
+
 
 @settings_menu.register
 class DuplicateManagementSettings:
@@ -19,7 +22,7 @@ class DuplicateManagementSettings:
     order = 5
     items = [
         {
-            "label": _("Matching Rules"),
+            "label": MatchingRule()._meta.verbose_name_plural,
             "url": reverse_lazy("duplicates:matching_rule_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",
@@ -29,7 +32,7 @@ class DuplicateManagementSettings:
             "order": 1,
         },
         {
-            "label": _("Duplicate Rules"),
+            "label": DuplicateRule()._meta.verbose_name_plural,
             "url": reverse_lazy("duplicates:duplicate_rule_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",

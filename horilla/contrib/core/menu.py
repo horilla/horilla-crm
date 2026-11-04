@@ -153,7 +153,7 @@ class BaseSettings:
     order = 2
     items = [
         {
-            "label": Department()._meta.verbose_name,
+            "label": Department()._meta.verbose_name_plural,
             "url": reverse_lazy("core:department_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",
@@ -171,7 +171,7 @@ class BaseSettings:
             "perm": "core.view_company",
         },
         {
-            "label": Role()._meta.verbose_name,
+            "label": Role()._meta.verbose_name_plural,
             "url": reverse_lazy("core:roles_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",
@@ -180,7 +180,7 @@ class BaseSettings:
             "perm": "core.view_role",
         },
         {
-            "label": TeamRole()._meta.verbose_name,
+            "label": TeamRole()._meta.verbose_name_plural,
             "url": reverse_lazy("core:team_role_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",
@@ -189,7 +189,7 @@ class BaseSettings:
             "perm": "core.view_teamrole",
         },
         {
-            "label": CustomerRole()._meta.verbose_name,
+            "label": CustomerRole()._meta.verbose_name_plural,
             "url": reverse_lazy("core:customer_role_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",
@@ -198,7 +198,7 @@ class BaseSettings:
             "perm": "core.view_customerrole",
         },
         {
-            "label": PartnerRole()._meta.verbose_name,
+            "label": PartnerRole()._meta.verbose_name_plural,
             "url": reverse_lazy("core:partner_role_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",

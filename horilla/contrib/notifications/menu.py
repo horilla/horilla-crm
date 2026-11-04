@@ -22,7 +22,7 @@ class NotificationSettings:
     order = 4
     items = [
         {
-            "label": NotificationTemplate()._meta.verbose_name,
+            "label": NotificationTemplate()._meta.verbose_name_plural,
             "url": reverse_lazy("notifications:notification_template_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",

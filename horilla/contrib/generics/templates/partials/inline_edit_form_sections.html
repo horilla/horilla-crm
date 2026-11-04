@@ -1,5 +1,16 @@
+<style>
+    /* Country code only needs room for the longest dial code (e.g. +989). */
+    .inline-edit-sections .phone-widget-wrapper > div:first-child {
+        width: 4.5rem !important;
+    }
+    .inline-edit-sections .phone-widget-wrapper > div:last-child {
+        width: auto !important;
+        flex: 1 1 0%;
+        min-width: 0;
+    }
+</style>
 {% for fieldset in form.get_fieldsets %}
-    <div class="mb-4 rounded-md border border-primary-300">
+    <div class="inline-edit-sections mb-4 rounded-md border border-primary-300">
         <h3 class="text-sm font-semibold bg-primary-100 text-primary-600 rounded-t-md p-3">
             {{ fieldset.name }}
         </h3>

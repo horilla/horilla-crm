@@ -1,6 +1,12 @@
 <style>
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        display: none !important;
+    /* Country code only needs room for the longest dial code (e.g. +989). */
+    #details-bulk-edit-form .phone-widget-wrapper > div:first-child {
+        width: 4.5rem !important;
+    }
+    #details-bulk-edit-form .phone-widget-wrapper > div:last-child {
+        width: auto !important;
+        flex: 1 1 0%;
+        min-width: 0;
     }
 </style>
 <div class="h-full overflow-y-auto overflow-hidden custom-scroll p-3" id="details-tab-content">
@@ -25,7 +31,7 @@
                         <div class="relative">
                             {% if entry.editable %}
                                 {% if field_info.field_type == 'select' %}
-                                    <div class="relative">
+                                    <div class="relative mt-1">
                                         {% if field_info.use_select2 %}
                                             <select
                                                 name="{{ field_info.name }}{% if field_info.multiple %}[]{% endif %}"

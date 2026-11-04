@@ -11,6 +11,8 @@ from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.test import TestCase
 from login_history.models import post_login, post_logout
 
+from calls.models import CallIntegrationSetting
+
 # First party imports (Horilla)
 from horilla.auth.models import User
 from horilla.contrib.activity.models import Activity
@@ -293,6 +295,14 @@ class ConvertedLeadHistoryTests(TestCase):
     def test_converted_lead_has_no_call_now_and_click_to_call_refuses(self):
         """The click-to-call modal opens for an unconverted lead, but not for a converted one."""
         self.client.force_login(self.admin)
+        # Click-to-call needs the calls integration switched on for the user.
+        CallIntegrationSetting.objects.update_or_create(
+            company=self.company,
+            defaults={
+                "is_enabled": True,
+                "access_type": CallIntegrationSetting.ACCESS_ALL,
+            },
+        )
         click_to_call = reverse("calls:click_to_call")
         params = {"model_name": "lead", "object_id": self.lead.pk, "phone_number": "1"}
         # Before conversion the modal opens; after, it is refused.

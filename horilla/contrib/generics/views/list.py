@@ -1378,13 +1378,22 @@ class HorillaListView(HorillaListViewMixin, ListView):
             del search_params["page"]
         context["search_params"] = search_params.urlencode()
         context["filter_set_class"] = self.get_filterset_class()
-        context["filter_panel_option"] = self.filter_panel_option
+        # The navbar(s) searching this list decide whether it gets a filter panel
+        from .navbar import HorillaNavView
+
+        navs = HorillaNavView.for_list_url(self.request.path)
+        context["filter_panel_option"] = self.filter_panel_option and all(
+            nav.filter_option for nav in navs
+        )
         context["table_width"] = self.table_width
         context["no_record_fit_height"] = self.no_record_fit_height
         context["table_class"] = self.table_class
         context["table_height_as_class"] = self.table_height_as_class
         context["table_auto"] = self.table_auto
-        context["save_to_list_option"] = self.save_to_list_option
+        # Saved lists are view types, so a navbar without view types can't offer them
+        context["save_to_list_option"] = self.save_to_list_option and all(
+            nav.all_view_types for nav in navs
+        )
 
         self._build_sort_context(context)
         self._build_filter_context(context, filter_fields, query_params)

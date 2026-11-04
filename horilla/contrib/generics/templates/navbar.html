@@ -201,8 +201,17 @@
                         hx-swap="outerHTML"
                         hx-push-url="{{ search_push_url }}"
                         hx-include="#filtercontainer input, #filtercontainer select"
+                        {% if search_clear_option %}oninput="document.getElementById('searchClearBtn').classList.toggle('hidden', !this.value); document.getElementById('searchLensBtn').classList.toggle('hidden', !!this.value)"{% endif %}
                     >
-                    <button type="button" class="horilla-search-btn-end">
+                    {% if search_clear_option %}<button
+                        type="button"
+                        id="searchClearBtn"
+                        title="{% trans 'Clear search' %}"
+                        aria-label="{% trans 'Clear search' %}"
+                        class="{% if not request.GET.search %}hidden {% endif %}horilla-search-btn-end text-gray-500 hover:text-red-500 text-xl leading-none"
+                        onclick="var i=document.getElementById('searchInput'); i.value=''; this.classList.add('hidden'); document.getElementById('searchLensBtn').classList.remove('hidden'); htmx.trigger(i, 'search'); i.focus();"
+                    >&times;</button>{% endif %}
+                    <button type="button" id="searchLensBtn" class="{% if search_clear_option and request.GET.search %}hidden {% endif %}horilla-search-btn-end">
                         <img src="{% static 'assets/icons/search.svg' %}" alt="{% trans 'Search' %}" width="20">
                     </button>
                 </div>

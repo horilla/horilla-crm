@@ -559,6 +559,15 @@ class HorillaListFilterHandlersMixin:
                     if i < len(logics) and logics[i].strip():
                         new_logics.append(logics[i])
 
+        # With no filter rows left, leftover operator/value/logic params (e.g. the
+        # always-present logic=AND) are meaningless, so don't keep them in the URL.
+        if not new_fields:
+            new_operators = []
+            new_values = []
+            new_start_values = []
+            new_end_values = []
+            new_logics = []
+
         new_query_params = QueryDict("", mutable=True)
         for key, values_list in query_params.lists():
             if key not in [
@@ -599,9 +608,7 @@ class HorillaListFilterHandlersMixin:
         url = f"{current_path}?{new_query_string}" if new_query_string else current_path
 
         if request.headers.get("HX-Request") == "true":
-            response = HttpResponse(status=200)
-            response["HX-Redirect"] = url
-            return response
+            return self._render_with_params(request, new_query_params, url)
         return redirect(url)
 
     def handle_clear_all_filters(self, request):
@@ -628,7 +635,11 @@ class HorillaListFilterHandlersMixin:
 
         new_query_string = new_query_params.urlencode()
         url = f"{self.main_url}" + (f"?{new_query_string}" if new_query_string else "")
+        return self._render_with_params(request, new_query_params, url)
 
+    def _render_with_params(self, request, new_query_params, url):
+        """Render the list as if request.GET were new_query_params (no full reload)."""
+        new_query_string = new_query_params.urlencode()
         original_get = request.GET
         original_query_string = request.META.get("QUERY_STRING", "")
         if hasattr(request, "_get"):

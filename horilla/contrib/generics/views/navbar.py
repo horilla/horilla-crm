@@ -22,6 +22,26 @@ class HorillaNavView(TemplateView):
     """View for rendering the navigation bar with filtering and search capabilities."""
 
     template_name = "navbar.html"
+
+    # Every subclass, so a list view can find the navbar(s) that search it.
+    _registry = []
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        HorillaNavView._registry.append(cls)
+
+    @classmethod
+    def for_list_url(cls, path):
+        """Navbar classes whose ``search_url`` is the list served at ``path``."""
+        path = str(path).split("?")[0].rstrip("/")
+        matches = []
+        for nav_cls in cls._registry:
+            # search_url is lazy; only resolve it here, once URLs are loaded.
+            search_url = str(nav_cls.search_url).split("?")[0].rstrip("/")
+            if search_url and search_url == path:
+                matches.append(nav_cls)
+        return matches
+
     _nav_title: str = ""
     nav_description: str = ""
     nav_avatar: str = ""  # Optional image URL shown before the title
@@ -46,6 +66,8 @@ class HorillaNavView(TemplateView):
     recently_viewed_option = True
     all_view_types = True
     filter_option = True
+    # None = follow filter_option: show the search clear (X) when there is no filter button
+    search_clear_option = None
     one_view_only = False
     reload_option = True
     border_enabled = True
@@ -358,6 +380,11 @@ class HorillaNavView(TemplateView):
         context["recently_viewed_option"] = self.recently_viewed_option
         context["all_view_types"] = self.all_view_types
         context["filter_option"] = self.filter_option
+        context["search_clear_option"] = (
+            self.search_clear_option
+            if self.search_clear_option is not None
+            else not self.filter_option
+        )
         applied_filter_count = 0
         if self.filter_option:
             fields = self.request.GET.getlist("field") or []
@@ -376,7 +403,12 @@ class HorillaNavView(TemplateView):
         context["extra_actions_template"] = self.extra_actions_template
         context["enable_actions"] = self.enable_actions
         context["navbar_indication_attrs"] = self.get_navbar_indication_attrs()
-        context["save_to_list_option"] = getattr(self, "save_to_list_option", True)
+        # Saved lists are built from the filter panel, so no filter option means no "save to list"
+        context["save_to_list_option"] = (
+            getattr(self, "save_to_list_option", True)
+            and self.filter_option
+            and self.all_view_types
+        )
         # Saved filter lists: user's own + public ones for this model (by position)
         context["available_saved_filter_lists"] = list(
             SavedFilterList.all_objects.filter(model_name=self.model_name)

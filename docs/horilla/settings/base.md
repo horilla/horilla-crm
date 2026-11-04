@@ -15,14 +15,16 @@ The file uses `environ.Env(...)` to define expected variables with defaults:
 
 - `DEBUG` (default `True`)
 - `ENVIRONMENT` (default `"development"`)
-- `SECRET_KEY` (default `"django-insecure-default-key"`)
+- `SECRET_KEY` (no usable default: a blank value or a shipped placeholder is replaced by a generated key stored at `SECRET_KEY_FILE`, default `.secret_key`)
+- `TRUSTED_PROXIES` (default empty — forwarded client headers are ignored)
+- `REDIS_URL` (default empty — login counters stay in the per-process cache; set this so workers share them)
 - `ALLOWED_HOSTS` (default `["*"]`)
 - `CSRF_TRUSTED_ORIGINS` (default `["http://localhost:8000"]`) — must include every origin the browser uses (scheme + host + port); add both `localhost` and `127.0.0.1` in local dev if you switch between them.
 
 If a `.env` file exists under `BASE_DIR`, it loads it:
-- `env.read_env(str(env_file), overwrite=True)`
+- `env.read_env(str(env_file), overwrite=False)`
 
-So typical usage:
+An environment variable already set on the process wins over `.env`. Typical usage:
 - set values in `.env` for local/dev
 - or export environment variables in production
 
@@ -66,7 +68,8 @@ Do not re-add `{% load static %}`, `{% load i18n %}`, or `{% load horilla_tags %
 ## 🔌 REST Framework / JWT
 
 The settings define:
-- `DEFAULT_AUTHENTICATION_CLASSES` using `rest_framework_simplejwt.authentication.JWTAuthentication` plus session/basic auth
+- `DEFAULT_AUTHENTICATION_CLASSES` using `rest_framework_simplejwt.authentication.JWTAuthentication` plus session auth. Basic auth is not enabled, because DRF checks a password before throttles.
+- `SIMPLE_JWT["SIGNING_KEY"]` is `SECRET_KEY` after placeholder rejection
 - `DEFAULT_PERMISSION_CLASSES` defaults to `IsAuthenticated`
 - pagination + throttling rates
 - `SIMPLE_JWT` header type configuration

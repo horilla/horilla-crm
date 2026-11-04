@@ -128,7 +128,7 @@ server {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
@@ -137,14 +137,12 @@ server {
         expires 1y;
         add_header Cache-Control "public, max-age=31536000, immutable";
     }
-
-    location /media/ {
-        alias /opt/horilla-crm/media/;
-        expires 7d;
-        add_header Cache-Control "public, max-age=604800";
-    }
 }
 ```
+
+Leave `/media/` on the proxy to the application. Horilla serves uploads only after a login. Do not alias that URL to the media directory.
+
+Set `TRUSTED_PROXIES=127.0.0.1` when nginx proxies to the app on localhost. Horilla ignores `X-Forwarded-For` from any other peer, so a client cannot pick a fresh lockout counter by changing that header.
 
 ## Package Files
 

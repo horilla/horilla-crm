@@ -56,6 +56,13 @@ from horilla.web import (
     safe_url,
 )
 
+from ..auth_limits import (
+    CredentialStoreUnavailable,
+    clear_login_failures,
+    login_blocked,
+    record_login_failure,
+    signin_unavailable_message,
+)
 from ..forms import CompanyDetailsInlineForm
 from ..models import ActiveTab, Company, RecentlyViewed
 from ..signals import company_created, pre_login_render_signal, pre_logout_signal
@@ -82,7 +89,16 @@ def is_jwt_token_valid(auth_header):
 
 
 def protected_media(request, path):
-    """Serve protected media files with access control."""
+    """
+    Serve a media file after a session or JWT check.
+
+    Anonymous callers are sent to the login page before the path is looked
+    up, so a missing file and a real file give the same response.
+    """
+    jwt_user = is_jwt_token_valid(request.META.get("HTTP_AUTHORIZATION", ""))
+    if not request.user.is_authenticated and not jwt_user:
+        return redirect("core:login")
+
     try:
         media_path = safe_join(settings.MEDIA_ROOT, path)
     except ValueError as exc:
@@ -91,16 +107,9 @@ def protected_media(request, path):
     if not os.path.isfile(media_path):
         raise HttpNotFound("File not found")
 
-    # Block dangerous extensions
     _, ext = os.path.splitext(media_path)
     if ext.lower() in BLOCKED_EXTENSIONS:
         raise HttpNotFound("Access denied")
-
-    # Otherwise require authentication
-    jwt_user = is_jwt_token_valid(request.META.get("HTTP_AUTHORIZATION", ""))
-
-    if not request.user.is_authenticated and not jwt_user:
-        return redirect("core:login")
 
     response = FileResponse(open(media_path, "rb"))
     response["X-Content-Type-Options"] = "nosniff"
@@ -234,61 +243,48 @@ class LoginUserView(View):
 
     def post(self, request):
         """
-        Handle login attempt
+        Handle a login attempt.
+
+        Failures are counted by ``auth_limits`` for this view, the admin login,
+        and the API token login. The counter uses the connection address unless
+        the peer is a trusted proxy.
         """
-        identifier = request.POST.get("username")
+        identifier = request.POST.get("username") or ""
         secret = request.POST.get("password")
         next_url = safe_url(request, request.POST.get("next", self.default_next_url))
+        failure_url = reverse_lazy(self.login_url_name) + f"?next={next_url}"
 
-        ip = (
-            request.META.get(
-                "HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR", "")
-            )
-            .split(",")[0]
-            .strip()
-        )
-        lockout_key = f"login_lockout_{ip}"
-        attempt_key = f"login_attempts_{ip}"
-
-        # Block IP if currently locked out
-        if cache.get(lockout_key):
-            messages.error(
-                request,
-                _("Too many failed login attempts. Please try again in 15 minutes."),
-            )
-            return redirect(reverse_lazy(self.login_url_name) + f"?next={next_url}")
+        try:
+            blocked = login_blocked(request, identifier)
+        except CredentialStoreUnavailable:
+            messages.error(request, signin_unavailable_message())
+            return redirect(failure_url)
+        if blocked:
+            messages.error(request, blocked)
+            return redirect(failure_url)
 
         user = authenticate(request, username=identifier, password=secret)
 
         if not user:
-            attempts = cache.get(attempt_key, 0) + 1
-            if attempts >= 5:
-                cache.set(lockout_key, True, timeout=900)  # lock for 15 minutes
-                cache.delete(attempt_key)
-                logger.warning("Brute force lockout triggered for IP %s", ip)
-                messages.error(
-                    request,
-                    _(
-                        "Too many failed login attempts. Please try again in 15 minutes."
-                    ),
-                )
-            else:
-                cache.set(attempt_key, attempts, timeout=900)
-                messages.error(
-                    request, _("Invalid credentials. Please check and try again.")
-                )
-            return redirect(reverse_lazy(self.login_url_name) + f"?next={next_url}")
+            try:
+                blocked = record_login_failure(request, identifier)
+            except CredentialStoreUnavailable:
+                messages.error(request, signin_unavailable_message())
+                return redirect(failure_url)
+            messages.error(
+                request,
+                blocked or _("Invalid credentials. Please check and try again."),
+            )
+            return redirect(failure_url)
 
         if not user.is_active:
             messages.warning(
                 request,
                 _("This user is archived or blocked. Please contact support."),
             )
-            return redirect(reverse_lazy(self.login_url_name) + f"?next={next_url}")
+            return redirect(failure_url)
 
-        # Clear failed attempt counters on successful login
-        cache.delete(attempt_key)
-        cache.delete(lockout_key)
+        clear_login_failures(request, user.get_username())
 
         login(request, user)
         messages.success(request, _("Login successful."))

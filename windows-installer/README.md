@@ -184,6 +184,7 @@ DATABASE_URL=mysql://username:password@localhost:3306/horilla_crm
            proxy_pass http://127.0.0.1:8000;
            proxy_set_header Host $host;
            proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $remote_addr;
        }
    }
    ```
@@ -201,7 +202,8 @@ DATABASE_URL=mysql://username:password@localhost:3306/horilla_crm
 - **Network**: Bound to localhost by default
 
 ### Hardening:
-- Change default SECRET_KEY
+- Set a unique `SECRET_KEY` (a shipped placeholder is ignored; with Redis unset, run one worker or the login counter is per process)
+- Set `TRUSTED_PROXIES=127.0.0.1` when a reverse proxy on this machine sets the client IP
 - Use strong database passwords
 - Enable HTTPS in production
 - Regular security updates

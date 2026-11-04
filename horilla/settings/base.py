@@ -11,9 +11,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 import environ
+
+from horilla.settings.secret_key import resolve_secret_key
 
 # -----------------------------------------------------------------------------
 #   Environment & Configuration Management
@@ -27,27 +30,39 @@ BASE_APP_DIR = BASE_DIR / "horilla"
 env = environ.Env(
     DEBUG=(bool, True),
     ENVIRONMENT=(str, "development"),  # production/staging/development
-    SECRET_KEY=(str, "django-insecure-default-key"),
+    # Blank means "generate a unique key". Shipped placeholders are rejected
+    # in resolve_secret_key(); they must not sign sessions or API tokens.
+    SECRET_KEY=(str, ""),
+    SECRET_KEY_FILE=(str, ""),
     ALLOWED_HOSTS=(list, ["*"]),
     CSRF_TRUSTED_ORIGINS=(list, ["http://localhost:8000"]),
     SITE_URL=(str, ""),
+    TRUSTED_PROXIES=(list, []),
+    REDIS_URL=(str, ""),
 )
 
 # Read from .env file if exists
 env_file = BASE_DIR / ".env"
+# An already-set environment variable wins over .env so a real deployment
+# secret is not replaced by a placeholder copied from .env.example.
 if env_file.exists():
-    env.read_env(str(env_file), overwrite=True)
+    env.read_env(str(env_file), overwrite=False)
 
 # Environment variables
 DEBUG = env("DEBUG")
 ENVIRONMENT = env("ENVIRONMENT")
-SECRET_KEY = env("SECRET_KEY")
+_secret_key_file = env("SECRET_KEY_FILE") or str(BASE_DIR / ".secret_key")
+SECRET_KEY = resolve_secret_key(env("SECRET_KEY"), _secret_key_file)
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 # Custom page when CSRF verification fails (production); DEBUG=True still uses Django's technical view.
 CSRF_FAILURE_VIEW = "horilla.contrib.core.views.error_pages.csrf_failure"
 # Public-facing HTTPS URL for Google Calendar webhook push notifications.
 SITE_URL = env("SITE_URL")
+# Addresses of reverse proxies allowed to set the client IP. Empty means the
+# connection address is used and X-Forwarded-For / X-Real-IP are ignored.
+TRUSTED_PROXIES = [item.strip() for item in env("TRUSTED_PROXIES") if str(item).strip()]
+REDIS_URL = env("REDIS_URL")
 
 # -----------------------------------------------------------------------------
 #  Installed Apps Organization
@@ -102,28 +117,33 @@ INSTALLED_APPS = [
 # REST Framework Configuration
 # -----------------------------------------------------------------------------
 REST_FRAMEWORK = {
+    # Basic authentication is omitted on purpose. DRF checks credentials before
+    # throttles, so a password sent on every API route would never be counted.
+    # Browsers use the session; API clients use a JWT from /api/core/token/.
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.BasicAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
-    # Rate limiting to mitigate resource starvation and DoS
+    # Identities come from the trusted client address, not a raw forwarded-for
+    # header. See horilla.contrib.core.throttling.
     "DEFAULT_THROTTLE_CLASSES": (
-        "rest_framework.throttling.AnonRateThrottle",
-        "rest_framework.throttling.UserRateThrottle",
+        "horilla.contrib.core.throttling.ClientIpAnonRateThrottle",
+        "horilla.contrib.core.throttling.ClientIpUserRateThrottle",
     ),
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/hour",
         "user": "1000/hour",
+        "auth": "30/hour",
     },
 }
 
-# JWT Settings
+# JWT Settings. Tokens are signed with SECRET_KEY, which refuses shipped defaults.
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
+    "SIGNING_KEY": SECRET_KEY,
 }
 
 # Swagger/OpenAPI Settings
@@ -386,6 +406,31 @@ LANGUAGE_COOKIE_SAMESITE = "Lax"
 LOGIN_URL = "/login/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "core.HorillaUser"
+
+# Failed sign-ins. The pair limit is one username from one client address.
+# The account limit covers the same username from many addresses, and the IP
+# limit covers many usernames from one address. All three last 15 minutes.
+LOGIN_PAIR_LIMIT = 5
+LOGIN_IP_LIMIT = 50
+LOGIN_ACCOUNT_LIMIT = 20
+LOGIN_LOCKOUT_SECONDS = 900
+
+# Share the login counters across uvicorn workers when Redis is configured.
+# Tests keep the in-memory cache so `manage.py test` does not need Redis.
+if REDIS_URL and "test" not in sys.argv:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "horilla-login",
+        }
+    }
 
 # -----------------------------------------------------------------------------
 # Email

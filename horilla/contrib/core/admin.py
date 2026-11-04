@@ -8,11 +8,20 @@ and customizes the admin interface for the Horilla User model.
 # Django imports
 # Third-party imports (Django)
 from django.contrib import admin
+from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth.admin import UserAdmin
+from django.core.exceptions import ValidationError
 
 # Horilla first-party imports
 # First party imports (Horilla)
 from horilla.auth.models import User
+from horilla.contrib.core.auth_limits import (
+    CredentialStoreUnavailable,
+    clear_login_failures,
+    login_blocked,
+    record_login_failure,
+    signin_unavailable_message,
+)
 
 # Local imports
 from .models import (
@@ -47,6 +56,37 @@ from .models import (
     TeamRole,
     TimelineSpanBy,
 )
+
+
+class HorillaAdminAuthenticationForm(AdminAuthenticationForm):
+    """Admin login using the same failure limits as the main sign-in page."""
+
+    def clean(self):
+        username = self.cleaned_data.get("username") or ""
+        try:
+            blocked = login_blocked(self.request, username)
+        except CredentialStoreUnavailable:
+            raise ValidationError(signin_unavailable_message(), code="unavailable")
+        if blocked:
+            raise ValidationError(blocked, code="locked_out")
+        try:
+            cleaned = super().clean()
+        except ValidationError:
+            try:
+                blocked = record_login_failure(self.request, username)
+            except CredentialStoreUnavailable:
+                raise ValidationError(signin_unavailable_message(), code="unavailable")
+            if blocked:
+                raise ValidationError(blocked, code="locked_out")
+            raise
+        return cleaned
+
+    def confirm_login_allowed(self, user):
+        clear_login_failures(self.request, user.get_username())
+        super().confirm_login_allowed(user)
+
+
+admin.site.login_form = HorillaAdminAuthenticationForm
 
 admin.site.register(KanbanGroupBy)
 admin.site.register(TimelineSpanBy)

@@ -194,22 +194,19 @@ Ten class-based views manage business hour configuration per company.
 
 ## View and menu permission gates
 
-### Login (`views/core.py` — `LoginView`)
+### Login (`views/core.py` — `LoginUserView`)
 
-`LoginView.post` applies an **IP-based brute-force lockout** using the Django cache:
+`LoginUserView.post`, the admin login form, and `/api/core/token/` share one lockout in `horilla.contrib.core.auth_limits`. Counters live in the Django cache (Redis when `REDIS_URL` is set, so both uvicorn workers see them).
 
-| Key | Purpose |
-|-----|---------|
-| `login_attempts_{ip}` | Failed attempt counter (900s TTL) |
-| `login_lockout_{ip}` | Lock flag after **5** failures (900s / 15 minutes) |
+| Limit | Default | What it stops |
+|-------|---------|----------------|
+| Same username from the same client | 5 failures | Repeated guesses of one account |
+| Any username from the same client | 50 failures | Trying many accounts from one address |
+| Same username from any client | 20 failures | Guesses of one account from many addresses |
 
-Behaviour:
+Each window is 15 minutes (`LOGIN_LOCKOUT_SECONDS`). A correct password clears the username counters. If the cache cannot be read, the sign-in is refused.
 
-1. If the lockout key is set, show “Too many failed login attempts…” and refuse authentication.
-2. On failed `authenticate()`, increment the attempt counter; at **≥ 5** set the lockout key and clear the counter.
-3. On successful login, delete both keys.
-
-The client IP is taken from `HTTP_X_FORWARDED_FOR` (first hop) or `REMOTE_ADDR`.
+The client address is `REMOTE_ADDR`. `X-Real-IP` or the rightmost `X-Forwarded-For` hop is used only when that peer is listed in `TRUSTED_PROXIES`. A caller-supplied forwarded-for value does not start a new counter.
 
 ### Forgot password (`views/forgot_password.py`)
 

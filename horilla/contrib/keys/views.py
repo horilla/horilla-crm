@@ -127,8 +127,13 @@ class ShortKeyListView(LoginRequiredMixin, HorillaListView):
 
     columns = [("page", "page_display"), ("key", "custom_key_col")]
 
-    def get_queryset(self):
-        """Return shortcut keys filtered by the logged-in user across all companies."""
+    @property
+    def queryset(self):
+        """Shortcut keys of the logged-in user across all companies.
+
+        Exposed as ``queryset`` (not a ``get_queryset`` override) so the base
+        list view still applies search, filters and sorting on top of it.
+        """
         user = self.request.user
         if not user:
             return self.model.all_objects.none()

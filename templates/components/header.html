@@ -76,7 +76,7 @@
                         <ul class="text-sm overflow-hidden overflow-y-auto">
                             {% for lang in allowed_languages %}
                                 <li>
-                                    <form action="{% url 'set_language' %}" method="post">
+                                    <form action="{% url 'set_language' %}" method="post" onsubmit="this.elements.next.value = window.location.pathname + window.location.search + window.location.hash;">
                                         {% csrf_token %}
                                         <input type="hidden" name="language" value="{{ lang.code }}">
                                         <input type="hidden" name="next" value="{{ request.get_full_path }}">

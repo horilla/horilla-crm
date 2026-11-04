@@ -142,6 +142,5 @@ msgstr "قالب اعلان \"{}\" با موفقیت به‌روزرسانی ش�
 msgid "Notification template \"{}\" created successfully."
 msgstr "قالب اعلان \"{}\" با موفقیت ایجاد شد."
 
-#: horilla/contrib/notifications/delivery.py:101
 msgid "Send as Notification"
 msgstr "ارسال با اعلان"

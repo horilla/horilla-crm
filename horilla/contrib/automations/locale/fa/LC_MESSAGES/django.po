@@ -385,47 +385,37 @@ msgstr "اجرای اختیاری فقط هنگام عبور از شرط (edge-t
 msgid "Render automation email and notification date/time fields in each recipient's own timezone. Evaluate custom fields in conditions instead of reading them as model columns."
 msgstr "نمایش فیلدهای تاریخ/زمان در ایمیل و اعلان اتوماسیون بر اساس منطقه زمانی هر گیرنده. ارزیابی فیلدهای سفارشی در شروط به‌جای خواندن آن‌ها به‌عنوان ستون‌های مدل."
 
-#: horilla/contrib/automations/forms.py:72
 msgid "Self (User who triggered)"
 msgstr "خود (کاربری که اجرا کرد)"
 
-#: horilla/contrib/automations/forms.py:89
 #, python-format
 msgid "Select a valid delivery channel: %(value)s."
 msgstr "یک کانال تحویل معتبر انتخاب کنید: %(value)s."
 
-#: horilla/contrib/automations/forms.py:222
 msgid "Select delivery channels"
 msgstr "انتخاب کانال‌های تحویل"
 
-#: horilla/contrib/automations/models.py:99
 msgid "Mail to/Notify To"
 msgstr "ارسال ایمیل / اعلان به"
 
-#: horilla/contrib/automations/models.py:113
 msgid "Also Send To"
 msgstr "همچنین ارسال به"
 
-#: horilla/contrib/automations/models.py:285
 #, python-format
 msgid "Unknown delivery channel: %(keys)s."
 msgstr "کانال تحویل ناشناخته: %(keys)s."
 
-#: horilla/contrib/automations/models.py:291
 msgid "Select at least one delivery channel."
 msgstr "حداقل یک کانال تحویل انتخاب کنید."
 
-#: horilla/contrib/automations/models.py:311
 #, python-format
 msgid "Mail template is required when delivery channel is '%(channel)s'."
 msgstr "وقتی کانال تحویل «%(channel)s» است، قالب ایمیل الزامی است."
 
-#: horilla/contrib/automations/models.py:321
 #, python-format
 msgid "Outgoing mail server is required when delivery channel is '%(channel)s'."
 msgstr "وقتی کانال تحویل «%(channel)s» است، سرور ایمیل خروجی الزامی است."
 
-#: horilla/contrib/automations/models.py:331
 #, python-format
 msgid "Notification template is required when delivery channel is '%(channel)s'."
 msgstr "وقتی کانال تحویل «%(channel)s» است، قالب اعلان الزامی است."

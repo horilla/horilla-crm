@@ -482,3 +482,12 @@ msgstr "اقدام محرک زمانی ذخیره شد."
 
 msgid "Evaluate custom fields in workflow conditions and show their labels on rule details."
 msgstr "ارزیابی فیلدهای سفارشی در شروط گردش کار و نمایش برچسب آن‌ها در جزئیات قانون."
+
+#: horilla/contrib/workflow/forms.py:199
+#, python-format
+msgid "%(action_type)s is not an available action."
+msgstr "اقدام «%(action_type)s» در دسترس نیست."
+
+#: horilla/contrib/workflow/forms.py:206
+msgid "Select a template."
+msgstr "یک قالب انتخاب کنید."

@@ -1,5 +1,6 @@
 {% load horilla_call_tags %}
 {% calls_enabled as calls_active %}
+{% has_perm "calls.add_calllog" as can_make_calls %}
 {% has_perm "activity.add_activity" as can_add_activity_global %}
 {% with can_add_activity=can_add_activity_global|default:can_add_as_owner %}
     <div id="styled-activity" role="tabpanel" aria-labelledby="activity-tab" style="height: 100%">
@@ -235,9 +236,10 @@
                                     {% endif %}
                                 </ul>
                                 <div class="flex gap-2">
-                                    {% if calls_active and not activity_locked %}
+                                    {% if calls_active and can_make_calls and not activity_locked %}
+                                        {% get_phone_number obj as call_phone_number %}
                                         <a
-                                            hx-get="{% url 'calls:click_to_call' %}?phone_number={% get_phone_number obj %}&model_name={{ obj|model_name }}&object_id={{ obj.pk }}"
+                                            hx-get="{% url 'calls:click_to_call' %}?phone_number={{ call_phone_number|urlencode:'' }}&model_name={{ obj|model_name }}&object_id={{ obj.pk }}"
                                             hx-target="#modalBox"
                                             hx-swap="innerHTML"
                                             onclick="openModal()"

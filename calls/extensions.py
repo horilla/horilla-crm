@@ -4,6 +4,8 @@ from horilla.contrib.core.models import HorillaCoreModel
 from horilla.extension.mixin import MixinExtension
 from horilla.urls import reverse_lazy
 
+from .models import CallIntegrationSetting
+
 _CALL_NOW_ACTION = {
     "action": "Call Now",
     "icon": "fa-solid fa-phone",
@@ -33,6 +35,11 @@ class CallListActionsExtension(MixinExtension):
                 "disabled_if": lambda row: True,
                 "disabled_title": "Read-only",
             }
+        if not (
+            self.request.user.has_perm("calls.add_calllog")
+            and CallIntegrationSetting.user_has_menu_access(self.request)
+        ):
+            return context
         actions = [call_now, *context.get("visible_actions", [])]
         actions += context.get("dropdown_actions", [])
         if len(actions) > self.max_visible_actions:

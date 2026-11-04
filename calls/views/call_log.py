@@ -5,6 +5,9 @@ import logging
 import re
 from functools import cached_property
 
+# Third-party imports
+import requests
+
 # Third-party imports (Django)
 from django.contrib import messages
 
@@ -34,7 +37,7 @@ from horilla.web import Http404, HxTriggerResponse, JsonResponse, ScriptResponse
 # Local imports
 from ..adapters.factory import get_adapter
 from ..filters import CallLogFilter
-from ..models import AgentMapping, CallLog, CallProvider
+from ..models import AgentMapping, CallIntegrationSetting, CallLog, CallProvider
 
 logger = logging.getLogger(__name__)
 
@@ -118,6 +121,15 @@ class ClickToCallView(LoginRequiredMixin, View):
     POST — calls adapter.initiate_call(), creates CallLog(status='initiated'),
            returns HTMX success fragment.
     """
+
+    def dispatch(self, request, *args, **kwargs):
+        """Block calls when the integration is off or the user is not allowed to use it."""
+        if request.user.is_authenticated and not (
+            CallIntegrationSetting.user_has_menu_access(request)
+        ):
+            messages.error(request, _("Call integration is not enabled for you."))
+            return ScriptResponse(msgs=True, close=True)
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         """Render the click-to-call modal with a list of active providers and pre-filled phone number if provided."""
@@ -213,7 +225,13 @@ class ClickToCallView(LoginRequiredMixin, View):
             )
         except Exception as exc:
             logger.error("Click-to-call failed for provider %s: %s", provider, exc)
-            messages.error(request, str(exc))
+            if isinstance(exc, (requests.ConnectionError, requests.Timeout)):
+                error = _(
+                    "Could not reach the calling provider. Please try again later."
+                )
+            else:
+                error = str(exc)
+            messages.error(request, error)
             return ScriptResponse(msgs=True, close=True)
 
         call_log = CallLog.objects.create(
@@ -325,27 +343,11 @@ class CallStatusView(LoginRequiredMixin, View):
         if not call_log:
             return ScriptResponse(close=True)
 
-        # If non-terminal, try to get live status from the provider API (works
-        # even when webhooks can't reach localhost in development).
+        # If non-terminal, first ask the provider for the live status (works even
+        # when webhooks can't reach localhost in development), then apply the
+        # timeouts only to calls the provider still reports as ringing/active.
         if call_log.status not in self.TERMINAL:
-            if call_log.started_at:
-                age = (timezone.now() - call_log.started_at).total_seconds()
-                # Ringing with no answer after 30 s → no_answer
-                ringing_states = {CallLog.STATUS_RINGING, CallLog.STATUS_INITIATED}
-                if (
-                    call_log.status in ringing_states
-                    and age >= self.MAX_RINGING_SECONDS
-                ):
-                    call_log.status = CallLog.STATUS_NO_ANSWER
-                    call_log.ended_at = call_log.ended_at or timezone.now()
-                    call_log.save(update_fields=["status", "ended_at"])
-                # Hard cap: any non-terminal call older than 5 min → no_answer
-                elif age >= self.MAX_CALL_AGE_MINUTES * 60:
-                    call_log.status = CallLog.STATUS_NO_ANSWER
-                    call_log.ended_at = call_log.ended_at or timezone.now()
-                    call_log.save(update_fields=["status", "ended_at"])
-
-            if call_log.status not in self.TERMINAL and call_log.provider_call_id:
+            if call_log.provider_call_id:
                 try:
                     live_status = get_adapter(call_log.provider).fetch_status(
                         call_log.provider_call_id
@@ -361,6 +363,23 @@ class CallStatusView(LoginRequiredMixin, View):
                     logger.warning(
                         "Live status fetch failed for CallLog %s: %s", pk, exc
                     )
+
+            if call_log.status not in self.TERMINAL and call_log.started_at:
+                age = (timezone.now() - call_log.started_at).total_seconds()
+                # Ringing with no answer after 30 s → no_answer
+                ringing_states = {CallLog.STATUS_RINGING, CallLog.STATUS_INITIATED}
+                if (
+                    call_log.status in ringing_states
+                    and age >= self.MAX_RINGING_SECONDS
+                ):
+                    call_log.status = CallLog.STATUS_NO_ANSWER
+                    call_log.ended_at = call_log.ended_at or timezone.now()
+                    call_log.save(update_fields=["status", "ended_at"])
+                # Hard cap: any non-terminal call older than 5 min → no_answer
+                elif age >= self.MAX_CALL_AGE_MINUTES * 60:
+                    call_log.status = CallLog.STATUS_NO_ANSWER
+                    call_log.ended_at = call_log.ended_at or timezone.now()
+                    call_log.save(update_fields=["status", "ended_at"])
 
         return render(
             request,

@@ -3,7 +3,7 @@
     id="call-status-modal"
     {% if not is_terminal %}
         hx-get="{% url 'calls:call_status' pk=call_log.pk %}"
-        hx-trigger="call-status-changed, every 10s"
+        hx-trigger="call-status-changed, every 3s"
         hx-target="#call-status-modal"
         hx-swap="outerHTML"
     {% endif %}

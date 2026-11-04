@@ -51,9 +51,10 @@ class CallProviderListView(LoginRequiredMixin, HorillaListView):
     filterset_class = CallProviderFilter
     search_url = reverse_lazy("calls:provider_list")
     main_url = reverse_lazy("calls:integration_settings")
-    columns = ["name", "provider_type", "status_col", "caller_id"]
+    columns = ["name", "provider_type", (_("Status"), "status_col"), "caller_id"]
     bulk_select_option = False
     no_record_fit_height = False
+    list_column_visibility = False
 
     actions = [
         {

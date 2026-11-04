@@ -9,10 +9,18 @@ from horilla.apps import apps
 register = template.Library()
 
 
-@register.simple_tag
-def calls_enabled():
-    """Return True if the calls app is installed."""
-    return apps.is_installed("calls")
+@register.simple_tag(takes_context=True)
+def calls_enabled(context):
+    """Return True if the calls app is installed and the current user may use it.
+
+    The integration must be switched on for the company and the user must be
+    allowed by its access control (all users, roles or specific users).
+    """
+    if not apps.is_installed("calls"):
+        return False
+    from calls.models import CallIntegrationSetting
+
+    return CallIntegrationSetting.user_has_menu_access(context.get("request"))
 
 
 @register.simple_tag

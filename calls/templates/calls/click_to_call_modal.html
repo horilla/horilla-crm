@@ -52,29 +52,52 @@
                         </p>
                     </div>
                 {% endif %}
-                <div class="flex flex-col">
-                    <div class="flex justify-between items-center mb-1">
-                        <label for="id_provider_id" class="text-xs text-color-600">
-                            {% trans "Provider" %} <span class="text-red-500">*</span>
-                        </label>
+                {% if providers|length == 1 %}
+                    {# Only one provider: no choice to make, so preselect it. #}
+                    {% with provider=providers.0 %}
+                        <div class="flex flex-col">
+                            <div class="flex justify-between items-center mb-1">
+                                <label for="id_provider_name" class="text-xs text-color-600">
+                                    {% trans "Provider" %} <span class="text-red-500">*</span>
+                                </label>
+                            </div>
+                            <input type="hidden" name="provider_id" value="{{ provider.pk }}">
+                            <input
+                                type="text"
+                                id="id_provider_name"
+                                value="{{ provider.name }}"
+                                readonly
+                                class="w-full border border-dark-50 rounded-md px-3 py-1.5 text-sm bg-gray-50 text-gray-700 cursor-default focus:outline-none"
+                            >
+                        </div>
+                    {% endwith %}
+                {% elif providers %}
+                    <div class="flex flex-col">
+                        <div class="flex justify-between items-center mb-1">
+                            <label for="id_provider_id" class="text-xs text-color-600">
+                                {% trans "Provider" %} <span class="text-red-500">*</span>
+                            </label>
+                        </div>
+                        <select
+                            id="id_provider_id"
+                            name="provider_id"
+                            class="js-example-basic-single headselect w-full"
+                            required
+                        >
+                            <option value="">{% trans "Select Provider" %}</option>
+                            {% for provider in providers %}
+                                <option value="{{ provider.pk }}">{{ provider.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <select
-                        id="id_provider_id"
-                        name="provider_id"
-                        class="js-example-basic-single headselect w-full"
-                        required
-                    >
-                        <option value="">{% trans "Select provider..." %}</option>
-                        {% for provider in providers %}
-                            <option value="{{ provider.pk }}">{{ provider.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+                {% else %}
+                    <p class="text-xs text-gray-500">{% trans "No calling provider is available. Please contact your administrator." %}</p>
+                {% endif %}
             </div>
         </div>
 
         <div class="flex justify-end p-5 pt-0 gap-2">
-            {% btn _("Call Now") type="submit" %}
+            {% if providers %}{% btn _("Call Now") type="submit" %}{% endif %}
         </div>
     </form>
 </div>

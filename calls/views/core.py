@@ -401,14 +401,27 @@ class CallUserSettingsView(LoginRequiredMixin, View):
         """Handle saving/updating the user's AgentMapping for a given provider based on the submitted form data."""
         provider_id = request.POST.get("provider_id")
         action = request.POST.get("action", "save")
-        provider = CallProvider.objects.filter(pk=provider_id).first()
+        provider = (
+            CallProvider.objects.filter(
+                pk=provider_id, status=CallProvider.STATUS_ACTIVE
+            )
+            .exclude(provider_type=CallProvider.PROVIDER_MOCK)
+            .first()
+        )
 
         if not provider:
+            messages.error(
+                request,
+                _(
+                    "This calling provider no longer exists or is inactive. "
+                    "Your changes were not saved."
+                ),
+            )
             return self.get(request, *args, **kwargs)
 
         company = request.active_company
         if action == "save":
-            mapping, _ = AgentMapping.all_objects.get_or_create(
+            mapping, _created = AgentMapping.all_objects.get_or_create(
                 provider=provider,
                 user=request.user,
                 defaults={"company": company, "created_by": request.user},

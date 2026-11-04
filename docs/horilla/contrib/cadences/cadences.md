@@ -2,7 +2,7 @@
 
 ## What this app does
 
-- **Cadence** definitions: ordered **task / call / email** follow-ups for a target **module** (`HorillaContentType` limited by **`cadence_models`** feature registry).
+- **Cadence** definitions: ordered **task / call / email** follow-ups, or follow-ups that send through a registered **delivery channel** (SMS, a messenger, an in-app notification; see [Follow-ups through delivery channels](#follow-ups-through-delivery-channels)), for a target **module** (`HorillaContentType` limited by **`cadence_models`** feature registry).
 - **CadenceCondition** rows — field/operator/value + AND/OR ordering (same spirit as automation conditions).
 - **CadenceEnrollment** — one row per **run** of a cadence for a record (automatic or manual); every item a run creates is stamped with its id, so runs never see, advance or cancel each other's items. See [Enrollments](#enrollments).
 - **CadenceFollowUp** — each step: delay (`immediately`, `minute`, `hour`, `day`, `month`), optional **branch** from another follow-up, previous-activity status gates, plus type-specific fields (subject, due offsets, mail template FKs, call fields, etc.).
@@ -60,7 +60,8 @@ Registers settings and/or main navigation entries for cadence builder UI (list, 
 ### `CadenceFollowUp`
 
 - **Follow-up 1 can hold several items.** The `unique_first_followup_per_cadence` constraint and the "Follow up 1 can only contain one item" check were removed; follow-up 1 still clears `previous_status`.
-- **`followup_type`** — `task` | `call` | `email`.
+- **`followup_type`** — `task` | `call` | `email`, or the key of a registered delivery channel. A plain `CharField` (`max_length=50`) with no fixed `choices` (migration `0007`); `clean()` refuses a key that is neither. `get_followup_type_display()` is an explicit method that also knows the channel labels.
+- **`channel_config`** — JSON for a channel follow-up: `{template_id, to}`. Emptied for task, call and email.
 - **`branch_from`** — self-FK for branched sequences from a specific card action.
 - Integrates with **`Activity`** model constants for status compatibility on `previous_status`.
 
@@ -91,6 +92,41 @@ Task / call / email creation lives here (moved out of `signals.py`); every creat
 | `refresh_status(enrollment)` | `completed` once all items are closed; `failed` when nothing could be created (automatic runs stay ongoing and retry on next save). |
 | `eligible_cadences(instance)` / `get_ineligible_reason(...)` | Active, same module, has a follow-up 1, not already running for the record. |
 | `adopt_legacy_enrollment(...)` | Lazily adopts items created before enrollments existed by adding `enrollment_id` to their JSON — no data migration. |
+
+## Follow-ups through delivery channels
+
+The third engine on [`horilla.registry.delivery`](../automations/automations.md#delivery-channels-horillaregistrydelivery), after Automations and [Workflow](../workflow/workflow.md#actions-and-delivery-channels). `followup_types.py` builds the type list:
+
+- `get_followup_type_choices(company)` is `task`, `call`, `email`, then `get_delivery_channels(company)` in registry order. The `mail` channel is left out because the `email` follow-up already sends mail (and tracks its `HorillaMail`). `notification` has no built-in follow-up, so it is offered as a channel.
+- `get_followup_channel(key)` returns the channel for a channel key, and `None` for a built-in, for `mail` and for a key no app registers.
+- **One follow-up is one channel.** A cadence that sends an SMS and then mails has two follow-ups.
+
+**Storage.** `CadenceFollowUp` has no `action_config`, so a channel follow-up keeps `{template_id, to}` in `channel_config`:
+- `template_id` is a `NotificationTemplate` when the channel's `shows_notification_fields()` is true, else a `HorillaMailTemplate` when `shows_mail_fields()` is true, else not used.
+- `to` is one of the channel's `get_recipient_choices(model)` for the cadence module (without `self`: no user triggers a cadence step, as for email).
+
+**Sending (`services.py`).** `create_followup_item()` sends a channel follow-up with `_send_channel_followup()`:
+1. Load the template, only one of the record's company (or of no company).
+2. `channel.resolve_recipients(to, instance, actor)`. The actor is the record's `updated_by` / `created_by`, else the cadence's.
+3. `channel.send(message, instance, recipients, context, actor)`. `message` is a `ChannelFollowUpMessage` with the attributes channels read from an automation: `title` (the cadence name), `pk` (the follow-up), `company`, `mail_template` / `notification_template`, `mail_server` (`None`: the mail channel picks the company's outgoing server), `mail_to`, `created_by` / `updated_by` (the cadence's). It also carries `cadence`, `followup` and `enrollment`.
+
+**Recording the run.** A channel leaves no activity or mail for the cadence to find, so Cadences records each run itself. The plan's optional channel hook is not needed, and no channel has to implement anything for it.
+- The run is a `CadenceScheduledFollowUp` row: `completed` when the message was handed to the channel, `failed` with the reason in `error_message` (no template, no recipient, or an error raised by the channel).
+- That row is what `existing_followup_ids()` reads, so a follow-up is never sent twice in one enrollment, even after a failure.
+- `enrollment_channel_runs()` lists those rows for `refresh_status()`, which counts a sent message as done and an enrollment whose items all failed as `failed`, and for `latest_followup_summary()` on the record tab ("Send as SMS - Sent").
+- A follow-up with a "Do This" delay already has its pending row, and `run_scheduled_followup()` records the outcome on it.
+- A key whose app is gone is logged, and nothing is sent.
+
+**Next follow-ups.** A sent message is final, so the follow-ups waiting for it start as soon as it is sent. Their `previous_status` is `completed`, shown as **Sent**. That is the only status the form offers after a channel follow-up ("When the previous message is").
+
+**Form and board.**
+- `CadenceFollowUpForm` replaces the type field with a select of `get_followup_type_choices(company)`. A saved follow-up keeps its type in the list even when its channel is no longer offered.
+- For a channel type it adds `channel_template` and `channel_to`, and `clean()` stores them in `channel_config`. It refuses a channel not available to the company.
+- The detail board shows the channel label, a chat icon and the template; the record tab shows the channel label.
+
+The cadence report still has Task, Call and Email tabs only.
+
+**Adding a channel** is the same as for Automations and Workflow: a `DeliveryChannel` registered from another app's `registration.py`. It appears in the follow-up types with no change here and no migration.
 
 ## Signals (`signals.py`)
 
@@ -183,7 +219,8 @@ Do **not** list `company`, `created_at`, `updated_at`, `created_by`, `updated_by
 ### `CadenceFollowUpForm`
 
 - **`field_order`**: cadence metadata first, then all task/call/email columns (runtime visibility via **`TYPE_FIELD_MAP`** in `__init__`)
-- **`Meta.exclude`**: `call_type`, `call_status`, `order`
+- **`Meta.exclude`**: `call_type`, `call_status`, `order`, `channel_config`
+- **`followup_type`**: a select of the built-ins and the delivery channels available to the company; a channel type shows `channel_template` and `channel_to` instead of the task/call/email fields
 - **HTMX**: `followup_type` / `do_this_unit` toggles unchanged
 - **Labels**: "Do This Value" → **Wait for** (help text shown as an info icon), "Trigger Date + Days" → **Due Date (days after trigger)**, "Call Start + Days" → **Call Date (days after trigger)**, "After previous … is" → **When the previous … is**; help text added to Do This / Wait for / previous status / day fields.
 

@@ -670,3 +670,37 @@ msgstr "آخرین پیگیری"
 
 msgid "Follow Up"
 msgstr "پیگیری"
+
+msgid "Follow Up Type"
+msgstr "نوع پیگیری"
+
+msgid "Channel Settings"
+msgstr "تنظیمات کانال"
+
+msgid "The follow-up's template was not found."
+msgstr "قالب این پیگیری پیدا نشد."
+
+msgid "No recipient could be resolved."
+msgstr "هیچ گیرنده‌ای پیدا نشد."
+
+msgid "The text of the message, rendered for the record."
+msgstr "متن پیام، که برای هر رکورد ساخته می‌شود."
+
+msgid "Send to"
+msgstr "ارسال به"
+
+msgid "Who on the record receives this message."
+msgstr "چه کسی از این رکورد این پیام را دریافت کند."
+
+#, python-format
+msgid "%(followup_type)s is not an available follow-up type."
+msgstr "نوع پیگیری «%(followup_type)s» در دسترس نیست."
+
+msgid "When the previous message is"
+msgstr "وقتی پیام قبلی در این وضعیت باشد"
+
+msgid "Cadence Follow Up"
+msgstr "پیگیری توالی"
+
+msgid "Cadence Follow Ups"
+msgstr "پیگیری‌های توالی"

@@ -20,6 +20,15 @@ from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
 from . import services
+from .followup_types import (
+    CHANNEL_SENT_STATUS,
+    TEMPLATE_MAIL,
+    get_channel_template_kind,
+    get_followup_channel,
+    get_followup_type_choices,
+    get_followup_type_label,
+    is_builtin_followup_type,
+)
 from .models import Cadence, CadenceEnrollment, CadenceFollowUp
 
 
@@ -239,6 +248,7 @@ class CadenceFollowUpForm(HorillaModelForm):
             "call_type",
             "call_status",
             "order",
+            "channel_config",
         ]
 
     def __init__(self, *args, **kwargs):
@@ -246,6 +256,7 @@ class CadenceFollowUpForm(HorillaModelForm):
         htmx_trigger_target = kwargs.pop("htmx_trigger_target", None)
         do_this_toggle_url = kwargs.pop("do_this_toggle_url", None)
         super().__init__(*args, **kwargs)
+        self._set_followup_type_choices()
 
         if (
             getattr(self, "request", None)
@@ -381,6 +392,116 @@ class CadenceFollowUpForm(HorillaModelForm):
 
         if followup_type == "email":
             self._configure_email_followup_fields(cadence_id)
+        channel = get_followup_channel(followup_type)
+        if channel is not None:
+            self._configure_channel_followup_fields(channel, cadence_id)
+
+    def _company(self):
+        """The company whose channels the type picker offers."""
+        company = getattr(getattr(self, "request", None), "active_company", None)
+        if company is None and getattr(self.instance, "cadence_id", None):
+            company = self.instance.cadence.company
+        return company
+
+    def _set_followup_type_choices(self):
+        """
+        The type picker lists the built-ins and the delivery channels available
+        to the company. A saved follow-up keeps its type in the list even when
+        its channel is no longer offered, so editing it does not change it.
+        """
+        if "followup_type" not in self.fields:
+            return
+        choices = get_followup_type_choices(self._company())
+        saved = getattr(self.instance, "followup_type", None)
+        if saved and not any(key == saved for key, _label in choices):
+            choices.append((saved, get_followup_type_label(saved)))
+        field = self.fields["followup_type"]
+        self.fields["followup_type"] = forms.ChoiceField(
+            choices=choices,
+            label=field.label,
+            help_text=field.help_text,
+            required=True,
+            widget=forms.Select(),
+        )
+
+    def _configure_channel_followup_fields(self, channel, cadence_id):
+        """
+        A delivery channel follow-up: its template (when the channel uses one)
+        and its recipient, stored in ``channel_config``.
+        """
+        from horilla.contrib.notifications.models import NotificationTemplate
+
+        cadence = (
+            Cadence.objects.select_related("module").filter(pk=cadence_id).first()
+            if cadence_id
+            else None
+        )
+        module_pk = cadence.module_id if cadence and cadence.module_id else None
+        config = (self.instance.channel_config or {}) if self.instance.pk else {}
+        select_attrs = {"class": "js-example-basic-single headselect w-full"}
+
+        kind = get_channel_template_kind(channel)
+        if kind is not None:
+            model = (
+                HorillaMailTemplate if kind == TEMPLATE_MAIL else NotificationTemplate
+            )
+            # Templates without a Related Model are reusable across modules.
+            templates = model.objects.filter(
+                horilla_models.Q(content_type_id=module_pk)
+                | horilla_models.Q(content_type__isnull=True)
+            ).order_by("title")
+            self.fields["channel_template"] = forms.ModelChoiceField(
+                queryset=templates,
+                required=True,
+                label=_("Mail Template") if kind == TEMPLATE_MAIL else _("Template"),
+                help_text=_("The text of the message, rendered for the record."),
+                initial=config.get("template_id") or None,
+                widget=forms.Select(attrs=select_attrs),
+            )
+
+        model_class = (
+            cadence.module.model_class() if cadence and cadence.module else None
+        )
+        # No user triggers a cadence step, so "self" is not offered (as for email).
+        to_choices = [
+            choice
+            for choice in channel.get_recipient_choices(model_class)
+            if choice[0] != "self"
+        ]
+        initial_to = config.get("to", "")
+        if initial_to not in {key for key, _label in to_choices}:
+            initial_to = ""
+        self.fields["channel_to"] = forms.ChoiceField(
+            choices=[("", "---------"), *to_choices],
+            required=True,
+            label=_("Send to"),
+            help_text=_("Who on the record receives this message."),
+            initial=initial_to,
+            widget=forms.Select(attrs=select_attrs),
+        )
+
+    def _clean_channel_followup(self, cleaned):
+        """
+        Check a channel follow-up's type against the registry and store its
+        template and recipient in ``channel_config``; clear it for the built-ins.
+        """
+        followup_type = cleaned.get("followup_type")
+        if not followup_type or is_builtin_followup_type(followup_type):
+            self.instance.channel_config = {}
+            return
+        channel = get_followup_channel(followup_type)
+        if channel is None or not channel.is_available(self._company()):
+            self.add_error(
+                "followup_type",
+                _("%(followup_type)s is not an available follow-up type.")
+                % {"followup_type": followup_type},
+            )
+            return
+        template = cleaned.get("channel_template")
+        self.instance.channel_config = {
+            "template_id": str(template.pk) if template else "",
+            "to": cleaned.get("channel_to") or "",
+        }
 
     def _configure_email_followup_fields(self, cadence_id):
         """Scope mail templates to the cadence module; single-select Mail to."""
@@ -452,6 +573,7 @@ class CadenceFollowUpForm(HorillaModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        self._clean_channel_followup(cleaned)
         cadence = cleaned.get("cadence")
         if cleaned.get("followup_type") == "email" and not _has_outgoing_mail_server(
             cadence
@@ -556,6 +678,8 @@ class CadenceFollowUpForm(HorillaModelForm):
             "call": _("When the previous Call is"),
             "email": _("When the previous Email is"),
         }
+        if previous_type and not is_builtin_followup_type(previous_type):
+            return _("When the previous message is")
         return labels.get(previous_type, _("When the previous follow-up is"))
 
     def _get_previous_status_choices(self, previous_type, followup_number):
@@ -594,6 +718,10 @@ class CadenceFollowUpForm(HorillaModelForm):
             return [c for c in choices if c[0] not in used_statuses]
         if previous_type == "task":
             choices = list(Activity.STATUS_CHOICES)
+            return [c for c in choices if c[0] not in used_statuses]
+        if previous_type and not is_builtin_followup_type(previous_type):
+            # A channel message only reaches "sent"; nothing reports it later.
+            choices = [(CHANNEL_SENT_STATUS, _("Sent"))]
             return [c for c in choices if c[0] not in used_statuses]
         choices = [
             ("scheduled", _("Scheduled")),

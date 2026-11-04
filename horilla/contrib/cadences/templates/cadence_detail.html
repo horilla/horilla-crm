@@ -126,7 +126,7 @@
                                                         <p class="text-xs text-[#565E6C]">
                                                             {% if c.followup_number > 1 and c.previous_status %}
                                                                 {% trans "After previous status is" %}
-                                                                {{ c.get_previous_status_display }}<br>
+                                                                {{ row.previous_status_label }}<br>
                                                             {% endif %}
                                                             {% if c.do_this_unit == "immediately" %}
                                                                 {% trans "Immediately" %}
@@ -167,6 +167,15 @@
                                                                 {% trans "Purpose" %}
                                                             </p>
                                                             <p class="text-xs text-[#565E6C]">{{ c.purpose }}</p>
+                                                        </div>
+                                                    {% elif row.is_channel %}
+                                                        <div class="cadence-field-block">
+                                                            <p class="mb-1.5 text-xs font-semibold text-dark-600">
+                                                                {% trans "Template" %}
+                                                            </p>
+                                                            <p class="text-xs text-[#565E6C]">
+                                                                {{ row.channel_template.title|default:"—" }}
+                                                            </p>
                                                         </div>
                                                     {% else %}
                                                         <div class="cadence-field-block">

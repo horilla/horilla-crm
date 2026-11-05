@@ -396,19 +396,19 @@ msgstr "زبان و منطقه زمانی"
 msgid "Currency"
 msgstr "ارز"
 
-msgid "Enter current password"
+msgid "Enter Current Password"
 msgstr "رمز عبور فعلی را وارد کنید"
 
 msgid "Current Password"
 msgstr "رمز عبور فعلی"
 
-msgid "Enter new password"
+msgid "Enter New Password"
 msgstr "رمز عبور جدید را وارد کنید"
 
 msgid "New Password"
 msgstr "رمز عبور جدید"
 
-msgid "Confirm your password"
+msgid "Confirm Your Password"
 msgstr "رمز عبور خود را تأیید کنید"
 
 msgid "Confirm New Password"
@@ -1880,7 +1880,7 @@ msgstr "انتخاب سربرگ"
 msgid "Select Default Value"
 msgstr "انتخاب مقدار پیش‌فرض"
 
-msgid "Default value"
+msgid "Default Value"
 msgstr "مقدار پیش‌فرض"
 
 msgid "Auto Mapped"
@@ -2003,7 +2003,7 @@ msgstr "احراز هویت پایگاه داده"
 msgid "Authenticate with your password intialize the Database"
 msgstr "برای راه‌اندازی پایگاه داده با رمز عبور خود احراز هویت کنید"
 
-msgid "Database authentication password"
+msgid "Database Authentication Password"
 msgstr "رمز عبور احراز هویت پایگاه داده"
 
 msgid "Authenticate"
@@ -2021,7 +2021,7 @@ msgstr "حذف نقش"
 msgid "Role Name"
 msgstr "نام نقش"
 
-msgid "Enter role name"
+msgid "Enter Role Name"
 msgstr "نام نقش را وارد کنید"
 
 msgid "Role Description"
@@ -2111,10 +2111,10 @@ msgstr "تخصیص کاربران"
 msgid "Filter"
 msgstr "فیلتر"
 
-msgid "Select users"
+msgid "Select Users"
 msgstr "انتخاب کاربران"
 
-msgid "Search models..."
+msgid "Search Models..."
 msgstr "جستجوی مدل‌ها..."
 
 msgid "Field permissions not available for this model"
@@ -2184,7 +2184,7 @@ msgstr "اعضا"
 msgid "User Permissions"
 msgstr "مجوزهای کاربر"
 
-msgid "Search users..."
+msgid "Search Users..."
 msgstr "جستجوی کاربران..."
 
 msgid "Assign"
@@ -2341,9 +2341,6 @@ msgstr "ارزهای فعال"
 msgid "Preview in Calendar"
 msgstr "پیش‌نمایش در تقویم"
 
-msgid " Standard Fiscal Year"
-msgstr "سال مالی استاندارد"
-
 msgid "Here using standard fiscal year"
 msgstr "در اینجا با استفاده از سال مالی استاندارد"
 
@@ -2429,7 +2426,7 @@ msgstr "تنظیمات"
 msgid "Manage your company, users, and system configuration."
 msgstr "شرکت، کاربران و تنظیمات سیستم رو مدیریت کنید"
 
-msgid "Search settings..."
+msgid "Search Settings..."
 msgstr "جستجو در تنظیمات"
 
 msgid "My Profile"
@@ -3540,7 +3537,7 @@ msgstr "بارگذاری داده‌های نمایشی"
 #~ msgstr[1] "کشور"
 
 #, fuzzy, python-format
-#~| msgid "Search models..."
+#~| msgid "Search Models..."
 #~ msgid "Search %(name)s"
 #~ msgstr "جستجوی مدل‌ها..."
 

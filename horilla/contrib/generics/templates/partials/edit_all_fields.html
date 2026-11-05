@@ -37,7 +37,7 @@
                                                 name="{{ field_info.name }}{% if field_info.multiple %}[]{% endif %}"
                                                 class="select2-pagination w-full text-sm"
                                                 data-url="{% url 'generics:model_select2' app_label=field_info.related_app_label model_name=field_info.related_model_name %}"
-                                                data-placeholder="{% trans 'Select' %} {{ field_info.verbose_name }}"
+                                                data-placeholder="{% trans 'Select' %} {{ field_info.verbose_name|title }}"
                                                 data-initial="{% if field_info.multiple %}{% for val in field_info.value %}{{ val }}{% if not forloop.last %},{% endif %}{% endfor %}{% else %}{{ field_info.value }}{% endif %}"
                                                 data-field-name="{{ field_info.name }}"
                                                 id="inline_id_{{ field_info.name }}"
@@ -95,6 +95,7 @@
                                     <textarea
                                         name="{{ field_info.name }}"
                                         rows="3"
+                                        {% if field_info.placeholder %}placeholder="{{ field_info.placeholder }}"{% endif %}
                                         class="text-color-600 p-2 w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600 resize-vertical"
                                     >{{ field_info.value }}</textarea>
                                 {% else %}
@@ -102,6 +103,7 @@
                                         type="{{ field_info.field_type }}"
                                         name="{{ field_info.name }}"
                                         value="{{ field_info.value }}"
+                                        {% if field_info.placeholder %}placeholder="{{ field_info.placeholder }}"{% endif %}
                                         {% if field_info.step %}
                                             step="{{ field_info.step }}"
                                         {% endif %}

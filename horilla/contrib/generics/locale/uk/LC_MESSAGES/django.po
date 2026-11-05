@@ -107,7 +107,7 @@ msgstr ""
 msgid "Select date to filter"
 msgstr ""
 
-msgid "Enter phone number"
+msgid "Enter Phone Number"
 msgstr ""
 
 msgid "Enter a valid phone number."
@@ -133,7 +133,7 @@ msgstr ""
 msgid "Available Fields"
 msgstr ""
 
-msgid "Search fields..."
+msgid "Search Fields..."
 msgstr ""
 
 msgid "Visible Fields"
@@ -752,10 +752,10 @@ msgstr ""
 msgid "Set Null"
 msgstr ""
 
-msgid "Are you sure you want to soft delete this dependency ? "
+msgid "Are you sure you want to soft delete this dependency ?"
 msgstr ""
 
-msgid "Are you sure you want to hard delete this dependency ? "
+msgid "Are you sure you want to hard delete this dependency ?"
 msgstr ""
 
 msgid "No dependent records found."
@@ -767,7 +767,7 @@ msgstr ""
 msgid "Are you sure you want to soft delete the selected"
 msgstr ""
 
-msgid "Are you sure you want to soft delete all dependencies of this record ? "
+msgid "Are you sure you want to soft delete all dependencies of this record ?"
 msgstr ""
 
 msgid "No Records to Delete"

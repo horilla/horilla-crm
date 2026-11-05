@@ -724,7 +724,7 @@ msgstr "علامت‌گذاری عدم دسترسی"
 msgid "Activity Types"
 msgstr "انواع فعالیت"
 
-msgid "Select activity types"
+msgid "Select Activity Types"
 msgstr "انواع فعالیت را انتخاب کنید"
 
 msgid "Select a valid activity type."

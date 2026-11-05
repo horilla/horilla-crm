@@ -19,7 +19,7 @@ msgstr ""
 msgid "Review Process"
 msgstr "Processus de revue"
 
-msgid "Select field(s)"
+msgid "Select Field(s)"
 msgstr "Selectionner le(s) champ(s)"
 
 msgid "Fields to Review"

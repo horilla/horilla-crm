@@ -159,7 +159,7 @@ msgstr "Vorlage auswaehlen"
 msgid "Body content cannot be empty."
 msgstr "Nachrichteninhalt darf nicht leer sein."
 
-msgid "Enter app password"
+msgid "Enter App Password"
 msgstr "App-Passwort eingeben"
 
 msgid "Enter the app-specific password for your mail account."
@@ -168,7 +168,7 @@ msgstr "Geben Sie das app-spezifische Passwort fuer Ihr E-Mail-Konto ein."
 msgid "Enter the app-specific password  for your mail account."
 msgstr "Geben Sie das app-spezifische Passwort fuer Ihr E-Mail-Konto ein."
 
-msgid "Enter client secret"
+msgid "Enter Client Secret"
 msgstr "Client-Geheimnis eingeben"
 
 msgid ""
@@ -552,7 +552,7 @@ msgstr "Kein Nachrichteninhalt"
 msgid "This is how your email will look when sent"
 msgstr "So wird Ihre E-Mail beim Senden aussehen"
 
-msgid "Enter template title"
+msgid "Enter Template Title"
 msgstr "Vorlagentitel eingeben"
 
 msgid "Enter email subject (optional)"
@@ -567,7 +567,7 @@ msgstr "Als E-Mail-Vorlage speichern"
 msgid "Title"
 msgstr "Titel"
 
-msgid "Enter title"
+msgid "Enter Title"
 msgstr "Titel eingeben"
 
 msgid "Save Template"

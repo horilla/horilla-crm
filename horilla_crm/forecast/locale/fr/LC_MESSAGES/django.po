@@ -45,7 +45,7 @@ msgstr "Même type de prévision pour tous"
 msgid "Apply the same forecast type for all users"
 msgstr "Appliquer le même type de prévision pour tous les utilisateurs"
 
-msgid "Enter target"
+msgid "Enter Target"
 msgstr "Saisir la cible"
 
 msgid "Target amount cannot be negative."

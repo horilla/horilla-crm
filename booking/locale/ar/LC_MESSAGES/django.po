@@ -147,7 +147,7 @@ msgstr "email@example.com"
 msgid "Notes"
 msgstr "ملاحظات"
 
-msgid "Any additional information..."
+msgid "Any Additional Information..."
 msgstr "أي معلومات إضافية..."
 
 msgid "My Bookings"
@@ -352,7 +352,7 @@ msgstr "نشاط الاجتماع"
 msgid "Bookings"
 msgstr "الحجوزات"
 
-msgid "Enter meeting location"
+msgid "Enter Meeting Location"
 msgstr "أدخل موقع الاجتماع"
 
 msgid "Select a date to see available times."

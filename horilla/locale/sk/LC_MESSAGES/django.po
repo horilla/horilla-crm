@@ -318,19 +318,19 @@ msgstr "Jazyk a časové pásmo"
 msgid "Currency"
 msgstr "Mena"
 
-msgid "Enter current password"
+msgid "Enter Current Password"
 msgstr "Zadajte súčasné heslo"
 
 msgid "Current Password"
 msgstr "Súčasné heslo"
 
-msgid "Enter new password"
+msgid "Enter New Password"
 msgstr "Zadajte nové heslo"
 
 msgid "New Password"
 msgstr "Nové heslo"
 
-msgid "Confirm your password"
+msgid "Confirm Your Password"
 msgstr "Potvrďte svoje heslo"
 
 msgid "Confirm New Password"
@@ -1728,7 +1728,7 @@ msgstr "Vyberte hlavičku"
 msgid "Select Default Value"
 msgstr "Vyberte predvolenú hodnotu"
 
-msgid "Default value"
+msgid "Default Value"
 msgstr "Predvolená hodnota"
 
 msgid "Auto Mapped"
@@ -1851,7 +1851,7 @@ msgstr "Autentifikácia databázy"
 msgid "Authenticate with your password intialize the Database"
 msgstr "Overte sa svojím heslom a inicializujte databázu"
 
-msgid "Database authentication password"
+msgid "Database Authentication Password"
 msgstr "Heslo na autentifikáciu databázy"
 
 msgid "Authenticate"
@@ -1869,7 +1869,7 @@ msgstr "Odstrániť rolu"
 msgid "Role Name"
 msgstr "Názov roly"
 
-msgid "Enter role name"
+msgid "Enter Role Name"
 msgstr "Zadajte názov roly"
 
 msgid "Role Description"
@@ -1953,10 +1953,10 @@ msgstr "Priradiť používateľov"
 msgid "Filter"
 msgstr "Filter"
 
-msgid "Select users"
+msgid "Select Users"
 msgstr "Vyberte používateľov"
 
-msgid "Search models..."
+msgid "Search Models..."
 msgstr "Hľadať modely..."
 
 msgid "Field permissions not available for this model"
@@ -2024,7 +2024,7 @@ msgstr "Členovia"
 msgid "User Permissions"
 msgstr "Oprávnenia používateľa"
 
-msgid "Search users..."
+msgid "Search Users..."
 msgstr "Hľadať používateľov..."
 
 msgid "Assign"
@@ -2177,9 +2177,6 @@ msgstr "Aktívne meny"
 msgid "Preview in Calendar"
 msgstr "Náhľad v kalendári"
 
-msgid " Standard Fiscal Year"
-msgstr " Štandardný fiškálny rok"
-
 msgid "Here using standard fiscal year"
 msgstr "Tu sa používa štandardný fiškálny rok"
 
@@ -2263,7 +2260,7 @@ msgstr "Nastavenia"
 msgid "Manage your company, users, and system configuration."
 msgstr "Spravujte svoju spoločnosť, používateľov a konfiguráciu systému."
 
-msgid "Search settings..."
+msgid "Search Settings..."
 msgstr "Hľadať v nastaveniach..."
 
 msgid "My Profile"

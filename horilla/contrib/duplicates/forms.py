@@ -250,7 +250,7 @@ class DuplicateRuleForm(HorillaModelForm):
         required=False,
         label=_("Alert Message (Create)"),
         widget=forms.Textarea(
-            attrs={"rows": 4, "placeholder": _("Enter Alert Message (Create) here...")}
+            attrs={"rows": 4, "placeholder": _("Enter Alert Message (Create) Here...")}
         ),
     )
     alert_message_on_create.is_custom_field = True
@@ -258,7 +258,7 @@ class DuplicateRuleForm(HorillaModelForm):
         required=False,
         label=_("Alert Message (Edit)"),
         widget=forms.Textarea(
-            attrs={"rows": 4, "placeholder": _("Enter Alert Message (Edit) here...")}
+            attrs={"rows": 4, "placeholder": _("Enter Alert Message (Edit) Here...")}
         ),
     )
     alert_message_on_edit.is_custom_field = True

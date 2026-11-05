@@ -89,7 +89,7 @@ msgstr "Aucune notification"
 msgid "Close"
 msgstr "Fermer"
 
-msgid "Enter template title"
+msgid "Enter Template Title"
 msgstr "Entrez le titre du modele"
 
 msgid "Select content type (optional)"

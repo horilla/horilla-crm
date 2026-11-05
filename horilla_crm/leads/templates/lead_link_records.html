@@ -23,7 +23,7 @@
                         id="id_{{ field.name }}"
                         class="select2-pagination w-full text-sm"
                         data-url="{% url 'generics:model_select2' app_label=field.app_label model_name=field.model_name %}"
-                        data-placeholder="{% trans 'Select' %} {{ field.label }}"
+                        data-placeholder="{% trans 'Select' %} {{ field.label|title }}"
                     >
                         <option value="">---------</option>
                         {% if field.selected %}

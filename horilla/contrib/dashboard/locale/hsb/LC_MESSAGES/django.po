@@ -371,7 +371,7 @@ msgstr ""
 msgid "Add to Another Dashboard"
 msgstr ""
 
-msgid " Loading chart..."
+msgid "Loading chart..."
 msgstr ""
 
 msgid "Created From report"
@@ -463,12 +463,6 @@ msgstr ""
 msgid "Failed to reset layout to default."
 msgstr ""
 
-msgid " Delete"
-msgstr ""
-
-msgid " Add to Another Dashboard"
-msgstr ""
-
 msgid "KPI icon"
 msgstr ""
 
@@ -517,7 +511,7 @@ msgstr ""
 msgid "Component name"
 msgstr ""
 
-msgid "Enter component name"
+msgid "Enter Component Name"
 msgstr ""
 
 msgid "Missing module or grouping field; reload the chart and try again."

@@ -233,7 +233,7 @@ class ApprovalProcessRuleComposeForm(ApprovalBaseForm):
         widget=forms.HiddenInput(
             attrs={
                 "class": "oh-input w-full",
-                "placeholder": _("Resolve and resubmit"),
+                "placeholder": _("Resolve and Resubmit"),
             }
         ),
     )

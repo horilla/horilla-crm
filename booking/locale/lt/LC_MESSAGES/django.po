@@ -111,7 +111,7 @@ msgstr ""
 msgid "Notes"
 msgstr ""
 
-msgid "Any additional information..."
+msgid "Any Additional Information..."
 msgstr ""
 
 msgid "My Bookings"
@@ -315,7 +315,7 @@ msgstr ""
 msgid "Bookings"
 msgstr ""
 
-msgid "Enter meeting location"
+msgid "Enter Meeting Location"
 msgstr ""
 
 msgid "Select a date to see available times."

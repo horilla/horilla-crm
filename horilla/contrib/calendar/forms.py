@@ -117,7 +117,7 @@ class CustomCalendarForm(HorillaModelForm):
             attrs={
                 "class": "js-example-basic-multiple headselect w-full",
                 "id": "id_activity_types",
-                "data-placeholder": _("Select activity types"),
+                "data-placeholder": _("Select Activity Types"),
                 "multiple": "multiple",
             },
         )
@@ -319,7 +319,7 @@ class GoogleAccessRolesForm(forms.Form):
                     "generics:model_select2",
                     kwargs={"app_label": "core", "model_name": "role"},
                 ),
-                "data-placeholder": _("Select roles"),
+                "data-placeholder": _("Select Roles"),
                 "multiple": "multiple",
                 "data-field-name": "allowed_roles",
                 "id": "id_allowed_roles",
@@ -348,7 +348,7 @@ class GoogleAccessUsersForm(forms.Form):
                         "model_name": User._meta.model_name,
                     },
                 ),
-                "data-placeholder": _("Select users"),
+                "data-placeholder": _("Select Users"),
                 "multiple": "multiple",
                 "data-field-name": "allowed_users",
                 "id": "id_allowed_users",

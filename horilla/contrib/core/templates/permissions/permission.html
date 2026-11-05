@@ -9,7 +9,7 @@
             <input
                 type="text"
                 class="text-color-600 px-2 py-1.5 pe-[40px] w-full border border-dark-50 rounded-md focus-visible:outline-0 placeholder:text-[#d3d3d3] placeholder:text-xs text-sm [transition:.3s] focus:border-primary-600"
-                placeholder="{% trans 'Search users...' %}"
+                placeholder="{% trans 'Search Users...' %}"
                 hx-get="{% url 'core:load_more_users' %}"
                 hx-trigger="input changed delay:500ms"
                 hx-target="#users-container"

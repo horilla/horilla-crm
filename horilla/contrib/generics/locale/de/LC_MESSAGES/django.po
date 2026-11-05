@@ -119,7 +119,7 @@ msgstr "Anzuzeigende Felder auswaehlen"
 
 #, fuzzy
 #| msgid "Enter Number"
-msgid "Enter phone number"
+msgid "Enter Phone Number"
 msgstr "Zahl eingeben"
 
 msgid "Enter a valid phone number."
@@ -147,7 +147,7 @@ msgstr "Schliessen"
 msgid "Available Fields"
 msgstr "Verfuegbare Felder"
 
-msgid "Search fields..."
+msgid "Search Fields..."
 msgstr "Felder suchen..."
 
 msgid "Visible Fields"
@@ -781,11 +781,11 @@ msgstr "Alle loeschen"
 msgid "Set Null"
 msgstr "Null setzen"
 
-msgid "Are you sure you want to soft delete this dependency ? "
+msgid "Are you sure you want to soft delete this dependency ?"
 msgstr ""
 "Sind Sie sicher, dass Sie diese Abhaengigkeit sanft loeschen moechten? "
 
-msgid "Are you sure you want to hard delete this dependency ? "
+msgid "Are you sure you want to hard delete this dependency ?"
 msgstr ""
 "Sind Sie sicher, dass Sie diese Abhaengigkeit endgueltig loeschen moechten? "
 
@@ -798,7 +798,7 @@ msgstr "Bestaetigung der sanften Loeschung"
 msgid "Are you sure you want to soft delete the selected"
 msgstr "Sind Sie sicher, dass Sie die Auswahl sanft loeschen moechten"
 
-msgid "Are you sure you want to soft delete all dependencies of this record ? "
+msgid "Are you sure you want to soft delete all dependencies of this record ?"
 msgstr ""
 "Sind Sie sicher, dass Sie alle Abhaengigkeiten dieses Datensatzes sanft "
 "loeschen moechten? "

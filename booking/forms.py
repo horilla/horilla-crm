@@ -371,7 +371,7 @@ class PublicBookingForm(forms.Form):
     booker_name = forms.CharField(
         max_length=200,
         label=_("Your Name"),
-        widget=forms.TextInput(attrs={"placeholder": _("Full name")}),
+        widget=forms.TextInput(attrs={"placeholder": _("Full Name")}),
     )
     booker_email = forms.EmailField(
         label=_("Your Email"),
@@ -381,6 +381,6 @@ class PublicBookingForm(forms.Form):
         required=False,
         label=_("Notes"),
         widget=forms.Textarea(
-            attrs={"rows": 3, "placeholder": _("Any additional information...")}
+            attrs={"rows": 3, "placeholder": _("Any Additional Information...")}
         ),
     )

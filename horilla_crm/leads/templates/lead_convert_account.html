@@ -22,7 +22,7 @@
             name="existing_account"
             class="select2-pagination w-full text-sm"
             data-url="{% url 'generics:model_select2' app_label='accounts' model_name='Account' %}"
-            data-placeholder="{% trans 'Select account' %}"
+            data-placeholder="{% trans 'Select Account' %}"
             data-field-name="account"
             hx-get="{% url 'leads:convert_lead' pk=lead.pk %}"
             hx-target="#opportunity-field"

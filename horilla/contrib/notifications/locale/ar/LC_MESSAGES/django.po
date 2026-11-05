@@ -89,7 +89,7 @@ msgstr "لا توجد إشعارات"
 msgid "Close"
 msgstr "إغلاق"
 
-msgid "Enter template title"
+msgid "Enter Template Title"
 msgstr "أدخل عنوان القالب"
 
 msgid "Select content type (optional)"

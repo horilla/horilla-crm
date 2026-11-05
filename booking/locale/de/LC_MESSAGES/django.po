@@ -152,7 +152,7 @@ msgstr "email@beispiel.de"
 msgid "Notes"
 msgstr "Anmerkungen"
 
-msgid "Any additional information..."
+msgid "Any Additional Information..."
 msgstr "Weitere Informationen..."
 
 msgid "My Bookings"
@@ -362,7 +362,7 @@ msgstr "Meeting-Aktivität"
 msgid "Bookings"
 msgstr "Buchungen"
 
-msgid "Enter meeting location"
+msgid "Enter Meeting Location"
 msgstr "Meetingort eingeben"
 
 msgid "Select a date to see available times."

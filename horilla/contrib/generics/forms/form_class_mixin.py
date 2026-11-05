@@ -13,6 +13,7 @@ from horilla.core.exceptions import ValidationError
 # First party imports (Horilla)
 from horilla.db import models
 from horilla.urls import reverse_lazy
+from horilla.utils.text import select_placeholder
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
@@ -320,8 +321,7 @@ class HorillaFormMixin:
                 "generics:model_select2",
                 kwargs={"app_label": app_label, "model_name": model_name},
             ),
-            "data-placeholder": _("Select %(field)s")
-            % {"field": model_field.verbose_name},
+            "data-placeholder": select_placeholder(model_field.verbose_name),
             "multiple": "multiple",
             "data-initial": data_initial,
             "data-field-name": field_name,
@@ -359,8 +359,7 @@ class HorillaFormMixin:
                 "generics:model_select2",
                 kwargs={"app_label": app_label, "model_name": model_name},
             ),
-            "data-placeholder": _("Select %(field)s")
-            % {"field": model_field.verbose_name},
+            "data-placeholder": select_placeholder(model_field.verbose_name),
             "data-initial": str(initial_value) if initial_value is not None else "",
             "data-field-name": field_name,
             "id": f"id_{field_name}",

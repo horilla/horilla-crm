@@ -143,7 +143,7 @@
                     name="owner"
                     class="select2-pagination w-full text-sm"
                     data-url="{% url 'generics:model_select2' app_label=user_meta.app_label  model_name=user_meta.model_class_name %}"
-                    data-placeholder="{% trans 'Select owner' %}"
+                    data-placeholder="{% trans 'Select Owner' %}"
                     data-field-name="owner"
                 >
                     {% for value, label in form.fields.owner.choices %}

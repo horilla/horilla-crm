@@ -28,7 +28,7 @@ class ReviewFieldsField(forms.Field):
             forms.SelectMultiple(
                 attrs={
                     "class": "js-example-basic-multiple headselect w-full h-full",
-                    "data-placeholder": _("Select field(s)"),
+                    "data-placeholder": _("Select Field(s)"),
                 }
             ),
         )

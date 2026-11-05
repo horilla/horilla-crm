@@ -23,7 +23,7 @@
                     multiple
                     class="select2-pagination w-full text-sm"
                     data-url="{% url 'leads:converted_lead_select2' %}"
-                    data-placeholder="{% trans 'Search converted leads' %}"
+                    data-placeholder="{% trans 'Search Converted Leads' %}"
                 >
                     {% for lead in selected_leads %}
                         <option value="{{ lead.pk }}" selected>{{ lead }}</option>

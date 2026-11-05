@@ -74,7 +74,7 @@ msgstr "مثال: رد شده"
 msgid "Rejection: task title"
 msgstr "رد: عنوان وظیفه"
 
-msgid "Resolve and resubmit"
+msgid "Resolve and Resubmit"
 msgstr "رفع مشکل و ارسال مجدد"
 
 msgid "Rejection: task description"
@@ -273,13 +273,7 @@ msgstr "رکورد برای تأیید ارسال شد."
 msgid "Configure approval action"
 msgstr "پیکربندی اقدام تأیید"
 
-msgid "Configure Approval Action"
-msgstr "پیکربندی اقدام تأیید"
-
 msgid "Configure rejection action"
-msgstr "پیکربندی اقدام رد"
-
-msgid "Configure Rejection Action"
 msgstr "پیکربندی اقدام رد"
 
 msgid "Field"
@@ -560,7 +554,7 @@ msgstr "فقط فیلدهای مشخص قابل ویرایش هستند"
 msgid "No fields are editable while waiting."
 msgstr "در زمان انتظار هیچ فیلدی قابل ویرایش نیست."
 
-msgid "Select fields"
+msgid "Select Fields"
 msgstr "انتخاب فیلدها"
 
 msgid "No fields available"
@@ -712,9 +706,6 @@ msgstr "فرآیند تأیید"
 msgid "Rule criteria"
 msgstr "شرایط قانون"
 
-msgid "Rule Criteria"
-msgstr "شرایط قانون"
-
 msgid "When should this rule apply?"
 msgstr "این قانون چه زمانی باید اعمال شود؟"
 
@@ -725,13 +716,7 @@ msgstr "قانون %(order)s — شرایط"
 msgid "Add process rule"
 msgstr "افزودن قانون فرآیند"
 
-msgid "Add Process Rule"
-msgstr "افزودن قانون فرآیند"
-
 msgid "Edit process rule"
-msgstr "ویرایش قانون فرآیند"
-
-msgid "Edit Process Rule"
 msgstr "ویرایش قانون فرآیند"
 
 msgid "A rule with this order already exists for this process."
@@ -764,6 +749,3 @@ msgstr "ویرایش فرآیند"
 #, python-format
 msgid "%(model)s \"%(record)s\" is pending approval and cannot be viewed until a decision is made."
 msgstr "%(model)s «%(record)s» در انتظار تأیید است و تا زمان تصمیم‌گیری قابل مشاهده نیست."
-
-msgid "none"
-msgstr "هیچ‌کدام"

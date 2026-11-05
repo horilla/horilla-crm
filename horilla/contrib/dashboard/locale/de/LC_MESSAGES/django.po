@@ -390,8 +390,8 @@ msgstr "Aktualisieren"
 msgid "Add to Another Dashboard"
 msgstr "Zu einem anderen Dashboard hinzufuegen"
 
-msgid " Loading chart..."
-msgstr " Diagramm wird geladen..."
+msgid "Loading chart..."
+msgstr "Diagramm wird geladen..."
 
 msgid "Created From report"
 msgstr "Aus Bericht erstellt"
@@ -489,12 +489,6 @@ msgstr "Datensaetze"
 msgid "Failed to reset layout to default."
 msgstr "Fehler beim Zuruecksetzen des Layouts auf den Standard."
 
-msgid " Delete"
-msgstr " Loeschen"
-
-msgid " Add to Another Dashboard"
-msgstr " Zu einem anderen Dashboard hinzufuegen"
-
 msgid "KPI icon"
 msgstr "KPI-Symbol"
 
@@ -543,7 +537,7 @@ msgstr "Bericht nicht gefunden."
 msgid "Component name"
 msgstr "Komponentenname"
 
-msgid "Enter component name"
+msgid "Enter Component Name"
 msgstr "Komponentennamen eingeben"
 
 msgid "Missing module or grouping field; reload the chart and try again."

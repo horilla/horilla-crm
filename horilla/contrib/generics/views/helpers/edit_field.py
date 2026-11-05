@@ -28,6 +28,7 @@ from horilla.extension.view.resolve import resolve_view_class
 from horilla.shortcuts import get_object_or_404, render
 from horilla.utils import timezone
 from horilla.utils.decorators import htmx_required, method_decorator
+from horilla.utils.text import enter_placeholder
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
 from horilla.web import ScriptResponse
@@ -90,6 +91,7 @@ class FieldInfoResolver(View):
             "display_value": str(getattr(obj, field.name, "")),
             "use_select2": False,  # Default to False
             "input_attrs": {},
+            "placeholder": enter_placeholder(field.verbose_name),
         }
 
         if isinstance(field, models.ManyToManyField):
@@ -189,7 +191,9 @@ class FieldInfoResolver(View):
 
             # A distinct id: the record's Update form renders the same widget
             # with the default id, and select2 clashes when both are on a page.
-            field_info["phone_widget_html"] = PhoneWidget().render(
+            field_info["phone_widget_html"] = PhoneWidget(
+                placeholder=enter_placeholder(field.verbose_name)
+            ).render(
                 field.name,
                 field_info["value"] or "",
                 {"id": f"inline_id_{field.name}"},
@@ -649,9 +653,9 @@ def keep_posted_value(field_info, request):
         from horilla.contrib.generics.forms.generics import PhoneWidget
 
         posted = [request.POST.get(f"{name}_0", ""), request.POST.get(f"{name}_1", "")]
-        field_info["phone_widget_html"] = PhoneWidget().render(
-            name, posted, {"id": f"inline_id_{name}"}
-        )
+        field_info["phone_widget_html"] = PhoneWidget(
+            placeholder=enter_placeholder(field_info.get("verbose_name") or name)
+        ).render(name, posted, {"id": f"inline_id_{name}"})
     elif field_info["field_type"] != "select" and name in request.POST:
         field_info["value"] = request.POST[name]
 
@@ -910,6 +914,12 @@ class UpdateAllFieldsView(LoginRequiredMixin, View):
             )
             return render(request, "partials/edit_all_fields.html", context)
 
+        for field_name, error in result.errors.items():
+            messages.error(
+                request,
+                _("%(field)s: %(message)s") % {"field": field_name, "message": error},
+            )
+
         from django.utils.http import url_has_allowed_host_and_scheme
 
         self_url = request.POST.get("return_url", "")
@@ -919,34 +929,6 @@ class UpdateAllFieldsView(LoginRequiredMixin, View):
             require_https=request.is_secure(),
         ):
             self_url = ""
-
-        errors = result.errors
-        if errors:
-            # Nothing was saved: keep the form open with what was typed and
-            # each error under its field, and say so right away, by the
-            # field's label.
-            context = build_edit_all_fields_context(
-                request,
-                obj,
-                app_label,
-                model_name,
-                pipeline_field=request.GET.get("pipeline_field"),
-                cancel_url=self_url,
-            )
-            labels = {}
-            for entry in context["fields"]:
-                field_info = entry["info"]
-                labels[field_info["name"]] = field_info["verbose_name"]
-                if field_info["name"] in errors:
-                    field_info["error"] = errors[field_info["name"]]
-                    keep_posted_value(field_info, request)
-            for field_name, error in errors.items():
-                messages.error(
-                    request,
-                    _("%(field)s: %(message)s")
-                    % {"field": labels.get(field_name, field_name), "message": error},
-                )
-            return render(request, "partials/edit_all_fields.html", context)
 
         context = section_view.get_context_data(object=obj)
         context["self_url"] = self_url

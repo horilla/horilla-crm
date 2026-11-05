@@ -126,7 +126,7 @@ msgstr ""
 msgid "Body content cannot be empty."
 msgstr ""
 
-msgid "Enter app password"
+msgid "Enter App Password"
 msgstr ""
 
 msgid "Enter the app-specific password for your mail account."
@@ -135,7 +135,7 @@ msgstr ""
 msgid "Enter the app-specific password  for your mail account."
 msgstr ""
 
-msgid "Enter client secret"
+msgid "Enter Client Secret"
 msgstr ""
 
 msgid ""
@@ -503,7 +503,7 @@ msgstr ""
 msgid "This is how your email will look when sent"
 msgstr ""
 
-msgid "Enter template title"
+msgid "Enter Template Title"
 msgstr ""
 
 msgid "Enter email subject (optional)"
@@ -518,7 +518,7 @@ msgstr ""
 msgid "Title"
 msgstr ""
 
-msgid "Enter title"
+msgid "Enter Title"
 msgstr ""
 
 msgid "Save Template"

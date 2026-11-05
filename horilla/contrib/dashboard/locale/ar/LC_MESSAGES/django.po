@@ -390,8 +390,8 @@ msgstr "تحديث"
 msgid "Add to Another Dashboard"
 msgstr "إضافة إلى لوحة تحكم أخرى"
 
-msgid " Loading chart..."
-msgstr " جارٍ تحميل المخطط..."
+msgid "Loading chart..."
+msgstr "جارٍ تحميل المخطط..."
 
 msgid "Created From report"
 msgstr "تم الإنشاء من التقرير"
@@ -486,12 +486,6 @@ msgstr "السجلات"
 msgid "Failed to reset layout to default."
 msgstr "فشل إعادة تعيين التخطيط إلى الافتراضي."
 
-msgid " Delete"
-msgstr " حذف"
-
-msgid " Add to Another Dashboard"
-msgstr " إضافة إلى لوحة تحكم أخرى"
-
 msgid "KPI icon"
 msgstr "أيقونة مؤشر الأداء"
 
@@ -540,7 +534,7 @@ msgstr "لم يتم العثور على التقرير."
 msgid "Component name"
 msgstr "اسم المكوّن"
 
-msgid "Enter component name"
+msgid "Enter Component Name"
 msgstr "أدخل اسم المكوّن"
 
 msgid "Missing module or grouping field; reload the chart and try again."

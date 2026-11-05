@@ -155,7 +155,7 @@ msgstr "اختر قالباً"
 msgid "Body content cannot be empty."
 msgstr "لا يمكن أن يكون محتوى الرسالة فارغاً."
 
-msgid "Enter app password"
+msgid "Enter App Password"
 msgstr "أدخل كلمة مرور التطبيق"
 
 msgid "Enter the app-specific password for your mail account."
@@ -164,7 +164,7 @@ msgstr "أدخل كلمة مرور التطبيق المخصصة لحساب ال
 msgid "Enter the app-specific password  for your mail account."
 msgstr "أدخل كلمة مرور التطبيق المخصصة لحساب البريد الإلكتروني الخاص بك."
 
-msgid "Enter client secret"
+msgid "Enter Client Secret"
 msgstr "أدخل سر العميل"
 
 msgid ""
@@ -539,7 +539,7 @@ msgstr "لا يوجد محتوى للرسالة"
 msgid "This is how your email will look when sent"
 msgstr "هكذا سيبدو بريدك الإلكتروني عند الإرسال"
 
-msgid "Enter template title"
+msgid "Enter Template Title"
 msgstr "أدخل عنوان القالب"
 
 msgid "Enter email subject (optional)"
@@ -554,7 +554,7 @@ msgstr "حفظ كقالب بريد"
 msgid "Title"
 msgstr "العنوان"
 
-msgid "Enter title"
+msgid "Enter Title"
 msgstr "أدخل العنوان"
 
 msgid "Save Template"

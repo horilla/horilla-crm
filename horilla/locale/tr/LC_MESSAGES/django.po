@@ -318,19 +318,19 @@ msgstr ""
 msgid "Currency"
 msgstr ""
 
-msgid "Enter current password"
+msgid "Enter Current Password"
 msgstr ""
 
 msgid "Current Password"
 msgstr ""
 
-msgid "Enter new password"
+msgid "Enter New Password"
 msgstr ""
 
 msgid "New Password"
 msgstr ""
 
-msgid "Confirm your password"
+msgid "Confirm Your Password"
 msgstr ""
 
 msgid "Confirm New Password"
@@ -1728,7 +1728,7 @@ msgstr ""
 msgid "Select Default Value"
 msgstr ""
 
-msgid "Default value"
+msgid "Default Value"
 msgstr ""
 
 msgid "Auto Mapped"
@@ -1851,7 +1851,7 @@ msgstr ""
 msgid "Authenticate with your password intialize the Database"
 msgstr ""
 
-msgid "Database authentication password"
+msgid "Database Authentication Password"
 msgstr ""
 
 msgid "Authenticate"
@@ -1869,7 +1869,7 @@ msgstr ""
 msgid "Role Name"
 msgstr ""
 
-msgid "Enter role name"
+msgid "Enter Role Name"
 msgstr ""
 
 msgid "Role Description"
@@ -1953,10 +1953,10 @@ msgstr ""
 msgid "Filter"
 msgstr ""
 
-msgid "Select users"
+msgid "Select Users"
 msgstr ""
 
-msgid "Search models..."
+msgid "Search Models..."
 msgstr ""
 
 msgid "Field permissions not available for this model"
@@ -2024,7 +2024,7 @@ msgstr ""
 msgid "User Permissions"
 msgstr ""
 
-msgid "Search users..."
+msgid "Search Users..."
 msgstr ""
 
 msgid "Assign"
@@ -2177,9 +2177,6 @@ msgstr ""
 msgid "Preview in Calendar"
 msgstr ""
 
-msgid " Standard Fiscal Year"
-msgstr ""
-
 msgid "Here using standard fiscal year"
 msgstr ""
 
@@ -2263,7 +2260,7 @@ msgstr ""
 msgid "Manage your company, users, and system configuration."
 msgstr ""
 
-msgid "Search settings..."
+msgid "Search Settings..."
 msgstr ""
 
 msgid "My Profile"

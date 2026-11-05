@@ -321,19 +321,19 @@ msgstr "Langue et fuseau horaire"
 msgid "Currency"
 msgstr "Devise"
 
-msgid "Enter current password"
+msgid "Enter Current Password"
 msgstr "Entrez le mot de passe actuel"
 
 msgid "Current Password"
 msgstr "Mot de passe actuel"
 
-msgid "Enter new password"
+msgid "Enter New Password"
 msgstr "Entrez un nouveau mot de passe"
 
 msgid "New Password"
 msgstr "Nouveau mot de passe"
 
-msgid "Confirm your password"
+msgid "Confirm Your Password"
 msgstr "Confirmez votre mot de passe"
 
 msgid "Confirm New Password"
@@ -1843,7 +1843,7 @@ msgstr "En-tête de fichier"
 msgid "Select Default Value"
 msgstr "Valeurs par défaut"
 
-msgid "Default value"
+msgid "Default Value"
 msgstr "Valeur par défaut"
 
 msgid "Auto Mapped"
@@ -1969,7 +1969,7 @@ msgstr ""
 "données.Authentifiez-vous avec votre mot de passe pour initialiser la base "
 "de données"
 
-msgid "Database authentication password"
+msgid "Database Authentication Password"
 msgstr "Datenbank-Authentifizierung"
 
 msgid "Authenticate"
@@ -1987,7 +1987,7 @@ msgstr "Tout Supprimer"
 msgid "Role Name"
 msgstr "Nom du rôle"
 
-msgid "Enter role name"
+msgid "Enter Role Name"
 msgstr "Entrer le nom d'importation"
 
 msgid "Role Description"
@@ -2089,10 +2089,10 @@ msgstr "Assigner des utilisateurs"
 msgid "Filter"
 msgstr "Filtrer"
 
-msgid "Select users"
+msgid "Select Users"
 msgstr "Utilisateurs sélectionnés :"
 
-msgid "Search models..."
+msgid "Search Models..."
 msgstr "Rechercher des modèles..."
 
 msgid "Field permissions not available for this model"
@@ -2171,7 +2171,7 @@ msgstr "membres"
 msgid "User Permissions"
 msgstr "Autorisations utilisateur"
 
-msgid "Search users..."
+msgid "Search Users..."
 msgstr "Rechercher utilisateurs..."
 
 msgid "Assign"
@@ -2330,9 +2330,6 @@ msgstr "Devises actives"
 msgid "Preview in Calendar"
 msgstr "Aperçu dans le calendrier"
 
-msgid " Standard Fiscal Year"
-msgstr "Año fiscal estándar"
-
 msgid "Here using standard fiscal year"
 msgstr "Año fiscal estándar"
 
@@ -2416,8 +2413,8 @@ msgstr "Paramètres"
 msgid "Manage your company, users, and system configuration."
 msgstr "Gérez votre société, vos utilisateurs et la configuration du système."
 
-#| msgid "Search users..."
-msgid "Search settings..."
+#| msgid "Search Users..."
+msgid "Search Settings..."
 msgstr "Rechercher dans les paramètres..."
 
 #| msgid "Profile"
@@ -3548,7 +3545,7 @@ msgstr "Charger les données de démonstration"
 #~ msgstr[1] "Pays"
 
 #, fuzzy, python-format
-#~| msgid "Search models..."
+#~| msgid "Search Models..."
 #~ msgid "Search %(name)s"
 #~ msgstr "Rechercher des modèles..."
 
@@ -4303,7 +4300,7 @@ msgstr "Charger les données de démonstration"
 #~ msgid "Error grouping by field '%(field)s': %(err)s"
 #~ msgstr "Erreur lors du regroupement par champ '%(field)s' : %(err)s"
 
-#~| msgid "Select users"
+#~| msgid "Select Users"
 #~ msgid "Select value(s)"
 #~ msgstr "Sélectionner des utilisateurs"
 

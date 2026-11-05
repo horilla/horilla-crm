@@ -14,6 +14,7 @@ from horilla.contrib.generics.forms import HorillaModelForm, HorillaMultiStepFor
 # First party imports (Horilla)
 from horilla.core.exceptions import ValidationError
 from horilla.urls import reverse_lazy
+from horilla.utils.text import select_placeholder_lazy
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
@@ -169,7 +170,7 @@ class AddChildAccountForm(forms.Form):
         widget=forms.Select(
             attrs={
                 "class": "select2-pagination w-full text-sm",
-                "data-placeholder": _("Select Account"),
+                "data-placeholder": select_placeholder_lazy(Account._meta.verbose_name),
                 "data-url": reverse_lazy(
                     "generics:model_select2",
                     kwargs={"app_label": "accounts", "model_name": "Account"},

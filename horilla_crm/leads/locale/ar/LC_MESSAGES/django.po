@@ -404,10 +404,10 @@ msgstr "نماذج تسجيل العملاء المتوقعين"
 msgid "Filter"
 msgstr "تصفية"
 
-msgid "Select Assign To Users"
+msgid "Select Assign to Users"
 msgstr "اختر المستخدمين للتعيين"
 
-msgid "Select Assign To Roles"
+msgid "Select Assign to Roles"
 msgstr "اختر الأدوار للتعيين"
 
 msgid "No conditions added"
@@ -545,13 +545,13 @@ msgstr "الترتيب"
 msgid "Enter Order"
 msgstr "أدخل الترتيب"
 
-msgid "Enter return url"
+msgid "Enter Return URL"
 msgstr "أدخل رابط العودة"
 
-msgid "Enter success message"
+msgid "Enter Success Message"
 msgstr "أدخل رسالة النجاح"
 
-msgid "Enter success description"
+msgid "Enter Success Description"
 msgstr "أدخل وصف النجاح"
 
 msgid "We have received your information and will get back to you soon."
@@ -608,7 +608,7 @@ msgstr ""
 msgid "Form Builder"
 msgstr "منشئ النموذج"
 
-msgid "Enter form name"
+msgid "Enter Form Name"
 msgstr "أدخل اسم النموذج"
 
 msgid "Fields"

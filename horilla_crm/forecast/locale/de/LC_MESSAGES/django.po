@@ -45,7 +45,7 @@ msgstr "Gleicher Prognosetyp fuer alle"
 msgid "Apply the same forecast type for all users"
 msgstr "Denselben Prognosetyp fuer alle Benutzer anwenden"
 
-msgid "Enter target"
+msgid "Enter Target"
 msgstr "Ziel eingeben"
 
 msgid "Target amount cannot be negative."

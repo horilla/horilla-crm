@@ -404,10 +404,10 @@ msgstr "Interessentenformulare"
 msgid "Filter"
 msgstr "Filtern"
 
-msgid "Select Assign To Users"
+msgid "Select Assign to Users"
 msgstr "Zuzuweisende Benutzer auswaehlen"
 
-msgid "Select Assign To Roles"
+msgid "Select Assign to Roles"
 msgstr "Zuzuweisende Rollen auswaehlen"
 
 msgid "No conditions added"
@@ -549,13 +549,13 @@ msgstr "Reihenfolge"
 msgid "Enter Order"
 msgstr "Reihenfolge eingeben"
 
-msgid "Enter return url"
+msgid "Enter Return URL"
 msgstr "Rückkehr-URL eingeben"
 
-msgid "Enter success message"
+msgid "Enter Success Message"
 msgstr "Erfolgsmeldung eingeben"
 
-msgid "Enter success description"
+msgid "Enter Success Description"
 msgstr "Erfolgsbeschreibung eingeben"
 
 msgid "We have received your information and will get back to you soon."
@@ -615,7 +615,7 @@ msgstr ""
 msgid "Form Builder"
 msgstr "Formular-Generator"
 
-msgid "Enter form name"
+msgid "Enter Form Name"
 msgstr "Formularnamen eingeben"
 
 msgid "Fields"

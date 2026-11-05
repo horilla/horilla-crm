@@ -92,7 +92,7 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-msgid "Enter template title"
+msgid "Enter Template Title"
 msgstr ""
 
 msgid "Select content type (optional)"

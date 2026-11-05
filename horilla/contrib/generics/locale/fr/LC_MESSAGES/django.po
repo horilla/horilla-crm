@@ -119,7 +119,7 @@ msgstr "Selectionner les champs a afficher"
 
 #, fuzzy
 #| msgid "Enter Number"
-msgid "Enter phone number"
+msgid "Enter Phone Number"
 msgstr "Saisir un nombre"
 
 msgid "Enter a valid phone number."
@@ -147,7 +147,7 @@ msgstr "Fermer"
 msgid "Available Fields"
 msgstr "Champs disponibles"
 
-msgid "Search fields..."
+msgid "Search Fields..."
 msgstr "Rechercher des champs..."
 
 msgid "Visible Fields"
@@ -781,11 +781,11 @@ msgstr "Tout supprimer"
 msgid "Set Null"
 msgstr "Definir Null"
 
-msgid "Are you sure you want to soft delete this dependency ? "
-msgstr "Etes-vous sur de vouloir supprimer doucement cette dependance ? "
+msgid "Are you sure you want to soft delete this dependency ?"
+msgstr "Etes-vous sur de vouloir supprimer doucement cette dependance ?"
 
-msgid "Are you sure you want to hard delete this dependency ? "
-msgstr "Etes-vous sur de vouloir supprimer definitivement cette dependance ? "
+msgid "Are you sure you want to hard delete this dependency ?"
+msgstr "Etes-vous sur de vouloir supprimer definitivement cette dependance ?"
 
 msgid "No dependent records found."
 msgstr "Aucun enregistrement dependant trouve."
@@ -796,7 +796,7 @@ msgstr "Confirmation de suppression douce"
 msgid "Are you sure you want to soft delete the selected"
 msgstr "Etes-vous sur de vouloir supprimer doucement la selection"
 
-msgid "Are you sure you want to soft delete all dependencies of this record ? "
+msgid "Are you sure you want to soft delete all dependencies of this record ?"
 msgstr ""
 "Etes-vous sur de vouloir supprimer doucement toutes les dependances de cet "
 "enregistrement ? "

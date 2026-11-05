@@ -116,7 +116,7 @@ msgid "Select date to filter"
 msgstr "تاریخ را برای فیلتر انتخاب کنید"
 
 #| msgid "Enter Number"
-msgid "Enter phone number"
+msgid "Enter Phone Number"
 msgstr "شماره تلفن را وارد کنید"
 
 msgid "Enter a valid phone number."
@@ -142,7 +142,7 @@ msgstr "بستن"
 msgid "Available Fields"
 msgstr "فیلدهای موجود"
 
-msgid "Search fields..."
+msgid "Search Fields..."
 msgstr "جستجوی فیلدها..."
 
 msgid "Visible Fields"
@@ -600,7 +600,7 @@ msgstr ""
 msgid "Delete All"
 msgstr "حذف همه"
 
-msgid "Are you sure you want to hard delete this dependency ? "
+msgid "Are you sure you want to hard delete this dependency ?"
 msgstr "آیا مطمئن هستید که می‌خواهید این وابستگی را به طور دائمی حذف کنید؟"
 
 msgid " Confirm"
@@ -800,7 +800,7 @@ msgstr "حذف همه"
 msgid "Set Null"
 msgstr "تهی کردن"
 
-msgid "Are you sure you want to soft delete this dependency ? "
+msgid "Are you sure you want to soft delete this dependency ?"
 msgstr "آیا مطمئن هستید که می‌خواهید این وابستگی را به طور نرم حذف کنید؟"
 
 msgid "No dependent records found."
@@ -1459,12 +1459,3 @@ msgstr "انتخاب %(name)s"
 #: horilla/contrib/generics/templates/related_list_content.html:9
 msgid "View and manage %(title)s related to this %(name)s."
 msgstr "%(title)s مرتبط با این %(name)s را مشاهده و مدیریت کنید."
-
-msgid "Add Filter"
-msgstr "افزودن فیلتر"
-
-msgid "Add More Filter"
-msgstr "افزودن فیلتر بیشتر"
-
-msgid "No Value Needed"
-msgstr "هیچ مقداری نیاز نیست"

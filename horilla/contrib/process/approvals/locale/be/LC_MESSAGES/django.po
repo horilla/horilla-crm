@@ -77,7 +77,7 @@ msgstr ""
 msgid "Rejection: task title"
 msgstr ""
 
-msgid "Resolve and resubmit"
+msgid "Resolve and Resubmit"
 msgstr ""
 
 msgid "Rejection: task description"
@@ -557,7 +557,7 @@ msgstr ""
 msgid "No fields are editable while waiting."
 msgstr ""
 
-msgid "Select fields"
+msgid "Select Fields"
 msgstr ""
 
 msgid "No fields available"

@@ -237,7 +237,7 @@ class HorillaMailConfigurationForm(HorillaModelForm):
     """
 
     password = forms.CharField(
-        widget=PasswordInputWithEye(attrs={"placeholder": _("Enter app password")}),
+        widget=PasswordInputWithEye(attrs={"placeholder": _("Enter App Password")}),
         help_text=_("Enter the app-specific password for your mail account."),
         required=True,
     )
@@ -320,7 +320,7 @@ class IncomingHorillaMailConfigurationForm(HorillaModelForm):
     """
 
     password = forms.CharField(
-        widget=PasswordInputWithEye(attrs={"placeholder": _("Enter app password")}),
+        widget=PasswordInputWithEye(attrs={"placeholder": _("Enter App Password")}),
         help_text=_("Enter the app-specific password  for your mail account."),
         required=True,
     )
@@ -399,7 +399,7 @@ class OutlookMailConfigurationForm(HorillaModelForm):
     """
 
     outlook_client_secret = forms.CharField(
-        widget=PasswordInputWithEye(attrs={"placeholder": _("Enter client secret")}),
+        widget=PasswordInputWithEye(attrs={"placeholder": _("Enter Client Secret")}),
         help_text=_(
             "Enter the client secret generated from your Microsoft Azure app registration. "
             "This secret is used to authenticate your Outlook integration securely."

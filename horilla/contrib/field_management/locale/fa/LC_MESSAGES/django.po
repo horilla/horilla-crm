@@ -507,7 +507,7 @@ msgstr "تمام‌عرض"
 msgid "Span both columns of the form."
 msgstr "هر دو ستون فرم را در بر می‌گیرد."
 
-msgid "Search fields…"
+msgid "Search Fields…"
 msgstr "جستجوی فیلدها…"
 
 msgid "Hide optional"

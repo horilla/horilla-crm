@@ -392,10 +392,10 @@ msgstr ""
 msgid "Filter"
 msgstr ""
 
-msgid "Select Assign To Users"
+msgid "Select Assign to Users"
 msgstr ""
 
-msgid "Select Assign To Roles"
+msgid "Select Assign to Roles"
 msgstr ""
 
 msgid "No conditions added"
@@ -533,13 +533,13 @@ msgstr ""
 msgid "Enter Order"
 msgstr ""
 
-msgid "Enter return url"
+msgid "Enter Return URL"
 msgstr ""
 
-msgid "Enter success message"
+msgid "Enter Success Message"
 msgstr ""
 
-msgid "Enter success description"
+msgid "Enter Success Description"
 msgstr ""
 
 msgid "We have received your information and will get back to you soon."
@@ -593,7 +593,7 @@ msgstr ""
 msgid "Form Builder"
 msgstr ""
 
-msgid "Enter form name"
+msgid "Enter Form Name"
 msgstr ""
 
 msgid "Fields"

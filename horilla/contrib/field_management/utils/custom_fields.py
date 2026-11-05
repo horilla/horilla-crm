@@ -227,7 +227,7 @@ def build_custom_form_fields(model):
                 widget=forms.SelectMultiple(
                     attrs={
                         "class": SELECT2_MULTI_CLASS,
-                        "data-placeholder": "Select options...",
+                        "data-placeholder": "Select Options...",
                     }
                 ),
             )
@@ -240,7 +240,7 @@ def build_custom_form_fields(model):
                 widget=forms.Select(
                     attrs={
                         "class": "js-example-basic-single headselect w-full",
-                        "data-placeholder": "Select an option...",
+                        "data-placeholder": "Select an Option...",
                     }
                 ),
             )

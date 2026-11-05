@@ -397,8 +397,8 @@ msgstr "Mettre a jour"
 msgid "Add to Another Dashboard"
 msgstr "Ajouter a un autre tableau de bord"
 
-msgid " Loading chart..."
-msgstr " Chargement du graphique..."
+msgid "Loading chart..."
+msgstr "Chargement du graphique..."
 
 msgid "Created From report"
 msgstr "Cree a partir du rapport"
@@ -497,12 +497,6 @@ msgstr "Enregistrements"
 msgid "Failed to reset layout to default."
 msgstr "Echec de la reinitialisation de la disposition par defaut."
 
-msgid " Delete"
-msgstr " Supprimer"
-
-msgid " Add to Another Dashboard"
-msgstr " Ajouter a un autre tableau de bord"
-
 msgid "KPI icon"
 msgstr "Icone KPI"
 
@@ -551,7 +545,7 @@ msgstr "Rapport introuvable."
 msgid "Component name"
 msgstr "Nom du composant"
 
-msgid "Enter component name"
+msgid "Enter Component Name"
 msgstr "Saisir le nom du composant"
 
 msgid "Missing module or grouping field; reload the chart and try again."

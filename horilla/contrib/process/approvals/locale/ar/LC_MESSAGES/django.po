@@ -76,7 +76,7 @@ msgstr "مثال: مرفوض"
 msgid "Rejection: task title"
 msgstr "الرفض: عنوان المهمة"
 
-msgid "Resolve and resubmit"
+msgid "Resolve and Resubmit"
 msgstr "حلّ وإعادة الإرسال"
 
 msgid "Rejection: task description"
@@ -566,7 +566,7 @@ msgstr "فقط حقول محددة قابلة للتعديل"
 msgid "No fields are editable while waiting."
 msgstr "لا توجد حقول قابلة للتعديل أثناء الانتظار."
 
-msgid "Select fields"
+msgid "Select Fields"
 msgstr "اختر الحقول"
 
 msgid "No fields available"

@@ -35,7 +35,7 @@
                         name="form_name"
                         value="{{ form_data.form_name|default:'Contact Us' }}"
                         required
-                        placeholder="{% trans 'Enter form name' %}"
+                        placeholder="{% trans 'Enter Form Name' %}"
                         hx-post="{% url 'leads:update_heading' %}"
                         hx-trigger="keyup changed delay:300ms"
                         hx-include="[name='color'], [name='language'], #form_name"
@@ -177,7 +177,7 @@
                                 type="text"
                                 id="success_message"
                                 name="success_message"
-                                placeholder="{% trans 'Enter success message' %}"
+                                placeholder="{% trans 'Enter Success Message' %}"
                                 value="{{ form_data.success_message|default:'Thank you for contacting us!' }}"
                                 required
                                 class="mb-3 text-color-600 p-2 placeholder:text-xs pe-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600 {% if errors.success_message %}border-red-500{% endif %}"
@@ -193,7 +193,7 @@
                             <textarea
                                 id="success_description"
                                 name="success_description"
-                                placeholder="{% trans 'Enter success description' %}"
+                                placeholder="{% trans 'Enter Success Description' %}"
                                 rows="3"
                                 required
                                 class="mb-3 text-color-600 p-2 placeholder:text-xs pe-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600 {% if errors.success_description %}border-red-500{% endif %}"
@@ -319,7 +319,6 @@
                             >
                         </div>
                     </div>
-
                 </div>
 
                 <!-- RIGHT COLUMN: Preview -->

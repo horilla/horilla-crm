@@ -322,19 +322,19 @@ msgstr "اللغة والمنطقة الزمنية"
 msgid "Currency"
 msgstr "العملة"
 
-msgid "Enter current password"
+msgid "Enter Current Password"
 msgstr "أدخل كلمة المرور الحالية"
 
 msgid "Current Password"
 msgstr "كلمة المرور الحالية"
 
-msgid "Enter new password"
+msgid "Enter New Password"
 msgstr "أدخل كلمة المرور الجديدة"
 
 msgid "New Password"
 msgstr "كلمة المرور الجديدة"
 
-msgid "Confirm your password"
+msgid "Confirm Your Password"
 msgstr "أكد كلمة المرور الخاصة بك"
 
 msgid "Confirm New Password"
@@ -1780,7 +1780,7 @@ msgstr "رأس الملف"
 msgid "Select Default Value"
 msgstr "القيم الافتراضية"
 
-msgid "Default value"
+msgid "Default Value"
 msgstr "القيمة الافتراضية"
 
 msgid "Auto Mapped"
@@ -1903,7 +1903,7 @@ msgstr "مصادقة قاعدة البيانات"
 msgid "Authenticate with your password intialize the Database"
 msgstr "قم بالمصادقة بكلمة المرور الخاصة بك لتهيئة قاعدة البيانات"
 
-msgid "Database authentication password"
+msgid "Database Authentication Password"
 msgstr "مصادقة قاعدة البيانات"
 
 msgid "Authenticate"
@@ -1921,7 +1921,7 @@ msgstr "حذف الكل"
 msgid "Role Name"
 msgstr "اسم الدور"
 
-msgid "Enter role name"
+msgid "Enter Role Name"
 msgstr "أدخل اسم الاستيراد"
 
 msgid "Role Description"
@@ -2010,10 +2010,10 @@ msgstr "تعيين المستخدمين"
 msgid "Filter"
 msgstr "تصفية"
 
-msgid "Select users"
+msgid "Select Users"
 msgstr "المستخدمون المحددون:"
 
-msgid "Search models..."
+msgid "Search Models..."
 msgstr "البحث عن النماذج..."
 
 msgid "Field permissions not available for this model"
@@ -2083,7 +2083,7 @@ msgstr "أعضاء"
 msgid "User Permissions"
 msgstr "أذونات المستخدم"
 
-msgid "Search users..."
+msgid "Search Users..."
 msgstr "البحث عن المستخدمين..."
 
 msgid "Assign"
@@ -2237,9 +2237,6 @@ msgstr "العملات النشطة"
 msgid "Preview in Calendar"
 msgstr "المعاينة في التقويم"
 
-msgid " Standard Fiscal Year"
-msgstr "السنة المالية القياسية"
-
 msgid "Here using standard fiscal year"
 msgstr "السنة المالية القياسية"
 
@@ -2324,7 +2321,7 @@ msgid "Manage your company, users, and system configuration."
 msgstr "أدر شركتك ومستخدميك وتهيئة النظام."
 
 
-msgid "Search settings..."
+msgid "Search Settings..."
 msgstr "البحث في الإعدادات..."
 
 
@@ -3429,7 +3426,7 @@ msgstr "تحميل البيانات التجريبية"
 #~ msgstr[5] "البلد"
 
 #, fuzzy, python-format
-#~| msgid "Search models..."
+#~| msgid "Search Models..."
 #~ msgid "Search %(name)s"
 #~ msgstr "البحث عن النماذج..."
 
@@ -4172,7 +4169,7 @@ msgstr "تحميل البيانات التجريبية"
 #~ msgid "Error grouping by field '%(field)s': %(err)s"
 #~ msgstr "خطأ في التجميع حسب الحقل '%(field)s': %(err)s"
 
-#~| msgid "Select users"
+#~| msgid "Select Users"
 #~ msgid "Select value(s)"
 #~ msgstr "تحديد المستخدمين"
 

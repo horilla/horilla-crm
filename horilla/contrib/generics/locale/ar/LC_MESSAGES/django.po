@@ -117,7 +117,7 @@ msgstr "اختر الحقول لعرضها"
 
 #, fuzzy
 #| msgid "Enter Number"
-msgid "Enter phone number"
+msgid "Enter Phone Number"
 msgstr "أدخل رقماً"
 
 msgid "Enter a valid phone number."
@@ -145,7 +145,7 @@ msgstr "إغلاق"
 msgid "Available Fields"
 msgstr "الحقول المتاحة"
 
-msgid "Search fields..."
+msgid "Search Fields..."
 msgstr "البحث في الحقول..."
 
 msgid "Visible Fields"
@@ -778,11 +778,11 @@ msgstr "حذف الكل"
 msgid "Set Null"
 msgstr "تعيين Null"
 
-msgid "Are you sure you want to soft delete this dependency ? "
-msgstr "هل أنت متأكد من الحذف الناعم لهذه التبعية؟ "
+msgid "Are you sure you want to soft delete this dependency ?"
+msgstr "هل أنت متأكد من الحذف الناعم لهذه التبعية؟"
 
-msgid "Are you sure you want to hard delete this dependency ? "
-msgstr "هل أنت متأكد من الحذف النهائي لهذه التبعية؟ "
+msgid "Are you sure you want to hard delete this dependency ?"
+msgstr "هل أنت متأكد من الحذف النهائي لهذه التبعية؟"
 
 msgid "No dependent records found."
 msgstr "لم يتم العثور على سجلات تابعة."
@@ -793,8 +793,8 @@ msgstr "تأكيد الحذف الناعم"
 msgid "Are you sure you want to soft delete the selected"
 msgstr "هل أنت متأكد من الحذف الناعم للمحدد"
 
-msgid "Are you sure you want to soft delete all dependencies of this record ? "
-msgstr "هل أنت متأكد من الحذف الناعم لجميع تبعيات هذا السجل؟ "
+msgid "Are you sure you want to soft delete all dependencies of this record ?"
+msgstr "هل أنت متأكد من الحذف الناعم لجميع تبعيات هذا السجل؟"
 
 msgid "No Records to Delete"
 msgstr "لا توجد سجلات للحذف"

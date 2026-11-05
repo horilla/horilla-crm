@@ -75,7 +75,7 @@ msgstr "Bsp: Abgelehnt"
 msgid "Rejection: task title"
 msgstr "Ablehnung: Aufgabentitel"
 
-msgid "Resolve and resubmit"
+msgid "Resolve and Resubmit"
 msgstr "Loesen und erneut einreichen"
 
 msgid "Rejection: task description"
@@ -573,7 +573,7 @@ msgstr "Nur bestimmte Felder sind bearbeitbar"
 msgid "No fields are editable while waiting."
 msgstr "Keine Felder sind waehrend des Wartens bearbeitbar."
 
-msgid "Select fields"
+msgid "Select Fields"
 msgstr "Felder auswaehlen"
 
 msgid "No fields available"

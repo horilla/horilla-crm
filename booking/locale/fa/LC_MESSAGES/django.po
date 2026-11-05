@@ -152,7 +152,7 @@ msgstr "email@example.com"
 msgid "Notes"
 msgstr "یادداشت‌ها"
 
-msgid "Any additional information..."
+msgid "Any Additional Information..."
 msgstr "هر اطلاعات اضافی..."
 
 msgid "My Bookings"
@@ -359,7 +359,7 @@ msgstr "فعالیت جلسه"
 msgid "Bookings"
 msgstr "رزروها"
 
-msgid "Enter meeting location"
+msgid "Enter Meeting Location"
 msgstr "مکان جلسه را وارد کنید"
 
 msgid "Select a date to see available times."

@@ -155,7 +155,7 @@ msgstr "email@exemple.com"
 msgid "Notes"
 msgstr "Notes"
 
-msgid "Any additional information..."
+msgid "Any Additional Information..."
 msgstr "Toute information supplémentaire..."
 
 msgid "My Bookings"
@@ -368,7 +368,7 @@ msgstr "Activité de réunion"
 msgid "Bookings"
 msgstr "Réservations"
 
-msgid "Enter meeting location"
+msgid "Enter Meeting Location"
 msgstr "Saisir le lieu de la réunion"
 
 msgid "Select a date to see available times."

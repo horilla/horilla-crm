@@ -5,7 +5,7 @@
             id="header-search"
             type="text"
             name="q"
-            placeholder="{% trans 'Search anything...' %}"
+            placeholder="{% trans 'Search Anything...' %}"
             class="w-full h-9 ps-9 pe-3 rounded-lg border border-dark-50 bg-slate-50 text-[13px] text-slate-800 placeholder:text-slate-400 outline-none focus:bg-white focus:ring-2 focus:ring-primary-100 transition"
             hx-get="{% url 'generics:global_search' %}?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.filter %}filter={{ request.GET.filter }}&{% endif %}{% if request.GET.section %}section={{ request.GET.section }}&{% endif %}prev_url={{ request.get_full_path|remove_query_param:"section" }}"
             hx-target="#mainContent"

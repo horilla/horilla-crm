@@ -75,7 +75,7 @@ msgstr "Ex : Rejete"
 msgid "Rejection: task title"
 msgstr "Rejet : titre de la tache"
 
-msgid "Resolve and resubmit"
+msgid "Resolve and Resubmit"
 msgstr "Resoudre et resoumettre"
 
 msgid "Rejection: task description"
@@ -574,7 +574,7 @@ msgstr "Seuls des champs specifiques sont modifiables"
 msgid "No fields are editable while waiting."
 msgstr "Aucun champ n'est modifiable en attente."
 
-msgid "Select fields"
+msgid "Select Fields"
 msgstr "Selectionner les champs"
 
 msgid "No fields available"

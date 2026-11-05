@@ -403,10 +403,10 @@ msgstr "Formulaires de capture de prospects"
 msgid "Filter"
 msgstr "Filtrer"
 
-msgid "Select Assign To Users"
+msgid "Select Assign to Users"
 msgstr "Sélectionner les utilisateurs à affecter"
 
-msgid "Select Assign To Roles"
+msgid "Select Assign to Roles"
 msgstr "Sélectionner les rôles à affecter"
 
 msgid "No conditions added"
@@ -548,13 +548,13 @@ msgstr "Ordre"
 msgid "Enter Order"
 msgstr "Saisir l'ordre"
 
-msgid "Enter return url"
+msgid "Enter Return URL"
 msgstr "Entrer l'URL de retour"
 
-msgid "Enter success message"
+msgid "Enter Success Message"
 msgstr "Entrer le message de succès"
 
-msgid "Enter success description"
+msgid "Enter Success Description"
 msgstr "Entrer la description du succès"
 
 msgid "We have received your information and will get back to you soon."
@@ -613,7 +613,7 @@ msgstr ""
 msgid "Form Builder"
 msgstr "Créateur de formulaire"
 
-msgid "Enter form name"
+msgid "Enter Form Name"
 msgstr "Saisir le nom du formulaire"
 
 msgid "Fields"

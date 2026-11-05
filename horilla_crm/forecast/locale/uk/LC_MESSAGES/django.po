@@ -48,7 +48,7 @@ msgstr ""
 msgid "Apply the same forecast type for all users"
 msgstr ""
 
-msgid "Enter target"
+msgid "Enter Target"
 msgstr ""
 
 msgid "Target amount cannot be negative."

@@ -421,10 +421,10 @@ msgstr "فرم‌های دریافت سرنخ"
 msgid "Filter"
 msgstr "فیلتر"
 
-msgid "Select Assign To Users"
+msgid "Select Assign to Users"
 msgstr "انتخاب کاربران برای تخصیص"
 
-msgid "Select Assign To Roles"
+msgid "Select Assign to Roles"
 msgstr "انتخاب نقش‌ها برای تخصیص"
 
 msgid "No conditions added"
@@ -569,13 +569,13 @@ msgstr "ترتیب"
 msgid "Enter Order"
 msgstr "ترتیب را وارد کنید"
 
-msgid "Enter return url"
+msgid "Enter Return URL"
 msgstr "آدرس بازگشت را وارد کنید"
 
-msgid "Enter success message"
+msgid "Enter Success Message"
 msgstr "پیام موفقیت را وارد کنید"
 
-msgid "Enter success description"
+msgid "Enter Success Description"
 msgstr "توضیحات موفقیت را وارد کنید"
 
 msgid "We have received your information and will get back to you soon."
@@ -633,7 +633,7 @@ msgstr "ساخت فرم وب برای دریافت مستقیم سرنخ از و
 msgid "Form Builder"
 msgstr "سازنده فرم"
 
-msgid "Enter form name"
+msgid "Enter Form Name"
 msgstr "نام فرم را وارد کنید"
 
 msgid "Fields"
@@ -961,7 +961,7 @@ msgstr "فعالیت‌ها، یادداشت‌ها و ایمیل‌های ای�
 msgid "Converted leads"
 msgstr "سرنخ‌های تبدیل‌شده"
 
-msgid "Search converted leads"
+msgid "Search Converted Leads"
 msgstr "جستجوی سرنخ‌های تبدیل‌شده"
 
 msgid "Select options"

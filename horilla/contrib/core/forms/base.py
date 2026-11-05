@@ -745,15 +745,15 @@ class ChangePasswordForm(forms.Form):
     """Form for changing user password"""
 
     current_password = forms.CharField(
-        widget=PasswordInputWithEye(attrs={"placeholder": _("Enter current password")}),
+        widget=PasswordInputWithEye(attrs={"placeholder": _("Enter Current Password")}),
         label=_("Current Password"),
     )
     new_password = forms.CharField(
-        widget=PasswordInputWithEye(attrs={"placeholder": _("Enter new password")}),
+        widget=PasswordInputWithEye(attrs={"placeholder": _("Enter New Password")}),
         label=_("New Password"),
     )
     confirm_password = forms.CharField(
-        widget=PasswordInputWithEye(attrs={"placeholder": _("Confirm your password")}),
+        widget=PasswordInputWithEye(attrs={"placeholder": _("Confirm Your Password")}),
         label=_("Confirm New Password"),
     )
 

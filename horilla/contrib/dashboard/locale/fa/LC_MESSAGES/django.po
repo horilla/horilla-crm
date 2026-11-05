@@ -395,7 +395,7 @@ msgstr "خروجی به عنوان PDF"
 msgid "Add to Another Dashboard"
 msgstr "افزودن به داشبورد دیگر"
 
-msgid " Loading chart..."
+msgid "Loading chart..."
 msgstr "در حال بارگذاری نمودار..."
 
 msgid "Created From report"
@@ -491,12 +491,6 @@ msgstr "رکوردها"
 msgid "Failed to reset layout to default."
 msgstr "بازنشانی چیدمان به پیش‌فرض ناموفق بود."
 
-msgid " Delete"
-msgstr "حذف"
-
-msgid " Add to Another Dashboard"
-msgstr "افزودن به داشبورد دیگر"
-
 msgid "KPI icon"
 msgstr "آیکون KPI"
 
@@ -545,7 +539,7 @@ msgstr "گزارش یافت نشد."
 msgid "Component name"
 msgstr "نام مؤلفه"
 
-msgid "Enter component name"
+msgid "Enter Component Name"
 msgstr "نام مؤلفه را وارد کنید"
 
 msgid "Missing module or grouping field; reload the chart and try again."
@@ -660,6 +654,3 @@ msgstr "چیدمان به پیش‌فرض بازنشانی شد."
 
 msgid "Return the 403 page instead of crashing when a user cannot toggle the default dashboard. Offer custom fields in dashboard pickers, grouping and charts."
 msgstr "نمایش صفحه 403 به‌جای خطای سیستمی وقتی کاربر اجازه تغییر داشبورد پیش‌فرض را ندارد. ارائه فیلدهای سفارشی در انتخابگرها، گروه‌بندی و نمودارهای داشبورد."
-
-msgid "Add Components"
-msgstr "افزودن مؤلفه‌ها"

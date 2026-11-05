@@ -28,6 +28,7 @@ from horilla.contrib.utils.middlewares import _thread_local
 # Horilla application imports
 # First party imports (Horilla)
 from horilla.utils.html import format_html
+from horilla.utils.text import enter_placeholder
 from horilla.utils.translation import gettext_lazy as _
 
 # Third-party imports
@@ -573,7 +574,7 @@ class PhoneWidget(forms.MultiWidget):
 
     template_name = "forms/widgets/phone_widget.html"
 
-    def __init__(self, attrs=None):
+    def __init__(self, attrs=None, placeholder=None):
         widgets = [
             forms.Select(
                 choices=PHONE_COUNTRY_CODES,
@@ -590,7 +591,7 @@ class PhoneWidget(forms.MultiWidget):
                         "focus-visible:outline-0 placeholder:text-dark-100 text-sm "
                         "[transition:.3s] focus:border-primary-600"
                     ),
-                    "placeholder": _("Enter phone number"),
+                    "placeholder": placeholder or _("Enter Phone Number"),
                 }
             ),
         ]
@@ -671,6 +672,8 @@ class PhoneField(forms.MultiValueField):
             ),
         ]
         super().__init__(fields, *args, **kwargs)
+        if self.label:
+            self.widget.widgets[1].attrs["placeholder"] = enter_placeholder(self.label)
 
     def compress(self, data_list):
         """Combine dial code and number into a single string."""

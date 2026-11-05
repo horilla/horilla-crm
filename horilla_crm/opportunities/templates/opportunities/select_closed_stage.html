@@ -3,8 +3,9 @@
 
     <form
         hx-post="{% url 'opportunities:select_closed_stage' opportunity.pk %}"
-        hx-target="#modalBox"
-        hx-swap="innerHTML"
+        hx-target="body"
+        hx-swap="beforeend"
+        hx-on::before-request="if (!this.querySelector('input[name=stage_id]:checked')) { event.preventDefault(); this.querySelector('#stage-error').classList.remove('hidden'); }"
     >
         {% csrf_token %}
 
@@ -19,6 +20,10 @@
                 </div>
             {% endif %}
 
+            <p id="stage-error" class="hidden text-sm text-red-600 mb-3">
+                {% trans "Please select Closed Won or Closed Lost." %}
+            </p>
+
             <div class="space-y-3">
                 {% if closed_won_stage %}
                     <div class="p-4 border border-dark-50 rounded-lg hover:border-primary-600 transition duration-300">
@@ -29,10 +34,9 @@
                                     type="radio"
                                     name="stage_id"
                                     value="{{ closed_won_stage.id }}"
-                                    {% if current_stage_id == closed_won_stage.id %}
+                                    {% if current_stage_id != closed_lost_stage.id %}
                                         checked
                                     {% endif %}
-                                    required
                                 >
                                 <span class="custom-radio"></span>
                                 <div class="flex-1">
@@ -64,7 +68,6 @@
                                     {% if current_stage_id == closed_lost_stage.id %}
                                         checked
                                     {% endif %}
-                                    required
                                 >
                                 <span class="custom-radio"></span>
                                 <div class="flex-1">
@@ -115,6 +118,7 @@
         radioButtons.forEach(function(radio) {
             // Update visual state on change
             radio.addEventListener('change', function() {
+                document.getElementById('stage-error')?.classList.add('hidden');
                 updateSelectedState();
             });
 

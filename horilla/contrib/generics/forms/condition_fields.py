@@ -16,8 +16,10 @@ from django import forms
 from horilla.apps import apps
 
 # First party imports (Horilla)
+from horilla.contrib.generics.related_fields import iter_related_fields
 from horilla.db import models
 from horilla.urls import reverse_lazy
+from horilla.utils.text import select_placeholder
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
 
@@ -135,13 +137,11 @@ def add_condition_fields(form):
                 if field_name in form.condition_field_choices:
                     choices = form.condition_field_choices[field_name]
                     is_custom = False
-                    placeholder = f"Select {field_name.replace('_', ' ').title()}"
+                    placeholder = select_placeholder(model_field.verbose_name)
                 else:
                     choices = [("", "---------")] + list(model_field.choices)
                     is_custom = True
-                    placeholder = _("Select %(field)s") % {
-                        "field": field_name.replace("_", " ").title()
-                    }
+                    placeholder = select_placeholder(model_field.verbose_name)
                 form_field = forms.ChoiceField(
                     choices=choices,
                     required=False,
@@ -178,8 +178,7 @@ def add_condition_fields(form):
                         "generics:model_select2",
                         kwargs={"app_label": app_label, "model_name": model_name_fk},
                     ),
-                    "data-placeholder": _("Select %(field)s")
-                    % {"field": model_field.verbose_name},
+                    "data-placeholder": select_placeholder(model_field.verbose_name),
                     "data-field-name": field_name,
                     "data-form-class": f"{form.__module__}.{form.__class__.__name__}",
                     **_condition_select_attrs(field_name, row_id),
@@ -746,6 +745,17 @@ def get_condition_model_fields(model, exclude=CONDITION_EXCLUDED_FIELDS):
     ]
 
 
+def _get_related_field_choices(model, exclude=CONDITION_EXCLUDED_FIELDS):
+    """``(path, label)`` choices for the registered fields behind each relation
+    usable in conditions, e.g. ``owner__department`` -> "Owner - Department"."""
+    allowed_relations = {field.name for field in get_condition_model_fields(model)}
+    return [
+        (path, f"{relation.verbose_name} - {field.verbose_name}")
+        for path, relation, field in iter_related_fields(model)
+        if relation.name in allowed_relations and field.name not in exclude
+    ]
+
+
 def get_model_field_choices(form, model_name):
     """Get field choices for a model (excluding reverse relations and common non-editable)."""
     field_choices = [("", "---------")]
@@ -768,6 +778,7 @@ def get_model_field_choices(form, model_name):
                     or field.name.replace("_", " ").title()
                 )
                 field_choices.append((field.name, verbose_name))
+            field_choices.extend(_get_related_field_choices(model))
             field_choices.extend(_get_extension_field_choices(model))
     except Exception as e:
         logger.error("Error fetching model %s: %s", model_name, str(e), exc_info=True)

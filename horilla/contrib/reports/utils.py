@@ -26,6 +26,7 @@ from django.db.models import (
     OneToOneField,
 )
 
+from horilla.contrib.generics.related_fields import get_default_related_fields
 from horilla.views.generic import View
 
 # Populated exclusively via register_virtual_field() — this module defines
@@ -86,8 +87,6 @@ def register_virtual_field(
 
 # Per report model: {"app_label.model_name": {relation_name: fields}} overrides.
 _REPORT_RELATIONS = {}
-# Per target model: the fields worth showing when reached through a relation.
-_RELATED_DEFAULT_FIELDS = {}
 
 
 def register_report_related_fields(app_label, model_name, relations):
@@ -104,23 +103,15 @@ def register_report_related_fields(app_label, model_name, relations):
     )
 
 
-def register_report_default_related_fields(app_label, model_name, fields):
-    """Default fields of app_label.model_name when reached through a relation
-    that has no override (e.g. the User's department/role for owners)."""
-    _RELATED_DEFAULT_FIELDS[f"{app_label}.{model_name.lower()}"] = list(fields)
-
-
 def get_report_related_fields(model_class, relation_name, related_model):
     """Field names of related_model to list behind `relation_name` of
-    model_class: the override, else the model's registered default, else none."""
+    model_class: the override, else the model's registered default (see
+    ``horilla.contrib.generics.related_fields``), else none."""
     key = f"{model_class._meta.app_label}.{model_class._meta.model_name}"
     overrides = _REPORT_RELATIONS.get(key, {})
     if relation_name in overrides:
         return overrides[relation_name]
-    key = f"{related_model._meta.app_label}.{related_model._meta.model_name}"
-    if key in _RELATED_DEFAULT_FIELDS:
-        return _RELATED_DEFAULT_FIELDS[key]
-    return []
+    return get_default_related_fields(related_model)
 
 
 class ReportFieldProvider(View):

@@ -6,6 +6,7 @@ Provides dynamic form resolution and other utilities used by generic views.
 
 # First party imports (Horilla)
 from horilla.contrib.core.mixins import OwnerQuerysetMixin
+from horilla.contrib.generics.related_fields import resolve_field_path
 
 # Local imports
 from .forms import HorillaModelForm
@@ -44,9 +45,8 @@ def get_condition_value_display(model_cls, field_name, value):
     """
     if not model_cls or not field_name or not value:
         return value
-    try:
-        field = model_cls._meta.get_field(field_name)
-    except Exception:
+    field = resolve_field_path(model_cls, field_name)
+    if field is None:
         return value
 
     related_model = getattr(field, "related_model", None)

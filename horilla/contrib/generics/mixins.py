@@ -20,6 +20,7 @@ from horilla.auth.models import User
 from horilla.contrib.core.mixins import get_allowed_users_queryset_for_model
 from horilla.contrib.core.models import ListColumnVisibility, RecentlyViewed
 from horilla.contrib.core.utils import filter_hidden_fields
+from horilla.contrib.generics.related_fields import iter_related_fields
 from horilla.core.exceptions import FieldDoesNotExist
 from horilla.shortcuts import redirect, render
 from horilla.urls import resolve
@@ -408,6 +409,11 @@ class HorillaListFilterFieldsMixin:
                 field_dict["use_static_options"] = True
             model_fields.append(field_dict)
 
+        if not for_export:
+            model_fields.extend(
+                self._get_related_model_fields(exclude_fields, has_filterset)
+            )
+
         if include_properties:
             property_labels = getattr(self.model, "PROPERTY_LABELS", None)
             if property_labels:
@@ -439,6 +445,55 @@ class HorillaListFilterFieldsMixin:
 
         setattr(self, cache_key, model_fields)
         return model_fields
+
+    def _get_related_model_fields(self, exclude_fields, has_filterset):
+        """Filter entries for the registered fields behind each relation
+        (e.g. ``owner__department``), shown like the model's own fields."""
+        filterset_class = self.get_filterset_class() if has_filterset else None
+        related_fields = []
+        for path, relation, field in iter_related_fields(
+            self.model, exclude=exclude_fields
+        ):
+            if field.name in exclude_fields:
+                continue
+            field_class_name = field.__class__.__name__
+            choices = []
+            related_model = None
+            if field.choices:
+                field_type = "choice"
+                choices = [{"value": val, "label": lbl} for val, lbl in field.choices]
+            elif field_class_name == "ForeignKey":
+                field_type = "foreignkey"
+                related_model = field.related_model
+            elif field_class_name == "DateTimeField":
+                field_type = "datetime"
+            elif field_class_name == "DateField":
+                field_type = "date"
+            else:
+                field_type = FIELD_TYPE_MAP.get(field_class_name, "other")
+                if field_type == "boolean":
+                    choices = [
+                        {"value": "True", "label": "Yes"},
+                        {"value": "False", "label": "No"},
+                    ]
+            related_fields.append(
+                {
+                    "name": path,
+                    "type": field_type,
+                    "verbose_name": f"{relation.verbose_name} - {field.verbose_name}",
+                    "choices": choices,
+                    "operators": (
+                        filterset_class.get_operators_for_field(field_type)
+                        if filterset_class
+                        else []
+                    ),
+                    "model": related_model.__name__ if related_model else None,
+                    "app_label": (
+                        related_model._meta.app_label if related_model else None
+                    ),
+                }
+            )
+        return related_fields
 
     def handle_field_change(self, request, field_name, row_id):
         """Handle field change to update operators dropdown."""

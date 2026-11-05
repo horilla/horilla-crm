@@ -12,6 +12,8 @@ from collections import OrderedDict
 import django_filters
 from django.core.exceptions import FieldDoesNotExist
 
+from horilla.contrib.generics.related_fields import resolve_field_path
+
 # First party imports (Horilla)
 from horilla.db import models
 from horilla.db.models import Q
@@ -189,10 +191,7 @@ class HorillaFilterSet(django_filters.FilterSet):
             return queryset
 
         model = queryset.model
-        try:
-            field_obj = model._meta.get_field(field.split("__")[0])
-        except (FieldDoesNotExist, AttributeError):
-            field_obj = None
+        field_obj = resolve_field_path(model, field)
 
         # DateTimeField is a subclass of DateField — check DateTimeField first
         if field_obj is not None and isinstance(field_obj, models.DateTimeField):
@@ -214,10 +213,7 @@ class HorillaFilterSet(django_filters.FilterSet):
         if start_date is None:
             return None
 
-        try:
-            field_obj = model._meta.get_field(field.split("__")[0])
-        except (FieldDoesNotExist, AttributeError):
-            field_obj = None
+        field_obj = resolve_field_path(model, field)
 
         # DateTimeField is a subclass of DateField — check DateTimeField first
         if field_obj is not None and isinstance(field_obj, models.DateTimeField):
@@ -237,15 +233,11 @@ class HorillaFilterSet(django_filters.FilterSet):
             return None
 
         # Check if the field is a BooleanField
-        try:
-            field = model._meta.get_field(field_name)
-            if isinstance(field, models.BooleanField):
-                # Convert lowercase "true"/"false" to proper boolean or capitalized string
-                value_str = str(value).lower()
-                return {"true": True, "false": False}.get(value_str)
-
-        except (FieldDoesNotExist, AttributeError):
-            pass
+        field = resolve_field_path(model, field_name)
+        if isinstance(field, models.BooleanField):
+            # Convert lowercase "true"/"false" to proper boolean or capitalized string
+            value_str = str(value).lower()
+            return {"true": True, "false": False}.get(value_str)
 
         return value
 
@@ -278,26 +270,16 @@ class HorillaFilterSet(django_filters.FilterSet):
             return None
 
         if operator == "isnull":
-            try:
-                field_obj = model._meta.get_field(field)
-                if isinstance(field_obj, STRING_LIKE_FIELDS):
-                    return Q(**{f"{field}__isnull": True}) | Q(
-                        **{f"{field}__exact": ""}
-                    )
-                return Q(**{f"{field}__isnull": True})
-            except (FieldDoesNotExist, AttributeError):
-                return Q(**{f"{field}__isnull": True})
+            field_obj = resolve_field_path(model, field)
+            if isinstance(field_obj, STRING_LIKE_FIELDS):
+                return Q(**{f"{field}__isnull": True}) | Q(**{f"{field}__exact": ""})
+            return Q(**{f"{field}__isnull": True})
 
         if operator == "isnotnull":
-            try:
-                field_obj = model._meta.get_field(field)
-                if isinstance(field_obj, STRING_LIKE_FIELDS):
-                    return ~Q(**{f"{field}__isnull": True}) & ~Q(
-                        **{f"{field}__exact": ""}
-                    )
-                return Q(**{f"{field}__isnull": False})
-            except (FieldDoesNotExist, AttributeError):
-                return Q(**{f"{field}__isnull": False})
+            field_obj = resolve_field_path(model, field)
+            if isinstance(field_obj, STRING_LIKE_FIELDS):
+                return ~Q(**{f"{field}__isnull": True}) & ~Q(**{f"{field}__exact": ""})
+            return Q(**{f"{field}__isnull": False})
 
         if operator in RELATIVE_DATE_OPERATORS:
             return self._relative_date_q(model, field, operator)
@@ -307,14 +289,10 @@ class HorillaFilterSet(django_filters.FilterSet):
             return None
 
         if operator == "exact":
-            try:
-                field_obj = model._meta.get_field(field)
-                is_choice_or_fk = (
-                    bool(field_obj.choices)
-                    or field_obj.__class__.__name__ == "ForeignKey"
-                )
-            except (FieldDoesNotExist, AttributeError):
-                is_choice_or_fk = False
+            field_obj = resolve_field_path(model, field)
+            is_choice_or_fk = field_obj is not None and (
+                bool(field_obj.choices) or field_obj.__class__.__name__ == "ForeignKey"
+            )
             if is_choice_or_fk:
                 value_list = [v for v in value.split(",") if v]
                 if not value_list:
@@ -339,10 +317,7 @@ class HorillaFilterSet(django_filters.FilterSet):
     @staticmethod
     def _is_datetime_field(model, field):
         """True when ``field`` resolves to a DateTimeField on ``model``."""
-        try:
-            return isinstance(model._meta.get_field(field), models.DateTimeField)
-        except (FieldDoesNotExist, AttributeError):
-            return False
+        return isinstance(resolve_field_path(model, field), models.DateTimeField)
 
     def filter_queryset(self, queryset):
         """

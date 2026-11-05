@@ -4,6 +4,7 @@ Feature registration for Horilla Core app.
 
 # First party imports (Horilla)
 from horilla.auth.models import User
+from horilla.contrib.generics.related_fields import register_default_related_fields
 from horilla.registry.asset_registry import register_html
 from horilla.registry.feature import register_feature, register_models_for_feature
 
@@ -61,4 +62,16 @@ register_models_for_feature(
         ("core", "Period"),
     ],
     features=["delete_dependency"],
+)
+
+# Related fields offered behind any relation to a user (owner, created by, ...)
+# in reports, the filter panel and condition builders.
+register_default_related_fields(
+    "core",
+    "horillauser",
+    [
+        "department",
+        "role",
+        "company",
+    ],
 )

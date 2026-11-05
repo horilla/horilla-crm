@@ -108,6 +108,7 @@ def evaluate_condition(instance, condition):
     from horilla.contrib.generics.forms.condition_fields import (
         evaluate_extension_condition,
     )
+    from horilla.contrib.generics.related_fields import resolve_instance_path
 
     # Fields contributed by other apps (e.g. custom fields) aren't columns.
     handled, extension_result = evaluate_extension_condition(
@@ -115,6 +116,8 @@ def evaluate_condition(instance, condition):
     )
     if handled:
         return extension_result
+    # "owner__department" reads the field off the related record.
+    instance, field_name = resolve_instance_path(instance, field_name)
     try:
         field = instance._meta.get_field(field_name)
         raw_value = getattr(instance, field_name, None)

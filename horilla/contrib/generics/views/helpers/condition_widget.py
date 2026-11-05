@@ -20,9 +20,11 @@ from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.generics.forms.condition_fields import (
     CONDITION_EXCLUDED_FIELDS,
+    _get_related_field_choices,
     get_condition_field_widget_info,
     get_condition_model_fields,
 )
+from horilla.contrib.generics.related_fields import resolve_field_path
 from horilla.db import models
 from horilla.shortcuts import render
 from horilla.urls import reverse_lazy
@@ -157,7 +159,7 @@ class GetFieldValueWidgetView(LoginRequiredMixin, View):
                 return ""
 
             try:
-                model_field = target_model._meta.get_field(field_name)
+                model_field = resolve_field_path(target_model, field_name)
             except Exception:
                 model_field = None
 
@@ -256,9 +258,8 @@ class GetFieldValueWidgetView(LoginRequiredMixin, View):
                 return self._render_text_input(row_id, existing_value)
 
             # Get the field from the model
-            try:
-                model_field = model._meta.get_field(field_name)
-            except Exception:
+            model_field = resolve_field_path(model, field_name)
+            if model_field is None:
                 # Not a real model field (e.g. a synthetic "cf_<id>" custom field) —
                 # ask the condition-field extension registry how to render it.
                 extension_widget = self._render_extension_value_widget(
@@ -745,8 +746,14 @@ class GetModelFieldChoicesView(LoginRequiredMixin, View):
             )
             field_choices.append((field.name, str(verbose_name)))
 
-        # Extra fields have no model field class, so skip them when filtering by type.
+        # Related and extra fields have no plain column type, so skip them when
+        # filtering by type.
         if not field_types and not only_text_fields:
+            field_choices.extend(
+                (path, label)
+                for path, label in _get_related_field_choices(model_class)
+                if path not in exclude_fields
+            )
             field_choices.extend(
                 (name, str(label))
                 for name, label in self.get_extra_field_choices(model_class)

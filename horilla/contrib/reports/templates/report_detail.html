@@ -2,7 +2,13 @@
 {% load reports_tags %}
 {% block messages %}{% endblock %}
 {% block navbar %}
-    {% reload_button "#report-content" %}
+    {# Save/Discard render this page from a POST; reloading that path would 405, so point at the detail URL #}
+    {% if request.method == "POST" %}
+        {% url 'reports:report_detail' report.pk as report_detail_url %}
+        {% reload_button "#report-content" url=report_detail_url %}
+    {% else %}
+        {% reload_button "#report-content" %}
+    {% endif %}
     <div class="bg-white px-5 border-b border-b-dark-50 fixed w-fill-available z-20">
         <div class="flex items-center gap-2 justify-between">
             <div class="flex items-start">
@@ -105,6 +111,7 @@
                         </button>
                     </div>
                 {% endif %}
+                {% if can_export %}
                 <div class="flex items-center relative">
                     <button
                         id="exportDropdownButton"
@@ -112,12 +119,7 @@
                         type="button"
                         class="bg-[#f3f4f6] w-6 h-6 md:w-10 md:h-10 flex items-center justify-center rounded transition duration-300 cursor-pointer"
                     >
-                        {% comment %} <i class="fas fa-file-export me-2"></i> {% endcomment %}
-                        <img
-                            src="{% static 'assets/icons/down.svg' %}"
-                            alt="{% trans 'Actions' %}"
-                            width="15"
-                        >
+                        <i class="fas fa-cog" aria-hidden="true"></i>
                     </button>
                     <!-- Dropdown menu -->
                     <div
@@ -146,6 +148,7 @@
                         </ul>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -184,34 +187,36 @@
             {# What this report is built from: columns, grouping, filters. Click a group to edit it. #}
             <div id="rpt-summary" class="flex items-start gap-3 mb-3{% if panel_open %} rpt-compact{% endif %}">
                 <div class="rpt-summary-group flex items-stretch gap-2 min-w-0 flex-1">
-                <div class="rpt-summary-chip" style="cursor:default">
-                    <span class="rpt-summary-label">{% trans "Total Count" %}</span>
-                    <span class="rpt-summary-value" style="font-weight:600">{{ total_count }}</span>
+                <div class="rpt-summary-chip flex items-center gap-2 min-w-0 max-w-full bg-white text-[#1f2430] border border-[#e3e5ea] shadow-sm rounded-lg px-2.5 py-1.5 text-xs text-start shrink-0 cursor-default">
+                    <span class="rpt-summary-label shrink-0 font-bold text-primary-600">{% trans "Total Count" %}</span>
+                    <span class="rpt-summary-value min-w-0 font-semibold">{{ total_count }}</span>
                 </div>
-                <button type="button" class="rpt-summary-chip" data-edit-tab="grouping" title="{% trans 'Edit Grouping' %}">
-                    <span class="rpt-summary-label">{% trans "Grouping" %}</span>
-                    <span class="rpt-summary-count">{{ temp_report|grouping_count }}</span>
-                    <span class="rpt-summary-value">
+                <button type="button" class="rpt-summary-chip flex items-center gap-2 min-w-0 max-w-full bg-white text-[#1f2430] border border-[#e3e5ea] shadow-sm rounded-lg px-2.5 py-1.5 text-xs text-start hover:border-primary-600" data-edit-tab="grouping" title="{% trans 'Edit Grouping' %}">
+                    <span class="rpt-summary-label shrink-0 font-bold text-primary-600">{% trans "Grouping" %}</span>
+                    <span class="rpt-summary-count hidden font-semibold">{{ temp_report|grouping_count }}</span>
+                    <span class="rpt-summary-value min-w-0 whitespace-normal [overflow-wrap:anywhere]">
                         {% if temp_report.row_groups_list or temp_report.column_groups_list %}
                             {% if temp_report.row_groups_list %}{% trans "Rows" %}: {% for g in temp_report.row_groups_list %}{{ g|get_field_verbose_name:temp_report.model_class }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}
                             {% if temp_report.row_groups_list and temp_report.column_groups_list %} · {% endif %}
                             {% if temp_report.column_groups_list %}{% trans "Columns" %}: {% for g in temp_report.column_groups_list %}{{ g|get_field_verbose_name:temp_report.model_class }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}
                         {% else %}
-                            <i>{% trans "None" %}</i>
+                            <i class="opacity-70">{% trans "None" %}</i>
                         {% endif %}
                     </span>
                 </button>
-                <button type="button" class="rpt-summary-chip" data-edit-tab="filter" title="{% trans 'Edit Filters' %}">
-                    <span class="rpt-summary-label">{% trans "Filters" %}</span>
-                    <span class="rpt-summary-count">{{ temp_report|applied_filter_count }}</span>
-                    <span class="rpt-summary-value">
+                {% with filter_count=temp_report|applied_filter_count %}
+                <button type="button" class="rpt-summary-chip flex items-center gap-2 min-w-0 max-w-full bg-white text-[#1f2430] border border-[#e3e5ea] shadow-sm rounded-lg px-2.5 py-1.5 text-xs text-start hover:border-primary-600{% if filter_count > 1 %} group relative{% endif %}" data-edit-tab="filter" {% if filter_count <= 1 %}title="{% trans 'Edit Filters' %}"{% endif %}>
+                    <span class="rpt-summary-label shrink-0 font-bold text-primary-600">{% trans "Filters" %}</span>
+                    <span class="rpt-summary-count{% if filter_count <= 1 %} hidden{% endif %} font-semibold">{{ filter_count }}</span>
+                    <span class="rpt-summary-value min-w-0 whitespace-normal [overflow-wrap:anywhere] flex-wrap gap-1 {% if filter_count > 1 %}hidden group-hover:flex absolute top-full start-0 z-30 mt-1 w-max max-w-[420px] flex-col items-start bg-white border border-[#e3e5ea] rounded-lg p-2 shadow-lg{% else %}flex{% endif %}">
                         {% if temp_report|has_applied_filters %}
-                            {% for fk, fv in temp_report.filters_dict.items %}{% with t=fv|filter_summary:temp_report %}{% if t %}<span class="rpt-filter-pill">{{ t }}</span>{% endif %}{% endwith %}{% endfor %}
+                            {% for fk, fv in temp_report.filters_dict.items %}{% with t=fv|filter_summary:temp_report %}{% if t %}<span class="rpt-filter-pill inline-block me-1.5 rounded-md px-2 py-px bg-[#25c32417] border border-[#25c32429] text-[#177a16]">{{ t }}</span>{% endif %}{% endwith %}{% endfor %}
                         {% else %}
-                            <i>{% trans "None" %}</i>
+                            <i class="opacity-70">{% trans "None" %}</i>
                         {% endif %}
                     </span>
                 </button>
+                {% endwith %}
                 </div>
                 {% if total_count %}
                     <div class="flex bg-white rounded-lg p-0.5 flex-shrink-0 ms-auto" style="box-shadow:0 1px 3px rgba(0,0,0,.06)" role="tablist">
@@ -229,10 +234,10 @@
                     {% include "components/empty_state.html" with message=no_data_msg %}
                 </div>
             {% else %}
-                <div class="grid grid-cols-12 gap-4 mb-4" id="rpt-grid">
+                <div class="grid grid-cols-12 gap-4 flex-1 min-h-0 grid-rows-[minmax(0,1fr)]" id="rpt-grid">
                     {% if columns %}
-                        <div class="col-span-12" data-rpt-section="detail">
-                            <div class="[box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] bg-white rounded-lg p-3 h-full">
+                        <div class="col-span-12 min-h-0 max-h-full self-start flex flex-col" data-rpt-section="detail">
+                            <div class="[box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] bg-white rounded-lg p-3 flex flex-col overflow-hidden min-h-0">
                                 <div class="flex items-center gap-3 mb-3">
                                     <h3 class="text-sm font-semibold">{% trans "Detail Table" %}</h3>
                                     <span
@@ -251,14 +256,38 @@
                                             &times;
                                         </button>
                                     </span>
+                                    <div class="relative dropdown-wrapper ms-auto">
+                                        <button
+                                            id="dropdownDetailButton"
+                                            type="button"
+                                            class="flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 transition-colors relative"
+                                        >
+                                            <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+                                        </button>
+                                        <div class="dropdown-content absolute z-10 bg-white border-primary-300 rounded-lg [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_8%)] min-w-[150px] py-2 end-0">
+                                            <ul class="text-sm z-50 relative" aria-labelledby="dropdownDetailButton">
+                                                <li>
+                                                    <a
+                                                        href="#"
+                                                        class="block px-3 py-1.5 hover:text-primary-600 transition duration-300 text-[.8rem]"
+                                                        hx-get="{% url 'dashboard:report_to_dashboard' %}?report_id={{ report.pk }}&component_type=table_data"
+                                                        hx-on:click="openModal();"
+                                                        hx-target="#modalBox"
+                                                        hx-swap="innerHTML"
+                                                    >{% trans "Add to Dashboard" %}
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div id="details-table">{% include 'list_view.html' %}</div>
+                                <div id="details-table" class="flex flex-col min-h-0">{% include 'list_view.html' %}</div>
                             </div>
                         </div>
                     {% endif %}
-                    <div class="col-span-12" data-rpt-section="pivot">
+                    <div class="col-span-12 min-h-0 h-full" data-rpt-section="pivot">
                         <div
-                            class="h-full overflow-x-auto custom-scroll [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] bg-white rounded-lg z-0 p-4"
+                            class="h-full flex flex-col overflow-hidden [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] bg-white rounded-lg z-0 p-4"
                             id="pivot-table"
                         >
                             <div class="flex items-center mb-3">
@@ -266,15 +295,17 @@
                             </div>
                             <div
                                 id="pivot-table-wrap"
+                                class="flex-1 min-h-0 overflow-auto custom-scroll"
                                 data-reset-url="{% url 'reports:report_detail_filtered' report.pk %}?{{request.GET.urlencode}}"
+                                data-all-label="{% trans "All" %}"
                             >
                                 {% include 'partials/pivot_table.html' %}
                             </div>
                         </div>
                     </div>
-                    <div class="col-span-12 min-w-0" data-rpt-section="chart">
+                    <div class="col-span-12 min-w-0 min-h-0 h-full" data-rpt-section="chart">
                         <div
-                            class="[box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] bg-white rounded-lg p-3 h-full min-w-0"
+                            class="[box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] bg-white rounded-lg p-3 h-full min-w-0 flex flex-col overflow-hidden"
                             id="chart-container"
                         >
                             <div class="flex justify-between">
@@ -284,13 +315,9 @@
                                     <button
                                         id="dropdownLeftEndButton"
                                         type="button"
-                                        class="flex w-[30px] justify-end"
+                                        class="flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 transition-colors relative"
                                     >
-                                        <img
-                                            src="{% static 'assets/icons/down.svg' %}"
-                                            alt="{% trans 'Actions' %}"
-                                            width="15"
-                                        >
+                                        <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
                                     </button>
                                     <div class="dropdown-content absolute z-10 bg-white border-primary-300 rounded-lg [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_8%)] min-w-[150px] py-2 end-0">
                                         <ul class="text-sm z-50 relative" aria-labelledby="dropdownLeftEndButton">
@@ -343,11 +370,10 @@
                             {% if chart_data.error %}
                                 <p class="text-red-500">{{ chart_data.error }}</p>
                             {% else %}
-                                <div class="flex justify-between items-center min-h-[420px] rpt-chart-wrap">
+                                <div class="flex justify-between items-center flex-1 min-h-0">
                                     <div
                                         id="chart-{{ report.pk }}"
-                                        class="w-full min-h-[400px]"
-                                        style="height: 420px"
+                                        class="w-full h-full min-h-0"
                                     >
                                     </div>
                                 </div>
@@ -358,94 +384,32 @@
             {% endif %}
         </div>
         <style>
-            .rpt-summary-chip { display: flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%; background: #fff; color: #1f2430; border: 1px solid #e3e5ea; box-shadow: 0 1px 2px rgba(0,0,0,.04); border-radius: 8px; padding: 6px 10px; font-size: 12px; text-align: start; }
-            /* Edit panel open: only counts are shown (Grouping 2, Filters 1), details are in the panel */
-            .rpt-summary-count { display: none; font-weight: 600; }
             #rpt-summary.rpt-compact [data-edit-tab] .rpt-summary-value { display: none; }
             #rpt-summary.rpt-compact .rpt-summary-count { display: inline; }
             #rpt-summary.rpt-compact .rpt-summary-chip { padding: 3px 10px; font-size: 11px; gap: 6px; }
             #rpt-summary.rpt-compact .rpt-summary-group > .rpt-summary-chip, #rpt-summary.rpt-compact .rpt-summary-group > [data-edit-tab="filter"] { flex: 0 0 auto; }
             #rpt-summary.rpt-compact .rpt-tab { font-size: 12px; padding: 5px 12px; }
-            /* Keep Total Count, Grouping and Filters on one row at their natural width; they only shrink (and wrap their text) when space runs out */
-            .rpt-summary-group { flex-wrap: nowrap; }
-            .rpt-summary-group > .rpt-summary-chip { flex: 0 1 auto; }
-            .rpt-summary-group > .rpt-summary-chip:first-child { flex-shrink: 0; }
-            [data-edit-tab="filter"] .rpt-summary-value { display: flex; flex-wrap: wrap; gap: 4px; }
-            .rpt-filter-pill { margin-inline-end: 0; }
-            button.rpt-summary-chip:hover { border-color: #E54F38; }
-            .rpt-summary-label { flex-shrink: 0; font-weight: 700; color: #E54F38; }
-            .rpt-summary-value { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
-            .rpt-summary-value i { opacity: .7; }
-            .rpt-filter-pill { display: inline-block; margin-inline-end: 6px; border-radius: 6px; padding: 1px 8px; background: #25c32417; border: 1px solid #25c32429; color: #177a16; }
-            /* One view at a time (Chart / Pivot / Details); the active one fills the report area */
             .sec1 [data-rpt-section]:not(.rpt-active) { display: none; }
-            .sec1 #rpt-grid { flex: 1 1 0%; min-height: 0; margin-bottom: 0; grid-template-rows: minmax(0, 1fr); }
-            .sec1 [data-rpt-section].rpt-active { min-height: 0; height: 100%; }
-            .sec1 [data-rpt-section].rpt-active > div { height: 100%; overflow-y: auto; }
-            /* Detail table: let flex fill the card instead of the fixed 200px */
-            .sec1 [data-rpt-section="detail"].rpt-active > div { display: flex; flex-direction: column; overflow: hidden; }
-            .sec1 [data-rpt-section="detail"].rpt-active #details-table { flex: 1 1 0%; min-height: 0; }
-            .sec1 [data-rpt-section="detail"].rpt-active #details-table > div { height: 100%; display: flex; flex-direction: column; }
-            .sec1 [data-rpt-section="detail"].rpt-active [id^="tableview-"] { flex: 1 1 0%; min-height: 0; display: flex; flex-direction: column; }
-            .sec1 [data-rpt-section="detail"].rpt-active [id^="table-container-"] { flex: 1 1 0%; min-height: 0; height: auto !important; max-height: none !important; }
-            /* Chart: flex-fill the card, no scrollbar */
-            .sec1 [data-rpt-section="chart"].rpt-active > div { display: flex; flex-direction: column; overflow: hidden; }
-            .rpt-chart-wrap { flex: 1 1 0%; min-height: 0 !important; }
-            .sec1 [data-rpt-section="chart"].rpt-active [id^="chart-"] { height: 100% !important; min-height: 0 !important; }
+            .sec1 #details-table > div { display: flex; flex-direction: column; min-height: 0; }
         </style>
-        <script>
-            // View tabs (Chart / Pivot / Details).
-            (function () {
-                function apply() {
-                    var sec = document.querySelector('.sec1');
-                    if (!sec) return;
-                    var present = {};
-                    document.querySelectorAll('[data-rpt-section]').forEach(function (el) { present[el.getAttribute('data-rpt-section')] = true; });
-                    var view = window.reportView;
-                    if (!present[view]) view = present.pivot ? 'pivot' : (present.detail ? 'detail' : 'chart');
-                    window.reportView = view;
-                    document.querySelectorAll('[data-rpt-section]').forEach(function (el) {
-                        el.classList.toggle('rpt-active', el.getAttribute('data-rpt-section') === view);
-                    });
-                    document.querySelectorAll('.rpt-tab').forEach(function (t) {
-                        var on = t.getAttribute('data-view') === view;
-                        t.setAttribute('aria-selected', on ? 'true' : 'false');
-                        t.style.background = on ? '#E54F38' : 'transparent';
-                        t.style.color = on ? '#fff' : '#3b4150';
-                    });
-                    var inst = window['reportChartInstance_{{ report.pk }}'];
-                    if (inst && inst.resize) setTimeout(function () { inst.resize(); }, 60);
-                }
-                if (!window.reportCollapseBound) {
-                    window.reportCollapseBound = true;
-                    document.addEventListener('click', function (e) {
-                        var tab = e.target.closest('.rpt-tab');
-                        if (tab) { window.reportView = tab.getAttribute('data-view'); window.reportApplyFocus(); return; }
-                        var chip = e.target.closest('[data-edit-tab]');
-                        if (chip) {
-                            // Open the edit panel on the clicked tab (Columns / Grouping / Filter).
-                            var name = chip.getAttribute('data-edit-tab');
-                            try { sessionStorage.setItem('activeReportTab', name); } catch (err) {}
-                            var tabBtn = document.querySelector('#panel .tab-button[data-tab-name="' + name + '"]');
-                            if (tabBtn) { tabBtn.click(); return; }
-                            var edit = document.getElementById('toggleBtn');
-                            if (edit) edit.click();
-                        }
-                    });
-                    document.body.addEventListener('htmx:afterSettle', function () { window.reportApplyFocus(); });
-                    // Clicking a pivot cell loads its rows into the detail table: show the Details tab.
-                    document.body.addEventListener('htmx:afterSwap', function (e) {
-                        var t = e.detail && e.detail.target;
-                        if (t && t.id === 'details-table' && document.querySelector('[data-rpt-section="detail"]')) {
-                            window.reportView = 'detail';
-                            window.reportApplyFocus();
-                        }
-                    });
-                }
-                window.reportApplyFocus = apply;
-                apply();
-            })();
-        </script>
+        <div
+            id="report-detail-config"
+            class="hidden"
+            data-report-id="{{ report.pk }}"
+            data-chart-error="{% if chart_data.error %}true{% endif %}"
+            data-chart-type="{{ chart_data.type|lower|default:"pie" }}"
+            data-label-field="{{ chart_data.label_field|title|default:"Count" }}"
+            data-label-count="{{ chart_data.labels|length|default:0 }}"
+            data-has-multiple-groups="{{ chart_data.has_multiple_groups|yesno:"true,false" }}"
+        >
+            {% if not chart_data.error %}
+                {{ chart_data.labels|default:"[]"|json_script:"report-chart-labels" }}
+                {{ chart_data.data|default:"[]"|json_script:"report-chart-data" }}
+                {{ chart_data.stacked_data|default:"{}"|json_script:"report-chart-stacked-data" }}
+                {{ chart_data.urls|default:"[]"|json_script:"report-chart-urls" }}
+            {% endif %}
+        </div>
+        <script src="{% static 'reports/js/report_view_tabs.js' %}"></script>
         <div
             id="panel"
             class="transition-all duration-300 overflow-hidden overflow-x-auto {% if panel_open %}w-80{% else %}w-0{% endif %} bg-white [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] rounded-lg h-[calc(100vh_-_200px)] ms-4"
@@ -456,242 +420,6 @@
             {% endif %}
         >
         </div>
-        <script>
-            (function() {
-                const REPORT_ID = '{{ report.pk }}';
-                const CHART_CONTAINER_ID = `chart-${REPORT_ID}`;
-                const CHART_INSTANCE_KEY = `reportChartInstance_${REPORT_ID}`;
-
-                let initializationAttempts = 0;
-                const MAX_ATTEMPTS = 10;
-                const RETRY_DELAY = 200;
-
-                // Function to export chart as PDF
-                window.exportChartAsPDF = function(chartId, filename) {
-                    try {
-                        if (!window.jspdf || !window.jspdf.jsPDF) {
-                            console.error('jsPDF library is not loaded.');
-                            alert('Failed to export PDF: jsPDF library is not loaded.');
-                            return;
-                        }
-
-                        const chartInstance = window[`reportChartInstance_${chartId.split('-')[1]}`];
-                        if (!chartInstance || chartInstance.isDisposed()) {
-                            console.error('Chart instance not found or disposed for ID:', chartId);
-                            alert('Failed to export PDF: Chart instance not available.');
-                            return;
-                        }
-
-                        chartInstance.resize();
-
-                        const imgData = chartInstance.getDataURL({
-                            pixelRatio: 2,
-                            backgroundColor: '#fff',
-                            excludeComponents: ['toolbox']
-                        });
-
-                        if (!imgData) {
-                            console.error('Failed to generate chart image data.');
-                            alert('Failed to export PDF: Could not generate chart image.');
-                            return;
-                        }
-
-                        const { jsPDF } = window.jspdf;
-                        const pdf = new jsPDF({
-                            orientation: 'landscape',
-                            unit: 'px',
-                            format: [800, 400]
-                        });
-
-                        const imgProps = pdf.getImageProperties(imgData);
-                        const pdfWidth = pdf.internal.pageSize.getWidth();
-                        const pdfHeight = pdf.internal.pageSize.getHeight();
-                        const imgWidth = 700;
-                        const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-
-                        const x = (pdfWidth - imgWidth) / 2;
-                        const y = (pdfHeight - imgHeight) / 2;
-
-                        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-                        pdf.save(`${filename}.pdf`);
-                    } catch (error) {
-                        console.error('Error exporting chart as PDF:', error);
-                        alert('Failed to export PDF: An error occurred.');
-                    }
-                };
-
-                const REPORT_CHART_KEY = 'report-chart-' + REPORT_ID;
-
-                function cleanupChart() {
-                    if (window.chartInstances && window.chartInstances[REPORT_CHART_KEY]) {
-                        delete window.chartInstances[REPORT_CHART_KEY];
-                    }
-                    // Clean up existing chart instance
-                    if (window[CHART_INSTANCE_KEY]) {
-                        try {
-                            if (!window[CHART_INSTANCE_KEY].isDisposed()) {
-                                window[CHART_INSTANCE_KEY].dispose();
-                            }
-                        } catch (e) {
-                            console.warn('Error disposing chart:', e);
-                        }
-                        window[CHART_INSTANCE_KEY] = null;
-                    }
-                }
-
-                function initChart() {
-                    {% if not chart_data.error %}
-                        const chartContainer = document.getElementById(CHART_CONTAINER_ID);
-
-                        // Check if container exists and is visible
-                        if (!chartContainer) {
-                            console.warn(`Chart container #${CHART_CONTAINER_ID} not found. Attempt ${initializationAttempts + 1}/${MAX_ATTEMPTS}`);
-
-                            if (initializationAttempts < MAX_ATTEMPTS) {
-                                initializationAttempts++;
-                                setTimeout(initChart, RETRY_DELAY);
-                            }
-                            return false;
-                        }
-
-                        // Check if required libraries are loaded
-                        if (typeof echarts === 'undefined' || typeof EChartsConfig === 'undefined') {
-                            console.warn(`ECharts or EChartsConfig not loaded. Attempt ${initializationAttempts + 1}/${MAX_ATTEMPTS}`);
-
-                            if (initializationAttempts < MAX_ATTEMPTS) {
-                                initializationAttempts++;
-                                setTimeout(initChart, RETRY_DELAY);
-                            }
-                            return false;
-                        }
-
-                        try {
-                            // Clean up any existing instance
-                            cleanupChart();
-
-                            // Initialize new chart instance
-                            const chartInstance = echarts.init(chartContainer);
-                            window[CHART_INSTANCE_KEY] = chartInstance;
-
-                            const chartConfig = {
-                                type: '{{ chart_data.type|lower|safe|default:"pie" }}',
-                                labels: {{ chart_data.labels|safe|default:"[]" }},
-                                data: {{ chart_data.data|safe|default:"[]" }},
-                                colors: EChartsConfig.getDynamicColors({{ chart_data.labels|length|default:0 }}),
-                                labelField: '{{ chart_data.label_field|title|safe|default:"Count" }}',
-                                stackedData: {{ chart_data.stacked_data|safe|default:"{}" }},
-                                hasMultipleGroups: {{ chart_data.has_multiple_groups|yesno:"true,false" }},
-                                urls : {{ chart_data.urls|safe|default:"[]"}}
-                            };
-
-                            const option = EChartsConfig.getChartOption(chartConfig);
-                            chartInstance.setOption(option, true);
-
-                            if (typeof window.chartInstances === 'undefined') {
-                                window.chartInstances = {};
-                            }
-                            window.chartInstances[REPORT_CHART_KEY] = { instance: chartInstance, config: chartConfig };
-
-                            const chartUrls = {{ chart_data.urls|safe|default:"[]" }};
-                            if (chartConfig.type === 'treemap' || chartConfig.type === 'sankey' ||
-                                chartConfig.type === 'stacked_vertical' || chartConfig.type === 'stacked_horizontal' ||
-                                chartConfig.type === 'heatmap' || (chartConfig.type === 'radar' && chartConfig.stackedData && chartConfig.stackedData.series && chartConfig.stackedData.series.length) ||
-                                (chartUrls && chartUrls.length > 0)) {
-                                EChartsConfig.attachClickHandler(chartInstance, chartUrls || [], chartConfig);
-                            }
-
-                            // Force resize after a short delay
-                            setTimeout(() => {
-                                if (chartInstance && !chartInstance.isDisposed()) {
-                                    chartInstance.resize();
-                                }
-                            }, 100);
-
-                            console.log('Chart initialized successfully');
-                            initializationAttempts = 0; // Reset counter on success
-                            return true;
-
-                        } catch (error) {
-                            console.error('Error initializing chart:', error);
-                            if (initializationAttempts < MAX_ATTEMPTS) {
-                                initializationAttempts++;
-                                setTimeout(initChart, RETRY_DELAY);
-                            }
-                            return false;
-                        }
-                    {% endif %}
-                }
-
-                // Resize chart when container size changes (e.g. when edit panel opens/closes)
-                let resizeTimeout;
-                function scheduleChartResize() {
-                    clearTimeout(resizeTimeout);
-                    resizeTimeout = setTimeout(() => {
-                        const chartInstance = window[CHART_INSTANCE_KEY];
-                        if (chartInstance && !chartInstance.isDisposed()) {
-                            chartInstance.resize();
-                        }
-                    }, 250);
-                }
-                function handleResize() { scheduleChartResize(); }
-
-                window.removeEventListener('resize', handleResize);
-                window.addEventListener('resize', handleResize);
-
-                // When edit panel opens/closes, chart container width changes — observe and resize
-                const chartContainerEl = document.getElementById(CHART_CONTAINER_ID);
-                if (chartContainerEl && typeof ResizeObserver !== 'undefined') {
-                    var resizeObserver = new ResizeObserver(function() { scheduleChartResize(); });
-                    resizeObserver.observe(chartContainerEl);
-                }
-
-                // Initialize chart on page load
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', initChart);
-                } else {
-                    initChart();
-                }
-
-                // Reinitialize chart after HTMX updates
-                document.body.addEventListener('htmx:afterSettle', function(event) {
-                    if (event.target.id === 'report-content' ||
-                        event.target.id === 'mainContent' ||
-                        event.target.id === 'chart-container') {
-
-                        initializationAttempts = 0; // Reset counter
-                        setTimeout(initChart, 150);
-                    }
-                });
-
-                // Handle before swap to clean up
-                document.body.addEventListener('htmx:beforeSwap', function(event) {
-                    if (event.target.id === 'report-content' || event.target.id === 'mainContent') {
-                        cleanupChart();
-                    }
-                });
-
-
-            })();
-
-            // Export dropdown handler
-            document.addEventListener('DOMContentLoaded', function() {
-                const dropdownButton = document.getElementById('exportDropdownButton');
-                const dropdownMenu = document.getElementById('exportDropdown');
-
-                if (dropdownButton && dropdownMenu) {
-                    dropdownButton.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        dropdownMenu.classList.toggle('hidden');
-                    });
-
-                    document.addEventListener('click', function(e) {
-                        if (!dropdownButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                            dropdownMenu.classList.add('hidden');
-                        }
-                    });
-                }
-            });
-        </script>
+        <script src="{% static 'reports/js/report_chart.js' %}"></script>
     </div>
 {% endblock main %}

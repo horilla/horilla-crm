@@ -79,7 +79,7 @@
                 class="text-sm border-[1px] border-[solid] rounded-[5px] px-4 py-2 flex gap-3 btn-with-icon text-primary-600 hover:bg-primary-300 transition-[.3s]"
                 type="button"
                 hx-get="{% url 'core:fiscal_year_calendar_preview' %}"
-                hx-target="#calendarPreviewModalBox"
+                hx-target="#calendarPreviewModal"
                 hx-swap="innerHTML"
                 hx-on:click="openCalendarPreviewModal()"
                 hx-include="#{{view_id|safe}}"

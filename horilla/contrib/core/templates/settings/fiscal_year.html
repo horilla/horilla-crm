@@ -14,7 +14,7 @@
                     <div class="flex flex-wrap items-center gap-2 shrink-0">
                         {% if obj %}
                             {% url 'core:fiscal_year_calendar' obj.id as btn_hx_get_url %}
-                            {% btn _("Preview Calendar") variant="outline" type="button" hx_get=btn_hx_get_url hx_target="#calendarPreviewModalBox" hx_swap="innerHTML" hx_on_click="openCalendarPreviewModal()" id="preview-calendar-btn" %}
+                            {% btn _("Preview Calendar") variant="outline" type="button" hx_get=btn_hx_get_url hx_target="#calendarPreviewModal" hx_swap="innerHTML" hx_on_click="openCalendarPreviewModal()" id="preview-calendar-btn" %}
                         {% endif %}
                         {% has_perm "core.add_fiscalyear" as can_add_fiscalyear %}
                         {% has_perm "core.change_fiscalyear" as can_change_fiscalyear %}

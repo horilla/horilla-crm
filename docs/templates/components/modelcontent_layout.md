@@ -149,7 +149,7 @@ Keep these unchanged unless intentional:
 
 ### Process approvals
 
-- `horilla/contrib/process/approvals/templates/approval_job_detail_page.html`
+- `horilla/contrib/process/approvals/templates/approval_detail_page.html`
 
 ## Special Cases
 

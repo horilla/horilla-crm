@@ -43,7 +43,7 @@ register_feature("approvals", "approval_models", auto_register_all=False)
 
 - Detail views may embed approval status via generics tabs or partials (`templates/` under approvals).
 - Menu entries open approval job queues for managers.
-- Job detail uses **`approval_job_detail_page.html`** (body partial + tab container height) when opening an approval job from the queue.
+- Approval job and history details open through **`approval_detail_page.html`**, which loads the detail fragment over HTMX on direct page loads.
 - List views that hide rows with a pending approval instance cast object ids consistently when excluding pending PKs (avoids type-mismatch misses between `str`/`int` id sets).
 - **`ApprovalListVisibilityExtension`** (`MixinExtension` on list views) replaces earlier monkey patches for pending-approval row visibility; **`ApprovalGuardBulkEditExtension`** (`_inherit_view` on `UpdateAllFieldsView`) blocks bulk Edit Details when an approval guard raises.
 - **`ApprovalDetailVisibilityExtension`** (`MixinExtension` on `HorillaDetailView.dispatch`) blocks the detail view while a record has an active **pending** approval. The user is sent back to the list with a message. The pending approver is not exempt from that block; they act from the Approvals screen, and can use Edit Details without the change permission. Rejected records stay hidden from lists and are not blocked on the detail view by this extension.
@@ -94,7 +94,7 @@ Structured **review cycles** (360 / performance-style) with configurable rules, 
 
 ## Conditions on fields that aren't model columns
 
-`approvals.utils.evaluate_condition` and `reviews.utils.evaluate_condition` call `evaluate_extension_condition` first: when an extension owns the condition's field (e.g. a user-defined custom field) the value is compared as text with the engine's own `_compare_string_operator`; otherwise the model field is read as before. The review-process condition dropdown (`single_form_builder`) and the approval rule dropdown use the extension field choices from [condition_fields.md](../generics/forms/condition_fields.md#conditionfieldprovider-extension-seam).
+`approvals.utils.evaluate_condition` and `reviews.utils.evaluate_condition` call `evaluate_extension_condition` first: when an extension owns the condition's field (e.g. a user-defined custom field) the value is compared as text with the engine's own `_compare_string_operator`; otherwise the model field is read as before. Paths such as `owner__department` are read on the related record. The review-process condition dropdown (`single_form_builder`) and the approval rule dropdown use the extension field choices and the shared related-field list (department, role, company) plus audit fields, from [condition_fields.md](../generics/forms/condition_fields.md#related-user-fields-audit-fields-and-row-values).
 
 ---
 

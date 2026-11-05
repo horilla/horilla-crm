@@ -175,10 +175,8 @@ Flow:
    - set HTMX retarget/rewap/reselect headers to keep modal content stable,
 3. compute existing filter count and existing names,
 4. `bulk_create` missing `QuickFilter` rows with sequential `display_order`,
-5. rebuild:
-   - quick filter bar partial
-   - list view partial
-6. return combined partial response (`partials/quick_filter_response.html`).
+5. re-render the main list template (`view.template_name`), which includes the quick filter bar,
+6. return it with `HX-Retarget`/`HX-Reselect` set to `#<view_id>` and `HX-Reswap: outerHTML`.
 
 ### Action: `remove_quick_filter`
 
@@ -275,8 +273,7 @@ Quick-filter helper functions render or compose:
 
 - `partials/add_quick_filter_form.html`
 - `partials/quick_filters_bar.html`
-- `partials/quick_filter_response.html`
-- main list template (`view.template_name`) for refreshed list body
+- main list template (`view.template_name`) for the refreshed list body, which includes the filter bar
 
 This design allows one action to refresh both filter bar and list table in a single HTMX response.
 

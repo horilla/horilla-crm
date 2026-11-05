@@ -696,6 +696,12 @@ msgstr "چه کسی از این رکورد این پیام را دریافت ک�
 msgid "%(followup_type)s is not an available follow-up type."
 msgstr "نوع پیگیری «%(followup_type)s» در دسترس نیست."
 
+#, python-format
+msgid ""
+"The follow-up type %(followup_type)s is not a built-in or a registered "
+"delivery channel."
+msgstr "نوع پیگیری «%(followup_type)s» نه نوع داخلی است و نه کانال تحویل ثبت‌شده."
+
 msgid "When the previous message is"
 msgstr "وقتی پیام قبلی در این وضعیت باشد"
 

@@ -364,19 +364,17 @@ def _deliver_channel_followup(instance, enrollment, followup, channel):
     return error
 
 
-def _send_channel_followup(instance, enrollment, followup, channel, trigger_time):
+def _record_channel_run(enrollment, followup, error, trigger_time):
     """
-    Send a channel follow-up and record the run.
+    Record the run of a channel follow-up and return its row.
 
     A channel leaves no activity or mail behind, so the run is recorded as a
-    ``CadenceScheduledFollowUp`` (``completed`` or ``failed``), which is what
-    keeps the follow-up from being sent again in this enrollment and what
-    ``refresh_status`` reads. A follow-up that waited for its delay already
-    has that row, and ``run_scheduled_followup`` records the outcome.
-
-    Returns the row when the message was sent, else ``None``.
+    ``CadenceScheduledFollowUp`` (``completed``, or ``failed`` with ``error``),
+    which is what keeps the follow-up from running again in this enrollment
+    and what ``refresh_status`` reads. A follow-up that waited for its delay
+    already has that row: only the reason is written on it here, and
+    ``run_scheduled_followup`` sets its status.
     """
-    error = _deliver_channel_followup(instance, enrollment, followup, channel)
     now = trigger_time or timezone.now()
     run, created = CadenceScheduledFollowUp.all_objects.get_or_create(
         enrollment=enrollment,
@@ -390,7 +388,19 @@ def _send_channel_followup(instance, enrollment, followup, channel, trigger_time
         },
     )
     if not created and error:
-        return None
+        run.error_message = error
+        run.save(update_fields=["error_message", "updated_at"])
+    return run
+
+
+def _send_channel_followup(instance, enrollment, followup, channel, trigger_time):
+    """
+    Send a channel follow-up and record the run.
+
+    Returns the row when the message was sent, else ``None``.
+    """
+    error = _deliver_channel_followup(instance, enrollment, followup, channel)
+    run = _record_channel_run(enrollment, followup, error, trigger_time)
     return None if error else run
 
 
@@ -418,12 +428,21 @@ def _build_followup_item(instance, enrollment, followup, trigger_time=None):
         channel = get_followup_channel(followup.followup_type)
         if channel is None:
             # The channel's app is gone: nothing can be sent for this step.
+            # Record it as failed, so the step is not tried again on every
+            # save; ``None`` keeps the next follow-ups from starting.
             logger.error(
                 "Cadence follow-up %s: type %r is not a built-in or a registered "
                 "delivery channel",
                 followup.pk,
                 followup.followup_type,
             )
+            error = str(
+                _(
+                    "The follow-up type %(followup_type)s is not a built-in "
+                    "or a registered delivery channel."
+                )
+            ) % {"followup_type": followup.followup_type}
+            _record_channel_run(enrollment, followup, error, trigger_time)
             return None
         return _send_channel_followup(
             instance, enrollment, followup, channel, trigger_time
@@ -564,7 +583,10 @@ def run_scheduled_followup(scheduled_id):
                 )
             scheduled.status = "completed" if item else "failed"
             if not item:
-                scheduled.error_message = str(_("Nothing could be created."))
+                # A channel follow-up writes why it failed on this row.
+                scheduled.refresh_from_db(fields=["error_message"])
+                if not scheduled.error_message:
+                    scheduled.error_message = str(_("Nothing could be created."))
         except Exception as exc:  # pylint: disable=broad-exception-caught
             logger.exception(
                 "Cadence delayed follow-up failed: enrollment=%s followup=%s",

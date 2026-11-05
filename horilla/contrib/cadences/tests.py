@@ -496,13 +496,63 @@ class ChannelFollowUpRunTests(ChannelFollowUpTestCase):
         self.assertEqual(scheduled.status, "completed")
         self.assertEqual(len(self.fake.sent), 1)
 
+    def test_delayed_failure_keeps_its_reason(self):
+        """The delayed row gets the channel's reason, not the generic one."""
+        followup = self.followup(do_this_unit="minute", do_this_value=5)
+        services.create_first_followups(self.enrollment, self.record)
+        self.record.contact_number = ""
+        self.record.save()
+        with self.assertLogs("horilla.contrib.cadences.services", "WARNING"):
+            services.run_scheduled_followup(self.run_row(followup).pk)
+        run = self.run_row(followup)
+        self.assertEqual(
+            (run.status, run.error_message),
+            ("failed", "No recipient could be resolved."),
+        )
+        self.assertEqual(self.fake.sent, [])
+
     def test_channel_app_gone(self):
         followup = self.followup(do_this_unit="minute", do_this_value=5)
         services.create_first_followups(self.enrollment, self.record)
         unregister_delivery_channel("fake_sms")
         with self.assertLogs("horilla.contrib.cadences.services", "ERROR"):
             services.run_scheduled_followup(self.run_row(followup).pk)
-        self.assertEqual(self.run_row(followup).status, "failed")
+        run = self.run_row(followup)
+        self.assertEqual(run.status, "failed")
+        self.assertIn("not a built-in or a registered delivery", run.error_message)
+
+    def test_immediate_followup_with_channel_app_gone_is_not_retried(self):
+        """It is recorded as failed once, and the next follow-up does not start."""
+        followup = self.followup()
+        self.followup(
+            "call",
+            number=2,
+            previous_status="completed",
+            branch_from=followup,
+            purpose="Call after SMS",
+            call_start_after_days=0,
+        )
+        unregister_delivery_channel("fake_sms")
+        with self.assertLogs("horilla.contrib.cadences.services", "ERROR"):
+            self.assertEqual(
+                services.create_first_followups(self.enrollment, self.record), []
+            )
+        run = self.run_row(followup)
+        self.assertEqual(run.status, "failed")
+        self.assertEqual(
+            run.error_message,
+            "The follow-up type fake_sms is not a built-in or a registered "
+            "delivery channel.",
+        )
+        self.assertIn(followup.pk, services.existing_followup_ids(self.enrollment))
+        with self.assertNoLogs("horilla.contrib.cadences.services", "ERROR"):
+            self.assertEqual(
+                services.create_first_followups(self.enrollment, self.record), []
+            )
+        self.assertFalse(services.enrollment_activities(self.enrollment).exists())
+        services.refresh_status(self.enrollment, allow_fail=False)
+        self.enrollment.refresh_from_db()
+        self.assertEqual(self.enrollment.status, "failed")
 
     @override_settings(
         CHANNEL_LAYERS={"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}

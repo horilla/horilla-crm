@@ -9,6 +9,7 @@ from django.utils.encoding import force_str
 # First party imports (Horilla)
 from horilla.apps import apps
 from horilla.contrib.core.models import HorillaContentType
+from horilla.contrib.generics.forms.condition_fields import _get_related_field_choices
 from horilla.shortcuts import render
 from horilla.utils.decorators import (
     htmx_required,
@@ -150,6 +151,11 @@ class ModuleFieldChoicesView(ExtraFieldChoicesView):
             )
             model_fields.append((field.name, force_str(verbose_name)))
 
+        model_fields.extend(
+            (path, force_str(label))
+            for path, label in _get_related_field_choices(model)
+            if path not in default_exclude
+        )
         model_fields.extend(
             (name, force_str(label))
             for name, label in self.get_extra_choices(model, "condition")

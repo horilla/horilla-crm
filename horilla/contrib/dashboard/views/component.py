@@ -1,15 +1,11 @@
 """Views for managing dashboard components, including table data handling, component forms, deletion, and moving components between dashboards."""
 
 # Standard library imports
-import json
 import logging
 
 # Third-party imports (Django)
 from django import forms
 from django.contrib import messages
-from django.core.paginator import Paginator
-
-from horilla.apps import apps
 
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
@@ -21,7 +17,6 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
 )
 from horilla.contrib.reports.models import Report
-from horilla.contrib.reports.utils import get_virtual_field
 from horilla.contrib.utils.middlewares import _thread_local
 from horilla.db import transaction
 from horilla.shortcuts import get_object_or_404, render
@@ -45,12 +40,7 @@ from ..models import (
     DashboardComponent,
     DefaultHomeLayoutOrder,
 )
-from ..utils import (
-    DATE_RANGE_CHOICES,
-    annotate_component_virtual_fields,
-    apply_date_range_to_queryset,
-)
-from .dashboard_helper import apply_conditions, get_table_data
+from .dashboard_helper import get_table_data
 
 logger = logging.getLogger(__name__)
 
@@ -78,176 +68,16 @@ class DashboardComponentTableDataView(LoginRequiredMixin, View):
         except DashboardComponent.DoesNotExist:
             return HttpResponse("Component not found", status=404)
 
-        # Get model
-        model = None
-        module_name = component.module.model if component.module else None
-        for app_config in apps.get_app_configs():
-            try:
-                model = apps.get_model(
-                    app_label=app_config.label, model_name=module_name.lower()
-                )
-                break
-            except LookupError:
-                continue
-
+        # Same builder as the first render, so queryset, sorting, columns and bulk
+        # options cannot drift between the page load and the pagination/sort calls.
+        model, table_context = get_table_data(component, request)
         if not model:
             return HttpResponse("Model not found", status=404)
 
-        # Build queryset
-        queryset = model.objects.all()
+        if table_context["total_records_count"] == 0:
+            return HttpResponse("")
 
-        conditions = component.conditions.all().order_by("sequence")
-        queryset = apply_conditions(queryset, conditions)
-        queryset = annotate_component_virtual_fields(queryset, model, component)
-
-        date_range = request.GET.get("date_range")
-        if date_range and (
-            str(date_range) in [str(d) for d in DATE_RANGE_CHOICES]
-            or date_range == "custom"
-        ):
-            date_from = request.GET.get("date_from") if date_range == "custom" else None
-            date_to = request.GET.get("date_to") if date_range == "custom" else None
-            queryset = apply_date_range_to_queryset(
-                queryset, model, date_range, date_from=date_from, date_to=date_to
-            )
-
-        # Apply sorting
-        sort_field = request.GET.get("sort", None)
-        sort_direction = request.GET.get("direction", "asc")
-        if sort_field:
-            prefix = "-" if sort_direction == "desc" else ""
-            try:
-                queryset = queryset.order_by(f"{prefix}{sort_field}")
-            except Exception:
-                queryset = queryset.order_by("id")
-        else:
-            queryset = queryset.order_by("id")
-
-        total_count = queryset.count()
-
-        if total_count == 0:
-            if request.headers.get("HX-Request"):
-                return HttpResponse("")
-            return HttpResponse("No data available")
-
-        # Pagination
-        paginator = Paginator(queryset, 10)
-        page = request.GET.get("page", 1)
-
-        try:
-            page_obj = paginator.get_page(page)
-        except Exception:
-            if request.headers.get("HX-Request"):
-                return HttpResponse("")
-            return HttpResponse("Invalid page")
-
-        has_next = page_obj.has_next()
-        next_page = page_obj.next_page_number() if has_next else None
-
-        # Build columns
-        columns = []
-        if component.columns:
-            try:
-                if isinstance(component.columns, str):
-                    if component.columns.startswith("["):
-                        selected_columns = json.loads(component.columns)
-                    else:
-                        selected_columns = [
-                            col.strip()
-                            for col in component.columns.split(",")
-                            if col.strip()
-                        ]
-                else:
-                    selected_columns = component.columns
-            except Exception:
-                selected_columns = []
-        else:
-            selected_columns = []
-            for field in model._meta.get_fields()[:5]:
-                if field.concrete and not field.is_relation:
-                    selected_columns.append(field.name)
-
-        for column in selected_columns:
-            virtual_field = get_virtual_field(model, column)
-            if virtual_field is not None:
-                if virtual_field.show_in_detail:
-                    columns.append((virtual_field.verbose_name, column))
-                continue
-            try:
-                field = model._meta.get_field(column)
-                verbose_name = field.verbose_name or column.replace("_", " ").title()
-                if hasattr(field, "choices") and field.choices:
-                    columns.append((verbose_name, f"get_{column}_display"))
-                else:
-                    columns.append((verbose_name, column))
-            except Exception:
-                continue
-
-        if not columns:
-            for field in model._meta.get_fields()[:3]:
-                if field.concrete and not field.is_relation:
-                    columns.append(
-                        (
-                            field.verbose_name or field.name.replace("_", " ").title(),
-                            field.name,
-                        )
-                    )
-
-        query_params = self.request.GET.urlencode()
-
-        table_data_url = reverse_lazy(
-            "dashboard:component_table_data",
-            kwargs={"component_id": component.id},
-        )
-
-        # Create the full table_context similar to DashboardDetailView
-        filtered_ids = list(queryset.values_list("id", flat=True))
-
-        table_context = {
-            "queryset": page_obj.object_list,
-            "columns": columns,
-            "search_url": table_data_url,
-            "search_params": query_params,
-            "has_next": has_next,
-            "next_page": next_page,
-            "page_obj": page_obj,
-            "bulk_select_option": True,
-            "visible_actions": [],
-            "col_attrs": {},
-            "table_class": True,
-            "no_record_msg": _(
-                f"No {model._meta.verbose_name_plural} found matching the specified criteria."
-            ),
-            "header_attrs": {},
-            "custom_bulk_actions": [],
-            "additional_action_button": [],
-            "filter_set_class": None,
-            "filter_fields": [],  # You might need to populate this if needed
-            "total_records_count": total_count,
-            "selected_ids": filtered_ids,
-            "selected_ids_json": json.dumps(filtered_ids),
-            "component": component,
-            "model_verbose_name": model._meta.verbose_name_plural,
-            "view_id": f"dashboard_component_{component.id}",
-            "app_label": model._meta.app_label,
-            "model_name": model._meta.model_name,
-        }
-
-        if request.headers.get("HX-Request"):
-            return render(request, "list_view.html", table_context)
-
-        context = {
-            "current_obj": component.dashboard,
-            "dashboard": component.dashboard,
-            "components": DashboardComponent.objects.filter(
-                dashboard=component.dashboard, is_active=True
-            ),
-            "has_components": True,
-            "": 100,
-            "table_contexts": {component.id: table_context},
-        }
-
-        return render(request, "list_view.html", context)
+        return render(request, "list_view.html", table_context)
 
     def post(self, request, *args, **kwargs):
         """Handle bulk operations"""
@@ -279,7 +109,7 @@ class DashboardComponentTableDataView(LoginRequiredMixin, View):
                 columns=table_context.get("columns", []),
                 bulk_export_option=True,
             )
-            list_view.object_list = table_context.get("queryset", model.objects.all())
+            list_view.object_list = table_context.get("queryset", model.objects.none())
             return list_view.post(request, *args, **kwargs)
 
         return HttpResponse("No table component found to handle export", status=400)
@@ -618,12 +448,20 @@ class ReportToDashboardForm(LoginRequiredMixin, HorillaSingleFormView):
         """
         selected_dashboard = form.cleaned_data["dashboard"]
         report_id = self.request.GET.get("report_id")
+        component_type = (
+            "table_data"
+            if self.request.GET.get("component_type") == "table_data"
+            else "chart"
+        )
 
         try:
             report = Report.objects.get(pk=report_id)
 
             existing_component = DashboardComponent.objects.filter(
-                dashboard=selected_dashboard, reports=report, is_active=True
+                dashboard=selected_dashboard,
+                reports=report,
+                component_type=component_type,
+                is_active=True,
             ).first()
 
             if existing_component:
@@ -635,17 +473,22 @@ class ReportToDashboardForm(LoginRequiredMixin, HorillaSingleFormView):
                 )
                 return ScriptResponse(reload=True, close=True)
 
+            component_fields = {}
+            if component_type == "chart":
+                component_fields = {
+                    "chart_type": report.chart_type,
+                    "grouping_field": report.chart_field,
+                    "secondary_grouping": report.chart_field_stacked,
+                }
             DashboardComponent.objects.create(
                 dashboard=selected_dashboard,
                 name=report.name,
-                component_type="chart",
-                chart_type=report.chart_type,
+                component_type=component_type,
                 reports=report,
                 module=report.module,
-                grouping_field=report.chart_field,
-                secondary_grouping=report.chart_field_stacked,
                 component_owner=self.request.user,
                 company=self.request.user.company,
+                **component_fields,
             )
 
             messages.success(self.request, _("Report added to dashboard successfully."))
@@ -667,7 +510,7 @@ class _ChartViewDashboardPickForm(forms.Form):
             attrs={
                 # Match single_form_view.html text inputs (form_class_mixin)
                 "class": WIDGET_INPUT_CSS_CLASS_NO_PR,
-                "placeholder": _("Enter component name"),
+                "placeholder": _("Enter Component Name"),
             }
         ),
     )

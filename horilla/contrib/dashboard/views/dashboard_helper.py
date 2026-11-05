@@ -14,8 +14,15 @@ from horilla.contrib.generics.views import HorillaListView
 from horilla.contrib.generics.views.helpers.queryset_utils import (
     apply_conditions,
     get_queryset_for_module,
+    get_viewable_queryset,
 )
-from horilla.contrib.reports.utils import get_virtual_field
+from horilla.contrib.reports.utils import (
+    NO_VALUE_OPERATORS,
+    annotate_virtual_fields,
+    build_report_filter_q,
+    coerce_virtual_filter_value,
+    get_virtual_field,
+)
 from horilla.contrib.utils.methods import get_section_info_for_model
 from horilla.db.models import Avg, Count, Max, Min, Sum
 from horilla.urls import reverse_lazy
@@ -113,6 +120,48 @@ def get_kpi_data(component, request):
         return None
 
 
+def apply_report_filters(queryset, report):
+    """Narrow ``queryset`` by the report's saved filters, as the report page does."""
+    model = queryset.model
+    filters = report.filters_dict
+    if not filters:
+        return queryset
+
+    queryset = annotate_virtual_fields(
+        queryset,
+        model,
+        [data.get("original_field", name) for name, data in filters.items()],
+    )
+    query = None
+    for index, (field_name, filter_data) in enumerate(filters.items()):
+        operator = filter_data.get("operator", "exact")
+        value = filter_data.get("value")
+        if not value and operator not in NO_VALUE_OPERATORS:
+            continue
+        actual_field = filter_data.get("original_field", field_name)
+        value = coerce_virtual_filter_value(model, actual_field, value)
+        built_query = build_report_filter_q(model, actual_field, operator, value)
+        if built_query is None:
+            continue
+        logic = filter_data.get("logic", "and") if index > 0 else "and"
+        if query is None:
+            query = built_query
+        elif logic == "or":
+            query |= built_query
+        else:
+            query &= built_query
+    return queryset.filter(query) if query else queryset
+
+
+def apply_report_table_queryset(queryset, report):
+    """Queryset of a report's Detail Table: its saved filters, plus the virtual
+    (computed) fields among its columns so they can be shown and sorted."""
+    queryset = apply_report_filters(queryset, report)
+    return annotate_virtual_fields(
+        queryset, queryset.model, report.selected_columns_list
+    )
+
+
 def get_report_chart_data(component, request):
     """
     Generate chart data for report-based dashboard components.
@@ -135,7 +184,9 @@ def get_report_chart_data(component, request):
         if not model:
             return None
 
-        queryset = get_queryset_for_module(request.user, model)
+        queryset = apply_report_filters(
+            get_queryset_for_module(request.user, model), report
+        )
 
         if queryset.count() == 0:
             return None
@@ -370,7 +421,9 @@ def get_table_data(component, request):
     if not model:
         return None, {}
 
-    queryset = get_queryset_for_module(request.user, model)
+    queryset = get_viewable_queryset(request.user, model)
+    if component.reports:
+        queryset = apply_report_table_queryset(queryset, component.reports)
     conditions = component.conditions.all().order_by("sequence")
     queryset = apply_conditions(queryset, conditions)
     queryset = annotate_component_virtual_fields(queryset, model, component)
@@ -386,16 +439,23 @@ def get_table_data(component, request):
             queryset, model, date_range, date_from=date_from, date_to=date_to
         )
 
-    sort_field = request.GET.get("sort", None)
-    sort_direction = request.GET.get("direction", "asc")
-    if sort_field:
-        prefix = "-" if sort_direction == "desc" else ""
-        try:
-            queryset = queryset.order_by(f"{prefix}{sort_field}")
-        except Exception:
-            queryset = queryset.order_by("id")
-    else:
-        queryset = queryset.order_by("id")
+    # Sorting uses the list view's own rules (sort_keys, e.g. "name:asc,date:desc").
+    sorter = HorillaListView(model=model, request=request)
+    sort_pairs = []
+    for token in request.GET.get("sort_keys", "").split(","):
+        token = token.strip()
+        if ":" in token:
+            field_name, direction = token.rsplit(":", 1)
+            sort_pairs.append((field_name.strip(), direction.strip()))
+        elif token:
+            sort_pairs.append((token, "asc"))
+    if sort_pairs:
+        queryset = sorter._apply_multi_sorting(queryset, sort_pairs)
+    elif request.GET.get("sort"):
+        queryset = sorter._apply_sorting(
+            queryset, request.GET["sort"], request.GET.get("direction", "asc")
+        )
+    queryset = queryset.order_by(*queryset.query.order_by, "id")
 
     paginator = Paginator(queryset, 10)
     page = request.GET.get("page", 1)
@@ -404,7 +464,9 @@ def get_table_data(component, request):
     next_page = page_obj.next_page_number() if has_next else None
 
     columns = []
-    if component.columns:
+    if component.reports:
+        selected_columns = component.reports.selected_columns_list
+    elif component.columns:
         try:
             if isinstance(component.columns, str):
                 if component.columns.startswith("["):
@@ -462,16 +524,15 @@ def get_table_data(component, request):
         model=model,
         view_id=f"dashboard_component_{component.id}",
         search_url=table_data_url,
-        main_url=reverse_lazy(
-            "dashboard:dashboard_detail_view",
-            kwargs={"pk": component.dashboard_id},
-        ),
+        # sorting reloads only this table, from the component's own endpoint
+        main_url=table_data_url,
         table_width=False,
         filterset_class=getattr(model, "FilterSet", None),
         columns=columns,
     )
     list_view.request = request
     list_view.table_width = False
+    list_view.main_session_id = list_view.view_id
     list_view.bulk_select_option = True
     list_view.bulk_export_option = True
     list_view.bulk_update_option = False

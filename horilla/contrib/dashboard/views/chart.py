@@ -34,6 +34,7 @@ from ..utils import (
     annotate_component_virtual_fields,
     apply_date_range_to_queryset,
 )
+from .dashboard_helper import apply_report_filters
 
 logger = logging.getLogger(__name__)
 
@@ -669,7 +670,9 @@ class DashboardComponentChartView(View):
                 logger.warning("No grouping field for component %s", component.id)
                 return None
 
-            queryset = get_queryset_for_module(self.request.user, model)
+            queryset = apply_report_filters(
+                get_queryset_for_module(self.request.user, model), report
+            )
 
             conditions = component.conditions.all().order_by("sequence")
             queryset = apply_conditions(queryset, conditions)

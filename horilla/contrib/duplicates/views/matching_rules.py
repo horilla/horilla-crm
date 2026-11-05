@@ -4,20 +4,18 @@
 import json
 from functools import cached_property
 
-from horilla.apps import apps
-
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 
 # First party imports (Horilla)
 from horilla.contrib.core.models import HorillaContentType
+from horilla.contrib.generics.forms.condition_fields import get_model_field_choices
 from horilla.contrib.generics.views import (
     HorillaNavView,
     HorillaSingleDeleteView,
     HorillaSingleFormView,
     HorillaView,
 )
-from horilla.db import models
 from horilla.db.models import Prefetch
 from horilla.shortcuts import render
 from horilla.urls import reverse_lazy
@@ -217,55 +215,12 @@ class MatchingRuleCriteriaFieldChoicesView(LoginRequiredMixin, View):
 
             # Additionally, update DuplicateRule Condition row-0 field choices OOB so conditions reflect module
             model_name = content_type.model
-            # Build field choices for conditions (include ForeignKey fields; skip reverse relations)
-            field_options = '<option value="">---------</option>'
-            try:
-                model_class = None
-                for app_config in apps.get_app_configs():
-                    try:
-                        model_class = apps.get_model(
-                            app_config.label, model_name.lower()
-                        )
-                        break
-                    except (LookupError, ValueError):
-                        continue
-                if model_class:
-                    for field in model_class._meta.get_fields():
-                        # Skip reverse relations / auto-created non-concrete fields
-                        if not hasattr(field, "name"):
-                            continue
-                        if getattr(field, "auto_created", False) and not getattr(
-                            field, "concrete", False
-                        ):
-                            continue
-                        # Skip M2M (usually not meaningful for simple rule conditions)
-                        if getattr(field, "many_to_many", False):
-                            continue
-                        if field.name in [
-                            "id",
-                            "pk",
-                            "created_at",
-                            "updated_at",
-                            "created_by",
-                            "updated_by",
-                            "company",
-                            "additional_info",
-                        ]:
-                            continue
-                        # Allow normal fields + ForeignKey/OneToOne
-                        if getattr(field, "concrete", False) or isinstance(
-                            field, (models.ForeignKey, models.OneToOneField)
-                        ):
-                            verbose_name = (
-                                getattr(field, "verbose_name", None)
-                                or field.name.replace("_", " ").title()
-                            )
-                            field_options += (
-                                f'<option value="{escape(field.name)}">'
-                                f"{escape(str(verbose_name))}</option>"
-                            )
-            except Exception:
-                pass
+            # Same field list as every other condition builder (editable fields
+            # plus the related ones such as owner department/role/company).
+            field_options = "".join(
+                f'<option value="{escape(value)}">{escape(str(label))}</option>'
+                for value, label in get_model_field_choices(None, model_name)
+            )
 
             hx_vals_json = json.dumps(
                 {

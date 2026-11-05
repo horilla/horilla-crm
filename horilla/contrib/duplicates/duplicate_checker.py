@@ -193,7 +193,12 @@ def evaluate_rule_conditions(duplicate_rule, instance):
                 # Fields contributed by other apps (e.g. custom fields)
                 field_value = get_condition_field_value(field_name, instance)
             else:
-                field_value = getattr(instance, field_name, None)
+                from horilla.contrib.generics.related_fields import (
+                    resolve_instance_path,
+                )
+
+                target, leaf = resolve_instance_path(instance, field_name)
+                field_value = getattr(target, leaf, None)
             if field_value is None:
                 field_value = ""
 

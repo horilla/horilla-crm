@@ -324,8 +324,12 @@ class ScoringCondition(HorillaCoreModel):
             if handled:
                 return extension_result
 
-            field = instance._meta.get_field(self.field)
-            raw_value = getattr(instance, self.field, None)
+            from horilla.contrib.generics.related_fields import resolve_instance_path
+
+            # "owner__department" reads the field off the related record.
+            target, field_name = resolve_instance_path(instance, self.field)
+            field = target._meta.get_field(field_name)
+            raw_value = getattr(target, field_name, None)
             field_type = getattr(field, "get_internal_type", lambda: "")()
             is_date_field = field_type == "DateField"
             is_datetime_field = field_type == "DateTimeField"

@@ -2,8 +2,11 @@
 
 # Standard library imports
 import logging
+from functools import reduce
+from operator import or_
 
 from horilla.contrib.generics.forms.condition_fields import get_extension_condition_q
+from horilla.contrib.generics.related_fields import resolve_field_path
 
 # Third-party imports (Django)
 from horilla.db.models import Q
@@ -13,6 +16,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "apply_conditions",
     "get_queryset_for_module",
+    "get_viewable_queryset",
     "get_granted_access_filter",
     "user_has_granted_access",
 ]
@@ -80,6 +84,45 @@ def get_queryset_for_module(user, model):
     return model.objects.none()
 
 
+def get_viewable_queryset(user, model):
+    """
+    Return the records of ``model`` that ``user`` may view, by the same rule as
+    the list view's owner filtration: ``view_<model>`` sees every record,
+    ``view_own_<model>`` sees records owned by the user or a subordinate role
+    (``OWNER_FIELDS``) plus records granted through ``granted_access_filter``,
+    and anyone else sees nothing.
+    """
+    from horilla.contrib.core.utils import get_allowed_user_ids
+
+    app_label = model._meta.app_label
+    model_name = model._meta.model_name
+
+    if user.has_perm(f"{app_label}.view_{model_name}"):
+        return model.objects.all()
+    if not user.has_perm(f"{app_label}.view_own_{model_name}"):
+        return model.objects.none()
+
+    query = None
+    owner_fields = getattr(model, "OWNER_FIELDS", None)
+    if owner_fields:
+        allowed_user_ids = list(get_allowed_user_ids(user))
+        query = reduce(
+            or_,
+            (Q(**{f"{field}__in": allowed_user_ids}) for field in owner_fields),
+            Q(),
+        )
+    granted_query = get_granted_access_filter(model, user, "view")
+    if granted_query is not None:
+        query = granted_query if query is None else query | granted_query
+    if query is None:
+        return model.objects.none()
+
+    # Deduplicate by primary key in a subquery rather than .distinct() on the
+    # outer queryset: report code calls .values(*fields) on the result, and an
+    # outer DISTINCT would merge different records with equal column values.
+    return model.objects.filter(pk__in=model.objects.filter(query).values("pk"))
+
+
 def apply_conditions(queryset, conditions):
     """Apply filter conditions to a queryset with proper type handling."""
 
@@ -104,7 +147,8 @@ def apply_conditions(queryset, conditions):
 
         try:
             model = queryset.model
-            field_obj = model._meta.get_field(field)
+            # "owner__department" resolves to the field on the related model.
+            field_obj = resolve_field_path(model, field) or model._meta.get_field(field)
 
             converted_value = value
             if hasattr(field_obj, "get_internal_type"):

@@ -15,6 +15,7 @@ from horilla.contrib.generics.forms.form_class_mixin import WIDGET_INPUT_CSS_CLA
 from horilla.core.exceptions import FieldDoesNotExist, ValidationError
 from horilla.db import models
 from horilla.urls import reverse_lazy
+from horilla.utils.text import select_placeholder
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
@@ -38,7 +39,7 @@ PROBABILITY_WIDGET_ATTRS = {
     "readonly": "readonly",
     "data-readonly": "true",
     "tabindex": "-1",
-    "placeholder": _("Auto-calculated from stage"),
+    "placeholder": _("Auto-Calculated from Stage"),
     "class": (
         f"{WIDGET_INPUT_CSS_CLASS} bg-gray-200 border-gray-300 cursor-not-allowed opacity-75"
     ),
@@ -91,7 +92,6 @@ class OpportunityFormClass(OwnerQuerysetMixin, HorillaMultiStepForm):
         exclude = [
             "forecast_category",
             "expected_revenue",
-            "email",
             "opportunity_score",
         ]
         widgets = {
@@ -104,6 +104,7 @@ class OpportunityFormClass(OwnerQuerysetMixin, HorillaMultiStepForm):
         1: [
             "name",
             "amount",
+            "email",
             "quantity",
             "close_date",
             "stage",
@@ -139,6 +140,7 @@ class OpportunitySingleForm(OwnerQuerysetMixin, HorillaModelForm):
     field_order = fields = [
         "name",
         "amount",
+        "email",
         "quantity",
         "close_date",
         "stage",
@@ -164,7 +166,6 @@ class OpportunitySingleForm(OwnerQuerysetMixin, HorillaModelForm):
         exclude = [
             "forecast_category",
             "expected_revenue",
-            "email",
             "opportunity_score",
         ]
         widgets = {
@@ -290,7 +291,9 @@ class OpportunityTeamForm(HorillaModelForm):
                         widget=forms.Select(
                             attrs={
                                 "class": "js-example-basic-single headselect",
-                                "data-placeholder": f"Select {field_name.replace('_', ' ').title()}",
+                                "data-placeholder": select_placeholder(
+                                    model_field.verbose_name
+                                ),
                                 "id": f"id_{field_name}_0",
                                 "name": f"{field_name}_0",
                             }
@@ -305,7 +308,9 @@ class OpportunityTeamForm(HorillaModelForm):
                         widget=forms.Select(
                             attrs={
                                 "class": "js-example-basic-single headselect",
-                                "data-placeholder": f"Select {field_name.replace('_', ' ').title()}",
+                                "data-placeholder": select_placeholder(
+                                    model_field.verbose_name
+                                ),
                                 "id": f"id_{field_name}_0",
                                 "name": f"{field_name}_0",
                             }
@@ -339,7 +344,9 @@ class OpportunityTeamForm(HorillaModelForm):
                                         "model_name": model_name,
                                     },
                                 ),
-                                "data-placeholder": f"Select {model_field.verbose_name}",
+                                "data-placeholder": select_placeholder(
+                                    model_field.verbose_name
+                                ),
                                 "data-field-name": field_name,
                                 "id": f"id_{field_name}_0",
                                 "name": f"{field_name}_0",
@@ -355,7 +362,9 @@ class OpportunityTeamForm(HorillaModelForm):
                         widget=forms.Select(
                             attrs={
                                 "class": "js-example-basic-single headselect",
-                                "data-placeholder": f"Select {field_name.replace('_', ' ').title()}",
+                                "data-placeholder": select_placeholder(
+                                    model_field.verbose_name
+                                ),
                                 "id": f"id_{field_name}_0",
                                 "name": f"{field_name}_0",
                             }

@@ -127,7 +127,10 @@
         <!-- HTMX CSRF Token Configuration -->
         <script>
             document.body.addEventListener("htmx:configRequest", (event) => {
-                event.detail.headers["X-CSRFToken"] = "{{ csrf_token }}";
+                // Prefer the live cookie: the token rendered into this page goes
+                // stale when the CSRF secret rotates (login in another tab).
+                const cookie = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+                event.detail.headers["X-CSRFToken"] = cookie ? decodeURIComponent(cookie[1]) : "{{ csrf_token }}";
             });
         </script>
 

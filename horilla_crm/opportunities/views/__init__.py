@@ -61,6 +61,11 @@ from horilla_crm.opportunities.views.opportunity_team import (
     OpportunityTeamNavbar,
     OpportunityTeamView,
     TeamSellingSetupView,
+    TeamSellingAccessAllView,
+    TeamSellingAccessRolesView,
+    TeamSellingAccessUsersView,
+    TeamSellingAllowedRolesListView,
+    TeamSellingAllowedUsersListView,
     ToggleTeamSellingView,
 )
 from horilla_crm.opportunities.views.opportunity_split import (
@@ -145,6 +150,11 @@ __all__ = [
     "AddDefaultTeamView",
     "AddOpportunityMemberView",
     "TeamSellingSetupView",
+    "TeamSellingAccessAllView",
+    "TeamSellingAccessRolesView",
+    "TeamSellingAccessUsersView",
+    "TeamSellingAllowedRolesListView",
+    "TeamSellingAllowedUsersListView",
     "ToggleTeamSellingView",
     # opportunity_split
     "SplitTypeView",

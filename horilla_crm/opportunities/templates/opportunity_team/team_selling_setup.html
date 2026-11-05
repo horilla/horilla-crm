@@ -5,122 +5,306 @@
         {% include "messages.html" %}
         {% reload_button "#opportunity-team-settings" %}
 
-        <div class="p-3">
-            <!-- Header -->
-            <div class="mb-6">
-                <h1 class="text-md font-bold text-gray-900 mb-2">{% trans "Team Selling Setup" %}</h1>
-                <p class="text-xs text-gray-500">
-                    {% trans "Configure opportunity team settings to enable collaboration among sales team members" %}
+        <h3 class="text-md font-semibold">{% trans "Team Selling Setup" %}</h3>
+        <p class="text-xs text-gray-500 mb-4">
+            {% trans "Configure opportunity team settings to enable collaboration among sales team members" %}
+        </p>
+
+        <div class="rounded-md mb-3 border border-primary-400">
+            <h3 class="text-md font-semibold mb-2 border-b border-primary-400 p-2 bg-primary-100 text-primary-600">
+                {% trans "Team Selling" %}
+            </h3>
+            <div class="p-4">
+                <p class="text-sm text-gray-600 mb-2">
+                    {% trans "Opportunity Teams help multiple users to better collaborate on opportunities by defining a role for each team member, setting record-level access individually, and viewing teams in list views and reports." %}
                 </p>
-            </div>
+                <p class="text-sm text-gray-600 mb-4">
+                    {% if team_selling_enabled %}
+                        {% trans "When disabled, all existing opportunity teams and their members will be deleted." %}
+                    {% else %}
+                        {% trans "When enabled, opportunity teams are available throughout the application. Users may prepare default opportunity teams for speedy setup of new opportunities." %}
+                    {% endif %}
+                </p>
 
-            <!-- Main Card -->
-            <div class="bg-white rounded-lg shadow-sm border text-sm border-[#efefef] overflow-hidden">
-                <!-- Status Banner -->
-                <div class="border-b border-[#efefef] px-6 py-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            {% if team_selling_enabled %}
-                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                    <i class="fa-solid fa-check text-green-600 text-lg"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-semibold">{% trans "Team Selling is Enabled" %}</h3>
-                                    <p class="text-sm">
-                                        {% trans "Opportunity teams are available across your system" %}
-                                    </p>
-                                </div>
-                            {% else %}
-                                <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                    <i class="fa-solid fa-circle-xmark text-gray-600 text-lg"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-semibold text-gray-900">{% trans "Team Selling is Disabled" %}</h3>
-                                    <p class="text-sm text-gray-600">
-                                        {% trans "Enable to start using opportunity teams" %}
-                                    </p>
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Toggle Button Container -->
-                        <div id="team-selling-toggle-container">
+                <div id="team-selling-toggle-container" class="text-sm font-semibold flex gap-2 relative mb-3">
+                    {% trans "Enable Team Selling" %}
+                    <label class="inline-flex items-center {% if change_opportunitysettings %}cursor-pointer{% else %}cursor-not-allowed opacity-50{% endif %}">
+                        <input
+                            type="checkbox"
+                            class="sr-only peer"
                             {% if change_opportunitysettings %}
-                                <label class="inline-flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        class="sr-only peer"
-                                        hx-post="{% url 'opportunities:toggle_team_selling' %}"
-                                        hx-trigger="confirmed"
-                                        {% if team_selling_enabled %}
-                                            hx-on:click="hxConfirm(this,'{% trans "Are you sure you want to disable Team Selling?" %}')"
-                                        {% else %}
-                                            hx-on:click="hxConfirm(this,'{% trans "Are you sure you want to enable Team Selling?" %}')"
-                                        {% endif %}
-                                        hx-vals='{"action": "{% if team_selling_enabled %}disable{% else %}enable{% endif %}"}'
-                                        {% if team_selling_enabled %}
-                                            checked
-                                        {% endif %}
-                                    >
-                                    <div
-                                        class="
-                                            relative w-11 h-5 bg-gray-200 rounded-full
-                                            peer peer-checked:bg-primary-600
-                                            after:content-[''] after:absolute after:top-[2px] after:left-[2px]
-                                            after:bg-white after:rounded-full after:h-4 after:w-4
-                                            after:transition-all peer-checked:after:translate-x-6
-                                        "
-                                    >
-                                    </div>
-                                </label>
-                            {% else %}
-                                <label class="inline-flex items-center cursor-not-allowed opacity-50">
-                                    <input
-                                        type="checkbox"
-                                        class="sr-only peer"
-                                        disabled
-                                        {% if team_selling_enabled %}
-                                            checked
-                                        {% endif %}
-                                    >
-                                    <div
-                                        class="
-                                            relative w-11 h-5 bg-gray-200 rounded-full
-                                            peer peer-checked:bg-primary-600
-                                            after:content-[''] after:absolute after:top-[2px] after:left-[2px]
-                                            after:bg-white after:rounded-full after:h-4 after:w-4
-                                            after:transition-all peer-checked:after:translate-x-6
-                                        "
-                                    >
-                                    </div>
-                                </label>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Information Section -->
-                <div class="px-6 py-6">
-                    <div class="mb-6">
-                        <h3 class="font-semibold text-gray-900 mb-3">
-                            <i class="fa-solid fa-circle-info text-primary-600 me-2"></i>
-                            {% trans "About Team Selling" %}
-                        </h3>
-                        <div class="prose prose-sm text-gray-600">
-                            <p class="mb-3">
-                                {% trans "Opportunity Teams help multiple users to better collaborate on opportunities by defining a role for each team member, setting record-level access individually, and viewing teams in list views and reports." %}
-                            </p>
-                            <p class="mb-3">
-                                {% if  team_selling_enabled %}
-                                    {% trans "When disabled, all existing opportunity teams and their members have been deleted." %}
+                                hx-post="{% url 'opportunities:toggle_team_selling' %}"
+                                hx-trigger="confirmed"
+                                {% if team_selling_enabled %}
+                                    hx-on:click="hxConfirm(this,'{% trans "Are you sure you want to disable Team Selling?" %}')"
                                 {% else %}
-                                    {% trans "When enabled, opportunity teams are available throughout the application. Users may prepare default opportunity teams for speedy setup of new opportunities." %}
+                                    hx-on:click="hxConfirm(this,'{% trans "Are you sure you want to enable Team Selling?" %}')"
                                 {% endif %}
-                            </p>
+                                hx-vals='{"action": "{% if team_selling_enabled %}disable{% else %}enable{% endif %}"}'
+                            {% else %}
+                                disabled
+                            {% endif %}
+                            {% if team_selling_enabled %}
+                                checked
+                            {% endif %}
+                        >
+                        <div class="relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6">
                         </div>
-                    </div>
+                    </label>
+                </div>
+                {% csrf_token %}
+
+                <div class="mt-4 flex items-center gap-2">
+                    {% if team_selling_enabled %}
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                            {% trans "Team Selling enabled — opportunity teams are available across your system" %}
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                            {% trans "Team Selling disabled — users cannot use opportunity teams" %}
+                        </span>
+                    {% endif %}
                 </div>
             </div>
         </div>
+        {# ── Access Control ── #}
+        {% if team_selling_enabled %}
+            <div class="rounded-md border border-primary-400 flex flex-col" style="max-height: calc(100vh - 200px)">
+                <h3 class="text-md font-semibold mb-0 border-b border-primary-400 p-2 bg-primary-100 text-primary-600 flex-shrink-0">
+                    {% trans "Access Control" %}
+                </h3>
+                <div class="p-4 overflow-y-auto flex-1">
+                    <p class="text-sm text-gray-500 mb-4">{% trans "Choose who can use team selling." %}</p>
+                    {% csrf_token %}
+
+                    {# ── Row: All Users ── #}
+                    <button
+                        id="access-all-btn"
+                        type="button"
+                        class="hidden"
+                        hx-post="{% url 'opportunities:team_selling_access_all' %}"
+                        hx-trigger="confirmed"
+                        hx-target="#opportunity-team-settings"
+                        hx-select="#opportunity-team-settings"
+                        hx-swap="outerHTML"
+                        hx-vals='{"access_type": "all"}'
+                        hx-include="[name=csrfmiddlewaretoken]"
+                    >
+                    </button>
+                    <div
+                        class="rounded-md border border-primary-400 mb-3 overflow-hidden [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg {% if access_type != 'all' %}cursor-pointer{% endif %}"
+                        {% if access_type != 'all' %}
+                            hx-get="{% url 'opportunities:team_selling_setup' %}?check=1"
+                            hx-target="#opportunity-team-settings"
+                            hx-select="#opportunity-team-settings"
+                            hx-swap="outerHTML"
+                            hx-on::after-request="if (event.detail.xhr.status === 204) { hxConfirm(document.getElementById('access-all-btn'), '{% trans "Set access to All Users?" %}', '{% trans "Every user in the company will be able to use team selling." %}') }"
+                        {% endif %}
+                    >
+                        <div class="flex items-center justify-between p-3 bg-white">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 12.094A5.973 5.973 0 004 15v1H1v-1a3 3 0 013.75-2.906z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-800">{% trans "All Users" %}</p>
+                                    <p class="text-xs text-gray-500">
+                                        {% trans "Every user in the company can use team selling." %}
+                                    </p>
+                                </div>
+                            </div>
+                            {% if access_type == 'all' %}
+                                <span
+                                    class="text-xs font-medium text-white bg-primary-600 px-2 py-0.5 rounded-full"
+                                >{% trans "Active" %}</span>
+                            {% else %}
+                                <span class="text-xs text-gray-400">{% trans "Click To Activate" %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# ── Row: Specific Roles ── #}
+                    <button
+                        id="access-roles-btn"
+                        type="button"
+                        class="hidden"
+                        hx-get="{% url 'opportunities:team_selling_access_roles' %}"
+                        hx-trigger="confirmed"
+                        hx-target="#modalBox"
+                        hx-swap="innerHTML"
+                        hx-on::after-request="openModal()"
+                    >
+                    </button>
+                    <div
+                        class="rounded-md border border-primary-400 mb-3 overflow-hidden [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                        {% if access_type == 'roles' %}
+                            onclick="htmx.trigger(document.getElementById('access-roles-btn'), 'confirmed')"
+                        {% else %}
+                            hx-get="{% url 'opportunities:team_selling_setup' %}?check=1"
+                            hx-target="#opportunity-team-settings"
+                            hx-select="#opportunity-team-settings"
+                            hx-swap="outerHTML"
+                            hx-on::after-request="if (event.detail.xhr.status === 204) { hxConfirm(document.getElementById('access-roles-btn'), '{% trans "Select Specific Roles?" %}', '{% trans "Only users with selected roles will be able to use team selling." %}') }"
+                        {% endif %}
+                    >
+                        <div class="flex items-center justify-between p-3 bg-white">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z"
+                                            clip-rule="evenodd"
+                                        />
+                                        <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-800">{% trans "Specific Roles" %}</p>
+                                    <p class="text-xs text-gray-500">
+                                        {% trans "Only users with selected roles can use team selling." %}
+                                        {% if access_type == 'roles' %}
+                                            <span
+                                                class="text-primary-500"
+                                            >{% trans "· Click To Add Or Remove Roles" %}</span>{% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                {% if access_type == 'roles' and selected_role_count %}
+                                    <button
+                                        type="button"
+                                        onclick="event.stopPropagation()"
+                                        hx-get="{% url 'opportunities:team_selling_allowed_roles_list' %}"
+                                        hx-target="#contentModalBox"
+                                        hx-swap="innerHTML"
+                                        hx-on::after-request="openContentModal()"
+                                        class="inline-flex items-center gap-1 text-xs font-medium bg-primary-100 text-primary-700 px-2.5 py-0.5 rounded-full"
+                                    >
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                            />
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                            />
+                                        </svg>
+                                        {{ selected_role_count }}
+                                        {% trans "Role(s)" %}
+                                    </button>
+                                {% endif %}
+                                {% if access_type == 'roles' %}
+                                    <span
+                                        class="text-xs font-medium text-white bg-primary-600 px-2 py-0.5 rounded-full"
+                                    >{% trans "Active" %}</span>
+                                {% else %}
+                                    <span class="text-xs text-gray-400">{% trans "Click To Select" %}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {# ── Row: Specific Users ── #}
+                    <button
+                        id="access-users-btn"
+                        type="button"
+                        class="hidden"
+                        hx-get="{% url 'opportunities:team_selling_access_users' %}"
+                        hx-trigger="confirmed"
+                        hx-target="#modalBox"
+                        hx-swap="innerHTML"
+                        hx-on::after-request="openModal()"
+                    >
+                    </button>
+                    <div
+                        class="rounded-md border border-primary-400 overflow-hidden [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                        {% if access_type == 'users' %}
+                            onclick="htmx.trigger(document.getElementById('access-users-btn'), 'confirmed')"
+                        {% else %}
+                            hx-get="{% url 'opportunities:team_selling_setup' %}?check=1"
+                            hx-target="#opportunity-team-settings"
+                            hx-select="#opportunity-team-settings"
+                            hx-swap="outerHTML"
+                            hx-on::after-request="if (event.detail.xhr.status === 204) { hxConfirm(document.getElementById('access-users-btn'), '{% trans "Select Specific Users?" %}', '{% trans "Only selected users will be able to use team selling." %}') }"
+                        {% endif %}
+                    >
+                        <div class="flex items-center justify-between p-3 bg-white">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                            clip-rule="evenodd"
+                                        />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-800">{% trans "Specific Users" %}</p>
+                                    <p class="text-xs text-gray-500">
+                                        {% trans "Only selected individual users can use team selling." %}
+                                        {% if access_type == 'users' %}
+                                            <span
+                                                class="text-primary-500"
+                                            >{% trans "· Click To Add Or Remove Users" %}</span>{% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                {% if access_type == 'users' and selected_user_count %}
+                                    <button
+                                        type="button"
+                                        onclick="event.stopPropagation()"
+                                        hx-get="{% url 'opportunities:team_selling_allowed_users_list' %}"
+                                        hx-target="#contentModalBox"
+                                        hx-swap="innerHTML"
+                                        hx-on::after-request="openContentModal()"
+                                        class="inline-flex items-center gap-1 text-xs font-medium bg-primary-100 text-primary-700 px-2.5 py-0.5 rounded-full"
+                                    >
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                            />
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                            />
+                                        </svg>
+                                        {{ selected_user_count }}
+                                        {% trans "User(s)" %}
+                                    </button>
+                                {% endif %}
+                                {% if access_type == 'users' %}
+                                    <span
+                                        class="text-xs font-medium text-white bg-primary-600 px-2 py-0.5 rounded-full"
+                                    >{% trans "Active" %}</span>
+                                {% else %}
+                                    <span class="text-xs text-gray-400">{% trans "Click To Select" %}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}

@@ -393,6 +393,31 @@ urlpatterns = [
         name="recalculate_split_row",
     ),
     path(
+        "team-selling/access-all/",
+        views.TeamSellingAccessAllView.as_view(),
+        name="team_selling_access_all",
+    ),
+    path(
+        "team-selling/access-roles/",
+        views.TeamSellingAccessRolesView.as_view(),
+        name="team_selling_access_roles",
+    ),
+    path(
+        "team-selling/access-users/",
+        views.TeamSellingAccessUsersView.as_view(),
+        name="team_selling_access_users",
+    ),
+    path(
+        "team-selling/allowed-roles/",
+        views.TeamSellingAllowedRolesListView.as_view(),
+        name="team_selling_allowed_roles_list",
+    ),
+    path(
+        "team-selling/allowed-users/",
+        views.TeamSellingAllowedUsersListView.as_view(),
+        name="team_selling_allowed_users_list",
+    ),
+    path(
         "team-selling/toggle/",
         views.ToggleTeamSellingView.as_view(),
         name="toggle_team_selling",

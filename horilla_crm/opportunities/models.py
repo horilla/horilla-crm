@@ -842,6 +842,30 @@ class OpportunitySettings(HorillaCoreModel):
         ),
     )
 
+    team_selling_access_type = models.CharField(
+        max_length=10,
+        choices=[
+            ("all", _("All Users")),
+            ("roles", _("Specific Roles")),
+            ("users", _("Specific Users")),
+        ],
+        default="all",
+        verbose_name=_("Team Selling Access Type"),
+        help_text=_("Who can use opportunity teams."),
+    )
+    team_selling_allowed_roles = models.ManyToManyField(
+        "core.Role",
+        blank=True,
+        related_name="team_selling_settings",
+        verbose_name=_("Team Selling Allowed Roles"),
+    )
+    team_selling_allowed_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name="team_selling_settings",
+        verbose_name=_("Team Selling Allowed Users"),
+    )
+
     split_enabled = models.BooleanField(
         default=False,
         verbose_name=_("Enable Opportunity Splits"),
@@ -953,6 +977,32 @@ class OpportunitySettings(HorillaCoreModel):
         """Quick check if team selling is enabled for a company"""
         settings = cls._get_cached_settings(company_or_request)
         return settings.team_selling_enabled if settings else False
+
+    def user_has_team_selling_access(self, user):
+        """Return True if ``user`` may use team selling under the access rules."""
+        if not self.team_selling_enabled:
+            return False
+        if self.team_selling_access_type == "all":
+            return True
+        if self.team_selling_access_type == "roles":
+            role_id = getattr(user, "role_id", None)
+            return bool(
+                role_id and self.team_selling_allowed_roles.filter(pk=role_id).exists()
+            )
+        if self.team_selling_access_type == "users":
+            return self.team_selling_allowed_users.filter(pk=user.pk).exists()
+        return False
+
+    @classmethod
+    def user_can_use_team_selling(cls, request=None):
+        """Menu/view condition: team selling is enabled and the user is allowed."""
+        if request is None:
+            request = getattr(_thread_local, "request", None)
+        user = getattr(request, "user", None)
+        if not user or not user.is_authenticated:
+            return False
+        setting = cls._get_cached_settings(request)
+        return bool(setting and setting.user_has_team_selling_access(user))
 
     @classmethod
     def is_split_enabled(cls, company_or_request=None):
@@ -1173,6 +1223,8 @@ class OpportunitySplit(HorillaCoreModel):
             "Calculated split amount based on percentage and opportunity amount."
         ),
     )
+
+    OWNER_FIELDS = ["user"]
 
     class Meta:
         """Meta options for OpportunitySplit."""

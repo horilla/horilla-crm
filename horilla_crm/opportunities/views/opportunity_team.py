@@ -12,11 +12,15 @@ from urllib.parse import urlencode
 
 # Third-party imports (Django)
 from django.contrib import messages
+from django.template.loader import render_to_string
 from django.utils.encoding import force_str
 
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin, login_redirect
 from horilla.auth.models import User
+from horilla.contrib.generics.templatetags.horilla_tags.display_tags import (
+    render_user_chip,
+)
 from horilla.contrib.generics.views import (
     HorillaListView,
     HorillaNavView,
@@ -25,6 +29,7 @@ from horilla.contrib.generics.views import (
     HorillaView,
 )
 from horilla.contrib.generics.views.details import check_record_change_access
+from horilla.contrib.meeting.forms import MeetingAccessRolesForm, MeetingAccessUsersForm
 from horilla.contrib.utils.middlewares import _thread_local
 from horilla.core.exceptions import PermissionDenied
 from horilla.shortcuts import get_object_or_404, render
@@ -79,7 +84,7 @@ class TeamSellingRequiredMixin:
 
     def dispatch(self, request, *args, **kwargs):
         """Block access when team selling is disabled for the user's company."""
-        if not OpportunitySettings.is_team_selling_enabled(request.user.company):
+        if not OpportunitySettings.user_can_use_team_selling(request):
             if request.headers.get("HX-Request") == "true":
                 messages.error(request, _("Team Selling is not enabled."))
                 response = HttpResponse(status=204)
@@ -1113,7 +1118,223 @@ class TeamSellingSetupView(LoginRequiredMixin, TemplateView):
             return context
         context["settings"] = settings
         context["team_selling_enabled"] = settings.team_selling_enabled
+        context["access_type"] = settings.team_selling_access_type
+        context["selected_role_count"] = settings.team_selling_allowed_roles.count()
+        context["selected_user_count"] = settings.team_selling_allowed_users.count()
         return context
+
+    def get(self, request, *args, **kwargs):
+        """Pre-check (``?check=1``) used before an access change on a stale page."""
+        if request.GET.get("check"):
+            settings = OpportunitySettings.get_settings(request.active_company)
+            if settings and settings.team_selling_enabled:
+                return HttpResponse(status=204)
+            messages.warning(
+                request, _("Team Selling is disabled. Enable it to continue.")
+            )
+        return super().get(request, *args, **kwargs)
+
+
+def _team_selling_disabled_refresh(request):
+    messages.warning(
+        request, _("Team Selling is disabled. Enable it to change access.")
+    )
+    return RefreshResponse(request=request)
+
+
+@method_decorator(
+    permission_required_or_denied("opportunities.change_opportunitysettings"),
+    name="dispatch",
+)
+class TeamSellingAccessAllView(LoginRequiredMixin, View):
+    """Set team selling access to all users."""
+
+    def post(self, request, *args, **kwargs):
+        """Switch the access type to all users and reload the setup page."""
+        settings = OpportunitySettings.get_settings(request.active_company)
+        if not settings.team_selling_enabled:
+            return _team_selling_disabled_refresh(request)
+        settings.team_selling_access_type = "all"
+        settings.save(update_fields=["team_selling_access_type"])
+        messages.success(request, _("Access set to All Users."))
+        return RefreshResponse(request=request)
+
+
+class _TeamSellingAllowedModalView(LoginRequiredMixin, View):
+    """Read-only modal listing who can use team selling, as pills."""
+
+    title = ""
+    compact_threshold = 9
+
+    @method_decorator(
+        permission_required_or_denied("opportunities.change_opportunitysettings")
+    )
+    def dispatch(self, request, *args, **kwargs):
+        """Require change permission and an enabled team selling feature."""
+        if request.user.is_authenticated:
+            settings = OpportunitySettings.get_settings(request.active_company)
+            if settings and not settings.team_selling_enabled:
+                return _team_selling_disabled_refresh(request)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_items(self, request, settings, company):
+        """Return a list of ``{"name", "chip"}`` dicts."""
+        raise NotImplementedError
+
+    def get(self, request, *args, **kwargs):
+        """Render the modal, or only the pill list for the search box."""
+        company = request.active_company
+        settings = OpportunitySettings.get_settings(company)
+        items = self.get_items(request, settings, company) if settings else []
+        total = len(items)
+        query = request.GET.get("q", "").strip().lower()
+        items = [item for item in items if query in item["name"].lower()]
+        compact = total <= self.compact_threshold
+        context = {
+            "title": self.title,
+            "items": items,
+            "total": total,
+            "show_search": not compact and self.show_search,
+            "list_class": "flex flex-wrap" if compact else self.list_class,
+            "empty_msg": (
+                _("No Matching Results") if total else _("Nothing Selected Yet")
+            ),
+        }
+        template = (
+            "partials/chip_list.html"
+            if request.headers.get("HX-Target") == "accessList"
+            else "meeting/allowed_access_modal.html"
+        )
+        return render(request, template, context)
+
+    show_search = True
+    list_class = "grid grid-cols-3"
+
+
+@method_decorator(htmx_required, name="dispatch")
+class TeamSellingAllowedUsersListView(_TeamSellingAllowedModalView):
+    """Read-only modal of users allowed to use team selling."""
+
+    title = _("Users With Access")
+
+    def get_items(self, request, settings, company):
+        users = (
+            settings.team_selling_allowed_users.filter(company=company, is_active=True)
+            .select_related("role")
+            .order_by("first_name", "last_name")
+        )
+        return [
+            {
+                "name": user.get_full_name() or user.username,
+                "chip": render_user_chip(user, request.user),
+            }
+            for user in users
+        ]
+
+
+@method_decorator(htmx_required, name="dispatch")
+class TeamSellingAllowedRolesListView(_TeamSellingAllowedModalView):
+    """Read-only modal of roles allowed to use team selling."""
+
+    title = _("Roles With Access")
+    show_search = False
+
+    def get_items(self, request, settings, company):
+        roles = settings.team_selling_allowed_roles.filter(company=company).order_by(
+            "role_name"
+        )
+        return [
+            {
+                "name": role.role_name,
+                "chip": render_to_string(
+                    "partials/role_pill.html", {"role_name": role.role_name}
+                ),
+            }
+            for role in roles
+        ]
+
+
+class _TeamSellingAccessFormView(LoginRequiredMixin, HorillaSingleFormView):
+    """Shared behaviour of the role/user access picker modals."""
+
+    model = OpportunitySettings
+    modal_height = False
+    save_and_new = False
+    access_type = ""
+    field_name = ""
+    success_message = ""
+
+    @method_decorator(
+        permission_required_or_denied("opportunities.change_opportunitysettings")
+    )
+    def dispatch(self, request, *args, **kwargs):
+        """Require change permission and an enabled team selling feature."""
+        if request.user.is_authenticated:
+            settings = OpportunitySettings.get_settings(request.active_company)
+            if settings and not settings.team_selling_enabled:
+                return _team_selling_disabled_refresh(request)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        """Scope the queryset to the company and preselect current values."""
+        form = super().get_form(form_class)
+        settings = OpportunitySettings.get_settings(self.request.active_company)
+        field = form.fields[self.field_name]
+        field.queryset = self.get_queryset_for_company(self.request.active_company)
+        field.initial = getattr(settings, f"team_selling_{self.field_name}").all()
+        return form
+
+    def form_valid(self, form):
+        """Save the selection and make this the active access type."""
+        settings = OpportunitySettings.get_settings(self.request.active_company)
+        if not settings.team_selling_enabled:
+            return _team_selling_disabled_refresh(self.request)
+        settings.team_selling_access_type = self.access_type
+        settings.save(update_fields=["team_selling_access_type"])
+        getattr(settings, f"team_selling_{self.field_name}").set(
+            form.cleaned_data[self.field_name]
+        )
+        messages.success(self.request, self.success_message)
+        return RefreshResponse(request=self.request)
+
+
+@method_decorator(htmx_required, name="dispatch")
+class TeamSellingAccessRolesView(_TeamSellingAccessFormView):
+    """Modal form: select which roles can use team selling."""
+
+    form_class = MeetingAccessRolesForm
+    form_title = _("Select Roles")
+    form_url = reverse_lazy("opportunities:team_selling_access_roles")
+    full_width_fields = ["allowed_roles"]
+    access_type = "roles"
+    field_name = "allowed_roles"
+    success_message = _("Allowed roles updated.")
+
+    def _get_m2m_picker_info(self):
+        return {}
+
+    def get_queryset_for_company(self, company):
+        """Roles of the active company."""
+        from horilla.contrib.core.models import Role
+
+        return Role.objects.filter(company=company)
+
+
+@method_decorator(htmx_required, name="dispatch")
+class TeamSellingAccessUsersView(_TeamSellingAccessFormView):
+    """Modal form: select which users can use team selling."""
+
+    form_class = MeetingAccessUsersForm
+    form_title = _("Select Users")
+    form_url = reverse_lazy("opportunities:team_selling_access_users")
+    full_width_fields = ["allowed_users"]
+    access_type = "users"
+    field_name = "allowed_users"
+    success_message = _("Allowed users updated.")
+
+    def get_queryset_for_company(self, company):
+        """Active users of the active company."""
+        return User.objects.filter(company=company, is_active=True)
 
 
 @method_decorator(

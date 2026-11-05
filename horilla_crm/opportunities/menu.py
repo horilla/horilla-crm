@@ -77,7 +77,7 @@ class OpportunityTeamSettings:
         "hx-select": "#opportunity-team-view",
         "hx-select-oob": "#my-settings-sidebar",
     }
-    condition = staticmethod(OpportunitySettings.is_team_selling_enabled)
+    condition = staticmethod(OpportunitySettings.user_can_use_team_selling)
 
 
 @settings_menu.register

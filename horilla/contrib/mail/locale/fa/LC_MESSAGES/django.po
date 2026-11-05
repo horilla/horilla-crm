@@ -945,3 +945,6 @@ msgstr "نقطه پایانی Microsoft Graph API"
 #: horilla/contrib/mail/models.py:209
 msgid "Microsoft's mail API address. Leave the default."
 msgstr "آدرس API ایمیل Microsoft. مقدار پیش‌فرض را تغییر ندهید."
+
+msgid "Send as Mail"
+msgstr "ارسال با ایمیل"

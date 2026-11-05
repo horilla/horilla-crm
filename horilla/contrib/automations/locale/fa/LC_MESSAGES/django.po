@@ -384,3 +384,38 @@ msgstr "اجرای اختیاری فقط هنگام عبور از شرط (edge-t
 
 msgid "Render automation email and notification date/time fields in each recipient's own timezone. Evaluate custom fields in conditions instead of reading them as model columns."
 msgstr "نمایش فیلدهای تاریخ/زمان در ایمیل و اعلان اتوماسیون بر اساس منطقه زمانی هر گیرنده. ارزیابی فیلدهای سفارشی در شروط به‌جای خواندن آن‌ها به‌عنوان ستون‌های مدل."
+
+msgid "Self (User who triggered)"
+msgstr "خود (کاربری که اجرا کرد)"
+
+#, python-format
+msgid "Select a valid delivery channel: %(value)s."
+msgstr "یک کانال تحویل معتبر انتخاب کنید: %(value)s."
+
+msgid "Select delivery channels"
+msgstr "انتخاب کانال‌های تحویل"
+
+msgid "Mail to/Notify To"
+msgstr "ارسال ایمیل / اعلان به"
+
+msgid "Also Send To"
+msgstr "همچنین ارسال به"
+
+#, python-format
+msgid "Unknown delivery channel: %(keys)s."
+msgstr "کانال تحویل ناشناخته: %(keys)s."
+
+msgid "Select at least one delivery channel."
+msgstr "حداقل یک کانال تحویل انتخاب کنید."
+
+#, python-format
+msgid "Mail template is required when delivery channel is '%(channel)s'."
+msgstr "وقتی کانال تحویل «%(channel)s» است، قالب ایمیل الزامی است."
+
+#, python-format
+msgid "Outgoing mail server is required when delivery channel is '%(channel)s'."
+msgstr "وقتی کانال تحویل «%(channel)s» است، سرور ایمیل خروجی الزامی است."
+
+#, python-format
+msgid "Notification template is required when delivery channel is '%(channel)s'."
+msgstr "وقتی کانال تحویل «%(channel)s» است، قالب اعلان الزامی است."

@@ -141,3 +141,6 @@ msgstr "قالب اعلان \"{}\" با موفقیت به‌روزرسانی ش�
 
 msgid "Notification template \"{}\" created successfully."
 msgstr "قالب اعلان \"{}\" با موفقیت ایجاد شد."
+
+msgid "Send as Notification"
+msgstr "ارسال با اعلان"

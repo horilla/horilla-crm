@@ -577,7 +577,7 @@ msgstr ""
 msgid "No phone number found on this record. Please enter one."
 msgstr ""
 
-msgid "Select Provider..."
+msgid "Select Provider"
 msgstr ""
 
 msgid "Cancel"

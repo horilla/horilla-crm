@@ -580,7 +580,7 @@ msgstr "+1234567890"
 msgid "No phone number found on this record. Please enter one."
 msgstr "شماره تلفنی در این رکورد یافت نشد. لطفاً یک شماره وارد کنید."
 
-msgid "Select Provider..."
+msgid "Select Provider"
 msgstr "انتخاب ارائه‌دهنده..."
 
 msgid "Cancel"

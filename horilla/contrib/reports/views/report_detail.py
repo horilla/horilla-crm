@@ -15,6 +15,9 @@ from django.utils.encoding import force_str
 from horilla.auth.mixins import login_redirect
 from horilla.contrib.generics.mixins import RecentlyViewedMixin
 from horilla.contrib.generics.views import HorillaListView
+
+# Local imports
+from horilla.contrib.generics.views.helpers.queryset_utils import get_viewable_queryset
 from horilla.contrib.utils.methods import get_section_info_for_model
 from horilla.db.models import ForeignKey
 from horilla.shortcuts import render
@@ -24,7 +27,6 @@ from horilla.utils.functional import Promise
 from horilla.views.generic import DetailView
 from horilla.web import HttpNotFound, HttpResponse, RefreshResponse
 
-# Local imports
 from ..models import Report
 from ..utils import (
     NO_VALUE_OPERATORS,
@@ -36,6 +38,7 @@ from ..utils import (
     resolve_report_field,
 )
 from ..views.toolkit.report_detail_mixin import ReportDetailDataMixin
+from ..views.toolkit.report_helper import user_can_export_report
 
 logger = logging.getLogger(__name__)
 
@@ -177,7 +180,11 @@ class ReportDetailView(ReportDetailDataMixin, RecentlyViewedMixin, DetailView):
 
         # Optimize: Create base queryset with select_related for foreign keys
         # This reduces N+1 queries significantly
-        base_queryset = model_class.objects.all()
+        # The export view supplies its own (export-permission) queryset so the
+        # file's summary and pivot match the exported rows.
+        base_queryset = getattr(self, "base_queryset", None)
+        if base_queryset is None:
+            base_queryset = get_viewable_queryset(self.request.user, model_class)
 
         # Annotate any virtual (computed, e.g. "days_open") fields referenced
         # by columns/groups/aggregates or filters, before filtering/values().
@@ -285,6 +292,7 @@ class ReportDetailView(ReportDetailDataMixin, RecentlyViewedMixin, DetailView):
         context["panel_open"] = panel_open
         context["has_unsaved_changes"] = bool(preview_data)
         context["temp_report"] = temp_report
+        context["can_export"] = user_can_export_report(self.request.user, model_class)
 
         # Add verbose names for row and column groups
         context["row_group_verbose_names"] = [
@@ -390,16 +398,13 @@ class ReportDetailView(ReportDetailDataMixin, RecentlyViewedMixin, DetailView):
             view_id="report-details-sec",
             search_url=reverse_lazy("reports:report_detail", kwargs={"pk": report.pk}),
             main_url=reverse_lazy("reports:report_detail", kwargs={"pk": report.pk}),
-            table_width=False,
             columns=columns,
         )
         list_view.request = self.request
-        list_view.table_width = False
         list_view.table_auto = True
         list_view.bulk_select_option = False
         list_view.list_column_visibility = False
         list_view.paginate_by = 10
-        list_view.table_height_as_class = "h-[200px]"
         if hasattr(report.model_class, "get_detail_url"):
             list_view.col_attrs = self.col_attrs()
         sort_field = self.request.GET.get("sort")

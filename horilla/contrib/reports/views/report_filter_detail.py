@@ -7,6 +7,9 @@ from urllib.parse import urlencode
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.generics.views import HorillaListView
+
+# Local imports
+from horilla.contrib.generics.views.helpers.queryset_utils import get_viewable_queryset
 from horilla.contrib.utils.methods import get_section_info_for_model
 from horilla.db.models import ForeignKey, Q
 from horilla.shortcuts import render
@@ -20,7 +23,6 @@ from horilla.utils.decorators import (
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
 
-# Local imports
 from ..models import Report
 from ..utils import (
     NO_VALUE_OPERATORS,
@@ -29,7 +31,10 @@ from ..utils import (
     coerce_virtual_filter_value,
     resolve_report_field,
 )
-from .toolkit.report_helper import create_temp_report_with_preview
+from .toolkit.report_helper import (
+    create_temp_report_with_preview,
+    user_can_access_report,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +86,8 @@ class ReportDetailFilteredView(LoginRequiredMixin, View):
             report = Report.objects.get(pk=pk)
         except Report.DoesNotExist:
             return render(request, "list_view.html")
+        if not user_can_access_report(request.user, report):
+            return render(request, "403.html", status=403)
 
         # Check if we have preview data in session
         session_key = f"report_preview_{report.pk}"
@@ -90,7 +97,7 @@ class ReportDetailFilteredView(LoginRequiredMixin, View):
         temp_report = self.create_temp_report(report, preview_data)
 
         model_class = temp_report.model_class
-        queryset = model_class.objects.all()
+        queryset = get_viewable_queryset(request.user, model_class)
 
         # Apply original report filters using temp_report
         filters = temp_report.filters_dict
@@ -369,16 +376,13 @@ class ReportDetailFilteredView(LoginRequiredMixin, View):
             main_url=reverse_lazy(
                 "reports:report_detail_filtered", kwargs={"pk": report.pk}
             ),
-            table_width=False,
             columns=columns,
         )
         list_view.request = request
-        list_view.table_width = False
         list_view.table_auto = True
         list_view.bulk_select_option = False
         list_view.paginate_by = 10
         list_view.list_column_visibility = False
-        list_view.table_height_as_class = "h-[200px]"
         if hasattr(report.model_class, "get_detail_url"):
             list_view.col_attrs = self.col_attrs()
         sort_field = self.request.GET.get("sort")

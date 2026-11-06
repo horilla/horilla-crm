@@ -58,7 +58,11 @@
                                 class="h-44 mb-3 overflow-hidden overflow-y-auto bg-[#00000008] rounded-md p-2"
                             >
                                 {% for field in lead_fields %}
-                                    {% if field.name not in form_data.selected_fields %}
+                                    {% comment %}
+                                        A company with no saved form has no form_data; "x not in"
+                                        a missing value is False in a template, which hid every field.
+                                    {% endcomment %}
+                                    {% if not form_data.selected_fields or field.name not in form_data.selected_fields %}
                                         <button
                                             type="button"
                                             data-field="{{ field.name }}"

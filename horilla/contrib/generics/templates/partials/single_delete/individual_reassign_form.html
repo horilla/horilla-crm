@@ -173,7 +173,7 @@
                                         <input type="hidden" name="delete_mode" value="{{ delete_mode }}">
                                         <button
                                             type="submit"
-                                            hx-on:click="event.preventDefault(); hxConfirmForm(this, '{% if delete_mode == 'main_soft' %}{% trans 'Are you sure you want to soft delete this dependency ? ' %}{% else %}{% trans 'Are you sure you want to hard delete this dependency ? ' %}{% endif %}');"
+                                            hx-on:click="event.preventDefault(); hxConfirmForm(this, '{% if delete_mode == 'main_soft' %}{% trans 'Are you sure you want to soft delete this dependency ?' %}{% else %}{% trans 'Are you sure you want to hard delete this dependency ?' %}{% endif %}');"
                                         >
                                             <img
                                                 src="{% static 'assets/icons/a4-red.svg' %}"

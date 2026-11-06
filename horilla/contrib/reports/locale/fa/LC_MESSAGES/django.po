@@ -192,9 +192,6 @@ msgstr "گزارش"
 msgid "breadcrumb"
 msgstr ""
 
-msgid " All Reports"
-msgstr "همه گزارش‌ها"
-
 msgid "Folders"
 msgstr "پوشه‌ها"
 
@@ -450,12 +447,3 @@ msgstr "مقدار فیلتر نامعتبر: {}"
 
 msgid "Accept custom fields as report columns, including detail virtual fields."
 msgstr "پذیرش فیلدهای سفارشی به‌عنوان ستون گزارش، از جمله فیلدهای مجازی جزئیات."
-
-msgid "Detail Table"
-msgstr "جدول جزئیات"
-
-msgid "Filtered By Pivot:"
-msgstr "فیلتر شده توسط محور:"
-
-msgid "Pivot Table"
-msgstr "جدول محوری"

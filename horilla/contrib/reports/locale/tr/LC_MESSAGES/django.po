@@ -168,9 +168,6 @@ msgstr ""
 msgid "breadcrumb"
 msgstr ""
 
-msgid " All Reports"
-msgstr ""
-
 msgid "Folders"
 msgstr ""
 

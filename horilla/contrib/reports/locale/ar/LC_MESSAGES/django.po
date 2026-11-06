@@ -191,9 +191,6 @@ msgstr "تقرير"
 msgid "breadcrumb"
 msgstr ""
 
-msgid " All Reports"
-msgstr " جميع التقارير"
-
 msgid "Folders"
 msgstr "المجلدات"
 

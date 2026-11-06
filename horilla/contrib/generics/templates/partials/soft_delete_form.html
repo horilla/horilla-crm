@@ -57,7 +57,7 @@
                                     class="outline outline-1 outline-offset-[-1px] outline-primary-600 rounded-md hover:bg-primary-300 transition duration-300 text-primary-600 w-24 flex justify-center bg-primary-300 text-xs py-1.5"
                                     onclick="event.preventDefault()"
                                     hx-trigger="confirmed"
-                                    hx-on:click="hxConfirmForm(this,'{% trans "Are you sure you want to soft delete all dependencies of this record ? " %}');"
+                                    hx-on:click="hxConfirmForm(this,'{% trans "Are you sure you want to soft delete all dependencies of this record ?" %}');"
                                 >
                                     {% trans "Delete All" %}
                                 </button>
@@ -91,7 +91,7 @@
                                                 type="submit"
                                                 onclick="event.preventDefault()"
                                                 hx-trigger="confirmed"
-                                                hx-on:click="hxConfirmForm(this,'{% trans "Are you sure you want to soft delete this dependency ? " %}');"
+                                                hx-on:click="hxConfirmForm(this,'{% trans "Are you sure you want to soft delete this dependency ?" %}');"
                                             >
                                                 <img
                                                     src="{% static 'assets/icons/a4-red.svg' %}"

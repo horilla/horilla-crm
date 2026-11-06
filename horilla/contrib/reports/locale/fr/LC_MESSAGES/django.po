@@ -195,9 +195,6 @@ msgstr "Rapport"
 msgid "breadcrumb"
 msgstr ""
 
-msgid " All Reports"
-msgstr " Tous les rapports"
-
 msgid "Folders"
 msgstr "Dossiers"
 

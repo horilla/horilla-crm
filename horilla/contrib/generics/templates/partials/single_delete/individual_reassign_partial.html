@@ -54,7 +54,7 @@
                 type="submit"
                 class="w-24 flex justify-center text-xs rounded-md py-1.5 bg-primary-300 border border-primary-400 hover:text-primary-600 hover:border-primary-600 transition duration-300"
                 title="{% trans 'Delete' %}"
-                hx-on:click="event.preventDefault(); hxConfirmForm(this, '{% if delete_mode == 'main_soft' %}{% trans 'Are you sure you want to soft delete this dependency ? ' %}{% else %}{% trans 'Are you sure you want to hard delete this dependency ? ' %}{% endif %}');"
+                hx-on:click="event.preventDefault(); hxConfirmForm(this, '{% if delete_mode == 'main_soft' %}{% trans 'Are you sure you want to soft delete this dependency ?' %}{% else %}{% trans 'Are you sure you want to hard delete this dependency ?' %}{% endif %}');"
             >
                 {% trans "Delete" %}
             </button>

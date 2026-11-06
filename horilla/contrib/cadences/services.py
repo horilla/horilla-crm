@@ -24,17 +24,30 @@ from django.db import IntegrityError
 from horilla.contrib.activity.models import Activity
 from horilla.contrib.automations.methods import resolve_mail_recipients
 from horilla.contrib.core.models import HorillaContentType
-from horilla.contrib.mail.models import HorillaMail, HorillaMailConfiguration
+from horilla.contrib.mail.models import (
+    HorillaMail,
+    HorillaMailConfiguration,
+    HorillaMailTemplate,
+)
 from horilla.contrib.mail.services import HorillaMailManager
 from horilla.contrib.utils.middlewares import _thread_local
 
 # First party imports (Horilla)
 from horilla.db import transaction
-from horilla.db.models import Max
+from horilla.db.models import Max, Q
 from horilla.utils import timezone
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
+from .followup_types import (
+    BUILTIN_KEYS,
+    CHANNEL_SENT_STATUS,
+    TEMPLATE_MAIL,
+    TEMPLATE_NOTIFICATION,
+    get_channel_template_kind,
+    get_followup_channel,
+    is_builtin_followup_type,
+)
 from .models import Cadence, CadenceEnrollment, CadenceScheduledFollowUp
 
 logger = logging.getLogger(__name__)
@@ -83,6 +96,20 @@ def enrollment_mails(enrollment):
         content_type_id=enrollment.content_type_id,
         object_id=enrollment.object_id,
         additional_info__cadence_runtime__enrollment_id=enrollment.pk,
+    )
+
+
+def enrollment_channel_runs(enrollment):
+    """
+    Delivery channel follow-ups this enrollment ran (sent or failed).
+
+    A channel follow-up leaves no activity or mail, so its run is the
+    ``CadenceScheduledFollowUp`` row; pending rows are still waiting.
+    """
+    return (
+        CadenceScheduledFollowUp.all_objects.filter(enrollment=enrollment)
+        .exclude(status="pending")
+        .exclude(followup__followup_type__in=BUILTIN_KEYS)
     )
 
 
@@ -219,23 +246,207 @@ def _create_email_draft_for_followup(
     return draft
 
 
+class ChannelFollowUpMessage:
+    """
+    What a delivery channel's ``send()`` reads for one cadence follow-up.
+
+    Channels are written for Automations and read the message settings from
+    the ``HorillaAutomation`` they get as ``automation``: ``title``, ``pk``,
+    ``company``, ``mail_template``, ``notification_template``,
+    ``mail_server``, ``mail_to``, ``created_by``, ``updated_by``. A cadence
+    follow-up passes this object instead, built from its ``channel_config``.
+    ``cadence``, ``followup`` and ``enrollment`` are the cadence objects.
+    """
+
+    def __init__(self, enrollment, followup, channel, template=None, company=None):
+        cadence = enrollment.cadence
+        kind = get_channel_template_kind(channel)
+        self.cadence = cadence
+        self.followup = followup
+        self.enrollment = enrollment
+        self.pk = followup.pk
+        self.title = cadence.name
+        self.company = company
+        self.mail_template = template if kind == TEMPLATE_MAIL else None
+        self.notification_template = template if kind == TEMPLATE_NOTIFICATION else None
+        # No mail server is chosen on a follow-up: the mail channel picks the
+        # company's outgoing server.
+        self.mail_server = None
+        self.mail_to = (followup.channel_config or {}).get("to", "") or ""
+        self.created_by = cadence.created_by
+        self.updated_by = cadence.updated_by
+        self.additional_info = {}
+
+    def __str__(self):
+        return str(self.title)
+
+
+def _channel_followup_template(followup, channel, company):
+    """
+    ``(template, ok)`` for a channel follow-up: ``ok`` is false when the
+    channel needs a template and the one in ``channel_config`` is missing or
+    belongs to another company.
+    """
+    from horilla.contrib.notifications.models import NotificationTemplate
+
+    kind = get_channel_template_kind(channel)
+    if kind is None:
+        return None, True
+    model = (
+        NotificationTemplate if kind == TEMPLATE_NOTIFICATION else HorillaMailTemplate
+    )
+    templates = model.all_objects.all()
+    if company is not None:
+        templates = templates.filter(Q(company=company) | Q(company__isnull=True))
+    try:
+        template_id = int((followup.channel_config or {}).get("template_id"))
+    except (ValueError, TypeError):
+        return None, False
+    template = templates.filter(pk=template_id).first()
+    return template, template is not None
+
+
+def _deliver_channel_followup(instance, enrollment, followup, channel):
+    """
+    Hand a channel follow-up's message to ``channel``.
+
+    Returns ``None`` when it was sent, else why it was not (logged).
+    """
+    cadence = enrollment.cadence
+    actor = (
+        getattr(instance, "updated_by", None)
+        or getattr(instance, "created_by", None)
+        or cadence.updated_by
+        or cadence.created_by
+    )
+    company = getattr(instance, "company", None) or cadence.company
+    template, ok = _channel_followup_template(followup, channel, company)
+    if not ok:
+        error = str(_("The follow-up's template was not found."))
+    else:
+        to = (followup.channel_config or {}).get("to", "") or ""
+        recipients = channel.resolve_recipients(to, instance, actor)
+        if not recipients:
+            error = str(_("No recipient could be resolved."))
+        else:
+            message = ChannelFollowUpMessage(
+                enrollment, followup, channel, template, company
+            )
+            context = {
+                "instance": instance,
+                "user": actor,
+                "self": actor,
+                "active_company": company,
+                "request": getattr(_thread_local, "request", None),
+            }
+            try:
+                channel.send(message, instance, recipients, context, actor)
+                return None
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                logger.exception(
+                    "Cadence %s follow-up send failed: cadence=%s followup=%s record=%s:%s",
+                    channel.key,
+                    cadence.pk,
+                    followup.pk,
+                    instance.__class__.__name__,
+                    instance.pk,
+                )
+                return str(exc)
+    logger.warning(
+        "Cadence %s follow-up not sent (%s): cadence=%s followup=%s record=%s:%s",
+        channel.key,
+        error,
+        cadence.pk,
+        followup.pk,
+        instance.__class__.__name__,
+        instance.pk,
+    )
+    return error
+
+
+def _record_channel_run(enrollment, followup, error, trigger_time):
+    """
+    Record the run of a channel follow-up and return its row.
+
+    A channel leaves no activity or mail behind, so the run is recorded as a
+    ``CadenceScheduledFollowUp`` (``completed``, or ``failed`` with ``error``),
+    which is what keeps the follow-up from running again in this enrollment
+    and what ``refresh_status`` reads. A follow-up that waited for its delay
+    already has that row: only the reason is written on it here, and
+    ``run_scheduled_followup`` sets its status.
+    """
+    now = trigger_time or timezone.now()
+    run, created = CadenceScheduledFollowUp.all_objects.get_or_create(
+        enrollment=enrollment,
+        followup=followup,
+        defaults={
+            "scheduled_at": now,
+            "status": "failed" if error else "completed",
+            "executed_at": now,
+            "error_message": error or "",
+            "company": enrollment.company,
+        },
+    )
+    if not created and error:
+        run.error_message = error
+        run.save(update_fields=["error_message", "updated_at"])
+    return run
+
+
+def _send_channel_followup(instance, enrollment, followup, channel, trigger_time):
+    """
+    Send a channel follow-up and record the run.
+
+    Returns the row when the message was sent, else ``None``.
+    """
+    error = _deliver_channel_followup(instance, enrollment, followup, channel)
+    run = _record_channel_run(enrollment, followup, error, trigger_time)
+    return None if error else run
+
+
 def create_followup_item(instance, enrollment, followup, trigger_time=None):
     """
-    Create the task / call / email for ``followup`` inside ``enrollment``.
+    Create the task / call / email for ``followup`` inside ``enrollment``, or
+    send its message when it is a delivery channel follow-up.
 
     A new task or call already has a status (for example a call starts as
     Scheduled), and creating it is not a status change, so the signal never sees
-    it. The follow-ups waiting for that status are therefore started here.
+    it. The follow-ups waiting for that status are therefore started here. A
+    sent channel message is final, so the follow-ups waiting for it to be sent
+    start here too.
     """
     item = _build_followup_item(instance, enrollment, followup, trigger_time)
     if isinstance(item, Activity):
         create_next_followups(enrollment, instance, followup, item.status)
+    elif isinstance(item, CadenceScheduledFollowUp):
+        create_next_followups(enrollment, instance, followup, CHANNEL_SENT_STATUS)
     return item
 
 
 def _build_followup_item(instance, enrollment, followup, trigger_time=None):
-    if followup.followup_type not in {"task", "call", "email"}:
-        return None
+    if not is_builtin_followup_type(followup.followup_type):
+        channel = get_followup_channel(followup.followup_type)
+        if channel is None:
+            # The channel's app is gone: nothing can be sent for this step.
+            # Record it as failed, so the step is not tried again on every
+            # save; ``None`` keeps the next follow-ups from starting.
+            logger.error(
+                "Cadence follow-up %s: type %r is not a built-in or a registered "
+                "delivery channel",
+                followup.pk,
+                followup.followup_type,
+            )
+            error = str(
+                _(
+                    "The follow-up type %(followup_type)s is not a built-in "
+                    "or a registered delivery channel."
+                )
+            ) % {"followup_type": followup.followup_type}
+            _record_channel_run(enrollment, followup, error, trigger_time)
+            return None
+        return _send_channel_followup(
+            instance, enrollment, followup, channel, trigger_time
+        )
     cadence = enrollment.cadence
     content_type = _content_type_for(instance)
     now = trigger_time or timezone.now()
@@ -372,7 +583,10 @@ def run_scheduled_followup(scheduled_id):
                 )
             scheduled.status = "completed" if item else "failed"
             if not item:
-                scheduled.error_message = str(_("Nothing could be created."))
+                # A channel follow-up writes why it failed on this row.
+                scheduled.refresh_from_db(fields=["error_message"])
+                if not scheduled.error_message:
+                    scheduled.error_message = str(_("Nothing could be created."))
         except Exception as exc:  # pylint: disable=broad-exception-caught
             logger.exception(
                 "Cadence delayed follow-up failed: enrollment=%s followup=%s",
@@ -467,7 +681,10 @@ def refresh_status(enrollment, allow_fail=True):
     mail_statuses = list(
         enrollment_mails(enrollment).values_list("mail_status", flat=True)
     )
-    if not activity_statuses and not mail_statuses:
+    channel_statuses = list(
+        enrollment_channel_runs(enrollment).values_list("status", flat=True)
+    )
+    if not activity_statuses and not mail_statuses and not channel_statuses:
         if allow_fail:
             _finish(enrollment, "failed")
         return enrollment
@@ -475,8 +692,10 @@ def refresh_status(enrollment, allow_fail=True):
         return enrollment
     if any(status in OPEN_MAIL_STATUSES for status in mail_statuses):
         return enrollment
-    if not activity_statuses and all(
-        status in FAILED_MAIL_STATUSES for status in mail_statuses
+    if (
+        not activity_statuses
+        and all(status in FAILED_MAIL_STATUSES for status in mail_statuses)
+        and all(status == "failed" for status in channel_statuses)
     ):
         _finish(enrollment, "failed")
         return enrollment
@@ -729,6 +948,19 @@ def latest_followup_summary(enrollment):
                 mail.pk,
                 "email",
                 mail.get_mail_status_display(),
+            )
+        )
+    for run in enrollment_channel_runs(enrollment).select_related("followup"):
+        items.append(
+            (
+                run.followup.followup_number,
+                run.pk,
+                run.followup.followup_type,
+                (
+                    _("Sent")
+                    if run.status == CHANNEL_SENT_STATUS
+                    else run.get_status_display()
+                ),
             )
         )
     if not items:

@@ -23,6 +23,11 @@ from horilla.utils.decorators import (
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
+from ..followup_types import (
+    CHANNEL_SENT_STATUS,
+    get_followup_type_label,
+    is_builtin_followup_type,
+)
 from ..models import Cadence
 
 
@@ -98,6 +103,9 @@ class CadenceDetailView(LoginRequiredMixin, HorillaDetailView):
 
     @staticmethod
     def _status_keys_for_previous_type(previous_type):
+        if previous_type and not is_builtin_followup_type(previous_type):
+            # A delivery channel follow-up only reaches "sent".
+            return {CHANNEL_SENT_STATUS}
         if previous_type == "call":
             return {"scheduled", "completed", "overdue", "cancelled"}
         if previous_type == "task":
@@ -233,6 +241,7 @@ class CadenceDetailView(LoginRequiredMixin, HorillaDetailView):
         _KIND = ("task", "call", "email")
         icon_by_kind = dict(zip(_KIND, _CONDITION_CARD_ICONS))
         label_by_kind = dict(zip(_KIND, _CONDITION_LABELS))
+        channel_icon = "assets/icons/chat.svg"
         cols = [[] for _ in range(num_columns)]
         for followup in followups:
             idx = max(1, min(num_columns, followup.followup_number)) - 1
@@ -257,12 +266,34 @@ class CadenceDetailView(LoginRequiredMixin, HorillaDetailView):
                 source_same_stage
                 and cls._can_add_same_stage_for_source(source_same_stage, fu_n, buckets)
             )
+            is_channel = not is_builtin_followup_type(kind)
+            parent = followup.branch_from if followup.branch_from_id else None
+            previous_status_label = (
+                _("Sent")
+                if parent is not None
+                and not is_builtin_followup_type(parent.followup_type)
+                and followup.previous_status == CHANNEL_SENT_STATUS
+                else followup.get_previous_status_display()
+            )
             cols[idx].append(
                 {
                     "condition": followup,
-                    "icon": icon_by_kind.get(kind, _CONDITION_CARD_ICONS[0]),
-                    "kind_label": label_by_kind.get(kind, _CONDITION_LABELS[0]),
+                    "icon": (
+                        channel_icon
+                        if is_channel
+                        else icon_by_kind.get(kind, _CONDITION_CARD_ICONS[0])
+                    ),
+                    "kind_label": (
+                        get_followup_type_label(kind)
+                        if is_channel
+                        else label_by_kind.get(kind, _CONDITION_LABELS[0])
+                    ),
                     "kind": kind,
+                    "is_channel": is_channel,
+                    "channel_template": (
+                        followup.get_channel_template() if is_channel else None
+                    ),
+                    "previous_status_label": previous_status_label,
                     "show_card_add_branch": show_card_add_branch,
                     "add_branch_followup_number": add_branch_followup_number,
                     "show_card_add_below_next": False,

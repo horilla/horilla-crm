@@ -17,6 +17,7 @@ from horilla.web import Http404
 
 # Local imports
 from .. import services
+from ..followup_types import get_followup_type_label
 from ..models import CadenceEnrollment
 from ..signals import ensure_initial_followups_for_instance
 from .enrollment import can_change_record
@@ -216,6 +217,8 @@ class CadenceRecordListView(LoginRequiredMixin, CadenceRecordMixin, HorillaListV
 
     @staticmethod
     def _type_label(kind):
-        return {"task": _("Task"), "log_call": _("Call"), "email": _("Email")}.get(
-            kind, kind
-        )
+        builtin = {"task": _("Task"), "log_call": _("Call"), "email": _("Email")}
+        if kind in builtin:
+            return builtin[kind]
+        # A delivery channel follow-up: the channel's label.
+        return get_followup_type_label(kind)

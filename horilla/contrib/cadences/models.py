@@ -1,4 +1,4 @@
-"""Models for Horilla platform Cadence (Task/Call/Email)."""
+"""Models for Horilla platform Cadence (Task/Call/Email/delivery channel)."""
 
 # Third-party imports (Django)
 from django.conf import settings
@@ -17,6 +17,18 @@ from horilla.registry.permission_registry import permission_exempt_model
 from horilla.urls import reverse_lazy
 from horilla.utils.choices import OPERATOR_CHOICES
 from horilla.utils.translation import gettext_lazy as _
+
+# Local imports
+from .followup_types import (
+    BUILTIN_FOLLOWUP_TYPES,
+    FOLLOWUP_TYPE_MAX_LENGTH,
+    TEMPLATE_MAIL,
+    TEMPLATE_NOTIFICATION,
+    get_channel_template_kind,
+    get_followup_channel,
+    get_followup_type_label,
+    is_builtin_followup_type,
+)
 
 
 class Cadence(HorillaCoreModel):
@@ -124,13 +136,16 @@ class CadenceCondition(HorillaCoreModel):
 
 
 class CadenceFollowUp(HorillaCoreModel):
-    """Follow-up action in a cadence bucket (task/call/email)."""
+    """
+    Follow-up action in a cadence bucket.
 
-    FOLLOWUP_TYPE_CHOICES = [
-        ("task", _("Task")),
-        ("call", _("Call")),
-        ("email", _("Email")),
-    ]
+    ``followup_type`` is a task, a call, an email, or the key of a registered
+    delivery channel (see ``followup_types.py``); it has no fixed choices. A
+    channel follow-up keeps its template and recipient in ``channel_config``.
+    """
+
+    #: The built-in types. ``followup_type`` also takes registered channel keys.
+    FOLLOWUP_TYPE_CHOICES = list(BUILTIN_FOLLOWUP_TYPES)
     PREVIOUS_STATUS_CHOICES = tuple(
         list(Activity.STATUS_CHOICES) + [("overdue", _("Overdue"))]
     )
@@ -154,8 +169,7 @@ class CadenceFollowUp(HorillaCoreModel):
         help_text=_("Stage number (1 = first follow-up)."),
     )
     followup_type = models.CharField(
-        max_length=20,
-        choices=FOLLOWUP_TYPE_CHOICES,
+        max_length=FOLLOWUP_TYPE_MAX_LENGTH,
         verbose_name=_("Follow Up Type"),
     )
     order = models.PositiveIntegerField(default=0, verbose_name=_("Order"))
@@ -284,6 +298,17 @@ class CadenceFollowUp(HorillaCoreModel):
         verbose_name=_("Mail Template"),
     )
 
+    # Delivery channel
+    channel_config = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name=_("Channel Settings"),
+        help_text=_(
+            "A delivery channel follow-up: {template_id, to}. template_id is a "
+            "notification template, or a mail template for a channel that sends mail."
+        ),
+    )
+
     class Meta:
         """Meta class for CadenceFollowUp"""
 
@@ -309,6 +334,37 @@ class CadenceFollowUp(HorillaCoreModel):
 
     def __str__(self):
         return f"{self.cadence} - {self.get_followup_type_display()} ({self.followup_number})"
+
+    def get_followup_type_display(self):
+        """The built-in's or the delivery channel's label (the key if its app is gone)."""
+        return get_followup_type_label(self.followup_type)
+
+    def get_channel(self):
+        """The delivery channel this follow-up sends through, or ``None``."""
+        return get_followup_channel(self.followup_type)
+
+    def is_channel_followup(self):
+        """Whether ``followup_type`` is a channel key rather than a task, call or email."""
+        return bool(self.followup_type) and not is_builtin_followup_type(
+            self.followup_type
+        )
+
+    def get_channel_template(self):
+        """The template ``channel_config["template_id"]`` points to, or ``None``."""
+        from horilla.contrib.notifications.models import NotificationTemplate
+
+        kind = get_channel_template_kind(self.get_channel())
+        model = {
+            TEMPLATE_MAIL: HorillaMailTemplate,
+            TEMPLATE_NOTIFICATION: NotificationTemplate,
+        }.get(kind)
+        template_id = (self.channel_config or {}).get("template_id")
+        if model is None or not template_id:
+            return None
+        try:
+            return model.all_objects.filter(pk=int(template_id)).first()
+        except (ValueError, TypeError):
+            return None
 
     def get_edit_url(self):
         """Return the URL for editing this follow-up."""
@@ -385,9 +441,13 @@ class CadenceFollowUp(HorillaCoreModel):
         super().clean()
         errors = {}
 
-        valid_types = {choice[0] for choice in self.FOLLOWUP_TYPE_CHOICES}
-        if self.followup_type not in valid_types:
+        if (
+            not is_builtin_followup_type(self.followup_type)
+            and self.get_channel() is None
+        ):
             raise ValidationError({"followup_type": _("Invalid follow-up type.")})
+        if not self.is_channel_followup():
+            self.channel_config = {}
 
         self._validate_followup_number(errors)
         self._validate_do_this(errors)

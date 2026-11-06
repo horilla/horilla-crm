@@ -106,6 +106,7 @@ class LeadFormClass(
         )
         self.fields["state"] = forms.ChoiceField(
             choices=[],
+            label=self._meta.model._meta.get_field("state").verbose_name,
             required=False,
             widget=forms.Select(
                 attrs={"id": "id_state", "class": "js-example-basic-single headselect"}
@@ -171,6 +172,7 @@ class LeadSingleForm(LeadAssignmentRuleFormMixin, OwnerQuerysetMixin, HorillaMod
         )
         self.fields["state"] = forms.ChoiceField(
             choices=[],
+            label=self._meta.model._meta.get_field("state").verbose_name,
             required=False,
             widget=forms.Select(
                 attrs={"id": "id_state", "class": "js-example-basic-single headselect"}

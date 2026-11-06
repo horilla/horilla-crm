@@ -113,6 +113,12 @@ msgstr "لطفاً برای دسترسی به هوریلای مدیریت ارت
 msgid "Lead"
 msgstr "سرنخ"
 
+msgid "Can Convert Lead"
+msgstr "تبدیل سرنخ"
+
+msgid "Can Convert Own Lead"
+msgstr "تبدیل سرنخ خود"
+
 msgid "Assignment Rules"
 msgstr "قوانین تخصیص"
 

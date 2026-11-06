@@ -344,6 +344,12 @@ class Lead(HorillaCoreModel):
 
         verbose_name = _("Lead")
         verbose_name_plural = _("Leads")
+        # Checked by the conversion and link-records views; without these rows
+        # only a superuser could convert, whatever a role granted.
+        permissions = (
+            ("convert_lead", _("Can Convert Lead")),
+            ("convert_own_lead", _("Can Convert Own Lead")),
+        )
 
     def __str__(self):
         return f"{str(self.title)}-{self.id}"

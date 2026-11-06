@@ -6,8 +6,7 @@ This view can be extended to create specific list views for different models, an
 # Standard library imports
 import json
 import logging
-from functools import reduce, update_wrapper
-from operator import or_
+from functools import update_wrapper
 
 # Third-party imports (Django)
 from django.utils.dateparse import parse_time
@@ -496,43 +495,14 @@ class HorillaListView(HorillaListViewMixin, ListView):
         queryset = self._apply_list_display_select_related(queryset)
 
         if self.owner_filtration:
+            from .helpers.queryset_utils import get_viewable_queryset
+
             user = self.request.user
-            app_label = self.model._meta.app_label
-            model_name = self.model._meta.model_name
-            view_perm = f"{app_label}.view_{model_name}"
-            view_own_perm = f"{app_label}.view_own_{model_name}"
-
-            if user.has_perm(view_perm):
+            model_meta = self.model._meta
+            if user.has_perm(f"{model_meta.app_label}.view_{model_meta.model_name}"):
                 return queryset
-
-            if user.has_perm(view_own_perm):
-                owner_fields = getattr(self.model, "OWNER_FIELDS", None)
-                query = None
-
-                if owner_fields:
-                    from horilla.contrib.core.utils import get_allowed_user_ids
-
-                    allowed_user_ids = list(get_allowed_user_ids(user))
-
-                    query = reduce(
-                        or_,
-                        (
-                            Q(**{f"{field_name}__in": allowed_user_ids})
-                            for field_name in owner_fields
-                        ),
-                        Q(),
-                    )
-
-                from .helpers.queryset_utils import get_granted_access_filter
-
-                granted_query = get_granted_access_filter(self.model, user, "view")
-                if granted_query is not None:
-                    query = granted_query if query is None else query | granted_query
-
-                if query is not None:
-                    return queryset.filter(query).distinct()
-
-            return queryset.none()
+            viewable = get_viewable_queryset(user, self.model)
+            return queryset.filter(pk__in=viewable.values("pk")).distinct()
         return queryset.distinct()
 
     def _apply_list_display_select_related(self, queryset):

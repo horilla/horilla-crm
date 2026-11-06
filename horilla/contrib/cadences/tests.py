@@ -8,7 +8,9 @@ from unittest import mock
 
 # Third-party imports (Django)
 from django.contrib.auth.signals import user_logged_in
+from django.db import connection, models
 from django.test import SimpleTestCase, TestCase, override_settings
+from django.test.utils import CaptureQueriesContext, isolate_apps
 from login_history.models import post_login
 
 # First party imports (Horilla)
@@ -16,6 +18,7 @@ import horilla.registry.delivery as delivery_registry
 from horilla.auth.models import User
 from horilla.contrib.activity.models import Activity
 from horilla.contrib.core.models import Company, HorillaContentType
+from horilla.contrib.keys.models import ShortcutKey
 from horilla.contrib.notifications.models import Notification, NotificationTemplate
 from horilla.core.exceptions import ValidationError
 from horilla.registry.delivery import (
@@ -28,7 +31,7 @@ from horilla.urls import reverse
 from horilla.utils import timezone
 
 # Local imports
-from . import services
+from . import services, signals
 from .followup_types import (
     get_followup_channel,
     get_followup_type_choices,
@@ -202,6 +205,384 @@ class StatusOnCreationTests(TestCase):
         self.assertEqual(
             subjects, {"call", "after scheduled call", "after not started task"}
         )
+
+
+class RecordOwnerFollowUpTests(TestCase):
+    """A task or call follow-up can go to the owner of the enrolled record."""
+
+    def setUp(self):
+        self.company = Company.objects.create(name="Owners Co")
+        self.creator = User.objects.create_user(
+            username="cadence-creator", email="creator@example.com", password="x"
+        )
+        self.fixed = User.objects.create_user(
+            username="fixed-owner", email="fixed@example.com", password="x"
+        )
+        self.record_owner = User.objects.create_user(
+            username="record-owner", email="record@example.com", password="x"
+        )
+        # A core model whose OWNER_FIELDS is a user foreign key.
+        self.record = ShortcutKey.objects.create(
+            user=self.record_owner, page="/", key="k", command="alt"
+        )
+        self.cadence, self.enrollment = self.enroll(self.record)
+
+    def enroll(self, record):
+        content_type = HorillaContentType.objects.get_for_model(record.__class__)
+        cadence = Cadence.objects.create(
+            name="Owners",
+            module=content_type,
+            created_by=self.creator,
+            updated_by=self.creator,
+        )
+        enrollment = CadenceEnrollment.all_objects.create(
+            cadence=cadence,
+            content_type=content_type,
+            object_id=record.pk,
+            started_at=timezone.now(),
+            source="manual",
+        )
+        return cadence, enrollment
+
+    def task_followup(self, cadence=None, **fields):
+        values = {
+            "cadence": cadence or self.cadence,
+            "followup_number": 1,
+            "followup_type": "task",
+            "subject": "Follow up",
+            "due_after_days": 1,
+            "task_status": "not_started",
+            "task_priority": "medium",
+        }
+        values.update(fields)
+        return CadenceFollowUp.objects.create(**values)
+
+    def call_followup(self, **fields):
+        values = {
+            "cadence": self.cadence,
+            "followup_number": 1,
+            "followup_type": "call",
+            "purpose": "Call back",
+            "call_start_after_days": 0,
+        }
+        values.update(fields)
+        return CadenceFollowUp.objects.create(**values)
+
+    def created(self, enrollment=None):
+        return Activity.all_objects.get(
+            additional_info__cadence_runtime__enrollment_id=(
+                enrollment or self.enrollment
+            ).pk
+        )
+
+    def test_fixed_owner_is_unchanged(self):
+        self.task_followup(task_owner=self.fixed)
+        services.create_first_followups(self.enrollment, self.record)
+        task = self.created()
+        self.assertEqual(task.owner, self.fixed)
+        self.assertEqual(list(task.assigned_to.all()), [self.fixed])
+        self.assertNotIn("owner_source", task.additional_info["cadence_runtime"])
+
+    def test_task_goes_to_the_record_owner(self):
+        self.task_followup(task_owner=self.fixed, task_owner_from_record=True)
+        services.create_first_followups(self.enrollment, self.record)
+        task = self.created()
+        self.assertEqual(task.owner, self.record_owner)
+        self.assertEqual(list(task.assigned_to.all()), [self.record_owner])
+        runtime = task.additional_info["cadence_runtime"]
+        self.assertEqual(runtime["owner_source"], "record")
+        self.assertNotIn("record_owner_missing", runtime)
+
+    def test_call_goes_to_the_record_owner(self):
+        self.call_followup(call_owner_from_record=True)
+        services.create_first_followups(self.enrollment, self.record)
+        self.assertEqual(self.created().owner, self.record_owner)
+
+    def test_record_without_owner_falls_back_to_the_fixed_owner(self):
+        record = Company.objects.create(name="No owner fields")
+        cadence, enrollment = self.enroll(record)
+        self.task_followup(
+            cadence=cadence, task_owner=self.fixed, task_owner_from_record=True
+        )
+        with self.assertLogs("horilla.contrib.cadences.services", "WARNING"):
+            services.create_first_followups(enrollment, record)
+        task = self.created(enrollment)
+        self.assertEqual(task.owner, self.fixed)
+        runtime = task.additional_info["cadence_runtime"]
+        self.assertEqual(runtime["owner_source"], "fixed")
+        self.assertTrue(runtime["record_owner_missing"])
+
+    def test_record_without_owner_falls_back_to_the_cadence_creator(self):
+        record = Company.objects.create(name="No owner fields")
+        cadence, enrollment = self.enroll(record)
+        self.task_followup(cadence=cadence, task_owner_from_record=True)
+        with self.assertLogs("horilla.contrib.cadences.services", "WARNING"):
+            services.create_first_followups(enrollment, record)
+        task = self.created(enrollment)
+        self.assertEqual(task.owner, self.creator)
+        self.assertEqual(
+            task.additional_info["cadence_runtime"]["owner_source"],
+            "cadence_creator",
+        )
+
+    def test_record_owner_needs_no_extra_query(self):
+        followup = self.task_followup(task_owner_from_record=True)
+        with self.assertNumQueries(0):
+            owner = services.resolve_followup_owner(followup, self.record, self.cadence)
+        self.assertEqual(owner, (self.record_owner.pk, "record"))
+
+    def test_owner_is_optional_only_with_record_owner(self):
+        followup = CadenceFollowUp(
+            cadence=self.cadence,
+            followup_number=1,
+            followup_type="task",
+            subject="Follow up",
+            due_after_days=1,
+            task_status="not_started",
+            task_priority="medium",
+        )
+        with self.assertRaises(ValidationError) as error:
+            followup.clean()
+        self.assertIn("task_owner", error.exception.message_dict)
+        followup.task_owner_from_record = True
+        followup.clean()
+
+        call = CadenceFollowUp(
+            cadence=self.cadence,
+            followup_number=1,
+            followup_type="call",
+            purpose="Call back",
+            call_start_after_days=0,
+            call_owner_from_record=True,
+        )
+        call.clean()
+
+    def test_form_shows_the_choice_next_to_the_owner(self):
+        task_form = CadenceFollowUpForm(
+            initial={"cadence": self.cadence.pk, "followup_type": "task"}
+        )
+        names = list(task_form.fields)
+        self.assertEqual(
+            names.index("task_owner_from_record"), names.index("task_owner") + 1
+        )
+        self.assertNotIn("call_owner_from_record", names)
+        call_form = CadenceFollowUpForm(
+            initial={"cadence": self.cadence.pk, "followup_type": "call"}
+        )
+        names = list(call_form.fields)
+        self.assertEqual(
+            names.index("call_owner_from_record"), names.index("call_owner") + 1
+        )
+        self.assertNotIn("task_owner_from_record", names)
+
+    def test_editing_the_followup_reassigns_pending_tasks(self):
+        followup = self.task_followup(task_owner=self.fixed)
+        services.create_first_followups(self.enrollment, self.record)
+        self.assertEqual(self.created().owner, self.fixed)
+
+        followup.task_owner_from_record = True
+        followup.save()
+        task = self.created()
+        self.assertEqual(task.owner, self.record_owner)
+        self.assertEqual(list(task.assigned_to.all()), [self.record_owner])
+        self.assertEqual(
+            task.additional_info["cadence_runtime"]["owner_source"], "record"
+        )
+
+        followup.task_owner_from_record = False
+        followup.save()
+        task = self.created()
+        self.assertEqual(task.owner, self.fixed)
+        self.assertNotIn("owner_source", task.additional_info["cadence_runtime"])
+
+    def test_sync_reads_the_records_once(self):
+        other_owner = User.objects.create_user(
+            username="other-owner", email="other@example.com", password="x"
+        )
+        other = ShortcutKey.objects.create(
+            user=other_owner, page="/", key="j", command="alt"
+        )
+        other_enrollment = CadenceEnrollment.all_objects.create(
+            cadence=self.cadence,
+            content_type=self.enrollment.content_type,
+            object_id=other.pk,
+            started_at=timezone.now(),
+            source="manual",
+        )
+        followup = self.task_followup(task_owner=self.fixed)
+        services.create_first_followups(self.enrollment, self.record)
+        services.create_first_followups(other_enrollment, other)
+
+        followup = CadenceFollowUp.objects.get(pk=followup.pk)
+        followup.task_owner_from_record = True
+        activities = list(
+            Activity.all_objects.filter(
+                additional_info__cadence_runtime__followup_id=followup.pk
+            )
+        )
+        with CaptureQueriesContext(connection) as queries:
+            owners = signals._runtime_activity_owners(followup, activities)
+        # One read of the ShortcutKey records for both activities.
+        self.assertEqual(len(queries), 1, [q["sql"] for q in queries])
+        self.assertEqual(
+            sorted(owners.values()), sorted([self.record_owner.pk, other_owner.pk])
+        )
+        self.assertEqual(self.created(other_enrollment).owner, self.fixed)
+        followup.save()
+        self.assertEqual(self.created().owner, self.record_owner)
+        self.assertEqual(self.created(other_enrollment).owner, other_owner)
+
+    def test_many_to_many_owner_field_gives_its_first_user(self):
+        # Activity.OWNER_FIELDS starts with "owner", then the "assigned_to" users.
+        company = Company.objects.create(name="Activity Co")
+        record = Activity.objects.create(
+            subject="Shared", activity_type="task", status="scheduled", company=company
+        )
+        self.assertIsNone(services._record_owner_id(record))
+        record.assigned_to.set([self.record_owner, self.fixed])
+        self.assertEqual(
+            services._record_owner_id(record),
+            min(self.record_owner.pk, self.fixed.pk),
+        )
+        record.owner = self.creator
+        self.assertEqual(services._record_owner_id(record), self.creator.pk)
+
+    def test_no_owner_anywhere_creates_the_task_without_one(self):
+        record = Company.objects.create(name="No owner fields")
+        content_type = HorillaContentType.objects.get_for_model(Company)
+        cadence = Cadence.objects.create(name="Nobody", module=content_type)
+        enrollment = CadenceEnrollment.all_objects.create(
+            cadence=cadence,
+            content_type=content_type,
+            object_id=record.pk,
+            started_at=timezone.now(),
+            source="manual",
+        )
+        self.task_followup(cadence=cadence, task_owner_from_record=True)
+        with self.assertLogs("horilla.contrib.cadences.services", "WARNING"):
+            services.create_first_followups(enrollment, record)
+        task = self.created(enrollment)
+        self.assertIsNone(task.owner)
+        self.assertFalse(task.assigned_to.exists())
+        runtime = task.additional_info["cadence_runtime"]
+        self.assertEqual(runtime["owner_source"], "none")
+        self.assertTrue(runtime["record_owner_missing"])
+
+    def test_delayed_followup_goes_to_the_record_owner(self):
+        followup = self.task_followup(
+            task_owner=self.fixed,
+            task_owner_from_record=True,
+            do_this_unit="minute",
+            do_this_value=5,
+        )
+        services.create_first_followups(self.enrollment, self.record)
+        self.assertFalse(
+            Activity.all_objects.filter(
+                additional_info__cadence_runtime__followup_id=followup.pk
+            ).exists()
+        )
+        scheduled = CadenceScheduledFollowUp.all_objects.get(
+            enrollment=self.enrollment, followup=followup
+        )
+        services.run_scheduled_followup(scheduled.pk)
+        self.assertEqual(self.created().owner, self.record_owner)
+
+    def test_editing_a_call_followup_reassigns_pending_calls(self):
+        followup = self.call_followup(call_owner=self.fixed)
+        services.create_first_followups(self.enrollment, self.record)
+        self.assertEqual(self.created().owner, self.fixed)
+        followup.call_owner_from_record = True
+        followup.save()
+        call = self.created()
+        self.assertEqual(call.owner, self.record_owner)
+        self.assertEqual(
+            call.additional_info["cadence_runtime"]["owner_source"], "record"
+        )
+
+    def test_editing_the_followup_leaves_completed_tasks_alone(self):
+        followup = self.task_followup(task_owner=self.fixed)
+        services.create_first_followups(self.enrollment, self.record)
+        Activity.all_objects.filter(pk=self.created().pk).update(status="completed")
+        followup.task_owner_from_record = True
+        followup.save()
+        task = self.created()
+        self.assertEqual(task.owner, self.fixed)
+        self.assertNotIn("owner_source", task.additional_info["cadence_runtime"])
+
+    def test_editing_the_followup_keeps_the_owner_when_the_record_is_gone(self):
+        followup = self.task_followup(task_owner=self.fixed)
+        services.create_first_followups(self.enrollment, self.record)
+        # The task now points at a record that no longer exists.
+        Activity.all_objects.filter(pk=self.created().pk).update(object_id=999999)
+        followup.task_owner_from_record = True
+        followup.save()
+        self.assertEqual(self.created().owner, self.fixed)
+
+    def test_form_saves_record_owner_without_a_fixed_owner(self):
+        form = CadenceFollowUpForm(
+            data={
+                "cadence": self.cadence.pk,
+                "followup_number": 1,
+                "followup_type": "task",
+                "do_this_unit": "immediately",
+                "subject": "Follow up",
+                "due_after_days": 1,
+                "task_status": "not_started",
+                "task_priority": "medium",
+                "task_owner_from_record": "on",
+            }
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        followup = form.save()
+        self.assertTrue(followup.task_owner_from_record)
+        self.assertIsNone(followup.task_owner)
+
+        form = CadenceFollowUpForm(
+            data={
+                "cadence": self.cadence.pk,
+                "followup_number": 1,
+                "followup_type": "task",
+                "do_this_unit": "immediately",
+                "subject": "Follow up again",
+                "due_after_days": 1,
+                "task_status": "not_started",
+                "task_priority": "medium",
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("task_owner", form.errors)
+
+
+@isolate_apps("horilla.contrib.cadences")
+class RecordOwnerFieldTests(SimpleTestCase):
+    """_record_owner_id() reads OWNER_FIELDS in order and skips what is not a user."""
+
+    def test_first_owner_field_that_holds_a_user(self):
+        class Team(models.Model):
+            class Meta:
+                app_label = "cadences"
+
+        class Deal(models.Model):
+            OWNER_FIELDS = ["missing", "team", "reviewer", "owner"]
+            team = models.ForeignKey(Team, null=True, on_delete=models.CASCADE)
+            reviewer = models.ForeignKey(
+                User, null=True, related_name="+", on_delete=models.CASCADE
+            )
+            owner = models.ForeignKey(
+                User, null=True, related_name="+", on_delete=models.CASCADE
+            )
+
+            class Meta:
+                app_label = "cadences"
+
+        class Note(models.Model):
+            class Meta:
+                app_label = "cadences"
+
+        self.assertIsNone(services._record_owner_id(Deal(team_id=5)))
+        self.assertEqual(services._record_owner_id(Deal(owner_id=7)), 7)
+        self.assertEqual(services._record_owner_id(Deal(reviewer_id=3, owner_id=7)), 3)
+        self.assertIsNone(services._record_owner_id(Note()))
 
 
 # ---------------------------------------------------------------------------

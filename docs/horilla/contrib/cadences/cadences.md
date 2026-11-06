@@ -63,6 +63,7 @@ Registers settings and/or main navigation entries for cadence builder UI (list, 
 - **`followup_type`** — `task` | `call` | `email`, or the key of a registered delivery channel. A plain `CharField` (`max_length=50`) with no fixed `choices` (migration `0007`); `clean()` refuses a key that is neither. `get_followup_type_display()` is an explicit method that also knows the channel labels.
 - **`channel_config`** — JSON for a channel follow-up: `{template_id, to}`. Emptied for task, call and email.
 - **`branch_from`** — self-FK for branched sequences from a specific card action.
+- **`task_owner_from_record`** / **`call_owner_from_record`** — give the task or call to the owner of the enrolled record instead of `task_owner` / `call_owner` (migration `0008`, both default `False`, so existing follow-ups keep their fixed user). While the flag is set the fixed owner is optional and is the fallback (`RECORD_OWNER_FLAGS`). See [Task and call owner](#task-and-call-owner).
 - Integrates with **`Activity`** model constants for status compatibility on `previous_status`.
 
 ### `CadenceEnrollment`
@@ -92,6 +93,18 @@ Task / call / email creation lives here (moved out of `signals.py`); every creat
 | `refresh_status(enrollment)` | `completed` once all items are closed; `failed` when nothing could be created (automatic runs stay ongoing and retry on next save). |
 | `eligible_cadences(instance)` / `get_ineligible_reason(...)` | Active, same module, has a follow-up 1, not already running for the record. |
 | `adopt_legacy_enrollment(...)` | Lazily adopts items created before enrollments existed by adding `enrollment_id` to their JSON — no data migration. |
+
+## Task and call owner
+
+`services.resolve_followup_owner(followup, instance)` picks the owner of a task or call follow-up and returns `(user_id, source)`:
+
+1. **Fixed** (flag off): `task_owner` / `call_owner`, as before.
+2. **Record owner** (flag on): the first field of the record model's `OWNER_FIELDS` that holds a user (the same list the permissions and the API use). A foreign key is read from its `_id` column, with no query; a many-to-many owner field gives its first user by pk (one query).
+3. When the record has no owner (no `OWNER_FIELDS`, or all empty): the fixed owner if set, else the creator of the cadence. A warning is logged.
+
+The activity gets `owner` and `assigned_to` (task) from it. For a "record owner" follow-up, `cadence_runtime.owner_source` notes `record`, `fixed`, `cadence_creator` or `none`, and `cadence_runtime.record_owner_missing` is `true` when the record had no owner.
+
+**Editing the follow-up.** `_sync_runtime_activities_for_followup()` applies the same rule to the pending (not completed) activities of the follow-up: with the flag on each one goes to its own record's owner. The records are read once per module (`in_bulk`), not once per activity. Turning the flag off gives them back to the fixed owner. An activity whose record is gone, or with no owner found at all, keeps its owner. A task or call already created is not moved when the record's owner changes later; the next follow-ups, and the next edit of the follow-up, use the new owner.
 
 ## Follow-ups through delivery channels
 
@@ -220,6 +233,7 @@ Do **not** list `company`, `created_at`, `updated_at`, `created_by`, `updated_by
 
 - **`field_order`**: cadence metadata first, then all task/call/email columns (runtime visibility via **`TYPE_FIELD_MAP`** in `__init__`)
 - **`Meta.exclude`**: `call_type`, `call_status`, `order`, `channel_config`
+- **Owner**: **Assign Task to Record Owner** right after Task Owner, **Assign Call to Record Owner** right after Call Owner (in `TYPE_FIELD_MAP`, so only for their type)
 - **`followup_type`**: a select of the built-ins and the delivery channels available to the company; a channel type shows `channel_template` and `channel_to` instead of the task/call/email fields
 - **HTMX**: `followup_type` / `do_this_unit` toggles unchanged
 - **Labels**: "Do This Value" → **Wait for** (help text shown as an info icon), "Trigger Date + Days" → **Due Date (days after trigger)**, "Call Start + Days" → **Call Date (days after trigger)**, "After previous … is" → **When the previous … is**; help text added to Do This / Wait for / previous status / day fields.

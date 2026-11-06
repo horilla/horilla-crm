@@ -236,24 +236,78 @@ def _trigger_next_followups_from_activity(activity):
     services.refresh_status(enrollment)
 
 
+def _runtime_activity_owners(followup, activities):
+    """
+    ``{activity pk: owner id}`` for the pending activities of ``followup``,
+    with the same rule as when they were created. Activities left out keep
+    their owner. The records are read once per module, not once per activity.
+    The owner note in each activity's runtime info is refreshed in place.
+
+    A record that is gone keeps its activity's owner as it is.
+    """
+    fixed_id, from_record = services.followup_owner_setting(followup)
+    if not from_record:
+        for activity in activities:
+            services.note_owner_source(_runtime_of(activity), "fixed", False)
+        if not fixed_id:
+            return {}
+        return {activity.pk: fixed_id for activity in activities}
+
+    object_ids = {}
+    for activity in activities:
+        object_ids.setdefault(activity.content_type_id, set()).add(activity.object_id)
+    records = {}
+    for content_type_id, ids in object_ids.items():
+        model = HorillaContentType.objects.get_for_id(content_type_id).model_class()
+        if model is None:
+            continue
+        for pk, record in model._base_manager.in_bulk(ids).items():
+            records[(content_type_id, pk)] = record
+
+    owners = {}
+    for activity in activities:
+        record = records.get((activity.content_type_id, activity.object_id))
+        if record is None:
+            continue
+        owner_id, source = services.resolve_followup_owner(followup, record)
+        services.note_owner_source(_runtime_of(activity), source, True)
+        if owner_id:
+            owners[activity.pk] = owner_id
+    return owners
+
+
+def _runtime_of(activity):
+    """The ``cadence_runtime`` dict of ``activity`` (edited in place)."""
+    if not isinstance(activity.additional_info, dict):
+        activity.additional_info = {}
+    runtime = activity.additional_info.get("cadence_runtime")
+    if not isinstance(runtime, dict):
+        runtime = activity.additional_info["cadence_runtime"] = {}
+    return runtime
+
+
 def _sync_runtime_activities_for_followup(followup):
     """
     Keep existing cadence runtime activities in sync when follow-up config changes.
     Focus on pending activities so completed history is not rewritten.
     """
-    qs = Activity.all_objects.filter(
-        additional_info__cadence_runtime__followup_id=followup.pk
-    ).exclude(status="completed")
+    activities = list(
+        Activity.all_objects.filter(
+            additional_info__cadence_runtime__followup_id=followup.pk
+        ).exclude(status="completed")
+    )
+    owners = _runtime_activity_owners(followup, activities)
     now = timezone.now()
-    for activity in qs:
+    for activity in activities:
+        owner_id = owners.get(activity.pk)
         start_base = activity.start_datetime or activity.created_at or now
         if followup.followup_type == "task" and activity.activity_type == "task":
             subject_text = followup.subject or activity.subject
             activity.subject = subject_text
             activity.title = subject_text
             activity.task_priority = followup.task_priority or activity.task_priority
-            if followup.task_owner_id:
-                activity.owner_id = followup.task_owner_id
+            if owner_id:
+                activity.owner_id = owner_id
             activity.due_datetime = start_base + timedelta(
                 days=(followup.due_after_days or 0)
             )
@@ -264,19 +318,20 @@ def _sync_runtime_activities_for_followup(followup):
                     "task_priority",
                     "owner",
                     "due_datetime",
+                    "additional_info",
                     "updated_at",
                     "updated_by",
                 ]
             )
-            if followup.task_owner_id:
-                activity.assigned_to.set([followup.task_owner_id])
+            if owner_id:
+                activity.assigned_to.set([owner_id])
         elif followup.followup_type == "call" and activity.activity_type == "log_call":
             call_text = followup.purpose or activity.subject
             activity.subject = call_text
             activity.title = call_text
             activity.call_purpose = followup.purpose
-            if followup.call_owner_id:
-                activity.owner_id = followup.call_owner_id
+            if owner_id:
+                activity.owner_id = owner_id
             shifted = start_base + timedelta(days=(followup.call_start_after_days or 0))
             activity.start_datetime = shifted
             activity.due_datetime = shifted
@@ -288,6 +343,7 @@ def _sync_runtime_activities_for_followup(followup):
                     "owner",
                     "start_datetime",
                     "due_datetime",
+                    "additional_info",
                     "updated_at",
                     "updated_by",
                 ]

@@ -16,7 +16,9 @@ from types import SimpleNamespace
 from unittest import mock
 
 from django.contrib.auth.signals import user_logged_in
+from django.db import models
 from django.test import SimpleTestCase, TestCase, override_settings
+from django.test.utils import isolate_apps
 from login_history.models import post_login
 
 from horilla.auth.models import User
@@ -503,6 +505,92 @@ class DefaultRecipientTests(AutomationTestCase):
         self.assertEqual(
             self.fake.resolve_recipients(spec, None, self.user),
             ["09121111111", "09124444444"],
+        )
+
+
+@isolate_apps("horilla.contrib.automations")
+class RelatedRecipientTests(SimpleTestCase):
+    """Addresses one relation away: a deal's customer phone, never its company's."""
+
+    def setUp(self):
+        super().setUp()
+        only_builtin_channels(self)
+        self.fake = register_fake(self)
+
+        class Customer(models.Model):
+            """A record a deal points to, with a phone and an email."""
+
+            mobile = models.CharField(max_length=20, verbose_name="Mobile")
+            email = models.EmailField(verbose_name="Email")
+
+            class Meta:
+                app_label = "automations"
+
+        class Deal(models.Model):
+            """A record with no address of its own."""
+
+            customer = models.ForeignKey(
+                Customer,
+                on_delete=models.CASCADE,
+                null=True,
+                blank=True,
+                verbose_name="Customer",
+            )
+            owner = models.ForeignKey(User, on_delete=models.CASCADE)
+            company = models.ForeignKey(Company, on_delete=models.CASCADE)
+
+            class Meta:
+                app_label = "automations"
+
+        self.customer_model = Customer
+        self.deal_model = Deal
+
+    def test_choices_reach_one_relation_away(self):
+        """Phone and mail channels offer the customer's address; notification does not."""
+        sms = dict(self.fake.get_recipient_choices(self.deal_model))
+        self.assertEqual(sms["instance.customer.mobile"], "Customer - Mobile")
+        self.assertNotIn("instance.customer.email", sms)
+        self.assertIn("instance.owner", sms)
+
+        mail = dict(get_delivery_channel("mail").get_recipient_choices(self.deal_model))
+        self.assertEqual(mail["instance.customer.email"], "Customer - Email")
+        self.assertNotIn("instance.customer.mobile", mail)
+
+        notification = dict(
+            get_delivery_channel("notification").get_recipient_choices(self.deal_model)
+        )
+        self.assertFalse(
+            [key for key in notification if key.startswith("instance.customer.")]
+        )
+
+    def test_users_and_the_company_are_not_expanded(self):
+        """A user is reached through itself; the company is the tenant."""
+        for channel in (self.fake, get_delivery_channel("mail")):
+            keys = dict(channel.get_recipient_choices(self.deal_model))
+            with self.subTest(channel=channel.key):
+                for prefix in ("instance.company", "instance.owner."):
+                    self.assertFalse([key for key in keys if key.startswith(prefix)])
+
+    def test_related_paths_resolve_to_the_related_address(self):
+        """The saved path walks to the customer; an empty relation gives nothing."""
+        deal = self.deal_model(
+            customer=self.customer_model(mobile="09125555555", email="c@example.com")
+        )
+        self.assertEqual(
+            self.fake.resolve_recipients("instance.customer.mobile", deal, None),
+            ["09125555555"],
+        )
+        self.assertEqual(
+            get_delivery_channel("mail").resolve_recipients(
+                "instance.customer.email", deal, None
+            ),
+            ["c@example.com"],
+        )
+        self.assertEqual(
+            self.fake.resolve_recipients(
+                "instance.customer.mobile", self.deal_model(), None
+            ),
+            [],
         )
 
 

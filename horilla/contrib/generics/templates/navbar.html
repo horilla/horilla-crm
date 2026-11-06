@@ -43,6 +43,7 @@
                             <div class="w-32 md:w-40">
                                 <select
                                     id="viewTypeSelect"
+                                    data-server-view-type="{{ view_type }}"
                                     class="view-type js-example-basic-single headselect mt-0"
                                     name="view_type"
                                     hx-get="{{ main_url }}?{% for key, value in request.GET.items %}{% if key != 'view_type' %}{% if not forloop.first %}&{% endif %}{{ key }}={{ value }}{% endif %}{%endfor %}"
@@ -349,44 +350,4 @@
     </div>
 </div>
 
-<script>
-    $(document).ready(function() {
-      if ($.fn.select2) {
-        $('.js-example-basic-single').select2({ width: "100%"});
-      }
-
-      const $select = $('select[name="view_type"]');
-      if ($select.length) {
-        const serverViewType = "{{ view_type|escapejs }}";
-        $select.val(serverViewType || 'all');
-
-        if ($select.hasClass('js-example-basic-single')) {
-          $select.trigger('change.select2');
-        }
-      }
-
-    });
-
-    $(document).on('htmx:beforeSwap', function(event) {
-      const $select = $('select[name="view_type"]');
-      if ($select.length) {
-        sessionStorage.setItem('currentViewType', $select.val());
-      }
-    });
-
-    $(document).on('htmx:afterSwap', function(event) {
-      const $select = $('select[name="view_type"]');
-      if ($select.length) {
-        const serverViewType = "{{ view_type|escapejs }}";
-        const storedValue = sessionStorage.getItem('currentViewType');
-        const valueToSet = serverViewType || storedValue || 'all';
-        $select.val(valueToSet);
-        if ($select.hasClass('js-example-basic-single')) {
-          if (!$select.data('select2')) {
-            $select.select2( { width: "100%"});
-          }
-          $select.trigger('change.select2');
-        }
-      }
-    });
-</script>
+<script src="{% static 'generics/js/navbar.js' %}"></script>

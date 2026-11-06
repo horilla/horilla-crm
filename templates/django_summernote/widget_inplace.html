@@ -1,0 +1,14 @@
+{% with attrs_id="summernote-attrs-"|add:id_safe %}
+{{ attrs|json_script:attrs_id }}
+{% endwith %}
+<script
+    src="{% static 'assets/js/summernote_widget.js' %}"
+    data-id="{{ id }}"
+    data-id-safe="{{ id_safe }}"
+    data-jquery="{{ config.jquery }}"
+    data-csrf-cookie-name="{{ CSRF_COOKIE_NAME }}"
+    data-settings="{{ settings }}"
+    data-attrs-id="summernote-attrs-{{ id_safe }}"
+    data-disable-attachment="{{ config.disable_attachment|yesno:'true,false' }}"
+    data-lazy="{{ config.lazy|yesno:'true,false' }}"
+></script>

@@ -1,0 +1,67 @@
+<div id="email-input-{{ field_type }}" class="relative">
+    <div class="black flex flex-wrap items-center gap-1 p-2 border border-dark-50 rounded-md mt-1 focus-within:border-primary-600 min-h-[40px] bg-white">
+        {% for email in email_list %}
+            {% if email.strip %}
+                <div class="flex items-center bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full border border-blue-200">
+                    <span>{{ email.strip }}</span>
+                    <button
+                        type="button"
+                        class="ms-1 text-blue-600 hover:text-blue-800 hover:bg-blue-200 rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                        hx-post="{% if remove_email_url %}{{ remove_email_url }}{% else %}{% url 'mail:remove_email' %}{% endif %}"
+                        hx-vals='{"email_to_remove": "{{ email.strip }}", "field_type": "{{ field_type }}"}'
+                        hx-include="[name='{{ field_type }}_email_list']"
+                        hx-target="#email-input-{{ field_type }}"
+                        hx-swap="outerHTML"
+                    >
+                        ×
+                    </button>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Input Field -->
+        <input
+            type="text"
+            name="{{ field_type }}_email_input"
+            id="{{ field_type }}_email_input"
+            value="{{ current_search }}"
+            placeholder="{% if not email_list %}{% trans "Enter recipient" %}{% endif %}"
+            class="flex-1 min-w-[200px] outline-none border-none text-sm placeholder:text-dark-100 bg-transparent"
+            hx-get="{% if email_suggestions_url %}{{ email_suggestions_url }}{% else %}{% url 'mail:email_suggestions' %}{% endif %}?field={{ field_type }}"
+            hx-trigger="keyup changed delay:300ms, focus"
+            hx-include="this, [name='{{ field_type }}_email_list']"
+            hx-target="#email-suggestions-{{ field_type }}"
+            hx-swap="innerHTML"
+            autocomplete="off"
+            onkeydown="handleEmailInput(event, '{{ field_type }}')"
+            onblur="handleEmailBlur(event, '{{ field_type }}')"
+        >
+    </div>
+
+    <input
+        type="hidden"
+        name="{{ field_type }}_email"
+        value="{{ email_string }}"
+    >
+    <input
+        type="hidden"
+        name="{{ field_type }}_email_list"
+        value="{{ email_list|join:',' }}"
+    >
+    <input
+        type="hidden"
+        class="email-pills-add-url"
+        value="{% if add_email_url %}{{ add_email_url }}{% else %}{% url 'mail:add_email' %}{% endif %}"
+    >
+    <input
+        type="hidden"
+        class="email-pills-remove-url"
+        value="{% if remove_email_url %}{{ remove_email_url }}{% else %}{% url 'mail:remove_email' %}{% endif %}"
+    >
+</div>
+
+<script
+    src="{% static 'generics/js/email_pills.js' %}"
+    data-add-email-url="{% url 'mail:add_email' %}"
+    data-remove-email-url="{% url 'mail:remove_email' %}"
+></script>

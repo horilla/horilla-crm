@@ -145,63 +145,6 @@
                                                 value="{{ field.field.widget.attrs.data_cleared|default:'false' }}"
                                             >
 
-                                            <script>
-                                                function initImageFileInput(input) {
-                                                    const clearBtn = document.getElementById(input.id + '-clear');
-                                                    const clearInput = document.getElementById(input.id + '_clear_input');
-                                                    const preview = document.getElementById(input.id + '-preview');
-                                                    const placeholder = document.getElementById(input.id + '-placeholder');
-
-                                                    if (!clearBtn || !clearInput || !preview || !placeholder) return;
-                                                    if (input.dataset.fileInit === "true") return;
-                                                    input.dataset.fileInit = "true";
-
-                                                    input.addEventListener('change', function() {
-                                                        if (input.files.length > 0) {
-                                                            clearInput.value = 'false';
-                                                            const reader = new FileReader();
-                                                            reader.onload = function(e) {
-                                                                preview.src = e.target.result;
-                                                                preview.style.removeProperty('display');
-                                                                placeholder.style.display = 'none';
-                                                                clearBtn.style.removeProperty('display');
-                                                            };
-                                                            reader.readAsDataURL(input.files[0]);
-                                                        } else {
-                                                            preview.style.display = 'none';
-                                                            preview.removeAttribute('src');
-                                                            placeholder.style.removeProperty('display');
-                                                            clearBtn.style.display = 'none';
-                                                            clearInput.value = 'true';
-                                                        }
-                                                    });
-
-                                                    clearBtn.addEventListener('click', function(event) {
-                                                        event.stopPropagation();
-                                                        input.value = '';
-                                                        preview.style.display = 'none';
-                                                        preview.removeAttribute('src');
-                                                        placeholder.style.removeProperty('display');
-                                                        clearBtn.style.display = 'none';
-                                                        clearInput.value = 'true';
-                                                    });
-                                                }
-
-                                                function initThisImageFileInput(root=document) {
-                                                    const input = root.querySelector('#{{ field.id_for_label }}');
-                                                    if (input) {
-                                                        initImageFileInput(input);
-                                                    }
-                                                }
-
-                                                document.addEventListener('DOMContentLoaded', function() {
-                                                    initThisImageFileInput();
-                                                });
-
-                                                document.body.addEventListener('htmx:afterSwap', function(evt) {
-                                                    initThisImageFileInput(evt.target);
-                                                });
-                                            </script>
                                         {% elif field.field.widget.input_type == 'checkbox' %}
                                             <label class="flex items-center justify-between w-full cursor-pointer mt-5">
                                                 <span class="me-3 text-xs text-color-600">
@@ -261,77 +204,6 @@
                                                 </div>
                                             </div>
 
-                                            <script>
-                                                function initFileInput(input) {
-                                                    const fileName = document.getElementById(input.id + '-name');
-                                                    const clearBtn = document.getElementById(input.id + '-clear');
-                                                    const clearInput = document.getElementById(input.id + '_clear_input');
-
-                                                    if (!fileName || !clearBtn || !clearInput) return;
-                                                    if (input.dataset.fileInit === "true") return;
-                                                    input.dataset.fileInit = "true";
-
-                                                    const wasCleared = fileName.getAttribute('data-cleared') === 'true';
-                                                    const uploadedFilename = fileName.getAttribute('data-uploaded') || '';
-                                                    const existingFilename = fileName.getAttribute('data-existing') || '';
-
-                                                    let currentFilename = '';
-                                                    let hasFile = false;
-
-                                                    if (wasCleared) {
-                                                        clearInput.value = 'true';
-                                                    } else if (uploadedFilename) {
-                                                        currentFilename = uploadedFilename;
-                                                        clearInput.value = 'false';
-                                                        hasFile = true;
-                                                    } else if (existingFilename) {
-                                                        currentFilename = existingFilename.split('/').pop();
-                                                        clearInput.value = 'false';
-                                                        hasFile = true;
-                                                    }
-
-                                                    if (hasFile && currentFilename) {
-                                                        fileName.textContent = currentFilename;
-                                                        clearBtn.style.removeProperty('display');
-                                                    } else {
-                                                        fileName.textContent = 'No file chosen';
-                                                        clearBtn.style.display = 'none';
-                                                    }
-
-                                                    input.addEventListener('change', function() {
-                                                        if (input.files.length > 0) {
-                                                            fileName.textContent = input.files[0].name;
-                                                            clearBtn.style.removeProperty('display');
-                                                            clearInput.value = 'false';
-                                                        } else {
-                                                            fileName.textContent = 'No file chosen';
-                                                            clearBtn.style.display = 'none';
-                                                            clearInput.value = 'true';
-                                                        }
-                                                    });
-
-                                                    clearBtn.addEventListener('click', function() {
-                                                        input.value = '';
-                                                        fileName.textContent = 'No file chosen';
-                                                        clearBtn.style.display = 'none';
-                                                        clearInput.value = 'true';
-                                                    });
-                                                }
-
-                                                function initAllFileInputs(root=document) {
-                                                    root.querySelectorAll('input[type="file"]').forEach(initFileInput);
-                                                }
-
-                                                document.addEventListener('DOMContentLoaded', function() {
-                                                    initAllFileInputs();
-                                                });
-
-                                                document.body.addEventListener('htmx:afterSwap', function(evt) {
-                                                    if (evt.target.querySelectorAll) {
-                                                        initAllFileInputs(evt.target);
-                                                    }
-                                                });
-                                            </script>
                                         {% else %}
                                             <div class="flex justify-between items-center {% if 'select' in field.field.widget.attrs.class|lower or field.field.widget.input_type == 'select' %}mb-2{% else %}mb-1{% endif %}">
                                                 <label
@@ -637,3 +509,5 @@
         {% endif %}
     </form>
 </div>
+
+<script src="{% static 'generics/js/file_fields.js' %}"></script>

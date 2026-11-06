@@ -76,7 +76,7 @@
 
             {# Non-field / visible field errors #}
             {% if form.non_field_errors %}
-                <div class="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md p-2 mt-3">
+                <div class="bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm mt-3">
                     {% for error in form.non_field_errors %}{{ error }}{% endfor %}
                 </div>
             {% endif %}

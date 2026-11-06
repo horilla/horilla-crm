@@ -216,8 +216,10 @@ class ActionConfigMixin:
                 mail_channel="outgoing"
             ).exists()
         ):
+            # email_template_id is a hidden input, so an error on it is never
+            # shown; a non-field error is rendered by the action templates.
             self.add_error(
-                "email_template_id",
+                None,
                 _(
                     "No outgoing mail configuration is set up. "
                     "Please configure a mail server before adding an email action."

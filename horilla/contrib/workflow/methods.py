@@ -587,6 +587,13 @@ def _execute_email(action, instance, user):
     threading.Thread(target=_send, daemon=True).start()
 
 
+#: The record field each task due basis of the action form counts from.
+TASK_DUE_BASIS_FIELDS = {
+    "record_submission_date": "created_at",
+    "record_update_date": "updated_at",
+}
+
+
 def _execute_assign_task(action, instance, user):
     """Create an Activity task and assign it to the record owner (or triggering user)."""
     from datetime import timedelta
@@ -607,7 +614,8 @@ def _execute_assign_task(action, instance, user):
         if due_basis == "rule_trigger_date":
             base_date = timezone.now()
         else:
-            base_date = getattr(instance, due_basis, None)
+            field_name = TASK_DUE_BASIS_FIELDS.get(due_basis, due_basis)
+            base_date = getattr(instance, field_name, None)
             if base_date is None:
                 base_date = timezone.now()
             # If it's a plain date (not datetime), convert to datetime

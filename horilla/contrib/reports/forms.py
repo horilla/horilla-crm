@@ -50,6 +50,8 @@ class ReportForm(HorillaModelForm):
             else ReportFolder.objects.filter(report_folder_owner=self.request.user)
         )
 
+        self._limit_modules_to_viewable()
+
         self.fields["module"].widget.attrs.update(
             {
                 "hx-get": reverse_lazy("reports:get_module_columns_htmx"),
@@ -71,6 +73,33 @@ class ReportForm(HorillaModelForm):
                 "required": True,
             }
         )
+
+    def _limit_modules_to_viewable(self):
+        """Only offer modules the user may view (view_ or view_own_ permission).
+
+        The edited report's current module is always kept so the form can
+        still be rendered and saved.
+        """
+        user = self.request.user
+        field = self.fields["module"]
+        allowed_pks = {
+            content_type.pk
+            for content_type in field.queryset
+            if user.has_perm(f"{content_type.app_label}.view_{content_type.model}")
+            or user.has_perm(f"{content_type.app_label}.view_own_{content_type.model}")
+        }
+        if self.instance and self.instance.module_id:
+            allowed_pks.add(self.instance.module_id)
+        field.queryset = field.queryset.filter(pk__in=allowed_pks)
+        # The generic form may already have rendered inline choices from the
+        # unfiltered queryset; drop the ones that are not allowed.
+        choices = getattr(field.widget, "choices", None)
+        if choices:
+            field.widget.choices = [
+                (value, label)
+                for value, label in choices
+                if value in ("", None) or getattr(value, "value", value) in allowed_pks
+            ]
 
     def clean_selected_columns(self):
         """Convert the list to comma-separated string and validate that at least one column is selected"""

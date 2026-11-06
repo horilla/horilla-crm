@@ -3,9 +3,21 @@
 # Standard library imports
 import copy
 
+# Third-party imports (Django)
+from django.core.exceptions import PermissionDenied
+
 # First party imports (Horilla)
-from horilla.shortcuts import render
+from horilla.shortcuts import get_object_or_404, render
 from horilla.utils.translation import gettext_lazy as _
+
+# Local imports
+from ...models import Report
+
+# Permissions that allow a user to export a report definition's data
+REPORT_EXPORT_PERMS = (
+    "reports.export_report",
+    "reports.export_own_report",
+)
 
 # Fields used for creating temporary report objects with preview data
 TEMP_REPORT_FIELDS = (
@@ -19,6 +31,55 @@ TEMP_REPORT_FIELDS = (
     "chart_field_stacked",
     "chart_value_field",
 )
+
+
+def user_can_access_report(user, report):
+    """A report definition is open to its owner or to users with view_report."""
+    return report.report_owner_id == user.pk or user.has_perm("reports.view_report")
+
+
+def user_can_export_report(user, model_class):
+    """
+    Whether the export actions should be offered: the user may export reports
+    (export_ or export_own_report) and, for models with export
+    permissions, holds export_ or export_own_ on the report's model.
+    """
+    # Local import to avoid circular import during app initialization
+    from horilla.registry.feature import FEATURE_REGISTRY
+
+    if not user.has_any_perms(REPORT_EXPORT_PERMS):
+        return False
+    if model_class not in FEATURE_REGISTRY.get("export_models", []):
+        return True
+    app_label = model_class._meta.app_label
+    model_name = model_class._meta.model_name
+    return user.is_superuser or any(
+        user.has_perm(f"{app_label}.{prefix}_{model_name}")
+        for prefix in ("export", "export_own")
+    )
+
+
+def limit_reports_to_viewable_modules(queryset, user):
+    """Keep only reports whose module the user may view (view_ or view_own_)."""
+    # Local import to avoid circular import during app initialization
+    from horilla.contrib.core.models import HorillaContentType
+
+    module_ids = Report.objects.values_list("module_id", flat=True).distinct()
+    allowed_ids = [
+        content_type.pk
+        for content_type in HorillaContentType.objects.filter(pk__in=module_ids)
+        if user.has_perm(f"{content_type.app_label}.view_{content_type.model}")
+        or user.has_perm(f"{content_type.app_label}.view_own_{content_type.model}")
+    ]
+    return queryset.filter(module_id__in=allowed_ids)
+
+
+def get_accessible_report_or_404(request, pk):
+    """Load a report, raising PermissionDenied unless the user owns it or has view_report."""
+    report = get_object_or_404(Report, pk=pk)
+    if not user_can_access_report(request.user, report):
+        raise PermissionDenied
+    return report
 
 
 def render_report_detail_with_preview(view, request, report, preview_data):

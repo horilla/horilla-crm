@@ -548,7 +548,14 @@ class MoveFolderView(LoginRequiredMixin, HorillaSingleFormView):
 
 @method_decorator(htmx_required, name="dispatch")
 @method_decorator(
-    permission_required_or_denied(["reports.add_report", "reports.change_report"]),
+    permission_required_or_denied(
+        [
+            "reports.add_report",
+            "reports.add_own_report",
+            "reports.change_report",
+            "reports.change_own_report",
+        ]
+    ),
     name="dispatch",
 )
 class GetModuleColumnsHTMXView(LoginRequiredMixin, View):

@@ -47,7 +47,10 @@ from horilla.web import (
 from ..filters import ReportFilter
 from ..models import Report, ReportFolder
 from ..utils import detail_virtual_fields
-from ..views.toolkit.report_helper import TEMP_REPORT_FIELDS
+from ..views.toolkit.report_helper import (
+    TEMP_REPORT_FIELDS,
+    limit_reports_to_viewable_modules,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +153,8 @@ class ReportsListView(LoginRequiredMixin, HorillaListView):
 
     def get_queryset(self):
         """Load report modules with each row to avoid ContentType N+1 queries."""
-        return super().get_queryset().select_related("module")
+        queryset = super().get_queryset().select_related("module")
+        return limit_reports_to_viewable_modules(queryset, self.request.user)
 
     def get_context_data(self, **kwargs):
         """Add page title to the template context."""
@@ -228,7 +232,8 @@ class FavouriteReportsListView(LoginRequiredMixin, HorillaListView):
 
     def get_queryset(self):
         """Load report modules with each row to avoid ContentType N+1 queries."""
-        return super().get_queryset().select_related("module")
+        queryset = super().get_queryset().select_related("module")
+        return limit_reports_to_viewable_modules(queryset, self.request.user)
 
     @cached_property
     def action_method(self):
@@ -250,7 +255,7 @@ class FavouriteReportsListView(LoginRequiredMixin, HorillaListView):
         """Return queryset filtered to favourite reports only."""
         queryset = super().get_queryset()
         queryset = queryset.filter(is_favourite=True)
-        return queryset
+        return limit_reports_to_viewable_modules(queryset, self.request.user)
 
     columns = ["name", ("module", "module_verbose_name"), "folder"]
 
@@ -501,7 +506,9 @@ class ReportFolderDetailView(LoginRequiredMixin, HorillaListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         folder_id = self.kwargs.get("pk")
-        reports = Report.objects.filter(folder__id=folder_id)
+        reports = limit_reports_to_viewable_modules(
+            Report.objects.filter(folder__id=folder_id), self.request.user
+        )
         folders = list(context["object_list"])
         reports_list = list(reports)
         title = ReportFolder.objects.filter(id=folder_id).first()

@@ -30,6 +30,7 @@ from .toolkit.report_helper import (
     TEMP_REPORT_FIELDS,
     ReportPreviewMixin,
     create_temp_report_with_preview,
+    get_accessible_report_or_404,
     render_report_detail_with_preview,
 )
 
@@ -49,7 +50,7 @@ class ToggleAggregateView(LoginRequiredMixin, View):
     def post(self, request, pk):
         """Toggle aggregate column presence for the report preview session."""
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)
@@ -118,7 +119,7 @@ class UpdateAggregateFunctionView(LoginRequiredMixin, View):
     def post(self, request, pk):
         """Update aggregation function for a field in the report preview session."""
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)
@@ -167,7 +168,7 @@ class AddColumnView(ReportPreviewMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         """Add a column to the report preview's selected columns list."""
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)
@@ -227,7 +228,7 @@ class RemoveColumnView(ReportPreviewMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         """Remove a column from the report preview's selected columns list."""
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)
@@ -270,7 +271,7 @@ class AddFilterFieldView(LoginRequiredMixin, View):
     def post(self, request, pk):
         """Handle POST request to add a filter field to the report."""
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)
@@ -389,7 +390,7 @@ class UpdateFilterOperatorView(View):
     def post(self, request, pk):
         """Handle POST request to update filter operator for a report filter."""
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)
@@ -497,7 +498,7 @@ class ApplyFiltersView(LoginRequiredMixin, View):
 
     def post(self, request, pk):
         """Rebuild the filters from the submitted rows, then re-render the report."""
-        report = get_object_or_404(Report, pk=pk)
+        report = get_accessible_report_or_404(request, pk)
         session_key = f"report_preview_{report.pk}"
         preview_data = request.session.get(session_key, {})
         current_filters = preview_data.get("filters", report.filters)
@@ -567,7 +568,7 @@ class ReportFilterRowView(LoginRequiredMixin, View):
 
     def get(self, request, pk):
         """Render an empty row with the given client-generated key."""
-        report = get_object_or_404(Report, pk=pk)
+        report = get_accessible_report_or_404(request, pk)
         row_key = "".join(
             c for c in request.GET.get("row_key", "n0") if c.isalnum() or c == "_"
         )
@@ -591,7 +592,7 @@ class ReportFilterRowBodyView(LoginRequiredMixin, View):
 
     def get(self, request, pk):
         """Render operator/value widgets for the field picked in a row."""
-        report = get_object_or_404(Report, pk=pk)
+        report = get_accessible_report_or_404(request, pk)
         row_key = "".join(
             c for c in request.GET.get("row_key", "n0") if c.isalnum() or c == "_"
         )
@@ -623,7 +624,7 @@ class UpdateFilterValueView(LoginRequiredMixin, View):
     def post(self, request, pk):
         """Handle POST request to update filter value for a report filter."""
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)
@@ -739,7 +740,7 @@ class UpdateFilterLogicView(LoginRequiredMixin, View):
     def post(self, request, pk):
         """Handle POST request to update filter logic (AND/OR) between report filters."""
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)
@@ -810,7 +811,7 @@ class RemoveFilterView(LoginRequiredMixin, View):
     def post(self, request, pk):
         """Handle POST request to remove a filter from the report."""
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)
@@ -882,7 +883,7 @@ class ToggleRowGroupView(ReportPreviewMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         """Handle POST request to toggle row grouping on/off for a report."""
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)
@@ -938,7 +939,7 @@ class RemoveRowGroupView(ReportPreviewMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         """Handle POST request to remove a field from row grouping."""
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)
@@ -988,7 +989,7 @@ class ToggleColumnGroupView(ReportPreviewMixin, LoginRequiredMixin, View):
             Rendered report detail template with updated column grouping.
         """
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)
@@ -1043,7 +1044,7 @@ class RemoveColumnGroupView(ReportPreviewMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         """Handle POST request to remove a field from column grouping."""
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)
@@ -1084,7 +1085,7 @@ class RemoveAggregateColumnView(LoginRequiredMixin, View):
     def post(self, request, pk):
         """Handle POST request to remove an aggregate column from the report."""
         try:
-            report = get_object_or_404(Report, pk=pk)
+            report = get_accessible_report_or_404(request, pk)
         except Exception as e:
             messages.error(request, str(e))
             return RefreshResponse(request)

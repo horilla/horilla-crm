@@ -17,13 +17,15 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
-from horilla.shortcuts import get_object_or_404
+
+# Local imports
+from horilla.contrib.generics.views.helpers.queryset_utils import get_viewable_queryset
+from horilla.shortcuts import get_object_or_404, render
 from horilla.utils.decorators import method_decorator, permission_required_or_denied
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
 from horilla.web import HttpNotFound, HttpResponse, RefreshResponse
 
-# Local imports
 from ..models import Report
 from ..utils import (
     NO_VALUE_OPERATORS,
@@ -36,10 +38,12 @@ from ..utils import (
 )
 from ..views.report_detail import ReportDetailView
 from .toolkit.report_helper import (
+    REPORT_EXPORT_PERMS,
     ReportPreviewMixin,
     create_temp_report_with_preview,
     extract_display_value,
     filter_pivot_data,
+    user_can_access_report,
 )
 
 # Common IANA zone -> full display name, matched to how Salesforce labels
@@ -64,7 +68,7 @@ TIMEZONE_DISPLAY_NAMES = {
 
 
 @method_decorator(
-    permission_required_or_denied("reports.change_report"), name="dispatch"
+    permission_required_or_denied(list(REPORT_EXPORT_PERMS)), name="dispatch"
 )
 class ReportExportView(ReportPreviewMixin, LoginRequiredMixin, View):
     """
@@ -75,6 +79,8 @@ class ReportExportView(ReportPreviewMixin, LoginRequiredMixin, View):
         """Handle GET request to export report data in Excel or CSV format."""
         try:
             report = get_object_or_404(Report, pk=pk)
+            if not user_can_access_report(request.user, report):
+                return render(request, "403.html", status=403)
         except Exception as e:
             if request.headers.get("HX-Request") == "true":
                 messages.error(self.request, e)
@@ -92,6 +98,10 @@ class ReportExportView(ReportPreviewMixin, LoginRequiredMixin, View):
         detail_view.args = self.args
         detail_view.kwargs = self.kwargs
         detail_view.object = report
+        # Summary, totals and pivot must use the same rows as the export itself
+        detail_view.base_queryset = self.get_export_queryset(
+            request, temp_report.model_class
+        )
         detail_context = detail_view.get_context_data()
         detail_context["detail_rows"] = export_context["detail_rows"]
         detail_context["detail_headers"] = export_context["detail_headers"]
@@ -104,18 +114,24 @@ class ReportExportView(ReportPreviewMixin, LoginRequiredMixin, View):
         # else:
         return self.export_excel(report, df, detail_context, temp_report)
 
-    def get_report_data(self, temp_report, request):
-        """Get processed report data"""
+    def get_export_queryset(self, request, model_class):
+        """Records the user may export: export permissions for export models,
+        otherwise the records they may view."""
         from horilla.contrib.core.views.export_data import get_export_queryset
         from horilla.registry.feature import FEATURE_REGISTRY
 
-        model_class = temp_report.model_class
         if model_class in FEATURE_REGISTRY.get("export_models", []):
             queryset = get_export_queryset(request.user, model_class)
             if queryset is None:
                 queryset = model_class.objects.none()
-        else:
-            queryset = model_class.objects.all()
+            return queryset
+        return get_viewable_queryset(request.user, model_class)
+
+    def get_report_data(self, temp_report, request):
+        """Get processed report data"""
+
+        model_class = temp_report.model_class
+        queryset = self.get_export_queryset(request, model_class)
 
         aggregate_columns_dict = temp_report.aggregate_columns_dict
         if not isinstance(aggregate_columns_dict, list):

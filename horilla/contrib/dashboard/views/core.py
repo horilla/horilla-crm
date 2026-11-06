@@ -315,7 +315,7 @@ class DashboardDetailView(RecentlyViewedMixin, TemplateView):
                     bulk_export_option=True,
                 )
                 list_view.object_list = table_context.get(
-                    "queryset", model.objects.all()
+                    "queryset", model.objects.none()
                 )
                 return list_view.post(request, *args, **kwargs)
 

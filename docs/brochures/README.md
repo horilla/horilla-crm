@@ -7,7 +7,7 @@ Self-contained HTML product brochures for print and PDF. These are **not** Djang
 | [horilla_crm_brochure_short.html](horilla_crm_brochure_short.html) | Short / overview brochure |
 | [horilla_crm_brochure_detail.html](horilla_crm_brochure_detail.html) | Detailed brochure |
 
-Titles currently reference **v1.17.1**; update the HTML `<title>` and body copy when you produce a new release brochure.
+Titles currently reference **v1.17.2**; update the HTML `<title>` and body copy when you produce a new release brochure.
 
 ## Open in a browser
 

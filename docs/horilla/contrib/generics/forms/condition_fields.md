@@ -28,11 +28,34 @@ Typical condition-row lifecycle:
 5. parse submitted rows (`extract_condition_rows`)
 6. validate submitted choices/FK values (`clean_condition_fields`)
 
-This supports interactive "field / operator / value" rule editors.
+This supports interactive "field / operator / value" rule editors. When
+`logical_operator` is one of `condition_fields`, each row after the first
+shows it; the first row keeps a hidden `and`. Choice and relational values
+are multi-selects that post one comma-separated `value_<row>`. Saved ids are
+preloaded, and the empty option stays so the selection can be cleared.
 
 A form can hide a condition-row field by listing its name in `hidden_fields`.
 `add_condition_fields` still creates the field (so the posted value is kept)
 but renders it with `HiddenInput`.
+
+---
+
+## Related user fields, audit fields, and row values
+
+`get_condition_model_fields` offers the model's forward fields and
+many-to-many fields. `id`, `company`, `password` and the other names in
+`CONDITION_EXCLUDED_FIELDS` are left out. `created_at`, `updated_at`,
+`created_by` and `updated_by` stay, even though they are not editable.
+
+`horilla.contrib.generics.related_fields` is the shared list of fields shown
+behind a relation. Core registers the user's department, role and company, so
+a picker can offer `owner__department` as "Owner - Department". The filter
+panel, condition builders, approvals and reviews use that registry.
+`resolve_field_path` reads an `a__b` path on the model, and condition
+evaluation reads it on the related record.
+
+Duplicate rules apply the same department, role and company paths when a
+condition uses them.
 
 ---
 

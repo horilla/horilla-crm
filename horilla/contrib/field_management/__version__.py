@@ -5,7 +5,7 @@ Version information for the field settings app.
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __module_name__ = "Field Management"
 __release_date__ = ""
 __description__ = _(
@@ -14,6 +14,11 @@ __description__ = _(
     "and in what order, per company."
 )
 __icon__ = "field_management/assets/icons/field-requirement.svg"
+
+__1_0_2__ = _(
+    "The form layout Cancel button sits in the navbar. Custom-field "
+    "conditions can use audit fields."
+)
 
 __1_0_1__ = _(
     "Offer this fiscal period, quarter and year on custom date and datetime "

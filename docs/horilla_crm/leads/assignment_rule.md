@@ -4,6 +4,8 @@
 
 Defines class-based views for managing **lead assignment rules** — configurable rules that automatically assign incoming leads to users or roles based on matching conditions.
 
+Only one rule of a company is active at a time. `LeadAssignmentRule.save()` deactivates the company's other active rules when the saved rule is active (`update()`, so those rules do not save again). Turning a rule on from the list does the same.
+
 ---
 
 ## View inventory

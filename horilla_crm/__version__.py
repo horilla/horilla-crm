@@ -2,11 +2,22 @@
 
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.22"
+__version__ = "1.11.23"
 __module_name__ = "CRM"
 __release_date__ = ""
 __description__ = _("CRM module for managing leads, contacts, and opportunities.")
 __icon__ = "assets/icons/icon2.svg"
+
+__1_11_23__ = _(
+    "Leads: only one assignment rule stays active per company; default "
+    "cadence conditions use lead status ids; converting a lead needs the "
+    "convert or convert-own permission; the web-to-lead builder lists "
+    "fields when the company has no saved form. Opportunities: the email "
+    "field is on the forms; Team Selling and Opportunity Split settings "
+    "say who can use them; the closed-stage popup defaults to Closed Won; "
+    "own splits follow the shared owner rule. Scoring conditions can use "
+    "a user's department, role and company."
+)
 
 __1_11_22__ = _(
     "Register accounts, campaigns, contacts, leads and opportunities for "

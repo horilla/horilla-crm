@@ -8,11 +8,18 @@ application registry and UI.
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.11"
+__version__ = "1.11.12"
 __module_name__ = "Dashboards"
 __release_date__ = ""
 __description__ = _("Module for building and customizing interactive dashboards.")
 __icon__ = "dashboard/assets/icons/icon6.svg"
+
+__1_11_12__ = _(
+    "Build table pages, sorting and exports from one queryset that respects "
+    "record visibility. Report components use the report's filters, a "
+    "report Detail Table can be placed on a dashboard, and activities can "
+    "be added as components."
+)
 
 __1_11_11__ = _(
     "Use the generic navbar on the dashboard detail page and the shared "

@@ -110,7 +110,7 @@ Five focused views handle state mutations for dashboards.
 ## Typical flows
 
 1. User creates **folder** → adds **dashboards** → sets one as **default** → home loads that layout.
-2. User adds **chart component** bound to a **Report** → execution path loads `Report` filters then runs queryset helpers from **`horilla.contrib.utils.methods`**.
+2. User adds a **chart** or the report's **Detail Table** as a component. Table pages, sorting and exports start from `get_viewable_queryset`, then `apply_report_table_queryset` applies that report's saved filters and column virtual fields. Chart components apply the same report filters. A model registered with `dashboard_component` (including Activity) can be chosen as a component.
 3. Third-party client hits **`/dashboard/`** API → JSON mirrors web serializer shape.
 
 ---

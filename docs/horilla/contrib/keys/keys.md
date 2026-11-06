@@ -100,6 +100,8 @@ class ShortKeyView(View):
 
 Any request from a user who lacks both `view_shortcutkey` and `view_own_shortcutkey` is denied (HTTP 403) before the view body runs. This mirrors the menu-level `perm` filter so the two layers stay consistent.
 
+`ShortKeyListView` exposes the user's keys as a queryset property and does not override `get_queryset`, so the base list view applies search, filters and sorting. `ShortKeyFilter.filter_search` matches the stored page path, the displayed page title, the key and the command.
+
 ---
 
 ## Models (`models.py`)

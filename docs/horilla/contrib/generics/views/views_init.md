@@ -36,6 +36,7 @@ This file uses wildcard re-exports:
 - `single_form`
 - `multi_form`
 - `navbar`
+- `inline_edit` (`HorillaInlineEditMixin`, `HorillaInlineEditNavMixin`)
 
 and also exposes:
 

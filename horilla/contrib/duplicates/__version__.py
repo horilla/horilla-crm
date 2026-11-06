@@ -3,13 +3,17 @@
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.13"
+__version__ = "1.11.14"
 __module_name__ = "Duplicate Control"
 __release_date__ = ""
 __description__ = _(
     "Module for detecting potential duplicate records and supporting merge workflows."
 )
 __icon__ = "duplicates/assets/icons/clone.svg"
+
+__1_11_14__ = _(
+    "Duplicate-rule conditions apply a user's department, role and company."
+)
 
 __1_11_13__ = _(
     "Match custom fields in duplicate rules instead of reading them as model "

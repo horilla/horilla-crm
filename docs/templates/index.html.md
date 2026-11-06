@@ -256,11 +256,18 @@ Page-specific assets belong in `{% block extra_css %}` / `{% block extra_js %}`,
 
 ## HTMX and CSRF
 
-All HTMX requests from pages using this layout receive the CSRF token automatically:
+All HTMX requests from pages using this layout send `X-CSRFToken`. The handler
+reads the live `csrftoken` cookie, so a token rendered when the page loaded
+does not go stale after the CSRF secret rotates (for example a sign-in in
+another tab). When the cookie is missing, it falls back to the token rendered
+in the page:
 
 ```javascript
 document.body.addEventListener("htmx:configRequest", (event) => {
-    event.detail.headers["X-CSRFToken"] = "{{ csrf_token }}";
+    const cookie = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    event.detail.headers["X-CSRFToken"] = cookie
+        ? decodeURIComponent(cookie[1])
+        : "{{ csrf_token }}";
 });
 ```
 

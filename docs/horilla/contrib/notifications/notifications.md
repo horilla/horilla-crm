@@ -32,6 +32,8 @@ register_feature("notification_template", "notification_template_models")
 
 Models that expose merge fields for **notification templates** register under **`notification_template_models`**.
 
+`registration.py` also registers `NotificationChannel` (`delivery.py`) with `horilla.registry.delivery`, so Automations can send through this app as "Send as Notification". Cadence follow-ups and workflow actions can name the same channel. See [automations.md](../automations/automations.md#delivery-channels-horillaregistrydelivery).
+
 ---
 
 ## Models (`models.py`)

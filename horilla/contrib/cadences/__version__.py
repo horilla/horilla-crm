@@ -16,7 +16,9 @@ __icon__ = "cadences/assets/icons/cadence.svg"
 __1_11_11__ = _(
     "Honor the Do This delay (minutes, hours, days, months) of a follow-up. "
     "Delayed follow-ups are scheduled and created by a Celery beat task, and "
-    "the enrollment stays ongoing while one is pending."
+    "the enrollment stays ongoing while one is pending. A follow-up can also "
+    "send through a registered delivery channel, such as a notification, "
+    "besides a task, a call or an email. The add button reads Add Follow Up."
 )
 
 __1_11_10__ = _(

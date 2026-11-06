@@ -2,7 +2,7 @@
 
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.9"
+__version__ = "1.11.10"
 __module_name__ = _("Workflow")
 __release_date__ = ""
 __description__ = _(
@@ -11,6 +11,13 @@ __description__ = _(
     "scheduled relative to record or rule dates."
 )
 __icon__ = "assets/icons/automation.svg"
+
+__1_11_10__ = _(
+    "Workflow actions send through registered delivery channels, including "
+    "channels added by other apps. Mail and notification stay the built-in "
+    "email and notification actions. The email action explains when "
+    "outgoing mail is not configured."
+)
 
 __1_11_9__ = _("Show readable condition values on workflow rule details.")
 

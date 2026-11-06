@@ -167,6 +167,8 @@ Both dynamic partials are loaded with **`hx-get`** from `settings/fiscal_year_fo
 
 **Why not `FormView`?** Both views previously subclassed `FormView` without `form_class`. A POST then called `FormView.post()` → `get_form()` → `None()`, causing `TypeError: 'NoneType' object is not callable` (HTTP 500). They now subclass `View` and reject POST cleanly.
 
+Saving a fiscal year configuration rebuilds the stored years, quarters and periods only when the row is new, `structure_changed()` is true, or no year instances exist yet. `STRUCTURE_FIELDS` is the type, format, start month and start day, and how the year is displayed. Week start, week numbering and the period display option change the preview only, which is computed when the preview is opened. A failed rebuild rolls back, so the previous years stay. The Preview Calendar buttons target `#calendarPreviewModal`, the full-page overlay.
+
 ---
 
 ## Business hour views (`views/business_hour.py`)
@@ -227,6 +229,12 @@ class UserLoginHistoryView(View): ...
 ```
 
 The corresponding `LoginHistorySettings` My Settings menu entry declares `perm = ["login_history.view_loginhistory", "login_history.view_own_loginhistory"]` so the sidebar link is hidden for users who lack both permissions.
+
+The user detail page also has a **Login History** tab (`UserLoginHistoryTab`) that loads that user's sign-ins into the tab.
+
+### User API (`api/views.py` — `HorillaUserViewSet`)
+
+The user API follows the company scoping of the other core API endpoints. `IsCompanyMember` is required. The queryset is the active company, or the requester's own company when there is no active company, and it is empty when neither is set. Writes force `company` to the requester's company. A superuser can still see every user and choose the company.
 
 ### Holidays (`views/user_holidays.py` + `menu.py`)
 
@@ -390,36 +398,21 @@ Display of those preferences still goes through `DateTimeFormatter` ([`_inherit_
 
 ---
 
-## View-driven company and branch detail
+## Inline company, branch, user and profile details
 
-Settings detail tabs avoid hard-coded field HTML. Labels come from model `verbose_name`; values use the shared display tag.
+Company, branch, user and My Profile details use [inline Edit Details](../generics/views/details.md#edit-details-one-record). Sections come from the form's `fieldsets` and render read-only until Edit Details. A save reloads the page so the navbar, name and avatar match the new values.
 
 ### Company details tab (`CompanyDetailsTab`)
 
-| Piece | Role |
-|-------|------|
-| `body` | Tuple of `(field_name, icon_class)` on the view class |
-| `get_context_data()` | Builds `detail_fields` as `(verbose_name, field_name, icon)` |
-| `company_details_tab.html` | Loops `detail_fields`; renders with `{% display_field_value obj field %}` |
+`HorillaInlineEditMixin` with `CompanyDetailsInlineForm`. Fieldsets are Branch Information, Address and Localization. The object is the active company, or the user's company. `after_save` still sends `company_created` with `is_new=False`.
 
-To add a field, append one tuple to `body` — no template edit required unless layout changes.
+### Branch detail
 
-### Branch detail (`BranchDetailView`)
+`BranchDetailView` is the shell. `BranchDetailNavbar` (`HorillaInlineEditNavMixin`) and the content view render the branch sections or the inline form. Routes: `branch_detail_nav`, `branch_details_content`, `branch_details_edit`.
 
-Uses **`HorillaDetailView`** with **`fieldsets`** and **`detail_fieldset.html`**:
+### User detail and My Profile
 
-```python
-class BranchDetailView(LoginRequiredMixin, HorillaDetailView):
-    template_name = "branches/branch_detail_view.html"
-    model = Company
-    fieldsets = (
-        (_("Branch Information"), {"fields": ("name", "email", ...), "icon": "fas fa-building"}),
-        (_("Address"), {"fields": ("city", "state", "country", "zip_code"), ...}),
-        (_("Localization"), {"fields": ("time_zone", "language", "currency"), ...}),
-    )
-```
-
-See [generics detail views — fieldsets](../generics/views/details.md#class-attributes-configuration).
+`UserDetailView` loads `UserDetailNavbar` and `UserDetailTabView` (Details and Login History). `UserDetailsTab` uses `UserDetailsInlineForm` (Personal Information, Address, Work Info, Localization). Company is read-only in Work Info, and the last login time sits above the sections. `MyProfileView` uses the same form and mixins and always edits the signed-in user. Both keep `can_view_profile` and `can_change_profile`.
 
 ---
 

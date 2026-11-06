@@ -214,7 +214,7 @@ Credentials stored via `EncryptedCharField` are decrypted via `_decrypt()` / `se
 
 **`TwilioTwiMLView`** — CSRF-exempt, returns `<Response><Dial>...</Dial></Response>` XML for Twilio/SignalWire outbound bridging.
 
-**`ProviderWebhookView`** — CSRF-exempt. Routes incoming webhooks to the correct provider adapter, validates signature, parses payload, upserts the matching `CallLog`, and triggers the Activity signal path.
+**`ProviderWebhookView`** — CSRF-exempt. Routes incoming webhooks to the correct provider adapter. A provider with no verification key, or a request whose signature does not validate, gets **403** and is not applied. Recording URLs must be `https`. A webhook does not overwrite the duration or recording of a call that has already finished. A valid payload upserts the matching `CallLog`, pushes a `call_status` message to the caller's calls group, and triggers the Activity signal path. The mock provider rejects every webhook. Twilio signs with the Auth Token; Telnyx and SignalWire need the webhook secret, and an active provider saved without that key returns 403 until it is set.
 
 ### Call log views (`views/call_log.py`)
 
@@ -230,16 +230,19 @@ Credentials stored via `EncryptedCharField` are decrypted via `_decrypt()` / `se
 
 **`ClickToCallView`**
 
-- **GET** — renders `calls/click_to_call_modal.html` with active providers and pre-filled phone number / related object from query params.
-- **POST** — resolves provider, validates related object ownership via `_validate_related_object()`, resolves `from_number` via `AgentMapping.agent_id` → `provider.caller_id`, calls `adapter.initiate_call()`, creates `CallLog(status='initiated')`, and returns `calls/call_status_modal.html` to kick off polling.
+The view, the activity-tab call button and the list **Call Now** action require call-integration access (`CallIntegrationSetting.user_has_menu_access`) and `calls.add_calllog`. A user without that access gets an error and no Call Now button. One active provider is preselected and locked; none leaves a message and no Call Now button.
 
-**`CallStatusView`** — polled every 3 seconds via HTMX. Applies two timeouts:
-1. Ringing / initiated > 30 s → `busy` (declined / unreachable).
+- **GET** — renders `calls/click_to_call_modal.html` with active providers and pre-filled phone number / related object from query params.
+- **POST** — resolves provider, validates related object ownership via `_validate_related_object()`, resolves `from_number` via `AgentMapping.agent_id` → `provider.caller_id`, calls `adapter.initiate_call()`, creates `CallLog(status='initiated')`, and returns `calls/call_status_modal.html`. A connection error or timeout is reported as "Could not reach the calling provider".
+
+**`CallStatusView`** — the status modal refreshes when the provider webhook pushes `call_status`, and HTMX polls every 3 seconds as a fallback. Before the timeouts, it asks the provider for the live status so an active call is not closed early.
+
+1. Ringing / initiated > 30 s with no answer → `no_answer`.
 2. Any non-terminal call > 5 min → `no_answer`.
 
-If still non-terminal, calls `adapter.fetch_status()` for a live provider API check. Returns updated `calls/call_status_modal.html`; includes auto-close logic when terminal.
+Returns updated `calls/call_status_modal.html`; includes auto-close logic when terminal.
 
-**`CancelCallView`** — POST only. Calls `adapter.cancel_call()`, sets `status='cancelled'`, returns terminal modal fragment.
+**`CancelCallView`** — POST only. Marks the call cancelled only when the provider confirms. Otherwise it stores the status the provider reports, or shows "Could not cancel the call. Please try again." A call that is already finished is left as it is.
 
 **`ObjectCallLogView`** — `HorillaListView` of `CallLog` records filtered by `related_model_name` + `related_object_id`. Used in the Call History sub-tab on any record detail page. Columns: direction, provider, status, duration, agent, date & time. Direction cell is clickable (opens call log detail). The tab is shown only when the viewer can access the related record. When `object_id` / related identifiers are missing or invalid, the view returns an **empty queryset** instead of raising (avoids a 500 on the Call History tab). The empty state does not cover the tab buttons.
 
@@ -249,7 +252,7 @@ If still non-terminal, calls `adapter.fetch_status()` for a live provider API ch
 
 **`CallUserSettingsView`** — GET shows the user's current agent mappings per provider. POST allows updating `extension` and `agent_id` for each provider the user has access to.
 
-Integration settings use the shared empty states: feature-disabled when call integration is off, and the standard empty state when no providers are configured. Access options that are not active show how to select them and open roles and users in a modal. The providers tab labels **Setup Guide**, and `CallProviderListView` sets `no_record_fit_height = False` so the empty state does not stretch over the tab.
+Call Settings is one card for the enabled and disabled states. Integration settings use the shared empty states: feature-disabled when call integration is off, and the standard empty state when no providers are configured. Access options that are not active show how to select them and open roles and users in a modal. The providers tab labels **Setup Guide**, and `CallProviderListView` sets `no_record_fit_height = False` so the empty state does not stretch over the tab.
 
 ---
 

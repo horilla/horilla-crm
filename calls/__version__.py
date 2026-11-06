@@ -2,7 +2,7 @@
 
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.14"
+__version__ = "1.11.15"
 __module_name__ = _("Calls Integration")
 __release_date__ = ""
 __description__ = _(
@@ -11,6 +11,14 @@ __description__ = _(
     "mapping, and company-level access control."
 )
 __icon__ = "assets/fontawesome/svgs/solid/phone.svg"
+
+__1_11_15__ = _(
+    "Reject provider webhooks that cannot be verified. Limit click-to-call "
+    "to users with call access, and handle a missing or disabled provider. "
+    "Refresh the call status modal from webhooks and show the real call "
+    "outcome. Use one Call Settings card for the enabled and disabled "
+    "states, with the feature-disabled empty state when integration is off."
+)
 
 __1_11_14__ = _(
     "Use the shared empty states on call integration settings. Access "

@@ -81,6 +81,10 @@ The Go Home receiver (`_opportunity_stage_type` in `horilla_crm/opportunities/si
 
 Same generic/`related_obj` split as leads — see [lead stages](../leads/lead_stages.md#kanban--detail-pipeline) and [details.md](../../horilla/contrib/generics/views/details.md).
 
+The closed-stage popup preselects **Closed Won**, unless the opportunity is already Closed Lost. The stage radios are not `required`; submitting with none selected shows "Please select Closed Won or Closed Lost." and does not send the request. The reply script is appended to `document.body`, so closing the modal does not interrupt the HTMX swap.
+
+`email` is on both opportunity forms, after Amount.
+
 ---
 
 ## Related documentation

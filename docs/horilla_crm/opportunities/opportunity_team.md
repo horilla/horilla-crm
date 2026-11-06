@@ -78,6 +78,12 @@ Feature checks resolve through **`OpportunitySettings.is_team_selling_enabled`**
 
 `OpportunityTeamMemberCreateView` sets `condition_fields = ["user", "team_role", "opportunity_access_level"]` with `condition_model = None`. Each non-empty condition row produces one `OpportunityTeamMember` instance. Duplicate detection checks the `(user, team)` pair within the same submit.
 
+### Who can use Team Selling
+
+`OpportunitySettings` stores `team_selling_access_type` plus allowed roles and users: all users, specific roles, or specific users. `user_can_use_team_selling` is what `TeamSellingRequiredMixin` and the My Settings entry check, so a user outside that set does not see or open the team views. The setup page is a Team Selling card (toggle and status) and an Access Control card. The Opportunity Split enable toggle uses the same card.
+
+`OpportunitySplit.OWNER_FIELDS` is `["user"]`, so a user with only `view_own_opportunitysplit` sees their own splits in lists and reports.
+
 ### Ownership and permissions (Team Selling)
 
 Team-selling views do **not** require blanket `add_opportunityteammember` /

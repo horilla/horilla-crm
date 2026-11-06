@@ -32,7 +32,7 @@
 ## Feature registration (`registration.py`)
 
 - **`register_feature("activity_related", "activity_related_models")`** — other apps register models under this key so they appear as valid **related** types for activities (`limit_content_types` on `Activity.content_type`).
-- **`register_model_for_feature(..., model_name="Activity", features=["global_search", "automation"])`** — Activities participate in **global search** and can be targets/sources for **automations** (when automation rules reference the activity model).
+- **`register_model_for_feature(..., model_name="Activity", features=[...])`** — Activities participate in **global search**, **automations**, **mail templates**, **export**, **notification templates**, **reports** (`report_choices`) and **dashboards** (`dashboard_component`).
 
 Without `register_model_for_feature`, the four-layer permission system would not expose standard `activity.*` permissions for `Activity`.
 

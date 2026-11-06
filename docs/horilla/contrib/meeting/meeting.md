@@ -100,7 +100,7 @@ Same shape as `ZoomOAuthConfig` plus `tenant_id` (Azure AD tenant or `"common"`)
 |----------|--------|--------|
 | `zoom` | `save_credentials` | Upsert `client_id` / `client_secret` in `ZoomOAuthConfig` |
 | `zoom` | `disconnect` | Clear `token` + `connected_email` |
-| `google_meet` | `enable` | Create `UserMeetingConfig` (requires Google Calendar already connected) |
+| `google_meet` | `enable` | Create `UserMeetingConfig`. Offered only when `GoogleIntegrationSetting.user_can_access` is true for this user (integration on, and all users, their role, or their user is allowed) and Google Calendar is already connected |
 | `google_meet` | `disable` | Delete `UserMeetingConfig` for current company |
 | `ms_teams` | `save_credentials` | Upsert credentials + `tenant_id` in `MicrosoftTeamsOAuthConfig` |
 | `ms_teams` | `disconnect` | Clear `token` + `connected_email` |

@@ -51,7 +51,7 @@ Organizations define named calendars and rule rows (similar spirit to report con
 
 Store integration credentials/config scopes and mapping between Horilla users and Google calendars. Used by views under `templates/google_calendar/` and sync tasks.
 
-`GoogleIntegrationSetting` is a **company-scoped toggle**. Menu conditions call `google_calendar_enabled(request)`, which resolves the row through request-local cache then the [per-company settings cache](../utils/company_settings_cache.md) (`CACHE_NAMESPACE = "calendar.google_integration"`). Invalidate on `save` / `delete`.
+`GoogleIntegrationSetting` is a **company-scoped toggle** plus an access rule: all users, specific roles, or specific users (`access_type`, `allowed_roles`, `allowed_users`). `user_can_access(user, company)` is true only when the integration is on and the user is in that set. `user_has_menu_access(request)` is the menu condition. Both resolve the row through request-local cache then the [per-company settings cache](../utils/company_settings_cache.md) (`CACHE_NAMESPACE = "calendar.google_integration"`). Invalidate on `save` / `delete`. Meeting offers Google Meet only when this check passes.
 
 All primary models extend **`HorillaCoreModel`** unless noted otherwise in code—company isolation applies.
 

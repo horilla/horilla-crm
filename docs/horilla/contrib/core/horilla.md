@@ -58,11 +58,11 @@ Contains Horilla metadata used across the system, including:
 
 ### Key exported variables
 
-- `__version__ = "1.17.1"`
+- `__version__ = "1.17.2"`
 - `__module_name__ = _("Core System")`
 - `__description__ = _("Core system providing authentication, configuration, utilities, and platform-level services.")`
 - `__icon__ = "assets/icons/logo.png"`
-- Changelog keys such as `__1_17_1__`, `__1_17_0__`, `__1_16_0__`, … (newest first; do not edit older entries)
+- Changelog keys such as `__1_17_2__`, `__1_17_1__`, `__1_17_0__`, … (newest first; do not edit older entries)
 
 ### Translation note
 

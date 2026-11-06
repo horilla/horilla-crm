@@ -25,6 +25,23 @@ The details tab (`details_tab.html`) exposes **Edit Details**, which HTMX-loads
 `UpdateAllFieldsView`, and extension seams (`check_before_save`,
 `ExtraFieldsProvider`, Jalali `FieldInfoResolver`).
 
+### Edit Details (one record)
+
+`HorillaInlineEditMixin` and `HorillaInlineEditNavMixin`
+(`horilla/contrib/generics/views/inline_edit.py`, re-exported from
+`horilla.contrib.generics.views`) edit a single record in place. The page is a
+`TemplateView` that names `model` and a `HorillaModelForm` with `fieldsets`.
+The sections render read-only until `?edit=true` (or `as_view(edit=True)`),
+then the same page shows the form. The navbar mixin supplies Edit Details,
+Cancel and Save. File fields stay on the form and are left out of the
+read-only sections. `can_change` checks `change_<model>` unless `change_perm`
+is set.
+
+Core uses this for the company Details tab, the branch detail page, the user
+detail Details tab and My Profile. Those pages reload after a save so the
+navbar name and avatar refresh. This is separate from the bulk Edit Details
+flow above.
+
 ### Automatic registration (`__init_subclass__`)
 
 Subclasses that set **`model`** are stored in **`HorillaDetailView._view_registry[model] = cls`**. Used when handling **`POST`** pipeline updates so the correct subclass (with its `pipeline_field`, etc.) can be instantiated.

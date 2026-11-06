@@ -2,6 +2,23 @@
 
 This tree mirrors **`horilla/contrib/`** Django apps. Each subfolder holds documentation for that app.
 
+## Recent updates (31 Oct–6 Nov 2026, v1.17.2)
+
+Platform version is **1.17.2** ([core/horilla.md](core/horilla.md)). Module versions stay on their own lines.
+
+| Topic | Doc |
+|-------|-----|
+| Inline Edit Details for one record | [generics/views/details.md](generics/views/details.md#edit-details-one-record) |
+| Lists, reports and dashboards share one view-own rule | [generics/views/list.md](generics/views/list.md#step-g-ownership-permission-filtration) · [reports/reports.md](reports/reports.md) · [dashboard/dashboard.md](dashboard/dashboard.md) |
+| Condition rows: logical operator, multi-select, related user fields, audit fields | [generics/forms/condition_fields.md](generics/forms/condition_fields.md#related-user-fields-audit-fields-and-row-values) |
+| HTMX sends the live CSRF cookie | [../../templates/index.html.md](../../templates/index.html.md#htmx-and-csrf) |
+| Google Calendar access, and Google Meet follows it | [calendar/calendar.md](calendar/calendar.md) · [meeting/meeting.md](meeting/meeting.md) |
+| Report Detail Table on a dashboard | [reports/reports.md](reports/reports.md) · [dashboard/dashboard.md](dashboard/dashboard.md) |
+| One active lead assignment rule; Team Selling access | [../../horilla_crm/leads/assignment_rule.md](../../horilla_crm/leads/assignment_rule.md) · [../../horilla_crm/opportunities/opportunity_team.md](../../horilla_crm/opportunities/opportunity_team.md) |
+| Call webhooks must be verified | [calls/calls.md](calls/calls.md) |
+
+Also in this release: profile, user, company and branch details edit inline, and a user's login history is a tab on the user page. Fiscal years rebuild only when their structure changes, and the calendar preview opens in the full-page modal. Failed sign-ins stay limited, and the user API stays in the requester's company. Activities can be report fields and dashboard components. Workflow, cadences and automations send through registered delivery channels; the workflow email action explains a missing mail configuration. Short key search matches the page title. The phone sign-in page uses the branding product name. The timeline can use Shamsi months and seasons. Opportunity forms include email, the closed-stage popup defaults to Closed Won, and a user with only view-own on splits sees their own splits. Converting a lead needs the convert or convert-own permission. The web-to-lead builder lists fields when the company has no saved form.
+
 ## Recent updates (24–30 Oct 2026, v1.17.1)
 
 Platform version is **1.17.1** ([core/horilla.md](core/horilla.md)). Module versions stay on their own lines.

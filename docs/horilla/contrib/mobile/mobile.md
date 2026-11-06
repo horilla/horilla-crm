@@ -498,7 +498,8 @@ straight to `/m/`.
 are shared with the desktop.
 
 Password reset and first-run database setup are not repeated on the phone: the
-login page links to the desktop login for both.
+login page links to the desktop login for both. That link uses the product
+name from the branding module (`Set up {{ product }} on the full version`).
 
 ---
 

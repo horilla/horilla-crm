@@ -2,13 +2,33 @@
 
 from django.utils.translation import gettext_lazy as _
 
-__version__ = "1.17.1"
+__version__ = "1.17.2"
 __module_name__ = _("Core System")
 __release_date__ = ""
 __description__ = _(
     "Core system providing authentication, configuration, utilities, and platform-level services."
 )
 __icon__ = "assets/icons/logo.png"
+
+__1_17_2__ = _(
+    "Security: uploaded files require a login; failed sign-ins are limited "
+    "on every login path; a shipped SECRET_KEY is refused; HTMX sends the "
+    "live CSRF cookie; the user API stays in the requester's company; call "
+    "provider webhooks must be verified. Generics: inline Edit Details for "
+    "one record; condition rows take a logical operator and multi-select "
+    "values, and offer department, role, company and audit fields; lists "
+    "and own splits share one owner rule; the filter count updates when a "
+    "pill is removed. Core: profile, user, company and branch details edit "
+    "inline; fiscal years rebuild only when their structure changes, and "
+    "the calendar preview opens in the full-page modal; changing language "
+    "keeps the current page; the product name comes from branding. Reports "
+    "and dashboards honor view-own, report filters apply to dashboard "
+    "components, and a report Detail Table can be placed on a dashboard. "
+    "Google Calendar access can be all users, specific roles or specific "
+    "users. Workflow, cadences and automations send through registered "
+    "delivery channels. Summernote full screen mode works, and long notes "
+    "scroll."
+)
 
 __1_17_1__ = _(
     "Generics: shared primary and outline buttons; chart axes offer only "

@@ -3,13 +3,21 @@
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.14"
+__version__ = "1.11.15"
 __module_name__ = "Reports"
 __release_date__ = ""
 __description__ = _(
     "Module for creating and customizing reports across all system modules."
 )
 __icon__ = "reports/assets/icons/icon5.svg"
+
+__1_11_15__ = _(
+    "Redesign the report page, filter panel and related-field filters, and "
+    "limit related fields in pickers to user relations. Apply view-own and "
+    "export-own to report rows, exports and lists. The Detail Table uses "
+    "the generic list scroll, can be added to a dashboard, and Save and "
+    "Discard return to the detail URL."
+)
 
 __1_11_14__ = _("Show the close button as soon as the report edit panel opens.")
 

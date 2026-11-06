@@ -3,13 +3,19 @@
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.16"
+__version__ = "1.11.17"
 __module_name__ = "Mail"
 __release_date__ = ""
 __description__ = _(
     "Module for managing incoming and outgoing emails through mail servers and Outlook."
 )
 __icon__ = "assets/icons/icon1.svg"
+
+__1_11_17__ = _(
+    "Automation mail is sent through the shared mail delivery channel, so "
+    "other apps can add channels without importing Mail. Mail history uses "
+    "the product name from branding."
+)
 
 __1_11_16__ = _(
     "Use the triggering user's name as the sender only when Dynamic Display "

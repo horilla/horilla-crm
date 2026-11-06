@@ -173,6 +173,9 @@ Gregorian by default.
 
 A calendar extension app (for example a Shamsi calendar) overrides it by setting
 `window.horillaTimelineCalendar` from its own script before the timeline draws.
+`horilla_jalali` does this: month and quarter columns follow Shamsi months and
+seasons, labels use Persian digits, and the bars stay on the Gregorian dates
+the server sends.
 Keys it leaves out keep the Gregorian behavior. All dates are local-midnight
 `Date` objects:
 

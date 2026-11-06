@@ -2,7 +2,7 @@
 
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.11"
+__version__ = "1.11.12"
 __module_name__ = _("Meeting Integration")
 __release_date__ = ""
 __description__ = _(
@@ -10,6 +10,11 @@ __description__ = _(
     "OAuth connections, personal meeting URLs, and activity meeting links."
 )
 __icon__ = "meeting/assets/icons/meetings.svg"
+
+__1_11_12__ = _(
+    "Offer Google Meet only when the user is allowed by the Google Calendar "
+    "access setting."
+)
 
 __1_11_11__ = _(
     "Use the shared feature-disabled empty state when meeting integration "

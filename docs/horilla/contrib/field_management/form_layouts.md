@@ -150,9 +150,10 @@ which swaps in edit mode:
 - mark a field **Full Width** so it spans both columns when Custom Layout
   is the active form mode;
 - **Show all** / **Hide optional fields** change every switch at once;
-- an unsaved-changes note appears after the first change, and **Cancel** asks
-  before discarding; **Save Layout** stores the layout and returns to the
-  read-only view. Saving an untouched list still activates the layout.
+- an unsaved-changes note appears after the first change. **Cancel** is in the
+  navbar: it asks before discarding and reloads the read-only layout itself.
+  **Save Layout** stores the layout and returns to the read-only view. Saving
+  an untouched list still activates the layout.
 
 The drag handle is an icon, not an `<img>`: a browser starts its own native
 image drag on an image handle, which cancels the pointer events SortableJS

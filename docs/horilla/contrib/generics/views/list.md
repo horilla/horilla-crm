@@ -260,13 +260,16 @@ everywhere with no per-view wiring):
 
 If `owner_filtration=True`:
 
-- user with `view_<model>` gets all
-- user with `view_own_<model>` gets OR-filter over `OWNER_FIELDS`, further
-  OR'd with any **granted-access** filter (see below) if the model opts in
-- no matching permission -> empty queryset (unless a granted-access filter
-  still grants some rows)
+- user with `view_<model>` gets the queryset unchanged
+- anyone else is limited to `get_viewable_queryset(user, model)`
+  (`helpers/queryset_utils.py`): `view_own_<model>` sees records owned by the
+  user or a subordinate role (`OWNER_FIELDS`, via `get_allowed_user_ids`) plus
+  any **granted-access** filter (see below); no matching permission returns
+  an empty queryset
 
-This is critical because it enforces visibility at query level, not only at template/action level.
+Reports and dashboard tables call the same helper, so a list, a report and a
+dashboard table show the same records. The list intersects its own queryset
+with that result by primary key.
 
 #### Granted access (per-model opt-in, beyond `OWNER_FIELDS`)
 

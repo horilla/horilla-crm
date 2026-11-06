@@ -2,7 +2,7 @@
 
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.0.6"
+__version__ = "1.0.7"
 __module_name__ = _("Jalali Calendar")
 __release_date__ = ""
 __description__ = _(
@@ -11,6 +11,11 @@ __description__ = _(
     "Stored values stay Gregorian. Enable via local_settings.py."
 )
 __icon__ = "assets/icons/calendar-red.svg"
+
+__1_0_7__ = _(
+    "The timeline uses Shamsi months and seasons, with Persian day labels. "
+    "Bars stay on the Gregorian dates sent by the server."
+)
 
 __1_0_6__ = _(
     "Load the Jalali date and time pickers on the optional phone layout " "(/m/) too."

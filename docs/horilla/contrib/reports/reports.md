@@ -4,7 +4,7 @@
 
 - **ReportFolder** — hierarchical organization, favourites, owner-based access (`OWNER_FIELDS = ["folder_owner"]`).
 - **Report** — saved definition: underlying model, columns, filters, chart configuration (stored as JSON / FKs—see `models.py` for schema evolution).
-- Integrates with **dashboard** app (dashboard components can reference saved reports).
+- Integrates with **dashboard** app. A report chart or its Detail Table can be added as a dashboard component, and that component uses the report's saved filters.
 - **REST API** at `reports/`.
 
 ---
@@ -102,7 +102,11 @@ Eleven views cover report lifecycle and chart configuration.
 
 **Chart type filtering** — `ChangeChartTypeView.__init__` removes stacked chart types when `row_groups` count ≤ 1, keeping the choice list relevant. The "Stack by" field (`chart_field_stacked`) is hidden for non-stacked chart types via `form_invalid()` which rebuilds field choices dynamically on each render.
 
-**Preview mode** — editing stores incremental changes in `request.session["report_preview_{pk}"]`. `SaveReportChangesView` moves session data to the database; `DiscardReportChangesView` removes it. This allows multi-step configuration without committing after every interaction.
+**Preview mode** — editing stores incremental changes in `request.session["report_preview_{pk}"]`. `SaveReportChangesView` moves session data to the database; `DiscardReportChangesView` removes it. This allows multi-step configuration without committing after every interaction. Save and Discard then reload the report's detail URL.
+
+**Rows and exports** — the detail table, preview and export start from `get_viewable_queryset` (see [list owner filtration](../generics/views/list.md#step-g-ownership-permission-filtration)), so a user with only `view_own` on the report's model sees the same records as on that model's list. Export also requires `reports.export_report` or `reports.export_own_report`, and the matching export permission on the model when the model defines one.
+
+**Related fields** — a relation expands only to fields registered in `horilla.contrib.generics.related_fields` (the user's department, role and company). `register_report_related_fields(app_label, model_name, relations)` overrides that list for one report model, or passes an empty list so the relation itself stays selectable and its fields do not. The Detail Table uses the generic list scroll and has its own **Add to Dashboard** action (`component_type=table_data`).
 
 **Owner access control** — create/update views check `reports.add_report` / `reports.change_report` permissions or confirm `report_owner == request.user` before allowing edits.
 

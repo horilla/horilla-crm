@@ -5,13 +5,15 @@ Version and metadata information for the mobile module.
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.0.7"
+__version__ = "1.0.8"
 __module_name__ = "Mobile"
 __release_date__ = ""
 __description__ = _(
     "Optional installable phone mode under /m/ for quick on-the-go work."
 )
 __icon__ = "favicons/android-chrome-192x192.png"
+
+__1_0_8__ = _("The phone sign-in page uses the product name from branding.")
 
 __1_0_7__ = _(
     "Mine / Team switch on the Agenda, as on the desktop calendar: the team's "

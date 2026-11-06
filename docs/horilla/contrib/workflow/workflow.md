@@ -61,7 +61,7 @@ These remain plain **`forms.ModelForm`** + **`ActionConfigMixin`** (not `fields 
 | Class | Model fields on form | Notes |
 |-------|----------------------|--------|
 | **`WorkflowConditionForm`** | `rule`, `field`, `operator`, `value`, `logical_operator`, `order` | Dynamic `field` choices in **`__init__`** |
-| **`WorkflowActionForm`** | `rule`, `action_type`, `order` + hidden action-config fields | Injected in **`__init__`**; `action_type` checked against the built-ins and the delivery channel registry |
+| **`WorkflowActionForm`** | `rule`, `action_type`, `order` + hidden action-config fields | Injected in **`__init__`**; `action_type` checked against the built-ins and the delivery channel registry. An `email` action adds a non-field error when no outgoing mail configuration exists, because the template field is hidden and would not show the error |
 | **`WorkflowTimeTriggerActionForm`** | delay fields + `action_type`, `order` + hidden config | Date-field choices from view |
 
 ---

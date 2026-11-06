@@ -1,5 +1,12 @@
-{% load i18n %}
-<div>
+{% load i18n static %}
+<div
+    data-file-upload
+    data-input-id="{{ widget.attrs.id }}"
+    data-checkbox-id="{{ widget.checkbox_id }}"
+    data-file-selected-text="{% trans 'File selected' %}"
+    data-upload-prompt-text="{% trans 'Click to upload or drag & drop' %}"
+    data-upload-hint-text="{% trans 'Any file (Max 10MB)' %}"
+>
     <!-- Main label associated with the input -->
     <label for="{{ widget.attrs.id }}" class="text-xs text-color-600 mb-1 block">
         {% trans "Upload File" %}
@@ -63,123 +70,4 @@
     {% endif %}
 </div>
 
-<script>
-    (function() {
-        function initFileUpload() {
-            const fileInput = document.getElementById("{{ widget.attrs.id }}");
-            const uploadBoxContent = document.getElementById("uploadBoxContent_{{ widget.attrs.id }}");
-            const clearButton = document.getElementById("clearButton_{{ widget.attrs.id }}");
-            const dropZone = document.getElementById("dropZone_{{ widget.attrs.id }}");
-
-            if (fileInput && uploadBoxContent && dropZone) {
-                // Remove any existing listeners to prevent duplicates
-                const newFileInput = fileInput.cloneNode(true);
-                fileInput.parentNode.replaceChild(newFileInput, fileInput);
-
-                // File change handler
-                function handleFileSelect(file) {
-                    if (file) {
-                        uploadBoxContent.innerHTML = `
-                        <i class="fa-solid fa-file text-xl mb-2 text-green-500"></i>
-                        <p class="text-sm font-semibold text-gray-700 truncate max-w-full">${file.name}</p>
-                        <p class="text-xs text-[#9e9e9e]">{% trans "File selected" %}</p>
-                    `;
-                        if (clearButton) {
-                            clearButton.classList.remove('hidden');
-                        }
-                    } else {
-                        uploadBoxContent.innerHTML = `
-                        <i class="fa-solid fa-arrow-up-from-bracket text-xl mb-2 text-gray-500"></i>
-                        <p class="text-sm font-semibold text-gray-700">{% trans "Click to upload or drag & drop" %}</p>
-                        <p class="text-xs text-[#9e9e9e]">{% trans "Any file (Max 10MB)" %}</p>
-                    `;
-                        if (clearButton) {
-                            clearButton.classList.add('hidden');
-                        }
-                    }
-                }
-
-                // File input change event
-                newFileInput.addEventListener("change", function () {
-                    handleFileSelect(this.files[0]);
-                });
-
-                // Drag and drop events
-                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, preventDefaults, false);
-                });
-
-                function preventDefaults(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-
-                // Highlight drop zone when dragging over it
-                ['dragenter', 'dragover'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, function() {
-                        dropZone.classList.add('border-blue-500', 'bg-blue-50');
-                    }, false);
-                });
-
-                ['dragleave', 'drop'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, function() {
-                        dropZone.classList.remove('border-blue-500', 'bg-blue-50');
-                    }, false);
-                });
-
-                // Handle dropped files
-                dropZone.addEventListener('drop', function(e) {
-                    const dt = e.dataTransfer;
-                    const files = dt.files;
-
-                    if (files.length > 0) {
-                        // Create a new DataTransfer object to set files on the input
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(files[0]);
-                        newFileInput.files = dataTransfer.files;
-
-                        // Trigger the change event
-                        handleFileSelect(files[0]);
-                    }
-                });
-
-                // Clear button functionality
-                if (clearButton) {
-                    // Remove existing listeners
-                    const newClearButton = clearButton.cloneNode(true);
-                    clearButton.parentNode.replaceChild(newClearButton, clearButton);
-
-                    newClearButton.addEventListener("click", function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        // Clear the file input
-                        newFileInput.value = '';
-
-                        // Check the hidden checkbox to mark file for deletion
-                        const clearCheckbox = document.getElementById("{{ widget.checkbox_id }}");
-                        if (clearCheckbox) {
-                            clearCheckbox.checked = true;
-                        }
-
-                        // Reset the upload box content
-                        handleFileSelect(null);
-                    });
-                }
-            }
-        }
-
-        // Initialize on DOM load
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initFileUpload);
-        } else {
-            initFileUpload();
-        }
-
-        // Re-initialize after HTMX swaps content
-        document.body.addEventListener('htmx:afterSwap', function(event) {
-            // Small delay to ensure DOM is updated
-            setTimeout(initFileUpload, 10);
-        });
-    })();
-</script>
+<script src="{% static 'generics/assets/js/custom_file_input.js' %}"></script>

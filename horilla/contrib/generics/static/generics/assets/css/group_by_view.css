@@ -1,0 +1,50 @@
+/*
+ * Group-by view styles. Select-all / row-select columns are fixed to 50px;
+ * the rules are scoped to .group-by-table-container (the scroll container
+ * rendered by group_by_view.html).
+ */
+.row-collapsed {
+  display: none;
+}
+tbody.gb-virt > tr:not(.gb-spacer) {
+  display: none;
+}
+.group-by-toggle-icon {
+  transition: transform 0.15s ease;
+}
+.group-bulk-bar:not(:has(button:not([style*="display: none"]))) {
+  display: none;
+}
+.group-by-table-container thead th:has(input[data-role="select-all"]),
+.group-by-table-container td:has(> div > input[data-role="row-select"]) {
+  box-sizing: border-box;
+  width: 50px;
+  min-width: 50px;
+  max-width: 50px;
+}
+#groupByRows .select2-container .select2-selection--single {
+  height: 32px !important;
+}
+#groupByRows .select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 30px !important;
+  padding-inline-start: 10px !important;
+}
+#groupByRows .select2-container--default .select2-selection--single .select2-selection__arrow {
+  top: 2px !important;
+}
+td[data-gcard]:not(.sticky) {
+  position: relative;
+}
+td[data-gcard]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  contain: strict;
+  box-shadow: var(--gc-shadow);
+  border-radius: var(--gc-radius, 0);
+}
+.group-by-divider-row.row-expanded .group-by-toggle-icon {
+  transform: rotate(180deg);
+}

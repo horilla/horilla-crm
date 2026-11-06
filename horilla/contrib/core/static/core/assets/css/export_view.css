@@ -1,0 +1,6 @@
+#exportSpinner {
+  display: none;
+}
+#exportform.htmx-request #exportSpinner {
+  display: flex;
+}

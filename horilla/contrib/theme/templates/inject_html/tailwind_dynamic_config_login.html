@@ -1,120 +1,38 @@
-<script>
-    (function() {
-        // Check localStorage for last active company theme
-        const lastActiveTheme = localStorage.getItem('lastActiveTheme');
-        let themeData = null;
-
-        if (lastActiveTheme) {
-            try {
-                themeData = JSON.parse(lastActiveTheme);
-            } catch (e) {
-                console.error('Error parsing theme from localStorage:', e);
-            }
-        }
-
-        // If no theme in localStorage, use default theme from server
-        {% if theme %}
-        if (!themeData) {
-            themeData = {
-                id: {{ theme.id }},
-                primary_50: '{{ theme.primary_50|default:"#f6f6f6" }}',
-                primary_100: '{{ theme.primary_100|default:"#FFF5F1" }}',
-                primary_200: '{{ theme.primary_200|default:"#FEF6F5" }}',
-                primary_300: '{{ theme.primary_300|default:"#FCEDEB" }}',
-                primary_400: '{{ theme.primary_400|default:"#FBE5E1" }}',
-                primary_500: '{{ theme.primary_500|default:"#F7C8C1" }}',
-                primary_600: '{{ theme.primary_600|default:"#E54F38" }}',
-                primary_700: '{{ theme.primary_700|default:"#ce4732" }}',
-                primary_800: '{{ theme.primary_800|default:"#AC3B2A" }}',
-                primary_900: '{{ theme.primary_900|default:"#672419" }}',
-                dark_25: '{{ theme.dark_25|default:"#F0F0F0" }}',
-                dark_50: '{{ theme.dark_50|default:"#E6E6E6" }}',
-                dark_100: '{{ theme.dark_100|default:"#A8A8A8" }}',
-                dark_200: '{{ theme.dark_200|default:"#515151" }}',
-                dark_300: '{{ theme.dark_300|default:"#501C14" }}',
-                dark_400: '{{ theme.dark_400|default:"#64748B" }}',
-                dark_500: '{{ theme.dark_500|default:"#190906" }}',
-                dark_600: '{{ theme.dark_600|default:"#000000" }}',
-                secondary_50: '{{ theme.secondary_50|default:"#f8fafc" }}',
-                secondary_100: '{{ theme.secondary_100|default:"#f1f5f9" }}',
-                secondary_200: '{{ theme.secondary_200|default:"#e2e8f0" }}',
-                secondary_300: '{{ theme.secondary_300|default:"#cbd5e1" }}',
-                secondary_400: '{{ theme.secondary_400|default:"#FBE5E1" }}',
-                secondary_500: '{{ theme.secondary_500|default:"#F7C8C1" }}',
-                secondary_600: '{{ theme.secondary_600|default:"#E54F38" }}',
-                secondary_700: '{{ theme.secondary_700|default:"#334155" }}',
-                secondary_800: '{{ theme.secondary_800|default:"#1e293b" }}',
-                secondary_900: '{{ theme.secondary_900|default:"#0f172a" }}',
-                surface: '{{ theme.surface|default:"#e9edf0ba" }}',
-            };
-        }
-        {% endif %}
-
-        // Apply theme configuration
-        if (themeData) {
-            window.tailwind.config = {
-                theme: {
-                    colors: {
-                        white: '#FFFFFF',
-                        surface: themeData.surface || '#e9edf0ba',
-                        primary: {
-                            50:  themeData.primary_50 || '#f6f6f6',
-                            100: themeData.primary_100 || '#FFF5F1',
-                            200: themeData.primary_200 || '#FEF6F5',
-                            300: themeData.primary_300 || '#FCEDEB',
-                            400: themeData.primary_400 || '#FBE5E1',
-                            500: themeData.primary_500 || '#F7C8C1',
-                            600: themeData.primary_600 || '#E54F38',
-                            700: themeData.primary_700 || '#ce4732',
-                            800: themeData.primary_800 || '#AC3B2A',
-                            900: themeData.primary_900 || '#672419',
-                        },
-                        dark: {
-                            25:  themeData.dark_25 || '#F0F0F0',
-                            50:  themeData.dark_50 || '#E6E6E6',
-                            100: themeData.dark_100 || '#A8A8A8',
-                            200: themeData.dark_200 || '#515151',
-                            300: themeData.dark_300 || '#501C14',
-                            400: themeData.dark_400 || '#64748B',
-                            500: themeData.dark_500 || '#190906',
-                            600: themeData.dark_600 || '#000000',
-                        },
-                        secondary: {
-                            50:  themeData.secondary_50 || '#f8fafc',
-                            100: themeData.secondary_100 || '#f1f5f9',
-                            200: themeData.secondary_200 || '#e2e8f0',
-                            300: themeData.secondary_300 || '#cbd5e1',
-                            400: themeData.secondary_400 || '#FBE5E1',
-                            500: themeData.secondary_500 || '#F7C8C1',
-                            600: themeData.secondary_600 || '#E54F38',
-                            700: themeData.secondary_700 || '#334155',
-                            800: themeData.secondary_800 || '#1e293b',
-                            900: themeData.secondary_900 || '#0f172a',
-                        },
-                        success: { light: "#86efac", DEFAULT: "#22c55e", dark: "#15803d" },
-                        warning: { light: "#fde68a", DEFAULT: "#f59e0b", dark: "#b45309" },
-                        danger: { light: "#fca5a5", DEFAULT: "#ef4444", dark: "#b91c1c" },
-                    },
-                    extend: {
-                        boxShadow: { card: "0px 0px 10px rgba(0, 0, 0, 0.05)" },
-                        spacing: { 18: "4.5rem", 72: "18rem", 84: "21rem", 96: "24rem" },
-                        borderRadius: { "4xl": "2rem", "5xl": "2.5rem" },
-                        fontSize: { xxs: "0.625rem" },
-                        height: { "screen-50": "50vh", "screen-75": "75vh" },
-                    },
-                },
-            };
-
-        } else {
-            // Fallback to default tailwind config if no theme available
-            {% if theme %}
-            // This shouldn't happen, but just in case
-            {% else %}
-            // Load default config
-            {% endif %}
-        }
-    })();
-</script>
+<script
+    src="{% static 'theme/assets/js/tailwind_dynamic_config_login.js' %}"
+    {% if theme %}
+        data-theme-id="{{ theme.id }}"
+        data-surface="{{ theme.surface|default:"" }}"
+        data-primary-50="{{ theme.primary_50|default:"" }}"
+        data-primary-100="{{ theme.primary_100|default:"" }}"
+        data-primary-200="{{ theme.primary_200|default:"" }}"
+        data-primary-300="{{ theme.primary_300|default:"" }}"
+        data-primary-400="{{ theme.primary_400|default:"" }}"
+        data-primary-500="{{ theme.primary_500|default:"" }}"
+        data-primary-600="{{ theme.primary_600|default:"" }}"
+        data-primary-700="{{ theme.primary_700|default:"" }}"
+        data-primary-800="{{ theme.primary_800|default:"" }}"
+        data-primary-900="{{ theme.primary_900|default:"" }}"
+        data-dark-25="{{ theme.dark_25|default:"" }}"
+        data-dark-50="{{ theme.dark_50|default:"" }}"
+        data-dark-100="{{ theme.dark_100|default:"" }}"
+        data-dark-200="{{ theme.dark_200|default:"" }}"
+        data-dark-300="{{ theme.dark_300|default:"" }}"
+        data-dark-400="{{ theme.dark_400|default:"" }}"
+        data-dark-500="{{ theme.dark_500|default:"" }}"
+        data-dark-600="{{ theme.dark_600|default:"" }}"
+        data-secondary-50="{{ theme.secondary_50|default:"" }}"
+        data-secondary-100="{{ theme.secondary_100|default:"" }}"
+        data-secondary-200="{{ theme.secondary_200|default:"" }}"
+        data-secondary-300="{{ theme.secondary_300|default:"" }}"
+        data-secondary-400="{{ theme.secondary_400|default:"" }}"
+        data-secondary-500="{{ theme.secondary_500|default:"" }}"
+        data-secondary-600="{{ theme.secondary_600|default:"" }}"
+        data-secondary-700="{{ theme.secondary_700|default:"" }}"
+        data-secondary-800="{{ theme.secondary_800|default:"" }}"
+        data-secondary-900="{{ theme.secondary_900|default:"" }}"
+    {% endif %}
+></script>
 {% if not theme %}
     <script src="{% static 'assets/js/tailwind.config.js' %}"></script>
 {% endif %}

@@ -1,0 +1,65 @@
+/*
+ * Timeline axis labels are injected via JS. Windows often shows them faint/missing
+ * (ClearType, DPI, missing Tailwind on dynamic nodes). Force Ubuntu-like contrast
+ * with explicit colors + font stack so Windows matches Linux.
+ */
+.js-timeline-container [id^='timeline-axis-labels-'].flex > span {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+    font-family: system-ui, 'Segoe UI', Ubuntu, 'Ubuntu Sans', Cantarell, 'Noto Sans', sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.js-timeline-container [id^='timeline-axis-labels-'].flex > span > div:first-child {
+    color: #374151 !important;
+    font-weight: 500 !important;
+    font-size: 11px !important;
+}
+
+.js-timeline-container [id^='timeline-axis-labels-'].flex > span > div:last-child {
+    color: #111827 !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+}
+
+.dark .js-timeline-container [id^='timeline-axis-labels-'].flex > span {
+    background-color: #030712 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .js-timeline-container [id^='timeline-axis-labels-'].flex > span > div:first-child {
+    color: #d1d5db !important;
+}
+
+.dark .js-timeline-container [id^='timeline-axis-labels-'].flex > span > div:last-child {
+    color: #f9fafb !important;
+}
+
+/*
+ * Grid lines were bg-secondary-* / border-secondary-* (session palette = red on Windows).
+ * Use neutral gray so timeline grid matches Ubuntu-like subtle lines on all OS.
+ */
+.js-timeline-container .timeline-grid-line {
+    background-color: #e5e7eb !important; /* gray-200 */
+}
+
+.dark .js-timeline-container .timeline-grid-line {
+    background-color: #4b5563 !important; /* gray-600 */
+}
+
+.js-timeline-container .timeline-axis-cell {
+    border-left-color: #e5e7eb !important;
+}
+
+.dark .js-timeline-container .timeline-axis-cell {
+    border-left-color: #4b5563 !important;
+}
+
+.timeline-toolbar .select2-container {
+    width: 210px !important;
+    min-width: 210px;
+}

@@ -234,7 +234,7 @@
                                     <label class="inline-flex items-center cursor-pointer">
                                         <span class="me-3 text-xs text-color-600">{{ field.label }} </span>
                                     </label>
-                                    <div class="w-full">
+                                    <div class="w-full" data-file-input-id="{{ field.id_for_label }}">
                                         <label
                                             for="{{ field.id_for_label }}"
                                             class="flex items-center gap-3 text-color-600 p-2 placeholder:text-xs font-normal w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm transition duration-300 focus:border-primary-600 cursor-pointer"
@@ -256,28 +256,6 @@
 
                                         <div style="display: none">{{ field }}</div>
                                     </div>
-
-                                    <script>
-                                        function initFileInput{{ field.id_for_label|capfirst }}() {
-                                            const input = document.getElementById('{{ field.id_for_label }}');
-                                            const fileName = document.getElementById('{{ field.id_for_label }}-name');
-                                            if (input && fileName) {
-                                                input.addEventListener('change', function() {
-                                                    if (this.files && this.files.length > 0) {
-                                                        fileName.textContent = this.files[0].name;
-                                                    } else {
-                                                        fileName.textContent = 'No file chosen';
-                                                    }
-                                                });
-                                            }
-                                        }
-
-                                        if (document.readyState === 'loading') {
-                                            document.addEventListener('DOMContentLoaded', initFileInput{{ field.id_for_label|capfirst }});
-                                        } else {
-                                            initFileInput{{ field.id_for_label|capfirst }}();
-                                        }
-                                    </script>
                                 {% else %}
                                     <div class="flex justify-between items-center mb-1">
                                         <label
@@ -456,128 +434,7 @@
     </form>
 </div>
 
-<script>
-    function getModuleValue() {
-        const moduleSelect = document.getElementById('id_module');
-        if (!moduleSelect) return '';
-        /* Use option value (registry key / content type id), not label - avoids wrong model choices */
-        return moduleSelect.value || '';
-    }
-
-    function updatePreviewAfterFormSwap() {
-        window.pendingPreviewUpdate = true;
-    }
-
-    let previewUpdateTimeout = null;
-    let isUpdatingPreview = false;
-
-    function updatePreview() {
-        const previewContainer = document.querySelector('#preview-container');
-        if (!previewContainer) {
-            return;
-        }
-
-        if (isUpdatingPreview) {
-            return;
-        }
-
-        if (previewUpdateTimeout) {
-            clearTimeout(previewUpdateTimeout);
-        }
-
-        previewUpdateTimeout = setTimeout(() => {
-            isUpdatingPreview = true;
-
-            const componentTypeField = document.querySelector('[name="component_type"]');
-            const chartTypeField = document.querySelector('[name="chart_type"]');
-
-            const params = new URLSearchParams();
-
-            if (componentTypeField && componentTypeField.value) {
-                params.append('component_type', componentTypeField.value);
-            }
-            if (chartTypeField && chartTypeField.value) {
-                params.append('chart_type', chartTypeField.value);
-            }
-
-            const formElement = document.querySelector('#dashboardcomponent-form-view');
-            if (formElement) {
-                const formData = new FormData(formElement);
-                for (let [key, value] of formData.entries()) {
-                    if (!params.has(key) && key !== 'csrfmiddlewaretoken') {
-                        params.append(key, value);
-                    }
-                }
-            }
-
-            const url = '{% url "dashboard:preview_chart" %}' + (params.toString() ? '?' + params.toString() : '');
-
-            htmx.ajax('GET', url, {
-                target: '#preview-container',
-                swap: 'innerHTML'
-            }).then(() => {
-                setTimeout(() => {
-                    isUpdatingPreview = false;
-                }, 100);
-            });
-
-            previewUpdateTimeout = null;
-        }, 150);
-    }
-
-    document.addEventListener('htmx:afterSwap', function(event) {
-        if (event.detail.target.id && event.detail.target.id.includes('dashboardcomponent-form-view-container') && window.pendingPreviewUpdate) {
-            window.pendingPreviewUpdate = false;
-            setTimeout(updatePreview, 150);
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(updatePreview, 200);
-    });
-
-    $(document).ready(function () {
-        const columns = $("#id_columns");
-        if (!columns.is(":hidden")) {
-            columns.select2();
-        }
-
-        const selectEl = document.querySelector('.component_type');
-        if (selectEl && selectEl.value) {
-            setTimeout(() => {
-                updatePreview();
-            }, 100);
-        }
-    });
-
-    $(document).on('htmx:afterSwap', function(event) {
-        const formContainer = document.querySelector('#dashboardcomponent-form-view-container');
-        if (!formContainer) {
-            return;
-        }
-
-        const columns = $("#id_columns");
-        if (!columns.is(":hidden")) {
-            columns.select2();
-        }
-
-        if (event.target && (
-            event.target.id === 'dashboardcomponent-form-view-container' ||
-            (event.target.closest && event.target.closest('#dashboardcomponent-form-view-container') && event.target.id !== 'preview-container')
-        )) {
-            const selectEl = document.querySelector('.component_type');
-            if (selectEl && selectEl.value) {
-                setTimeout(() => {
-                    updatePreview();
-                }, 100);
-            }
-        }
-    });
-
-    $(document).on('htmx:afterSettle', function(event) {
-        const columns = $("#id_columns");
-        if (!columns.is(":hidden")) {
-            columns.select2();
-        }
-    });
-</script>
+<script
+    src="{% static 'dashboard/assets/js/dashboard_component_form.js' %}"
+    data-preview-url="{% url 'dashboard:preview_chart' %}"
+></script>

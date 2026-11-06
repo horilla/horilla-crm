@@ -1,0 +1,19 @@
+#default-home-charts-and-tables {
+  align-items: stretch;
+}
+
+.chart-container,
+.table-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+.chart-content {
+  flex: 1;
+}
+
+.table-content {
+  flex: 1;
+  overflow: hidden;
+}

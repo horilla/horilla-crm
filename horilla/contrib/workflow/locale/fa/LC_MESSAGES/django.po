@@ -489,3 +489,9 @@ msgstr "اقدام «%(action_type)s» در دسترس نیست."
 
 msgid "Select a template."
 msgstr "یک قالب انتخاب کنید."
+
+msgid "Skipped"
+msgstr "رد شده"
+
+msgid "Details"
+msgstr "جزئیات"

@@ -44,7 +44,7 @@ def execute_workflow_time_trigger(self, execution_id):
     """
     Worker task: execute a single ScheduledWorkflowExecution.
     """
-    from .methods import execute_action
+    from .methods import execute_action, time_trigger_skip_reason
     from .models import ScheduledWorkflowExecution
 
     try:
@@ -68,6 +68,15 @@ def execute_workflow_time_trigger(self, execution_id):
         logger.error("Could not load record for execution %s: %s", execution_id, exc)
         execution.status = ScheduledWorkflowExecution.STATUS_FAILED
         execution.error_message = str(exc)
+        execution.executed_at = timezone.now()
+        execution.save(update_fields=["status", "error_message", "executed_at"])
+        return
+
+    skip_reason = time_trigger_skip_reason(time_trigger, instance)
+    if skip_reason:
+        logger.info("Workflow execution %s skipped: %s", execution_id, skip_reason)
+        execution.status = ScheduledWorkflowExecution.STATUS_SKIPPED
+        execution.error_message = skip_reason
         execution.executed_at = timezone.now()
         execution.save(update_fields=["status", "error_message", "executed_at"])
         return

@@ -48,10 +48,14 @@ from .methods import ChannelActionMessage, execute_action, execute_workflow_rule
 from .models import (
     ScheduledWorkflowExecution,
     WorkflowAction,
+    WorkflowCondition,
     WorkflowRule,
     WorkflowTimeTriggerAction,
 )
-from .tasks import execute_workflow_time_trigger
+from .tasks import (
+    execute_workflow_time_trigger,
+    process_scheduled_workflow_executions,
+)
 
 BUILTIN_KEYS = ["update_field", "assign_task", "email", "notification"]
 
@@ -466,6 +470,124 @@ class TimeTriggerTests(WorkflowTestCase):
         self.assertIn("'gone'", execution.error_message)
 
 
+class TimeTriggerRecheckTests(WorkflowTestCase):
+    """A due time trigger runs only while its rule still applies to the record."""
+
+    def setUp(self):
+        super().setUp()
+        WorkflowCondition.objects.create(
+            rule=self.rule,
+            field="status",
+            operator="exact",
+            value="scheduled",
+            **self.common,
+        )
+        self.trigger = self.action(
+            "fake_sms",
+            {"template_id": str(self.notification_template.pk), "to": "self"},
+            model=WorkflowTimeTriggerAction,
+            delay_value=1,
+            delay_unit="days",
+            trigger_date_field="rule_trigger_date",
+        )
+        self.activity = Activity.objects.create(
+            subject="Call", activity_type="task", status="scheduled", **self.common
+        )
+        self.execution = ScheduledWorkflowExecution.objects.create(
+            time_trigger=self.trigger,
+            object_id=self.activity.pk,
+            scheduled_at=self.activity.created_at,
+            **self.common,
+        )
+
+    def run_execution(self):
+        execute_workflow_time_trigger(self.execution.pk)
+        self.execution.refresh_from_db()
+        return self.execution
+
+    def assert_skipped(self, reason):
+        execution = self.run_execution()
+        self.assertEqual(self.fake.sent, [])
+        self.assertEqual(execution.status, ScheduledWorkflowExecution.STATUS_SKIPPED)
+        self.assertEqual(execution.error_message, reason)
+        self.assertIsNotNone(execution.executed_at)
+
+    def test_runs_while_the_record_meets_the_criteria(self):
+        execution = self.run_execution()
+        self.assertEqual(execution.status, ScheduledWorkflowExecution.STATUS_COMPLETED)
+        self.assertEqual(len(self.fake.sent), 1)
+
+    def test_skipped_when_the_record_no_longer_meets_the_criteria(self):
+        Activity.objects.filter(pk=self.activity.pk).update(status="completed")
+        self.assert_skipped("The record no longer meets the workflow rule's criteria.")
+
+    def test_skipped_when_the_rule_is_inactive(self):
+        WorkflowRule.objects.filter(pk=self.rule.pk).update(is_active=False)
+        self.assert_skipped("The workflow rule is inactive.")
+
+    def test_skipped_when_the_time_trigger_is_inactive(self):
+        WorkflowTimeTriggerAction.objects.filter(pk=self.trigger.pk).update(
+            is_active=False
+        )
+        self.assert_skipped("The time trigger is inactive.")
+
+    def test_a_skipped_execution_is_not_run_again(self):
+        Activity.objects.filter(pk=self.activity.pk).update(status="completed")
+        self.run_execution()
+        Activity.objects.filter(pk=self.activity.pk).update(status="scheduled")
+        execution = self.run_execution()
+        self.assertEqual(self.fake.sent, [])
+        self.assertEqual(execution.status, ScheduledWorkflowExecution.STATUS_SKIPPED)
+
+    def test_deleted_record_still_fails(self):
+        Activity.all_objects.filter(pk=self.activity.pk).delete()
+        execution = self.run_execution()
+        self.assertEqual(execution.status, ScheduledWorkflowExecution.STATUS_FAILED)
+        self.assertEqual(self.fake.sent, [])
+
+    def test_skip_check_reads_only_the_conditions(self):
+        rule_activity = Activity.objects.get(pk=self.activity.pk)
+        trigger = WorkflowTimeTriggerAction.objects.select_related("rule").get(
+            pk=self.trigger.pk
+        )
+        # Only the rule's conditions are read.
+        with self.assertNumQueries(2):
+            self.assertEqual(
+                methods.time_trigger_skip_reason(trigger, rule_activity), ""
+            )
+
+    def test_runs_when_the_record_is_back_in_the_criteria_when_due(self):
+        Activity.objects.filter(pk=self.activity.pk).update(status="completed")
+        Activity.objects.filter(pk=self.activity.pk).update(status="scheduled")
+        execution = self.run_execution()
+        self.assertEqual(execution.status, ScheduledWorkflowExecution.STATUS_COMPLETED)
+        self.assertEqual(len(self.fake.sent), 1)
+
+    def test_a_rule_without_criteria_still_runs(self):
+        self.rule.conditions.all().delete()
+        Activity.objects.filter(pk=self.activity.pk).update(status="completed")
+        execution = self.run_execution()
+        self.assertEqual(execution.status, ScheduledWorkflowExecution.STATUS_COMPLETED)
+        self.assertEqual(len(self.fake.sent), 1)
+
+    def test_the_criteria_are_read_as_they_are_when_due(self):
+        self.rule.conditions.update(value="completed")
+        self.assert_skipped("The record no longer meets the workflow rule's criteria.")
+
+    def test_the_scheduler_queues_only_pending_executions(self):
+        Activity.objects.filter(pk=self.activity.pk).update(status="completed")
+        self.run_execution()
+        pending = ScheduledWorkflowExecution.objects.create(
+            time_trigger=self.trigger,
+            object_id=self.activity.pk,
+            scheduled_at=self.activity.created_at,
+            **self.common,
+        )
+        with mock.patch.object(execute_workflow_time_trigger, "delay") as delay:
+            process_scheduled_workflow_executions()
+        delay.assert_called_once_with(pending.pk)
+
+
 class FormTests(WorkflowTestCase):
     """The action forms check action_type against the registry."""
 
@@ -673,3 +795,29 @@ class ViewTests(WorkflowTestCase):
             response.content.decode(), r'id="wf-channel-to-val"\s+value="self"'
         )
         self.assertFalse(WorkflowAction.all_objects.filter(rule=self.rule).exists())
+
+    def test_time_trigger_history_shows_a_skipped_execution_and_why(self):
+        trigger = self.action(
+            "fake_sms",
+            model=WorkflowTimeTriggerAction,
+            delay_value=1,
+            delay_unit="days",
+            trigger_date_field="rule_trigger_date",
+        )
+        ScheduledWorkflowExecution.objects.create(
+            time_trigger=trigger,
+            object_id=1,
+            scheduled_at=trigger.created_at,
+            status=ScheduledWorkflowExecution.STATUS_SKIPPED,
+            error_message="The time trigger is inactive.",
+            **self.common,
+        )
+        response = self.get(
+            reverse(
+                "workflow:workflow_time_trigger_history_view",
+                kwargs={"rule_pk": self.rule.pk},
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Skipped")
+        self.assertContains(response, "The time trigger is inactive.")

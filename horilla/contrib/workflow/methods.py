@@ -965,6 +965,24 @@ def execute_workflow_rule(rule, instance, user, trigger_type):
     _schedule_time_triggers(rule, instance)
 
 
+def time_trigger_skip_reason(time_trigger, instance):
+    """
+    Return why a due time trigger must not run on ``instance``, or "".
+
+    A time trigger fires some time after its rule matched, so the rule and
+    the time trigger must still be active and the record must still meet
+    the rule's criteria when it is due.
+    """
+    rule = time_trigger.rule
+    if not rule.is_active:
+        return "The workflow rule is inactive."
+    if not time_trigger.is_active:
+        return "The time trigger is inactive."
+    if not evaluate_workflow_conditions(rule, instance):
+        return "The record no longer meets the workflow rule's criteria."
+    return ""
+
+
 def _schedule_time_triggers(rule, instance):
     """
     For each active time trigger on the rule, calculate the fire datetime and

@@ -66,7 +66,7 @@
                 </svg>
                 {% trans "Notes" %}
             </div>
-            <div class="break-words [overflow-wrap:anywhere]">
+            <div class="max-h-[50vh] overflow-y-auto pe-2 break-words [overflow-wrap:anywhere]">
                 {{ object.description|sanitize_html }}
             </div>
         </div>

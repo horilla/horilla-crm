@@ -2239,6 +2239,46 @@ input::placeholder {
   }
 }
 
+/* Summernote's full screen mode is position: fixed, but the modal box is
+   scaled by a transform, which makes it the containing block instead of the
+   viewport and clips the editor inside the modal. Drop the transform while
+   an editor inside it is full screen. */
+.modal-box:has(.note-editor.fullscreen) {
+  transform: none !important;
+  transition: none !important;
+}
+
+/* The editing area is transparent and relies on the modal behind it, so a
+   full screen editor needs its own background. */
+.note-editor.note-frame.fullscreen {
+  background-color: #fff;
+}
+
+/* Summernote sizes the full screen editing area from the window height in
+   JS, which leaves a gap at the bottom and lags behind the toggle. Let the
+   editor fill the viewport with flex instead. */
+.note-editor.note-frame.fullscreen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+}
+
+.note-editor.note-frame.fullscreen .note-editing-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.note-editor.note-frame.fullscreen .note-editing-area .note-editable,
+.note-editor.note-frame.fullscreen .note-editing-area .note-codable {
+  flex: 1 1 auto;
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: auto;
+}
+
 /* Restore list markers inside the Summernote editor: Tailwind Preflight
    resets all ul/ol to list-style: none globally, which hides numbering
    and bullets even though the toolbar's ordered/unordered list buttons

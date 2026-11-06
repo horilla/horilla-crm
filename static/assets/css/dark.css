@@ -99,6 +99,9 @@ body.dark .panel-default>.panel-heading{
 body.dark .note-editor.note-frame .note-editing-area .note-editable{
   background-color: #3f3f3f !important;
 }
+body.dark .note-editor.note-frame.fullscreen{
+  background-color: #3f3f3f;
+}
 /* Dropdown item hover (layout + actions) – match detail view: black in dark */
 body.dark .hover\:bg-gray-50:hover {
   background-color: black !important;

@@ -197,6 +197,49 @@ class WebToLeadDuplicateSubmissionTests(TestCase):
         self.assertContains(self.client.get(self.url), 'hx-sync="this:drop"')
 
 
+class WebToLeadFormBuilderFieldListTests(TestCase):
+    """The builder must offer the Lead fields whether or not a form is saved."""
+
+    def setUp(self):
+        """Log in a superuser of a company that has no capture form yet."""
+        user_logged_in.disconnect(post_login)
+        user_logged_out.disconnect(post_logout)
+        self.addCleanup(user_logged_in.connect, post_login)
+        self.addCleanup(user_logged_out.connect, post_logout)
+        self.company, self.user = _create_company_and_user()
+        self.client.force_login(self.user)
+        session = self.client.session
+        session["active_company_id"] = self.company.pk
+        session.save()
+
+    def get_builder(self, **params):
+        """GET the form builder page."""
+        return self.client.get(reverse("leads:form_builder"), params)
+
+    def test_company_without_a_saved_form_sees_every_field(self):
+        """First-time creation lists the Lead fields as available to add."""
+        response = self.get_builder()
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-field="first_name"')
+        self.assertContains(response, 'data-field="email"')
+
+    def test_editing_a_saved_form_leaves_out_the_selected_fields(self):
+        """When editing, a field already on the form is not offered again."""
+        LeadCaptureForm.all_objects.create(
+            company=self.company,
+            form_name="Contact Us",
+            selected_fields=json.dumps(["email"]),
+            header_color="#ed4f38",
+            success_message="Thanks",
+            success_description="We will contact you.",
+            lead_owner=self.user,
+        )
+        response = self.get_builder(edit=1)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-field="first_name"')
+        self.assertNotContains(response, 'data-field="email"')
+
+
 class WebToLeadRtlCssTests(SimpleTestCase):
     """Form preview and public-form labels are aligned in rtl.css."""
 

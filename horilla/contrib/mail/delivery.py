@@ -43,6 +43,10 @@ class MailChannel(DeliveryChannel):
         """Mail needs the mail template and the outgoing mail server."""
         return True
 
+    def get_detail_fields(self):
+        """Mail shows its template and the outgoing mail server."""
+        return ["mail_template", "mail_server"]
+
     def resolve_recipients(self, spec, instance, user):
         """
         Resolve mail recipients from the mail_to field.
@@ -223,7 +227,7 @@ class MailChannel(DeliveryChannel):
                     HorillaMailManager.send_mail(mail, context=context)
 
                     mail.refresh_from_db()
-                    if mail.mail_status != "sent":
+                    if mail.mail_status not in ("sent", "delivered"):
                         logger.error(
                             "Email failed to send via threading: %s (mail_id: %s), status: %s, message: %s",
                             automation.title,

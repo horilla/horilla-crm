@@ -415,6 +415,16 @@ class HorillaDetailView(DetailView):
         """Return effective excluded fields: base list plus any extra from subclasses."""
         base = list(self.base_excluded_fields)
         extra = [f for f in (self.excluded_fields or []) if f not in base]
+        request = getattr(self, "request", None)
+        if request is not None and hasattr(request, "session"):
+            excluded = base + extra
+            if request.session.get("show_all_companies", False):
+                # Company is shown only when "all companies" is enabled, even if
+                # the view lists it in excluded_fields.
+                return [f for f in excluded if f != "company"]
+            if "company" not in excluded:
+                return excluded + ["company"]
+            return excluded
         return base + extra
 
     def get_header_fields(self):
@@ -1381,11 +1391,8 @@ class HorillaModalDetailView(DetailView):
 
     title = _("Detailed View")
     template_name = "single_detail_view.html"
-    header: dict = {
-        "title": "Horilla",
-        "subtitle": "Horilla Detailed View",
-        "avatar": "",
-    }
+    # No profile header unless the view sets one ({"title", "subtitle", "avatar"}).
+    header: dict = {}
     body: list = []
 
     action_method: list = []
@@ -1470,6 +1477,9 @@ class HorillaModalDetailView(DetailView):
                 {
                     "instance_ids": str(instance_ids),
                     "ids_key": self.ids_key,
+                    "has_previous": pk in instance_ids and instance_ids.index(pk) > 0,
+                    "has_next": pk in instance_ids
+                    and instance_ids.index(pk) < len(instance_ids) - 1,
                     "next_url": reverse_lazy(full_url_name, kwargs={key: next_id}),
                     "previous_url": reverse_lazy(full_url_name, kwargs={key: prev_id}),
                 }

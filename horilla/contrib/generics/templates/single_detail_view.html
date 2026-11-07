@@ -62,19 +62,27 @@
                 <div class="flex gap-1">
                     <button
                         data-action="previous"
-                        hx-get="{{ previous_url }}?{{ ids_key }}={{ instance_id }}&{{ request.GET.urlencode }}"
-                        hx-on:click="$('#detailViewContainer').toggleClass('animate-pulse');"
-                        hx-target="#detailModalBox"
-                        class="p-2 w-8 h-8 justify-center bg-primary-600 text-white rounded-full text-xs flex items-center gap-2 hover:bg-primary-800 transition duration-300"
+                        {% if has_previous %}
+                            hx-get="{{ previous_url }}?{{ ids_key }}={{ instance_id }}&{{ request.GET.urlencode }}"
+                            hx-on:click="$('#detailViewContainer').toggleClass('animate-pulse');"
+                            hx-target="#detailModalBox"
+                        {% else %}
+                            disabled
+                        {% endif %}
+                        class="p-2 w-8 h-8 justify-center bg-primary-600 text-white rounded-full text-xs flex items-center gap-2 hover:bg-primary-800 transition duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary-600"
                     >
                         <i class="fa-solid {% if LANGUAGE_BIDI %}fa-angle-right{% else %}fa-angle-left{% endif %}"></i>
                     </button>
                     <button
                         data-action="next"
-                        hx-get="{{ next_url }}?{{ ids_key }}={{ instance_id }}&{{ request.GET.urlencode }}"
-                        hx-on:click="$('#detailViewContainer').toggleClass('animate-pulse');"
-                        hx-target="#detailModalBox"
-                        class="p-2 w-8 h-8 justify-center bg-primary-600 text-white rounded-full text-xs flex items-center gap-2 hover:bg-primary-800 transition duration-300"
+                        {% if has_next %}
+                            hx-get="{{ next_url }}?{{ ids_key }}={{ instance_id }}&{{ request.GET.urlencode }}"
+                            hx-on:click="$('#detailViewContainer').toggleClass('animate-pulse');"
+                            hx-target="#detailModalBox"
+                        {% else %}
+                            disabled
+                        {% endif %}
+                        class="p-2 w-8 h-8 justify-center bg-primary-600 text-white rounded-full text-xs flex items-center gap-2 hover:bg-primary-800 transition duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary-600"
                     >
                         <i class="fa-solid {% if LANGUAGE_BIDI %}fa-angle-left{% else %}fa-angle-right{% endif %}"></i>
                     </button>

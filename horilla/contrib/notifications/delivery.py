@@ -107,6 +107,10 @@ class NotificationChannel(DeliveryChannel):
         """Notifications need the notification template."""
         return True
 
+    def get_detail_fields(self):
+        """Notifications show their template."""
+        return ["notification_template"]
+
     def resolve_recipients(self, spec, instance, user):
         """
         Resolve users for notifications from the mail_to field.

@@ -17,6 +17,7 @@ from horilla.contrib.generics.forms.condition_fields import (
 )
 from horilla.contrib.generics.views import (
     HorillaListView,
+    HorillaModalDetailView,
     HorillaNavView,
     HorillaSingleDeleteView,
     HorillaSingleFormView,
@@ -72,7 +73,7 @@ class HorillaAutomationNavbar(LoginRequiredMixin, HorillaNavView):
     """
 
     nav_description = _(
-        "Automate mail and notifications based on events in your workflow."
+        "Automate messages across your delivery channels based on events in your workflow."
     )
     search_url = reverse_lazy("automations:automation_list_view")
     main_url = reverse_lazy("automations:automation_view")
@@ -86,6 +87,7 @@ class HorillaAutomationNavbar(LoginRequiredMixin, HorillaNavView):
     one_view_only = True
     border_enabled = False
     enable_actions = True
+    column_selector_exclude_fields = ["method_title"]
 
     @cached_property
     def new_button(self):
@@ -99,9 +101,14 @@ class HorillaAutomationNavbar(LoginRequiredMixin, HorillaNavView):
 
     @cached_property
     def actions(self):
-        """Actions for mail automation"""
+        """Add Column to List (from the generic navbar) plus Load Automation"""
+        actions = [
+            action
+            for action in super().actions
+            if action["action"] == _("Add Column to List")
+        ]
         if self.request.user.has_perm("automations.add_horillaautomation"):
-            return [
+            actions.append(
                 {
                     "action": _("Load Automation"),
                     "attrs": f"""
@@ -111,9 +118,9 @@ class HorillaAutomationNavbar(LoginRequiredMixin, HorillaNavView):
                             hx-target="#modalBox"
                             hx-swap="innerHTML"
                             """,
-                },
-            ]
-        return None
+                }
+            )
+        return actions
 
 
 @method_decorator(htmx_required, name="dispatch")
@@ -134,19 +141,47 @@ class HorillaAutomationListView(LoginRequiredMixin, HorillaListView):
     bulk_update_two_column = True
     bulk_delete_enabled = False
     bulk_select_option = False
-    list_column_visibility = False
 
     columns = [
         "title",
         "trigger",
         "model",
-        (_("Template"), "get_template"),
         (_("Choose Delivery Channel"), "get_delivery_channel_display"),
     ]
+    store_ordered_ids = True
+
+    @cached_property
+    def col_attrs(self):
+        """Open the detail modal when clicking the title column."""
+        query_string = self.request.session.get(self.ordered_ids_key, [])
+        attrs = {}
+        if self.request.user.has_perm("automations.view_horillaautomation"):
+            attrs = {
+                "hx-get": f"{{get_detail_url}}?instance_ids={query_string}",
+                "hx-target": "#detailModalBox",
+                "hx-swap": "innerHTML",
+                "hx-push-url": "false",
+                "hx-on:click": "openDetailModal();",
+                "style": "cursor:pointer",
+                "class": "hover:text-primary-600",
+            }
+        return [{"title": {**attrs}}]
 
     def get_queryset(self):
         """Exclude Big Deal Alert automations, which have their own dedicated list."""
-        return super().get_queryset().exclude(additional_info__big_deal=True)
+        queryset = super().get_queryset()
+        big_deal_ids = set(
+            queryset.filter(additional_info__big_deal=True).values_list("pk", flat=True)
+        )
+        # The parent stored the ordered ids before this exclusion; drop the
+        # Big Deal ones so the detail modal's next/previous never lands on them.
+        if big_deal_ids:
+            self.request.session[self.ordered_ids_key] = [
+                pk
+                for pk in self.request.session.get(self.ordered_ids_key, [])
+                if pk not in big_deal_ids
+            ]
+        return queryset.exclude(additional_info__big_deal=True)
 
     def no_record_add_button(self):
         """Return configuration for the 'no records' Load Automation button when permitted."""
@@ -435,7 +470,7 @@ class MailToChoicesView(LoginRequiredMixin, View):
             content_type = HorillaContentType.objects.filter(pk=model_id).first()
             model = get_model_class(content_type.model) if content_type else None
         user_fields = get_recipient_choices(
-            request.GET.getlist("delivery_channel") or ["mail"], model
+            request.GET.getlist("delivery_channel"), model
         )
 
         # Get current selected values if editing
@@ -505,10 +540,11 @@ class TemplateFieldsView(LoginRequiredMixin, View):
         Handle GET request to return template field HTML based on delivery_channel
         """
         # A multi-select sends delivery_channel once per selected key; a
-        # hidden field sends the stored comma-separated value. Mail when the
-        # parameter is missing, as before.
+        # hidden field sends the stored comma-separated value. No parameter
+        # means nothing is selected (the user cleared the picker): no
+        # channel-specific fields.
         delivery_channels = split_delivery_channels(
-            ",".join(request.GET.getlist("delivery_channel", ["mail"]))
+            ",".join(request.GET.getlist("delivery_channel"))
         )
         automation_id = request.GET.get("automation_id")
         model_id = request.GET.get("model")
@@ -672,3 +708,94 @@ class TemplateFieldsView(LoginRequiredMixin, View):
                 "mail_to_selected": mail_to_selected,
             },
         )
+
+
+@method_decorator(htmx_required, name="dispatch")
+@method_decorator(
+    permission_required_or_denied(["automations.view_horillaautomation"]),
+    name="dispatch",
+)
+class HorillaAutomationDetailView(LoginRequiredMixin, HorillaModalDetailView):
+    """
+    Modal detail view for a single automation.
+    """
+
+    model = HorillaAutomation
+    _BASE_FIELDS = [
+        "model",
+        "trigger",
+        "get_delivery_channel_display",
+        "get_mail_to_display",
+        "get_also_sent_to",
+    ]
+    _SCHEDULE_FIELDS = [
+        "schedule_date_field",
+        "schedule_offset_direction",
+        "schedule_offset_amount",
+        "schedule_offset_unit",
+        "schedule_run_time",
+    ]
+    body = []
+
+    def get_queryset(self):
+        """Skip Big Deal Alert automations, which have their own detail view."""
+        return super().get_queryset().exclude(additional_info__big_deal=True)
+
+    def get_context_data(self, **kwargs):
+        """Use the automation's own title as the modal heading."""
+        context = super().get_context_data(**kwargs)
+        if self.instance:
+            context["title"] = self.instance.title
+        return context
+
+    def get_body_fields(self):
+        """Show template/server fields per delivery channel, schedule fields only when scheduled."""
+        fields = list(self._BASE_FIELDS)
+        automation = self.instance
+        if automation:
+            channels = [
+                channel
+                for channel in (
+                    get_delivery_channel(key)
+                    for key in automation.get_delivery_channels()
+                )
+                if channel is not None
+            ]
+            for channel in channels:
+                for name in channel.get_detail_fields():
+                    if name not in fields:
+                        fields.append(name)
+            if automation.trigger == "scheduled":
+                fields += self._SCHEDULE_FIELDS
+        self.body = fields
+        return super().get_body_fields()
+
+    actions = [
+        {
+            "action": "Delete",
+            "src": "assets/icons/a4.svg",
+            "img_class": "svg-themed w-3 h-3",
+            "permission": "automations.delete_horillaautomation",
+            "attrs": """
+                class="outline outline-1 outline-offset-[-1px] outline-primary-600 rounded-md hover:bg-primary-300 transition duration-300 text-primary-600 w-24 justify-center bg-[white] flex items-center gap-2 disabled:cursor-not-allowed cursor-pointer text-xs px-4 py-2"
+                hx-get="{get_delete_url}"
+                hx-target="#deleteModeBox"
+                hx-vals='{{"check_dependencies": "false"}}'
+                hx-trigger="click"
+                onclick="openDeleteModeModal()"
+            """,
+        },
+        {
+            "action": "Edit",
+            "src": "assets/icons/edit_white.svg",
+            "img_class": "w-3 h-3 flex gap-4 filter brightness-0 invert",
+            "permission": "automations.change_horillaautomation",
+            "attrs": """
+                class="w-24 justify-center px-4 py-2 bg-primary-600 text-white rounded-md text-xs flex items-center gap-2 hover:bg-primary-800 transition duration-300 disabled:cursor-not-allowed cursor-pointer"
+                hx-get="{get_edit_url}"
+                hx-target="#modalBox"
+                hx-swap="innerHTML"
+                onclick="openModal();"
+            """,
+        },
+    ]

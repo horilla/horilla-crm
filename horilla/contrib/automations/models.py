@@ -96,7 +96,7 @@ class HorillaAutomation(HorillaCoreModel):
         verbose_name=_("Module"),
     )
     mail_to = models.TextField(
-        verbose_name=_("Mail to/Notify To"),
+        verbose_name=_("Send To"),
         help_text=_(
             "Specify recipients for email/notifications. Supports:\n"
             "- Direct email: user@example.com\n"
@@ -203,8 +203,8 @@ class HorillaAutomation(HorillaCoreModel):
         Meta class for HorillaAutomation model
         """
 
-        verbose_name = _("Mail and Notification")
-        verbose_name_plural = _("Mail and Notifications")
+        verbose_name = _("Message Automation")
+        verbose_name_plural = _("Message Automations")
 
     def get_delivery_channels(self):
         """The selected channel keys, in stored order (``both`` is mail and notification)."""
@@ -240,6 +240,27 @@ class HorillaAutomation(HorillaCoreModel):
         if shows_notification:
             return self.notification_template
         return None
+
+    def get_mail_to_display(self):
+        """
+        The ``mail_to`` recipients as readable labels (``instance.lead_owner``
+        shows as "Lead Owner"); a value with no matching choice shows as stored.
+        """
+        # Local import: forms import this module.
+        from .forms import get_recipient_choices
+
+        model = self.model.model_class() if self.model_id else None
+        labels = dict(get_recipient_choices(self.delivery_channel, model))
+        parts = [part.strip() for part in (self.mail_to or "").split(",")]
+        return ", ".join(str(labels.get(part, part)) for part in parts if part) or None
+
+    get_mail_to_display.short_description = _("Send To")
+
+    def get_also_sent_to(self):
+        """Comma-separated names of the users in ``also_sent_to``."""
+        return ", ".join(str(user) for user in self.also_sent_to.all()) or None
+
+    get_also_sent_to.short_description = _("Also Send To")
 
     def get_delivery_channel_display(self):
         """
@@ -340,6 +361,14 @@ class HorillaAutomation(HorillaCoreModel):
         if not self.pk:
             self.method_title = self.title.replace(" ", "_").lower()
         return super().save(*args, **kwargs)
+
+    def get_detail_url(self):
+        """
+        Get the URL of the detail modal for this automation.
+        """
+        return reverse_lazy(
+            "automations:automation_detail_view", kwargs={"pk": self.pk}
+        )
 
     def get_edit_url(self):
         """

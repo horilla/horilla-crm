@@ -129,7 +129,7 @@ class DeliveryChannel(abc.ABC):
         the records the model declares in ``RECIPIENT_RELATIONS`` (see
         ``get_recipient_relations()``), such as an opportunity's primary
         contact. None for a ``"user"`` channel: an address field there is not
-        a user.
+        a user, so a notification-only automation gets no mail or phone fields.
         """
         if self.address_kind == ADDRESS_USER:
             return []
@@ -161,6 +161,8 @@ class DeliveryChannel(abc.ABC):
 
     def is_address_field(self, field):
         """Whether a (non foreign key) model field holds an ``address_kind`` address."""
+        if self.address_kind == ADDRESS_USER:
+            return False
         name = field.name.lower()
         if self.address_kind == ADDRESS_PHONE:
             return isinstance(field, models.CharField) and any(
@@ -252,6 +254,15 @@ class DeliveryChannel(abc.ABC):
     def shows_notification_fields(self):
         """Whether the automation form shows the notification template."""
         return False
+
+    def get_detail_fields(self):
+        """
+        Names of the ``HorillaAutomation`` fields (or methods) this channel
+        adds to the automation detail view, in display order.
+
+        Each channel's own app overrides this; the default adds none.
+        """
+        return []
 
     @abc.abstractmethod
     def send(self, automation, instance, recipients, context, user):

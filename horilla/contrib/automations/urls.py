@@ -38,6 +38,11 @@ urlpatterns = [
         name="automation_update_view",
     ),
     path(
+        "automation-detail-view/<int:pk>/",
+        views.HorillaAutomationDetailView.as_view(),
+        name="automation_detail_view",
+    ),
+    path(
         "get-automation-field-choices/",
         views.AutomationFieldChoicesView.as_view(),
         name="get_automation_field_choices",

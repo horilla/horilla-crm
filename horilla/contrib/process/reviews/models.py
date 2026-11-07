@@ -103,7 +103,10 @@ class ReviewProcess(HorillaCoreModel):
                 )
 
     def save(self, *args, **kwargs):
-        self.full_clean()
+        # created_by / updated_by are filled in by HorillaCoreModel.save() after
+        # this point, so they must not block validation (rows without them, e.g.
+        # seeded data, could otherwise never be saved or toggled).
+        self.full_clean(exclude=["created_by", "updated_by"])
         if not self.pk:
             self.method_title = self.title.replace(" ", "_").lower()
         return super().save(*args, **kwargs)

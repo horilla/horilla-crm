@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 
 # Third-party imports (Django)
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 
 from horilla.apps import apps
 
@@ -530,13 +531,10 @@ class ReviewProcessToggleActiveView(LoginRequiredMixin, View):
             process.save(update_fields=["is_active"])
             status = _("activated") if process.is_active else _("deactivated")
             messages.success(request, f"{process.title} {status} successfully")
+        except ValidationError as exc:
+            messages.error(request, " ".join(exc.messages))
         except Exception:
-            messages.error(
-                request,
-                _(
-                    "An active review process already exists for this model and company."
-                ),
-            )
+            messages.error(request, _("Unable to update the review process status."))
         return ScriptResponse(reload=True)
 
 

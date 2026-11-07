@@ -2,7 +2,7 @@
 
 ## What this app does
 
-- **`WorkflowRule`** — module (`HorillaContentType`), name, description, triggers on create/edit, active flag.
+- **`WorkflowRule`** — module (`HorillaContentType`), name, description, triggers on create/edit, **`only_when_criteria_become_true`** (see [Running on edit only when the criteria become true](#running-on-edit-only-when-the-criteria-become-true)), active flag.
 - **`WorkflowCondition`** — criteria rows (field / operator / value / logical operator).
 - **`WorkflowAction`** / **`WorkflowTimeTriggerAction`** — actions on match (update field, task, email, notification, or a registered delivery channel such as SMS) with JSON **`action_config`** built from hidden compose fields. See [Actions and delivery channels](#actions-and-delivery-channels).
 - Runs on record create/edit for models registered under the workflow feature registry (core models such as users, departments, and holidays, plus any app that calls `register_model_for_feature` with workflow enabled).
@@ -43,6 +43,26 @@ An `action_type` that is neither a built-in nor registered (the channel's app wa
 
 ---
 
+## Running on edit only when the criteria become true
+
+By default a rule with **When Record Is Edited** runs on every edit whose saved values meet the entry criteria, so a record that stays in, for example, stage X gets the rule's actions and time triggers again each time any field is edited. **Only When the Criteria Become True** (`WorkflowRule.only_when_criteria_become_true`, `BooleanField(default=False)`, migration `0007`) makes an edit run the rule only when the record **did not** meet the criteria before the save and meets them after it:
+
+| Save | Option off (default, unchanged) | Option on |
+|------|----------------------------------|-----------|
+| Create, criteria met | runs (if **When Record Is Created**) | runs (if **When Record Is Created**) |
+| Edit into the criteria | runs | runs |
+| Edit that keeps the record matching | runs | does not run |
+| Edit out of the criteria | does not run; pending time triggers are skipped when due ([Time triggers at fire time](#actions-and-delivery-channels)) | does not run; the rule's pending time triggers for the record are marked **skipped** at once |
+| Edit back into the criteria | runs | runs again |
+
+Immediate actions and time-trigger scheduling (`_schedule_time_triggers`) sit behind the same check. With the option on, an edit that takes the record out of the criteria calls `methods.skip_pending_time_triggers(rule, instance, reason)` (one `UPDATE`), so a record that leaves and comes back before a delay is due gets one run, counted from its new entry, instead of two. A rule with the option and **no** criteria is always met, so it runs on create only.
+
+**How it works.** `signals.remember_workflow_criteria_before_save` (`pre_save`, models in `FEATURE_REGISTRY["workflow_models"]`, not on create, not on `raw` loads, not for saves made by a workflow action) calls `methods.criteria_met_before_save(instance)`: it lists the active rules of the record's model and company (`active_workflow_rules`, the same filter `trigger_workflow_rules` uses) that have **When Record Is Edited** and this option, reads the stored row with `_base_manager`, and returns `{rule pk: criteria met}`. `trigger_workflow_rules_on_save` (`post_save`) passes that to `trigger_workflow_rules(..., met_before=...)` → `execute_workflow_rule(..., met_before=...)`, which returns without running when the option is on, the save is an update, and the rule's criteria were already met. A rule missing from `met_before` (for example one turned on between the two signals) counts as not met before, so it runs as without the option.
+
+**Query cost.** Each edit of a registered model adds two queries: the table check of `is_running_migrations()` (post-save already runs it) and the rule list. The save guard (`signals._is_workflow_save`) checks the model registry and the re-entrancy set before that table check, so saves of models workflow does not watch, and saves made by a workflow action, query nothing. Only when a rule with the option exists for that model and company are the stored row read (one query) and its criteria evaluated (the same condition queries as the post-save evaluation, per such rule). An edit out of such a rule's criteria adds the one `UPDATE` of its pending executions. Saves that change nothing are skipped by `HorillaCoreModel.save` and send no signal. `QuerySet.update()` and bulk operations send no signals and never run workflow rules, with or without the option.
+
+---
+
 ## Forms (`forms.py`)
 
 ### `WorkflowRuleForm` (`HorillaModelForm`)
@@ -51,7 +71,7 @@ Uses the Horilla 1.10 layout pattern (see [single-step form base](../generics/fo
 
 | Setting | Value |
 |---------|--------|
-| **`field_order`** | `name`, `model`, `description`, `trigger_on_create`, `trigger_on_edit`, `is_active` |
+| **`field_order`** | `name`, `model`, `description`, `trigger_on_create`, `trigger_on_edit`, `only_when_criteria_become_true`, `is_active` |
 | **`Meta.fields`** | `"__all__"` |
 | **`keep_on_form`** | `("is_active",)` |
 | **`Meta.exclude`** | None — the model only exposes the fields above plus core audit columns (auto-excluded except `is_active` via `keep_on_form`) |

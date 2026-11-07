@@ -542,6 +542,48 @@ class CheckboxGridSelectMultiple(forms.CheckboxSelectMultiple):
         return option
 
 
+class DayQuickFillWidget(forms.Widget):
+    """UI-only helper that bulk-fills the per-day start/end time inputs.
+
+    Renders a start/end time pair plus one checkbox per weekday and an
+    "Apply" button. Nothing here is submitted (the inputs carry no ``name``);
+    the inline script copies the chosen range into the ``<day>_start`` /
+    ``<day>_end`` inputs of the ticked days. Use it with a non-model,
+    ``required=False`` form field placed before the per-day fields.
+    """
+
+    template_name = "forms/widgets/day_quick_fill.html"
+
+    def __init__(self, attrs=None, field_prefix=""):
+        """``field_prefix`` is what sits between ``id_`` and ``<day>_start``/``_end``.
+
+        Empty for ``monday_start``; ``"break1_diff_"`` for ``break1_diff_monday_start``.
+        """
+        super().__init__(attrs)
+        self.field_prefix = field_prefix
+
+    def get_context(self, name, value, attrs):
+        """Add the weekday list (short code, label, field-name prefix)."""
+        # Local import: keeps this module's import graph unchanged
+        from horilla.utils.choices import DAY_LABELS, SHORT_TO_DAY_PREFIX, WEEK_ORDER
+
+        context = super().get_context(name, value, attrs)
+        context["widget"]["field_prefix"] = self.field_prefix
+        context["widget"]["days"] = [
+            {
+                "code": code,
+                "label": DAY_LABELS[code],
+                "prefix": SHORT_TO_DAY_PREFIX[code],
+            }
+            for code in WEEK_ORDER
+        ]
+        return context
+
+    def value_from_datadict(self, data, files, name):
+        """Never read back; this widget is display-only."""
+        return None
+
+
 # Phone country-dial-code data: (dial_code, country_name)
 def _build_phone_country_codes():
     """Build sorted, deduplicated dial-code choices from the phonenumbers library."""

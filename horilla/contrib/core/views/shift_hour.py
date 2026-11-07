@@ -125,6 +125,9 @@ class ShiftHourFormView(LoginRequiredMixin, HorillaSingleFormView):
         "week_days",
         "break1_week_days",
         "break2_week_days",
+        "day_quick_fill",
+        "break1_day_quick_fill",
+        "break2_day_quick_fill",
         "assigned_users",
     ]
     hidden_fields = ["company"]

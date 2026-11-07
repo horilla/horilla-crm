@@ -1,0 +1,113 @@
+{% load i18n static %}
+<div
+    id="{{ widget.attrs.id|default:'day-quick-fill' }}"
+    class="day-quick-fill rounded-lg border border-dark-50 bg-gray-50 p-3"
+    data-day-quick-fill
+    data-qf-prefix="{{ widget.field_prefix }}"
+>
+    <p class="text-xs text-gray-500 mb-2">
+        {% trans "Set a time range once and apply it to several days. You can still edit each day afterwards." %}
+    </p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+        <div class="flex flex-col">
+            <label class="text-xs font-semibold text-color-600 mb-1">{% trans "Start" %}</label>
+            <input
+                type="time"
+                data-qf-start
+                class="text-color-600 p-2 placeholder:text-xs pr-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm transition duration-300 focus:border-primary-600"
+                style="background-image: url('{% static 'assets/icons/clock_icon.svg' %}'); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px;"
+            >
+        </div>
+        <div class="flex flex-col">
+            <label class="text-xs font-semibold text-color-600 mb-1">{% trans "End" %}</label>
+            <input
+                type="time"
+                data-qf-end
+                class="text-color-600 p-2 placeholder:text-xs pr-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm transition duration-300 focus:border-primary-600"
+                style="background-image: url('{% static 'assets/icons/clock_icon.svg' %}'); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px;"
+            >
+        </div>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-3">
+        {% for day in widget.days %}
+            <label
+                class="checkbox-grid-option flex items-center gap-2 px-3 py-2 border border-dark-50 rounded-md text-sm text-color-600 cursor-pointer transition-colors has-[:checked]:border-primary-600 has-[:checked]:bg-primary-100 has-[:checked]:text-primary-700"
+            >
+                <input
+                    type="checkbox"
+                    data-qf-day="{{ day.prefix }}"
+                    class="checkbox-grid-option-input w-4 h-4 shrink-0 bg-[#E9EDF7] rounded-sm accent-primary-600"
+                >
+                <span class="checkbox-grid-option-label select-none">{{ day.label }}</span>
+            </label>
+        {% endfor %}
+    </div>
+    <div class="flex items-center justify-between gap-2">
+        <span
+            data-qf-msg
+            class="text-xs text-red-500"
+            role="alert"
+        ></span>
+        <button
+            type="button"
+            data-qf-apply
+            class="whitespace-nowrap text-primary-600 hover:text-primary-800 text-sm font-semibold px-4 py-2 bg-primary-300 rounded border border-primary-200 transition-colors"
+        >
+            {% trans "Apply" %}
+        </button>
+    </div>
+    <script>
+        (function () {
+            var root = document.currentScript.parentElement;
+            if (!root || root.dataset.qfBound) return;
+            root.dataset.qfBound = "1";
+
+            var prefix = root.getAttribute("data-qf-prefix") || "";
+            var msg = root.querySelector("[data-qf-msg]");
+            var startEl = root.querySelector("[data-qf-start]");
+            var endEl = root.querySelector("[data-qf-end]");
+
+            function setMsg(text) { msg.textContent = text || ""; }
+
+            function selectedDays() {
+                return Array.prototype.slice
+                    .call(root.querySelectorAll("[data-qf-day]:checked"))
+                    .map(function (el) { return el.getAttribute("data-qf-day"); });
+            }
+
+            // Reset the helper so the next group of days can be set right away
+            function resetHelper() {
+                root.querySelectorAll("[data-qf-day]").forEach(function (el) { el.checked = false; });
+                startEl.value = "";
+                endEl.value = "";
+            }
+
+            function setValue(id, value) {
+                var input = document.getElementById(id);
+                if (!input) return;
+                input.value = value;
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+                input.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+
+            root.querySelector("[data-qf-apply]").addEventListener("click", function () {
+                var days = selectedDays();
+                if (!days.length) { setMsg("{% trans 'Select at least one day.' %}"); return; }
+                if (!startEl.value || !endEl.value) {
+                    setMsg("{% trans 'Enter both a start and an end time.' %}");
+                    return;
+                }
+                if (endEl.value <= startEl.value) {
+                    setMsg("{% trans 'End time must be after start time.' %}");
+                    return;
+                }
+                setMsg("");
+                days.forEach(function (day) {
+                    setValue("id_" + prefix + day + "_start", startEl.value);
+                    setValue("id_" + prefix + day + "_end", endEl.value);
+                });
+                resetHelper();
+            });
+        })();
+    </script>
+</div>

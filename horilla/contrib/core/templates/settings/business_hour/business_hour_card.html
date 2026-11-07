@@ -12,7 +12,7 @@
 
 {% if business_hour %}
     <div
-        class="relative bg-white rounded-lg shadow-sm border border-dark-50 max-w-6xl"
+        class="relative bg-white rounded-lg shadow-sm border border-dark-50"
         id="business-hour-card-inner"
     >
         <div class="p-3 border-b border-dark-50">
@@ -63,9 +63,9 @@
                             {% if per_day_rows %}
                                 <div class="flex flex-col gap-1">
                                     {% for row in per_day_rows %}
-                                        <div class="grid grid-cols-[minmax(6.5rem,7.5rem)_1fr] gap-4">
-                                            <span class="text-xs text-color-600">{{ row.day }}</span>
-                                            <span class="text-sm text-gray-900">{{ row.hours }}</span>
+                                        <div class="grid grid-cols-[10rem_1fr] gap-4">
+                                            <span class="text-sm">{{ row.day }}</span>
+                                            <span class="text-sm">{{ row.hours }}</span>
                                         </div>
                                     {% endfor %}
                                 </div>

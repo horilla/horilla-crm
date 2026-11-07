@@ -271,24 +271,34 @@ class BusinessHour(BusinessHourDayMixin, HorillaCoreModel):
             return time_format(t, "P")
 
         selected = set(self.normalized_week_day_codes())
-        rows = []
+        # One entry per weekday: [first_code, last_code, hours_text]
+        groups = []
         for day_code in self.WEEK_ORDER:
-            label = str(self.DAY_LABELS[day_code])
             if day_code not in selected:
-                rows.append({"day": label, "hours": str(_("Closed"))})
-                continue
-            prefix = self.SHORT_TO_DAY_PREFIX[day_code]
-            start_val = getattr(self, f"{prefix}_start", None)
-            end_val = getattr(self, f"{prefix}_end", None)
-            if self._is_midnight(start_val) and self._is_midnight(end_val):
-                rows.append({"day": label, "hours": str(_("Closed"))})
+                hours = str(_("Closed"))
             else:
-                rows.append(
-                    {
-                        "day": label,
-                        "hours": _format_card_time_range(fmt(start_val), fmt(end_val)),
-                    }
-                )
+                prefix = self.SHORT_TO_DAY_PREFIX[day_code]
+                start_val = getattr(self, f"{prefix}_start", None)
+                end_val = getattr(self, f"{prefix}_end", None)
+                if self._is_midnight(start_val) and self._is_midnight(end_val):
+                    hours = str(_("Closed"))
+                else:
+                    hours = _format_card_time_range(fmt(start_val), fmt(end_val))
+            # Merge consecutive days that share the same hours (e.g. Mon – Fri)
+            if groups and groups[-1][2] == hours:
+                groups[-1][1] = day_code
+            else:
+                groups.append([day_code, day_code, hours])
+
+        nbsp = "\u00a0"
+        rows = []
+        for first, last, hours in groups:
+            first_label = str(self.DAY_LABELS[first])
+            if first == last:
+                day = first_label
+            else:
+                day = f"{first_label}{nbsp}\u2013{nbsp}{str(self.DAY_LABELS[last])}"
+            rows.append({"day": day, "hours": hours})
         return rows
 
     def get_card_closed_days_label(self):

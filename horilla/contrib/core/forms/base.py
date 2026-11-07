@@ -15,6 +15,7 @@ from django.contrib.auth.password_validation import validate_password
 from horilla.auth.models import User
 from horilla.contrib.generics.forms import (
     CheckboxGridSelectMultiple,
+    DayQuickFillWidget,
     HorillaModelForm,
     PasswordInputWithEye,
 )
@@ -25,8 +26,10 @@ from horilla.utils.choices import DAY_LABELS, SHORT_TO_DAY_PREFIX, WEEK_ORDER
 from horilla.utils.html import format_html
 from horilla.utils.translation import gettext_lazy as _
 
-# Local / relative imports
 from ..models import BusinessHour, FiscalYear, Holiday
+
+# Local / relative imports
+from .day_time_cards import style_day_time_cards
 
 logger = logging.getLogger(__name__)
 
@@ -418,6 +421,14 @@ class BusinessHourHolidayForm(HorillaModelForm):
 class BusinessHourForm(HorillaModelForm):
     """Form class for BusinessHour model."""
 
+    # UI-only helper (not a model field, never saved): bulk-fills the per-day
+    # start/end inputs shown for "Different hours every day".
+    day_quick_fill = forms.CharField(
+        required=False,
+        label=_("Quick fill"),
+        widget=DayQuickFillWidget(),
+    )
+
     class Meta:
         """Meta options for BusinessHourForm."""
 
@@ -522,52 +533,16 @@ class BusinessHourForm(HorillaModelForm):
             "sunday_end",
         ]
 
-        card_base = (
-            "position: relative; border-top: 1px solid #e5e7eb; "
-            "border-bottom: 1px solid #e5e7eb; padding: 1.15rem 0.75rem 0.75rem;"
-        )
-        start_style = (
-            f"{card_base} border-left: 1px solid #e5e7eb; "
-            "border-top-left-radius: 0.5rem; border-bottom-left-radius: 0.5rem;"
-        )
-        end_style = (
-            f"{card_base} border-right: 1px solid #e5e7eb; "
-            "border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem; "
-            "margin-left: -1rem; width: calc(100% + 1rem);"
-        )
-        legend_style = (
-            "position: absolute; top: -0.55rem; left: 0.6rem; "
-            "padding: 0 0.35rem; background: #fff; "
-            "font-weight: 600; font-size: 0.8rem; color: #111827;"
-        )
-        sublabel_style = (
-            "display: block; font-weight: 400; font-size: 0.75rem; color: #6b7280;"
-        )
+        style_day_time_cards(self.fields)
 
-        for short_code in WEEK_ORDER:
-            day = SHORT_TO_DAY_PREFIX[short_code]
-            day_label = DAY_LABELS[short_code]
-            start_name, end_name = f"{day}_start", f"{day}_end"
-            if start_name in self.fields:
-                self.fields[start_name].label = format_html(
-                    '<span style="{legend_style}">{day}</span>'
-                    '<span style="{sublabel_style}">{start}</span>',
-                    legend_style=legend_style,
-                    day=day_label,
-                    sublabel_style=sublabel_style,
-                    start=_("Start"),
-                )
-                self.fields[start_name].widget.attrs["container_style"] = start_style
-            if end_name in self.fields:
-                self.fields[end_name].label = format_html(
-                    '<span style="{sublabel_style}">{end}</span>',
-                    sublabel_style=sublabel_style,
-                    end=_("End"),
-                )
-                self.fields[end_name].widget.attrs["container_style"] = end_style
+        # Show the quick-fill helper right above the per-day inputs
+        ordered = [n for n in self.fields if n != "day_quick_fill"]
+        ordered.insert(ordered.index("monday_start"), "day_quick_fill")
+        self.order_fields(ordered)
 
+        DAY_UI_FIELDS = DAY_FIELDS + ["day_quick_fill"]
         DEFAULT_FIELDS = ["default_start_time", "default_end_time"]
-        TIMING_FIELDS = DEFAULT_FIELDS + ["timing_type"] + DAY_FIELDS
+        TIMING_FIELDS = DEFAULT_FIELDS + ["timing_type"] + DAY_UI_FIELDS
 
         business_hour_type = initial.get("business_hour_type", "")
         custom_timing_type = initial.get("timing_type", "")
@@ -584,7 +559,7 @@ class BusinessHourForm(HorillaModelForm):
             if custom_timing_type != "same":
                 hide_fields(DEFAULT_FIELDS, nullify=True)
             if custom_timing_type != "different":
-                hide_fields(DAY_FIELDS, nullify=True)
+                hide_fields(DAY_UI_FIELDS, nullify=True)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -658,6 +633,12 @@ class BusinessHourForm(HorillaModelForm):
                     end = cleaned_data.get(f"{full}_end")
                     if start and end:
                         week_days_selected.append(short)
+                    elif start or end:
+                        # A half-filled day would otherwise be silently saved as closed
+                        self.add_error(
+                            f"{full}_end" if start else f"{full}_start",
+                            _("Enter both start and end time, or leave both empty."),
+                        )
 
                 cleaned_data["week_days"] = week_days_selected
 

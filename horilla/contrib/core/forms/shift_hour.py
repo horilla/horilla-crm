@@ -12,12 +12,17 @@ from django import forms
 
 # First-party imports (Horilla)
 from horilla.auth.models import User
-from horilla.contrib.generics.forms import CheckboxGridSelectMultiple, HorillaModelForm
+from horilla.contrib.generics.forms import (
+    CheckboxGridSelectMultiple,
+    DayQuickFillWidget,
+    HorillaModelForm,
+)
 from horilla.utils.choices import DAY_LABELS, SHORT_TO_DAY_PREFIX, WEEK_ORDER
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
 from ..models import ShiftHour
+from .day_time_cards import style_day_time_cards
 
 DAY_ORDER_FULL = tuple(SHORT_TO_DAY_PREFIX[c] for c in WEEK_ORDER)
 
@@ -150,10 +155,12 @@ def reorder_shift_hour_form_fields(form, toggle_params):
         key = "break1_mode" if slot == "break1" else "break2_mode"
         if toggle_params[key] != "different":
             return []
-        return _break_diff_field_names(slot)
+        return [f"{slot}_day_quick_fill"] + _break_diff_field_names(slot)
 
     ordered = []
     for k in block1:
+        if k == "monday_start" and "day_quick_fill" in form.fields:
+            ordered.append("day_quick_fill")
         if k in form.fields:
             ordered.append(k)
     ordered.extend(k for k in diff_keys("break1") if k in form.fields)
@@ -215,6 +222,24 @@ class ShiftHourForm(HorillaModelForm):
     HTMX reloads the whole form when timing_type / break*_mode change; visibility
     and field order are applied in ``__init__``.
     """
+
+    # UI-only helpers (not model fields, never saved): bulk-fill the per-day
+    # start/end inputs for the main hours and for each "different" break.
+    day_quick_fill = forms.CharField(
+        required=False,
+        label=_("Quick fill"),
+        widget=DayQuickFillWidget(),
+    )
+    break1_day_quick_fill = forms.CharField(
+        required=False,
+        label=_("Break 1 quick fill"),
+        widget=DayQuickFillWidget(field_prefix="break1_diff_"),
+    )
+    break2_day_quick_fill = forms.CharField(
+        required=False,
+        label=_("Break 2 quick fill"),
+        widget=DayQuickFillWidget(field_prefix="break2_diff_"),
+    )
 
     field_order = [
         "company",
@@ -312,11 +337,23 @@ class ShiftHourForm(HorillaModelForm):
         load_break_diff_initial(self, instance, toggle_params)
         reorder_shift_hour_form_fields(self, toggle_params)
 
+        # Day-card look (same as Business Hour). These fields are skipped by the
+        # 24h help-text loop below so the hint isn't repeated on every day card.
+        card_styled = style_day_time_cards(self.fields)
+        for slot, abbr in (("break1", _("Break 1")), ("break2", _("Break 2"))):
+            card_styled += style_day_time_cards(
+                self.fields,
+                field_prefix=f"{slot}_diff_",
+                legend_prefix=f"{abbr} \u2013 ",
+            )
+
         if "name" in self.fields:
             self.fields["name"].label = _("Shift name")
         for _fname, field in self.fields.items():
-            if isinstance(field, forms.TimeField) and not isinstance(
-                field.widget, forms.HiddenInput
+            if (
+                isinstance(field, forms.TimeField)
+                and not isinstance(field.widget, forms.HiddenInput)
+                and _fname not in card_styled
             ):
                 field.help_text = _TIME_24H_HELP
 
@@ -381,7 +418,7 @@ class ShiftHourForm(HorillaModelForm):
         if tt != "same":
             hide(defaults, nullify=True)
         if tt != "different":
-            hide(day_fields, nullify=True)
+            hide(day_fields + ["day_quick_fill"], nullify=True)
         if tt == "different":
             hide(["week_days"], nullify=True)
 
@@ -390,11 +427,12 @@ class ShiftHourForm(HorillaModelForm):
             bwd = f"{slot}_week_days"
             bdef = [f"{slot}_default_start", f"{slot}_default_end"]
             diff_names = _break_diff_field_names(slot)
+            qf = f"{slot}_day_quick_fill"
             if bm == "none":
-                hide([bwd] + bdef + diff_names, nullify=True)
+                hide([bwd] + bdef + diff_names + [qf], nullify=True)
                 hide([f"{slot}_per_day"], nullify=True)
             elif bm == "same":
-                hide(diff_names, nullify=True)
+                hide(diff_names + [qf], nullify=True)
                 hide([f"{slot}_per_day"], nullify=True)
             else:
                 hide(bdef, nullify=True)

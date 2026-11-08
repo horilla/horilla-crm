@@ -98,7 +98,7 @@ class HorillaCRMService(win32serviceutil.ServiceFramework):
         appdata = os.environ.get("APPDATA", os.path.expanduser("~"))
         config_file = Path(appdata) / "Horilla-CRM" / "config" / "horilla-crm.conf"
         if config_file.exists():
-            with open(config_file, "r") as f:
+            with open(config_file, "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line and not line.startswith("#") and "=" in line:

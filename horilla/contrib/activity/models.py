@@ -35,7 +35,7 @@ class Activity(HorillaCoreModel):
         ("event", _("Event")),
         ("meeting", _("Meeting")),
         ("task", _("Task")),
-        ("log_call", _("Log Call")),
+        ("log_call", _("Call")),
     ]
     STATUS_CHOICES = [
         ("not_started", _("Not Started")),

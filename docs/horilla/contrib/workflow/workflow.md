@@ -9,6 +9,16 @@
 
 **Owner resolution for `assign_task` actions** tries common owner FK names in order: `owner`, `assigned_to`, `created_by`, then `lead_owner` for legacy CRM models.
 
+**Due date of `assign_task` actions** is `due_in_days` after the `due_basis` chosen in the action form, for immediate and time-trigger actions alike (`TASK_DUE_BASIS_FIELDS` in `methods.py`):
+
+| `due_basis` | Counts from |
+|-------------|-------------|
+| `record_submission_date` (**Record submission date**, the form's default) | the record's `created_at` |
+| `record_update_date` (**Record update date**) | the record's `updated_at` |
+| `rule_trigger_date`, or no `due_basis` (configs saved before the form had this select) | the moment the action runs |
+
+A record without that field, or with no value in it, counts from the moment the action runs. A plain `date` is taken as midnight of that day.
+
 ---
 
 ## Actions and delivery channels

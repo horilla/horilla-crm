@@ -16,10 +16,19 @@ import environ
 from django.core.cache import cache
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.test import SimpleTestCase, TestCase
+from django.test import RequestFactory, SimpleTestCase, TestCase
+from django.utils import translation
 
 # First-party / Horilla imports
+from horilla.auth.models import User
+from horilla.contrib.core.forms.company import (
+    CompanyFormClassSingle,
+    CompanyMultistepFormClass,
+)
+from horilla.contrib.core.forms.users import UserFormClass, UserFormSingle
 from horilla.contrib.core.management.commands import wait_for_db
+from horilla.contrib.core.models import Company
+from horilla.contrib.utils.middlewares import _thread_local
 
 
 class WaitTargetTests(SimpleTestCase):
@@ -180,3 +189,41 @@ class LoginLogoutPageDefaultsTests(TestCase):
         """Logging out still refreshes to /login."""
         response = self.client.get("/logout/")
         self.assertContains(response, 'content="0;url=/login"')
+
+
+class StateLabelTests(TestCase):
+    """The company and user forms swap state for a subdivision select; it keeps
+    the model's "State/Province" label instead of Django's "State" fallback."""
+
+    def setUp(self):
+        company = Company.objects.create(
+            name="Acme", email="acme@example.com", country="US"
+        )
+        user = User.objects.create_superuser(
+            username="admin",
+            email="admin@example.com",
+            password="pass",
+            company=company,
+        )
+        self.request = RequestFactory().get("/")
+        self.request.user = user
+        _thread_local.request = self.request
+        self.addCleanup(delattr, _thread_local, "request")
+
+    def test_state_label_comes_from_the_model(self):
+        """The label is the model's verbose_name and follows the active language."""
+        for form_class in (
+            CompanyMultistepFormClass,
+            CompanyFormClassSingle,
+            UserFormClass,
+            UserFormSingle,
+        ):
+            with self.subTest(form=form_class.__name__):
+                verbose_name = form_class._meta.model._meta.get_field(
+                    "state"
+                ).verbose_name
+                label = form_class(request=self.request).fields["state"].label
+                self.assertEqual(label, verbose_name)
+                self.assertEqual(str(label), "State/Province")
+                with translation.override("fa"):
+                    self.assertEqual(str(label), "استان")

@@ -9,6 +9,7 @@ the tests see mail, notification and their own fakes only.
 """
 
 import re
+from datetime import timedelta
 from unittest import mock
 
 from django.contrib.auth.signals import user_logged_in
@@ -36,6 +37,7 @@ from horilla.registry.delivery import (
 )
 from horilla.registry.feature import FEATURE_REGISTRY
 from horilla.urls import reverse
+from horilla.utils import timezone
 
 from . import methods, signals
 from .action_types import (
@@ -590,6 +592,85 @@ class TimeTriggerRecheckTests(WorkflowTestCase):
         with mock.patch.object(execute_workflow_time_trigger, "delay") as delay:
             process_scheduled_workflow_executions()
         delay.assert_called_once_with(pending.pk)
+
+
+class AssignTaskDueBasisTests(WorkflowTestCase):
+    """assign_task counts the due date from the basis the action form saved."""
+
+    def setUp(self):
+        super().setUp()
+        self.record = Activity.objects.create(
+            subject="Call", activity_type="task", **self.common
+        )
+        now = timezone.now()
+        self.created_at = now - timedelta(days=30)
+        self.updated_at = now - timedelta(days=10)
+        # update() writes the values as given; save() would apply auto_now.
+        Activity.objects.filter(pk=self.record.pk).update(
+            created_at=self.created_at, updated_at=self.updated_at
+        )
+        self.record.refresh_from_db()
+
+    def task_config(self, **config):
+        return {"title": "Follow up", "due_in_days": "3", **config}
+
+    def run_task(self, instance, **config):
+        """Run an assign_task action on ``instance`` and return the task it made."""
+        action = self.action("assign_task", self.task_config(**config))
+        self.assertTrue(execute_action(action, instance, self.user))
+        return Activity.objects.get(subject="Follow up")
+
+    def test_record_submission_date_counts_from_created_at(self):
+        task = self.run_task(self.record, due_basis="record_submission_date")
+        self.assertEqual(task.due_datetime, self.created_at + timedelta(days=3))
+
+    def test_record_update_date_counts_from_updated_at(self):
+        task = self.run_task(self.record, due_basis="record_update_date")
+        self.assertEqual(task.due_datetime, self.updated_at + timedelta(days=3))
+
+    def test_rule_trigger_date_or_no_basis_counts_from_now(self):
+        """Configs saved before the form offered the record dates keep working."""
+        for config in ({"due_basis": "rule_trigger_date"}, {}):
+            with self.subTest(config=config):
+                Activity.objects.filter(subject="Follow up").delete()
+                before = timezone.now()
+                task = self.run_task(self.record, **config)
+                after = timezone.now()
+                self.assertGreaterEqual(task.due_datetime, before + timedelta(days=3))
+                self.assertLessEqual(task.due_datetime, after + timedelta(days=3))
+
+    def test_record_without_the_date_counts_from_now(self):
+        """An unsaved record has no created_at / updated_at yet."""
+        for basis in ("record_submission_date", "record_update_date"):
+            with self.subTest(basis=basis):
+                Activity.objects.filter(subject="Follow up").delete()
+                before = timezone.now()
+                task = self.run_task(self.instance, due_basis=basis)
+                after = timezone.now()
+                self.assertGreaterEqual(task.due_datetime, before + timedelta(days=3))
+                self.assertLessEqual(task.due_datetime, after + timedelta(days=3))
+
+    def test_time_trigger_counts_from_the_record_date(self):
+        """A time trigger runs the same executor on the record it reloads."""
+        trigger = self.action(
+            "assign_task",
+            self.task_config(due_basis="record_update_date"),
+            model=WorkflowTimeTriggerAction,
+            delay_value=1,
+            delay_unit="days",
+            trigger_date_field="rule_trigger_date",
+        )
+        execution = ScheduledWorkflowExecution.objects.create(
+            time_trigger=trigger,
+            object_id=self.record.pk,
+            scheduled_at=timezone.now(),
+            **self.common,
+        )
+        execute_workflow_time_trigger(execution.pk)
+        execution.refresh_from_db()
+        self.assertEqual(execution.status, ScheduledWorkflowExecution.STATUS_COMPLETED)
+        task = Activity.objects.get(subject="Follow up")
+        self.assertEqual(task.due_datetime, self.updated_at + timedelta(days=3))
 
 
 class FormTests(WorkflowTestCase):

@@ -59,6 +59,10 @@ PHONE_PUNCTUATION = frozenset("+-(). ")
 #: notification (20).
 DEFAULT_ORDER = 100
 
+#: Models whose addresses are never offered behind a relation: the company a
+#: record belongs to is the tenant, not someone to send the record's message to.
+SKIPPED_RELATED_MODELS = frozenset({"core.company"})
+
 _channels = {}
 
 
@@ -94,7 +98,10 @@ class DeliveryChannel(abc.ABC):
 
         ``"self"`` (the user who triggered the automation), the model's
         foreign keys to users, and its fields that hold an address of
-        ``address_kind``, as ``("instance.<field>", label)``.
+        ``address_kind``, as ``("instance.<field>", label)``. For an email or
+        phone channel, then the address fields one relation away, as
+        ``("instance.<relation>.<field>", "<Relation> - <Field>")``: an
+        opportunity's account phone, a contact's parent contact email.
         """
         choices = [("self", _("Self (User who triggered)"))]
         if model is None:
@@ -108,11 +115,39 @@ class DeliveryChannel(abc.ABC):
                     continue
             elif not self.is_address_field(field):
                 continue
-            label = (
-                getattr(field, "verbose_name", None)
-                or field.name.replace("_", " ").title()
-            )
-            choices.append((f"instance.{field.name}", label))
+            choices.append((f"instance.{field.name}", _field_label(field)))
+        choices.extend(self.get_related_recipient_choices(model))
+        return choices
+
+    def get_related_recipient_choices(self, model):
+        """
+        The ``address_kind`` fields of the records ``model`` points to.
+
+        One forward foreign key or one-to-one away, to any model but a user
+        (its address is reached through the user itself) or a company. None for
+        a ``"user"`` channel: an address field there is not a user.
+        """
+        if self.address_kind == ADDRESS_USER:
+            return []
+        choices = []
+        for relation in model._meta.get_fields():
+            # A one-to-one is a ForeignKey too; reverse relations are not.
+            if not isinstance(relation, models.ForeignKey):
+                continue
+            related = relation.related_model
+            if not isinstance(related, type) or issubclass(related, User):
+                continue
+            if related._meta.label_lower in SKIPPED_RELATED_MODELS:
+                continue
+            for field in related._meta.get_fields():
+                if not self.is_address_field(field):
+                    continue
+                choices.append(
+                    (
+                        f"instance.{relation.name}.{field.name}",
+                        f"{_field_label(relation)} - {_field_label(field)}",
+                    )
+                )
         return choices
 
     def is_address_field(self, field):
@@ -217,6 +252,11 @@ class DeliveryChannel(abc.ABC):
         Must not block: ``execute_automation()`` runs inside ``post_save``.
         Hand slow work (a provider call) to a thread or a task.
         """
+
+
+def _field_label(field):
+    """A field's verbose name, or its name written as words."""
+    return getattr(field, "verbose_name", None) or field.name.replace("_", " ").title()
 
 
 def is_phone_number(value):

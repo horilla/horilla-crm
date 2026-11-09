@@ -933,11 +933,15 @@ def execute_workflow_rule(rule, instance, user, trigger_type, met_before=None):
 
     trigger_type is "on_create" or "on_update". ``met_before`` maps rule pks
     to whether the record met the rule's criteria before this save (see
-    ``criteria_met_before_save``); an update does not run a rule with
-    ``only_when_criteria_become_true`` whose criteria were already met, and
-    an update that takes the record out of such a rule's criteria skips the
-    rule's pending time triggers for it.
+    ``criteria_met_before_save``). An update runs a rule only when the record
+    enters its criteria: not when they were already met before the save. An
+    update that takes the record out of the criteria skips the rule's pending
+    time triggers for it. A rule missing from ``met_before`` (one without
+    criteria, or with no stored before-state) runs on every matching update.
     """
+    met_before_save = trigger_type == "on_update" and bool(
+        (met_before or {}).get(rule.pk)
+    )
     # Check trigger flags
     if trigger_type == "on_create" and not rule.trigger_on_create:
         return
@@ -946,11 +950,7 @@ def execute_workflow_rule(rule, instance, user, trigger_type, met_before=None):
 
     # Evaluate entry criteria
     if not evaluate_workflow_conditions(rule, instance):
-        if (
-            trigger_type == "on_update"
-            and rule.only_when_criteria_become_true
-            and (met_before or {}).get(rule.pk)
-        ):
+        if met_before_save:
             skip_pending_time_triggers(
                 rule,
                 instance,
@@ -964,11 +964,7 @@ def execute_workflow_rule(rule, instance, user, trigger_type, met_before=None):
         )
         return
 
-    if (
-        trigger_type == "on_update"
-        and rule.only_when_criteria_become_true
-        and (met_before or {}).get(rule.pk)
-    ):
+    if met_before_save:
         logger.debug(
             "Workflow rule '%s' criteria already met before this edit of %s pk=%s",
             rule.name,
@@ -1113,14 +1109,15 @@ def active_workflow_rules(instance):
 def criteria_met_before_save(instance):
     """
     For an existing record about to be saved: ``{rule pk: bool}``, whether the
-    stored copy meets the criteria of each active rule that runs on edit only
-    when its criteria become true. Empty (and no record read) when there is no
-    such rule.
+    stored copy meets the criteria of each active rule that runs on edit and
+    has criteria. Empty (and no record read) when there is no such rule. A
+    rule without criteria is left out: a record cannot enter criteria that do
+    not exist, so such a rule runs on every edit.
     """
     rules = list(
-        active_workflow_rules(instance).filter(
-            trigger_on_edit=True, only_when_criteria_become_true=True
-        )
+        active_workflow_rules(instance)
+        .filter(trigger_on_edit=True, conditions__isnull=False)
+        .distinct()
     )
     if not rules:
         return {}

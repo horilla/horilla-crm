@@ -48,15 +48,6 @@ class WorkflowRule(HorillaCoreModel):
         verbose_name=_("When Record Is Edited"),
         help_text=_("Run this workflow when an existing record is edited."),
     )
-    only_when_criteria_become_true = models.BooleanField(
-        default=False,
-        verbose_name=_("Only When the Criteria Become True"),
-        help_text=_(
-            "When a record is edited, run this workflow only if the record did "
-            "not meet the criteria before the edit and meets them after it. "
-            "Further edits that keep it matching do not run it again."
-        ),
-    )
 
     class Meta:
         """Meta options for WorkflowRule model"""
@@ -91,16 +82,11 @@ class WorkflowRule(HorillaCoreModel):
     def get_execute_display(self) -> str:
         """Human-readable 'Execute on'"""
         c, e = self.trigger_on_create, self.trigger_on_edit
-        newly = self.only_when_criteria_become_true
         if c and e:
-            if newly:
-                return str(_("Create, and Edit when criteria become true"))
             return str(_("Create and Edit"))
         if c:
             return str(_("Create only"))
         if e:
-            if newly:
-                return str(_("Edit when criteria become true"))
             return str(_("Edit only"))
         return str(_("Not set"))
 

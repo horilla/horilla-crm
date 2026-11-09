@@ -139,7 +139,6 @@ No classes.
 | `description` | `TextField(blank=True)` |
 | `trigger_on_create` | `BooleanField(default=True)` |
 | `trigger_on_edit` | `BooleanField(default=False)` |
-| `only_when_criteria_become_true` | `BooleanField(default=False)`; on edit, run only when the criteria were not met before the save |
 
 `Meta`: `verbose_name` Workflow Rule, `verbose_name_plural` Workflow Rules, `ordering = ["-created_at"]`.
 
@@ -278,7 +277,7 @@ Maps a stored `action_config` back onto hidden field names.
 
 | Attribute | Value |
 | --- | --- |
-| `field_order` | `name`, `model`, `description`, `trigger_on_create`, `trigger_on_edit`, `only_when_criteria_become_true`, `is_active` |
+| `field_order` | `name`, `model`, `description`, `trigger_on_create`, `trigger_on_edit`, `is_active` |
 | `Meta.model` | `WorkflowRule` |
 | `Meta.fields` | `"__all__"` |
 | `Meta.keep_on_form` | `("is_active",)` |
@@ -343,7 +342,7 @@ Widgets: `rule`, `order`, `action_type` hidden. `delay_value` is `NumberInput` (
 | `_also_send_to_users(raw) -> list` | Comma-separated user primary keys → `User` queryset results. |
 | `_execute_channel(action, channel, instance, user)` | Loads the template. Resolves `action_config["to"]` with `channel.resolve_recipients`, adds `_also_send_to_users`. Builds `ChannelActionMessage` and calls `channel.send(message, instance, recipients, context, user)`. Empty template or recipients: warning, no send. |
 | `execute_action(action, instance, user) -> bool` | Built-in: run `BUILTIN_EXECUTORS[action_type]`, return `True`. Else `get_action_channel`. `None`: log error, return `False`. Else `_execute_channel`, return `True`. |
-| `execute_workflow_rule(rule, instance, user, trigger_type, met_before=None)` | Returns immediately when `trigger_type` is `"on_create"` and `trigger_on_create` is false, or `"on_update"` and `trigger_on_edit` is false. Returns when `evaluate_workflow_conditions` is false, and on `"on_update"` when `only_when_criteria_become_true` is on and `met_before` says the criteria were already met before the save (see [workflow.md](workflow.md#running-on-edit-only-when-the-criteria-become-true)). Runs `rule.actions.filter(is_active=True)` ordered by `order`, `created_at`. One action exception is logged; the loop continues. Then `_schedule_time_triggers`. |
+| `execute_workflow_rule(rule, instance, user, trigger_type, met_before=None)` | Returns immediately when `trigger_type` is `"on_create"` and `trigger_on_create` is false, or `"on_update"` and `trigger_on_edit` is false. Returns when `evaluate_workflow_conditions` is false, and on `"on_update"` when `met_before` says the criteria were already met before the save; an update out of the criteria first marks the rule's pending time triggers for the record skipped (see [workflow.md](workflow.md#edits-run-a-rule-when-the-record-enters-its-criteria)). Runs `rule.actions.filter(is_active=True)` ordered by `order`, `created_at`. One action exception is logged; the loop continues. Then `_schedule_time_triggers`. |
 | `_schedule_time_triggers(rule, instance)` | Active `time_trigger_actions`. Base datetime is `timezone.now()` when `trigger_date_field == "rule_trigger_date"`, else `getattr(instance, trigger_date_field)`. `None` base skips that trigger. A `date` is combined with `datetime.min.time()` and made aware. Delta is `timedelta(**{delay_unit: delay_value})`, added or subtracted by `delay_direction`. Inserts `ScheduledWorkflowExecution(time_trigger, object_id=instance.pk, scheduled_at=fire_at, company=instance.company)`. A past `fire_at` is still inserted. |
 | `trigger_workflow_rules(instance, trigger_type="on_create", user=None)` | Content type of `instance`. Company is `instance.company`, else `request.active_company` from thread-local. Filters `WorkflowRule` by content type, `is_active=True`, and company when known. Prefetches `conditions` and `actions`. Calls `execute_workflow_rule` per rule. Exceptions are logged per rule and around the whole function. |
 

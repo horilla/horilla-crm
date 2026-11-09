@@ -29,7 +29,6 @@ class WorkflowRuleForm(HorillaModelForm):
         "description",
         "trigger_on_create",
         "trigger_on_edit",
-        "only_when_criteria_become_true",
         "is_active",
     ]
 

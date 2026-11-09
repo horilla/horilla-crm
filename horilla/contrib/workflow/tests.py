@@ -908,47 +908,51 @@ class ViewTests(WorkflowTestCase):
         self.assertContains(response, "The time trigger is inactive.")
 
 
-class CriteriaBecomeTrueTests(WorkflowTestCase):
+class EditEntersCriteriaTests(WorkflowTestCase):
     """
     A rule on departments with the criteria "description is Open", run on
-    create and edit, saved through the real pre_save / post_save signals.
+    create and edit, saved through the real pre_save / post_save signals: an
+    edit runs it only when the record enters the criteria.
     """
 
     def setUp(self):
         super().setUp()
-        self.rule = WorkflowRule.objects.create(
-            name="Department opened",
+        self.rule = self.department_rule("Department opened", description="Open")
+        patcher = mock.patch.object(methods, "execute_action")
+        self.execute = patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def department_rule(self, name, logical_operator="and", **criteria):
+        """An edit and create rule with ``criteria``, an action and a time trigger."""
+        rule = WorkflowRule.objects.create(
+            name=name,
             model=HorillaContentType.objects.get_for_model(Department),
             trigger_on_create=True,
             trigger_on_edit=True,
             **self.common,
         )
-        WorkflowCondition.objects.create(
-            rule=self.rule,
-            field="description",
-            operator="exact",
-            value="Open",
-            order=1,
-            **self.common,
-        )
-        self.action("notification", {"to": "self"})
+        for order, (field, value) in enumerate(criteria.items(), start=1):
+            WorkflowCondition.objects.create(
+                rule=rule,
+                field=field,
+                operator="exact",
+                value=value,
+                logical_operator=logical_operator,
+                order=order,
+                **self.common,
+            )
+        self.action("notification", {"to": "self"}, rule=rule)
         self.action(
             "notification",
             {"to": "self"},
             model=WorkflowTimeTriggerAction,
+            rule=rule,
             delay_value=1,
             delay_unit="days",
             delay_direction="after",
             trigger_date_field="rule_trigger_date",
         )
-        patcher = mock.patch.object(methods, "execute_action")
-        self.execute = patcher.start()
-        self.addCleanup(patcher.stop)
-
-    def set_option(self, value):
-        """Turn ``only_when_criteria_become_true`` on or off for the rule."""
-        self.rule.only_when_criteria_become_true = value
-        self.rule.save()
+        return rule
 
     def department(self, description, name="Support"):
         """A department saved (created) with ``description``."""
@@ -965,28 +969,28 @@ class CriteriaBecomeTrueTests(WorkflowTestCase):
             setattr(department, name, value)
         department.save()
 
-    def assert_runs(self, count):
-        """The rule ran ``count`` times: its action and its time trigger."""
-        self.assertEqual(self.execute.call_count, count)
-        self.assertEqual(
-            ScheduledWorkflowExecution.objects.filter(
-                time_trigger__rule=self.rule
-            ).count(),
-            count,
+    def executions(self, rule=None, **filters):
+        return ScheduledWorkflowExecution.objects.filter(
+            time_trigger__rule=rule or self.rule, **filters
         )
 
-    def test_option_off_runs_on_every_matching_save(self):
+    def pending(self, rule=None):
+        """The rule's executions still waiting to fire."""
+        return self.executions(rule, status=ScheduledWorkflowExecution.STATUS_PENDING)
+
+    def assert_runs(self, count, rule=None):
+        """The rule ran ``count`` times: its action and its time trigger."""
+        self.assertEqual(self.executions(rule).count(), count)
+
+    def test_create_runs_and_later_matching_edits_do_not(self):
         department = self.department("Open")
         self.assert_runs(1)
         self.save(department, department_name="Help desk")
-        self.assert_runs(2)
         self.save(department, department_name="Service desk")
-        self.assert_runs(3)
-        self.save(department, description="Closed")
-        self.assert_runs(3)
+        self.assert_runs(1)
+        self.assertEqual(self.execute.call_count, 1)
 
-    def test_option_on_runs_once_when_the_criteria_become_true(self):
-        self.set_option(True)
+    def test_edit_into_the_criteria_runs_once(self):
         department = self.department("Closed")
         self.assert_runs(0)
         self.save(department, description="Open")
@@ -994,9 +998,9 @@ class CriteriaBecomeTrueTests(WorkflowTestCase):
         self.save(department, department_name="Help desk")
         self.save(department, department_name="Service desk")
         self.assert_runs(1)
+        self.assertEqual(self.execute.call_count, 1)
 
-    def test_option_on_runs_again_after_leaving_and_reentering(self):
-        self.set_option(True)
+    def test_runs_again_after_leaving_and_reentering(self):
         department = self.department("Closed")
         self.save(department, description="Open")
         self.save(department, description="Closed")
@@ -1004,35 +1008,13 @@ class CriteriaBecomeTrueTests(WorkflowTestCase):
         self.save(department, description="Open")
         self.assert_runs(2)
 
-    def test_option_on_still_runs_on_create(self):
-        self.set_option(True)
-        department = self.department("Open")
-        self.assert_runs(1)
-        self.save(department, department_name="Help desk")
-        self.assert_runs(1)
-
-    def test_stored_record_is_read_only_for_rules_with_the_option(self):
-        department = self.department("Open")
-        with self.assertNumQueries(1):
-            self.assertEqual(criteria_met_before_save(department), {})
-        self.set_option(True)
-        self.assertEqual(criteria_met_before_save(department), {self.rule.pk: True})
-
-    def pending(self):
-        """The rule's executions still waiting to fire."""
-        return ScheduledWorkflowExecution.objects.filter(
-            time_trigger__rule=self.rule,
-            status=ScheduledWorkflowExecution.STATUS_PENDING,
-        )
-
-    def test_option_on_leaving_the_criteria_skips_pending_time_triggers(self):
-        self.set_option(True)
+    def test_leaving_the_criteria_skips_pending_time_triggers(self):
         department = self.department("Closed")
         self.save(department, description="Open")
         self.assertEqual(self.pending().count(), 1)
         self.save(department, description="Closed")
         self.assertFalse(self.pending().exists())
-        skipped = ScheduledWorkflowExecution.objects.get(time_trigger__rule=self.rule)
+        skipped = self.executions().get()
         self.assertEqual(skipped.status, ScheduledWorkflowExecution.STATUS_SKIPPED)
         self.assertEqual(
             skipped.error_message,
@@ -1044,8 +1026,7 @@ class CriteriaBecomeTrueTests(WorkflowTestCase):
         self.assertEqual(self.pending().count(), 1)
         self.assertEqual(self.execute.call_count, 2)
 
-    def test_option_on_leaving_skips_only_that_record_and_rule(self):
-        self.set_option(True)
+    def test_leaving_skips_only_that_record_and_rule(self):
         other_rule = WorkflowRule.objects.create(
             name="Any department",
             model=HorillaContentType.objects.get_for_model(Department),
@@ -1070,15 +1051,36 @@ class CriteriaBecomeTrueTests(WorkflowTestCase):
         self.assertEqual(
             list(self.pending().values_list("object_id", flat=True)), [staying.pk]
         )
-        self.assertEqual(
-            ScheduledWorkflowExecution.objects.filter(
-                time_trigger__rule=other_rule,
-                status=ScheduledWorkflowExecution.STATUS_PENDING,
-            ).count(),
-            2,
-        )
+        self.assertEqual(self.pending(other_rule).count(), 2)
 
-    def test_option_off_leaving_keeps_the_execution_until_it_is_due(self):
+    def test_each_rule_is_decided_on_its_own_criteria(self):
+        sales = self.department_rule("Sales department", department_name="Sales")
+        department = self.department("Closed")
+        self.save(department, description="Open")
+        self.assert_runs(1)
+        self.assert_runs(0, sales)
+        self.save(department, department_name="Sales")
+        self.assert_runs(1)
+        self.assert_runs(1, sales)
+
+    def test_or_criteria_still_met_through_another_condition(self):
+        rule = self.department_rule(
+            "Open or sales",
+            logical_operator="or",
+            description="Open",
+            department_name="Sales",
+        )
+        department = self.department("Closed")
+        self.save(department, description="Open")
+        self.assert_runs(1, rule)
+        # Now met through both conditions, then through the name alone.
+        self.save(department, department_name="Sales")
+        self.save(department, description="Closed")
+        self.assert_runs(1, rule)
+        self.assertEqual(self.pending(rule).count(), 1)
+
+    def test_create_only_rule_keeps_the_execution_until_it_is_due(self):
+        WorkflowRule.objects.filter(pk=self.rule.pk).update(trigger_on_edit=False)
         department = self.department("Open")
         self.save(department, description="Closed")
         execution = self.pending().get()
@@ -1089,36 +1091,68 @@ class CriteriaBecomeTrueTests(WorkflowTestCase):
             execution.error_message,
             "The record no longer meets the workflow rule's criteria.",
         )
-        self.assertEqual(self.execute.call_count, 1)
 
-    def test_option_on_without_criteria_runs_on_create_only(self):
-        self.rule.conditions.all().delete()
-        self.set_option(True)
-        department = self.department("Closed")
-        self.assert_runs(1)
-        self.save(department, description="Open")
-        self.save(department, department_name="Help desk")
-        self.assert_runs(1)
-
-    def test_option_without_when_record_is_edited_does_nothing_on_edit(self):
-        self.rule.trigger_on_edit = False
-        self.set_option(True)
+    def test_create_only_rule_reads_nothing_on_edit(self):
+        WorkflowRule.objects.filter(pk=self.rule.pk).update(trigger_on_edit=False)
         department = self.department("Closed")
         with self.assertNumQueries(1):
             self.assertEqual(criteria_met_before_save(department), {})
         self.save(department, description="Open")
         self.assert_runs(0)
 
-    def test_rules_of_another_company_are_not_read(self):
-        other = Company.objects.create(name="Other Co")
-        WorkflowRule.objects.filter(pk=self.rule.pk).update(
-            company=other, only_when_criteria_become_true=True
-        )
+    def test_edit_rule_without_criteria_runs_on_every_edit(self):
+        """A record cannot enter criteria that do not exist."""
+        self.rule.conditions.all().delete()
+        department = self.department("Closed")
+        self.assert_runs(1)
+        with self.assertNumQueries(1):
+            self.assertEqual(criteria_met_before_save(department), {})
+        self.save(department, description="Open")
+        self.save(department, department_name="Help desk")
+        self.assert_runs(3)
+
+    def test_stored_record_is_read_for_an_edit_rule_with_criteria(self):
         department = self.department("Open")
+        self.assertEqual(criteria_met_before_save(department), {self.rule.pk: True})
+        Department.objects.filter(pk=department.pk).update(description="Closed")
+        self.assertEqual(criteria_met_before_save(department), {self.rule.pk: False})
+
+    def test_inactive_rules_and_rules_of_another_company_are_not_read(self):
+        department = self.department("Open")
+        WorkflowRule.objects.filter(pk=self.rule.pk).update(is_active=False)
+        with self.assertNumQueries(1):
+            self.assertEqual(criteria_met_before_save(department), {})
+        other = Company.objects.create(name="Other Co")
+        WorkflowRule.all_objects.filter(pk=self.rule.pk).update(
+            is_active=True, company=other
+        )
         self.assertEqual(criteria_met_before_save(department), {})
 
+    def test_record_missing_from_the_database_counts_as_not_met_before(self):
+        department = self.department("Open")
+        Department.objects.filter(pk=department.pk).delete()
+        self.assertEqual(criteria_met_before_save(department), {})
+
+    def test_no_before_state_runs_as_entering_the_criteria(self):
+        """A rule turned on between pre_save and post_save, or a failed pre_save."""
+        department = self.department("Open")
+        self.execute.reset_mock()
+        execute_workflow_rule(self.rule, department, self.user, "on_update")
+        self.assertEqual(self.execute.call_count, 1)
+        execute_workflow_rule(
+            self.rule, department, self.user, "on_update", met_before={}
+        )
+        self.assertEqual(self.execute.call_count, 2)
+        execute_workflow_rule(
+            self.rule,
+            department,
+            self.user,
+            "on_update",
+            met_before={self.rule.pk: True},
+        )
+        self.assertEqual(self.execute.call_count, 2)
+
     def test_new_raw_and_unregistered_saves_read_nothing(self):
-        self.set_option(True)
         department = self.department("Open")
         self.assertNotIn(WorkflowRule, FEATURE_REGISTRY.get("workflow_models", []))
         with self.assertNumQueries(0):
@@ -1136,7 +1170,6 @@ class CriteriaBecomeTrueTests(WorkflowTestCase):
         self.assertNotIn(signals._MET_BEFORE_ATTR, department.__dict__)
 
     def test_a_save_made_by_a_workflow_action_reads_nothing(self):
-        self.set_option(True)
         department = self.department("Open")
         previous = getattr(_thread_local, "_workflow_executing", None)
         _thread_local._workflow_executing = {(Department, department.pk)}
@@ -1148,7 +1181,6 @@ class CriteriaBecomeTrueTests(WorkflowTestCase):
         self.assertNotIn(signals._MET_BEFORE_ATTR, department.__dict__)
 
     def test_state_left_by_an_earlier_save_is_not_reused(self):
-        self.set_option(True)
         department = self.department("Closed")
         # As left by a save that raised between pre_save and post_save.
         department.__dict__[signals._MET_BEFORE_ATTR] = {self.rule.pk: True}

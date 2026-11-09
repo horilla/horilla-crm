@@ -495,15 +495,3 @@ msgstr "رد شده"
 
 msgid "Details"
 msgstr "جزئیات"
-
-msgid "Only When the Criteria Become True"
-msgstr "فقط وقتی معیارها برقرار شوند"
-
-msgid "When a record is edited, run this workflow only if the record did not meet the criteria before the edit and meets them after it. Further edits that keep it matching do not run it again."
-msgstr "هنگام ویرایش رکورد، این گردش کار فقط زمانی اجرا شود که رکورد پیش از ویرایش با معیارها مطابقت نداشته و پس از آن مطابقت داشته باشد. ویرایش‌های بعدی که رکورد را همچنان مطابق نگه می‌دارند، آن را دوباره اجرا نمی‌کنند."
-
-msgid "Create, and Edit when criteria become true"
-msgstr "ایجاد، و ویرایش وقتی معیارها برقرار شوند"
-
-msgid "Edit when criteria become true"
-msgstr "ویرایش وقتی معیارها برقرار شوند"

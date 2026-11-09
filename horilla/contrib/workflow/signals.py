@@ -3,8 +3,8 @@ Signals for the workflow app.
 
 Listens to post_save on every model registered under the "workflow_models"
 feature key and fires matching active WorkflowRules. A pre_save receiver
-records whether an edited record met the criteria before the save, for rules
-that run on edit only when their criteria become true.
+records whether an edited record met the criteria before the save, so a rule
+that runs on edit runs only when the record enters its criteria.
 """
 
 # Standard library imports
@@ -54,7 +54,7 @@ def _is_workflow_save(sender, instance):
 def remember_workflow_criteria_before_save(sender, instance, raw=False, **kwargs):
     """
     Before an existing registered record is saved, record whether its stored
-    copy meets the criteria of the rules with ``only_when_criteria_become_true``.
+    copy meets the criteria of each active edit rule that has criteria.
 
     Costs one rule query per edit of a registered model; the stored record is
     read and the criteria evaluated only when such a rule exists.
@@ -89,8 +89,8 @@ def trigger_workflow_rules_on_save(sender, instance, created, **kwargs):
     A thread-local re-entrancy guard prevents the update_field action's own
     save() call from re-triggering workflow rules on the same instance.
 
-    On an update, rules with ``only_when_criteria_become_true`` run only when
-    the pre_save receiver found their criteria not met before the save.
+    On an update, a rule with criteria runs only when the pre_save receiver
+    found them not met before the save (the record enters the criteria).
     """
     met_before = instance.__dict__.pop(_MET_BEFORE_ATTR, None)
     if not _is_workflow_save(sender, instance):

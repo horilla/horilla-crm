@@ -83,6 +83,7 @@ class ContactFormClass(OwnerQuerysetMixin, HorillaMultiStepForm):
         )
         self.fields["address_state"] = forms.ChoiceField(
             choices=[],
+            label=self._meta.model._meta.get_field("address_state").verbose_name,
             required=False,
             widget=forms.Select(
                 attrs={"id": "id_state", "class": "js-example-basic-single headselect"}
@@ -162,6 +163,7 @@ class ContactSingleForm(OwnerQuerysetMixin, HorillaModelForm):
         )
         self.fields["address_state"] = forms.ChoiceField(
             choices=[],
+            label=self._meta.model._meta.get_field("address_state").verbose_name,
             required=False,
             widget=forms.Select(
                 attrs={"id": "id_state", "class": "js-example-basic-single headselect"}

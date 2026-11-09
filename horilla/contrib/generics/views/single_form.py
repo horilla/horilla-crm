@@ -13,7 +13,7 @@ from urllib.parse import urlencode
 # Third-party imports (Django)
 from django import forms
 from django.contrib import messages
-from django.core.exceptions import ValidationError
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.db import IntegrityError, transaction
 
 from horilla.contrib.utils.middlewares import _thread_local
@@ -835,8 +835,32 @@ class HorillaSingleFormView(FormViewCommonMixin, FormView):
             # these already carry a precise, user-facing reason, so show it
             # instead of folding it into the generic "contact support"
             # message below.
-            for message in e.messages:
-                form.add_error(None, message)
+            if hasattr(e, "error_dict"):
+                # Model validation (full_clean in save) names the field at
+                # fault: show it under that field when the form displays it,
+                # else as a non-field error prefixed with the field's label.
+                for field_name, errors in e.error_dict.items():
+                    msg_error = [m for err in errors for m in err.messages]
+                    form_field = form.fields.get(field_name)
+                    if form_field is not None and not form_field.widget.is_hidden:
+                        for message in msg_error:
+                            form.add_error(field_name, message)
+                        continue
+                    label = None
+                    if form_field is not None:
+                        label = form_field.label
+                    elif field_name != NON_FIELD_ERRORS:
+                        try:
+                            label = self.model._meta.get_field(field_name).verbose_name
+                        except Exception:  # pylint: disable=broad-except
+                            label = field_name
+                    for message in msg_error:
+                        form.add_error(
+                            None, f"{label}: {message}" if label else message
+                        )
+            else:
+                for message in e.messages:
+                    form.add_error(None, message)
             return self.form_invalid(form)
 
         except Exception as e:

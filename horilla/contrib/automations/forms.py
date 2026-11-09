@@ -142,6 +142,18 @@ class HorillaAutomationForm(OwnerQuerysetMixin, HorillaModelForm):
     # Set HTMX URL for field choices (generic method will use this)
     htmx_field_choices_url = "automations:get_automation_field_choices"
 
+    # Title, Module, then the delivery channel and the fields it switches on, in
+    # sending order: mail server and template, then notification template.
+    # Other fields keep their order.
+    field_order = [
+        "title",
+        "model",
+        "delivery_channel",
+        "mail_server",
+        "mail_template",
+        "notification_template",
+    ]
+
     def __init__(self, *args, **kwargs):
         # Pop custom kwargs not supported by Django's BaseModelForm
         form_url = kwargs.pop("form_url", None)
@@ -417,7 +429,7 @@ class HorillaAutomationForm(OwnerQuerysetMixin, HorillaModelForm):
             # Create the field
             self.fields["mail_to"] = FlexibleMultipleChoiceField(
                 choices=user_fields,
-                required=False,
+                required=True,
                 label=self.fields["mail_to"].label,
                 help_text=self.fields["mail_to"].help_text,
                 widget=forms.SelectMultiple(

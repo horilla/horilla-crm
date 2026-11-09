@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
-from horilla.contrib.core.utils import field_readonly_hidden_if
+from horilla.contrib.core.utils import field_readonly_hidden_if, get_allowed_user_ids
 from horilla.contrib.generics.mixins import RecentlyViewedMixin
 from horilla.contrib.generics.views import (
     HorillaCardView,
@@ -33,29 +33,72 @@ from horilla.utils.translation import gettext_lazy as _
 from horilla.web import RedirectResponse
 
 # Local imports
+from horilla_crm.leads.assignment.owner_lock import owner_locked
 from horilla_crm.leads.filters import LeadFilter
 from horilla_crm.leads.models import Lead, LeadStatus
 
+CONVERT_TARGET_ADD_PERMS = (
+    (_("Accounts"), "accounts.add_account", "accounts.add_own_account"),
+    (_("Contacts"), "contacts.add_contact", "contacts.add_own_contact"),
+    (
+        _("Opportunities"),
+        "opportunities.add_opportunity",
+        "opportunities.add_own_opportunity",
+    ),
+)
 
-def _convert_action_hidden_if(_obj):
+
+def missing_convert_targets(user):
     """
-    Hide the Convert action unless the user could create at least one of
-    Account/Contact/Opportunity (the "create new" default for all three).
-    Mirrors the permission gate in LeadConversionView.form_valid.
+    Labels of the models (Accounts/Contacts/Opportunities) the user can't
+    create, i.e. holds neither the add nor the add-own permission for.
+    """
+    return [
+        label
+        for label, full, own in CONVERT_TARGET_ADD_PERMS
+        if not (user.has_perm(full) or user.has_perm(own))
+    ]
+
+
+def user_can_create_convert_targets(user):
+    """True only if the user can add an Account, a Contact and an Opportunity."""
+    if not user or not user.is_authenticated:
+        return False
+    return not missing_convert_targets(user)
+
+
+def _convert_action_hidden_if(obj):
+    """
+    Hide the Convert action unless the user may convert this lead
+    (convert_lead, or convert_own_lead on a lead they own). Missing
+    Account/Contact/Opportunity add permissions are explained inside the
+    convert modal instead of hiding the button.
     """
     request = get_current_request()
     if not request or not request.user.is_authenticated:
         return True
     user = request.user
-    creatable_perms = (
-        "accounts.add_account",
-        "accounts.add_own_account",
-        "contacts.add_contact",
-        "contacts.add_own_contact",
-        "opportunities.add_opportunity",
-        "opportunities.add_own_opportunity",
+    can_convert = user.has_perm("leads.convert_lead") or (
+        getattr(obj, "lead_owner_id", None) is not None
+        and obj.lead_owner_id in get_allowed_user_ids(user)
+        and user.has_perm("leads.convert_own_lead")
     )
-    return not any(user.has_perm(perm) for perm in creatable_perms)
+    return not can_convert
+
+
+_owner_field_readonly_hidden_if = field_readonly_hidden_if(Lead, "lead_owner")
+
+
+def _change_owner_hidden_if(obj):
+    """
+    Hide Change Owner when the owner field is read-only for the user, or when
+    the lead's assignment rule does not let this user change its owner.
+    """
+    if _owner_field_readonly_hidden_if(obj):
+        return True
+    request = get_current_request()
+    user = getattr(request, "user", None)
+    return owner_locked(obj, user)
 
 
 LINK_RECORDS_ACTION = {
@@ -259,7 +302,7 @@ class LeadListView(LoginRequiredMixin, HorillaListView):
             "action": "Change Owner",
             "src": "assets/icons/a2.svg",
             "img_class": "w-4 h-4",
-            "hidden_if": field_readonly_hidden_if(Lead, "lead_owner"),
+            "hidden_if": _change_owner_hidden_if,
             "attrs": """
                         hx-get="{get_change_owner_url}"
                         hx-target="#modalBox"
@@ -268,7 +311,6 @@ class LeadListView(LoginRequiredMixin, HorillaListView):
                         """,
         },
         {
-            **lead_permission,
             "action": "Convert",
             "src": "assets/icons/a3.svg",
             "img_class": "w-4 h-4",

@@ -23,6 +23,7 @@ from horilla_crm.accounts.models import Account
 from horilla_crm.contacts.models import Contact, ContactAccountRelationship
 from horilla_crm.leads.forms import LeadConversionForm
 from horilla_crm.leads.models import Lead, LeadStatus
+from horilla_crm.leads.views.core import missing_convert_targets
 from horilla_crm.opportunities.models import (
     Opportunity,
     OpportunityContactRole,
@@ -59,6 +60,7 @@ class LeadConversionView(LoginRequiredMixin, FormView):
         """Inject lead and optional selected account into form kwargs."""
         kwargs = super().get_form_kwargs()
         kwargs["lead"] = self.lead
+        kwargs["user"] = self.request.user
 
         # Get selected account for filtering opportunities
         selected_account_id = self.request.GET.get("existing_account")
@@ -97,11 +99,18 @@ class LeadConversionView(LoginRequiredMixin, FormView):
                 messages.error(request, _("Lead not found or no longer exists."))
                 return ScriptResponse(reload=True, close=True)
 
-            if not request.user.has_perm("leads.convert_lead") and not (
-                lead.lead_owner == request.user
-                and request.user.has_perm("leads.convert_own_lead")
+            if not self._has_perm(
+                "leads.convert_lead", "leads.convert_own_lead", lead.lead_owner
             ):
                 return render(request, "403.html")
+
+            missing_targets = missing_convert_targets(request.user)
+            if missing_targets:
+                return render(
+                    request,
+                    "lead_convert_no_permission.html",
+                    {"lead": lead, "missing_targets": missing_targets},
+                )
 
         if "HTTP_HX_REQUEST" in request.META:
             hx_target = request.META.get("HTTP_HX_TARGET", "").replace("#", "")
@@ -111,9 +120,7 @@ class LeadConversionView(LoginRequiredMixin, FormView):
                 return render(request, "lead_convert_opportunity.html", context)
 
             if hx_target:
-                action = request.GET.get(f"{hx_target}_action", "create_new")
                 context = self.get_context_data()
-                context[f"{hx_target}_action"] = action
                 if hx_target == "account-field":
                     return render(request, "lead_convert_account.html", context)
                 if hx_target == "contact-field":
@@ -193,7 +200,10 @@ class LeadConversionView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         """Convert lead entities in a transaction and return success response."""
-        missing = self._check_conversion_permissions(form)
+        missing = [
+            _("create %(model)s") % {"model": label}
+            for label in missing_convert_targets(self.request.user)
+        ] or self._check_conversion_permissions(form)
         if missing:
             messages.error(
                 self.request,

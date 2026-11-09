@@ -1,0 +1,25 @@
+<div id="sec1" class="sec1">
+    <div class="p-5">
+        {% modal_header _('Lead Conversion') on_close="closeContentModal()" %}
+        <div class="bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm mb-4">
+            {% trans "You don't have permission to convert this lead because you can't create the following records:" %}
+            <ul class="list-disc ms-5 mt-2">
+                {% for label in missing_targets %}
+                    <li>{{ label }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <p class="text-sm text-color-600 mb-4">
+            {% trans "Converting a lead creates or links an Account, a Contact and an Opportunity. Please ask your administrator to grant you the missing permissions." %}
+        </p>
+        <div class="flex justify-end">
+            <button
+                type="button"
+                onclick="closeContentModal()"
+                class="px-4 py-2 text-sm rounded-md border border-dark-50 hover:bg-secondary-50"
+            >
+                {% trans "Close" %}
+            </button>
+        </div>
+    </div>
+</div>

@@ -11,6 +11,7 @@ from django.utils.safestring import mark_safe
 # First party imports (Horilla)
 from horilla.auth.models import User
 from horilla.contrib.core.mixins import OwnerQuerysetMixin
+from horilla.contrib.core.utils import get_allowed_user_ids
 from horilla.contrib.generics.forms import HorillaModelForm, HorillaMultiStepForm
 from horilla.contrib.mail.models import (
     HorillaMailConfiguration,
@@ -308,6 +309,8 @@ class LeadConversionForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.lead = kwargs.pop("lead", None)
         self.selected_account = kwargs.pop("selected_account", None)
+        request = kwargs.pop("request", None)
+        self.user = kwargs.pop("user", None) or getattr(request, "user", None)
         super().__init__(*args, **kwargs)
 
         if self.lead:
@@ -331,7 +334,65 @@ class LeadConversionForm(forms.Form):
                 account=self.selected_account
             )
         else:
-            self.fields["existing_opportunity"].queryset = None
+            self.fields["existing_opportunity"].queryset = Opportunity.objects.none()
+
+        if self.user is not None:
+            for field in ("existing_account", "existing_contact"):
+                model = self.fields[field].queryset.model
+                self.fields[field].queryset = self.scope_queryset(
+                    self.user, model, self.fields[field].queryset
+                )
+            self.fields["existing_opportunity"].queryset = self.scope_queryset(
+                self.user,
+                Opportunity,
+                self.fields["existing_opportunity"].queryset,
+            )
+            self.fields["owner"].queryset = self.owner_queryset(self.user)
+
+    # (model, full change permission, owner field) for "Select Existing"
+    EXISTING_SCOPES = {
+        Account: ("accounts.change_account", "account_owner"),
+        Contact: ("contacts.change_contact", "contact_owner"),
+        Opportunity: ("opportunities.change_opportunity", "owner"),
+    }
+
+    @classmethod
+    def scope_queryset(cls, user, model, queryset):
+        """
+        Limit "Select Existing" records to what the user may link: everything
+        with the full change permission, otherwise only records owned by the
+        user or their subordinates.
+        """
+        perm, owner_field = cls.EXISTING_SCOPES[model]
+        if user.has_perm(perm):
+            return queryset
+        return queryset.filter(**{f"{owner_field}__in": get_allowed_user_ids(user)})
+
+    @staticmethod
+    def owner_queryset(user):
+        """
+        Owners the user may assign: anyone with the full add permission on
+        Account, Contact and Opportunity, otherwise the user and subordinates.
+        """
+        full_perms = (
+            "accounts.add_account",
+            "contacts.add_contact",
+            "opportunities.add_opportunity",
+        )
+        users = User.objects.filter(is_active=True)
+        if all(user.has_perm(perm) for perm in full_perms):
+            return users
+        return users.filter(pk__in=get_allowed_user_ids(user))
+
+    @classmethod
+    def get_select2_queryset(cls, request, model, field_name):
+        """Scope the Select2 search results behind the conversion form fields."""
+        user = request.user
+        if model is User and field_name == "owner":
+            return cls.owner_queryset(user)
+        if model in cls.EXISTING_SCOPES:
+            return cls.scope_queryset(user, model, model.objects.all())
+        return None
 
     def clean(self):
         """Validate account, contact, and opportunity selections for conversion."""
@@ -491,9 +552,9 @@ class EmailToLeadForm(HorillaModelForm):
             'style="font-size: 12px">{}<span class="select-none">{}</span>'
             "</label></div><script>{}</script>",
             _(
-                "The matching rule assigns the lead to one of its people with "
-                "the fewest leads; the selected Owner is used when no rule "
-                "matches."
+                "The matching rule assigns the lead to one of its people by its "
+                "assignment method (least lead count or round robin); the "
+                "selected Owner is used when no rule matches."
             ),
             _("The selected Owner is always used."),
             box,
@@ -566,6 +627,7 @@ class AssignmentRuleConditionForm(OwnerQuerysetMixin, HorillaModelForm):
         "assign_to_type",
         "assign_to_users",
         "assign_to_roles",
+        "assignment_method",
         "notify_method",
         "mail_template",
         "notification_template",

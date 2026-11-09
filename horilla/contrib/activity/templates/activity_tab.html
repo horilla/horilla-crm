@@ -57,6 +57,22 @@
                             <i class="fa-solid fa-calendar-days"></i> {% trans "Events" %}
                         </a>
                     </li>
+                    {% for tab in extra_tabs %}
+                        <li>
+                            <a
+                                href="#"
+                                data-tab="tab-{{ tab.id }}"
+                                class="tab-btn items-center px-5 py-2 rounded-md bg-transparent text-[#3d3d3d] w-full flex gap-3"
+                                hx-get="{{ tab.url }}"
+                                hx-trigger="click once"
+                                hx-target="#tab-{{ tab.id }}-body"
+                                hx-swap="innerHTML"
+                            >
+                                {% if tab.icon_template %}{% include tab.icon_template %}{% else %}<i class="{{ tab.icon_class|default:'fa-solid fa-circle' }}"></i>{% endif %}
+                                {{ tab.title }}
+                            </a>
+                        </li>
+                    {% endfor %}
                 </ul>
             </div>
             <div class="sm:flex-[1_0] min-h-0 min-w-0 w-full flex flex-col">
@@ -116,11 +132,9 @@
                             <div
                                 id="task-list-content"
                                 class="flex-1 min-h-0 min-w-0 flex flex-col text-[.8rem]"
-                                hx-get="{% url 'activity:task_list' object_id=object_id %}?view_type=pending&content_type_id={{ content_type_id }}"
-                                hx-trigger="load"
-                                hx-target="#task-list-content"
-                                hx-swap="innerHTML"
-                            >
+                            ><!-- Initial content is loaded by activity_tab.js (setupTabGroup) so the
+                                 saved Pending/Completed sub-tab wins; a second hx-trigger="load" here
+                                 raced with it and could overwrite the Completed list with Pending. -->
                             </div>
                         </div>
                     </div>
@@ -403,6 +417,11 @@
                             </div>
                         </div>
                     </div>
+                    {% for tab in extra_tabs %}
+                        <div id="tab-{{ tab.id }}" class="tab-content hidden h-full min-h-0 min-w-0 p-2 pt-0 text-sm">
+                            <div id="tab-{{ tab.id }}-body" class="h-full min-h-0 min-w-0 w-full flex flex-col"></div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>

@@ -49,6 +49,10 @@ class Notification(models.Model):
     object_id = models.PositiveIntegerField(null=True, blank=True)
     related_object = models.GenericForeignKey("content_type", "object_id")
 
+    # Notifications are system messages, not part of a record's own story, so
+    # they are kept out of the record's History tab.
+    HISTORY_EXCLUDE_FROM_RELATED = True
+
     def __str__(self):
         return f"Notification for {self.user.username}: {self.message}"
 

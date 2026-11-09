@@ -307,6 +307,18 @@ class HorillaMail(HorillaCoreModel):
     # CREATE entry as e.g. "Draft added"/"Sent added" via get_mail_status_display(),
     # instead of hardcoding HorillaMail's status values there.
     HISTORY_CREATE_TYPE_FIELD = "mail_status"
+    # The create row reads only "New Draft created ... by <user>", without the
+    # sender, tracking uid etc.
+    HISTORY_CREATE_HIDE_FIELDS = True
+    # A mail is created as a draft and then sent/delivered/bounced, so show
+    # those status changes in the parent's history instead of leaving it
+    # reading "Draft" forever.
+    HISTORY_LINKED_UPDATE_FIELDS = ("mail_status",)
+    # The draft is only a placeholder created when the compose window opens;
+    # once it is sent/failed/bounced the history shows just that outcome.
+    HISTORY_TRANSIENT_CREATE = ("mail_status", "draft")
+    # "delivered" is what the mail is set to once it has been sent.
+    HISTORY_STATUS_LABELS = {"delivered": _("Sent")}
 
     MAIL_STATUS_CHOICES = [
         ("draft", _("Draft")),

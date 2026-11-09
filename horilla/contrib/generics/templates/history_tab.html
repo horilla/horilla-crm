@@ -119,6 +119,12 @@
                                                     {% endfor %}
                                                     {% include "partials/history_entry_actor.html" with actor=entry.actor %}
                                                 {% endwith %}
+                                            {% elif entry|linked_status_label:model_name %}
+                                                <span
+                                                    class="inline-flex items-center gap-1 bg-primary-300 text-primary-700 font-semibold px-2 py-1 rounded-full me-1"
+                                                    dir="auto"
+                                                >{{ entry|linked_status_label:model_name }}</span>
+                                                {% include "partials/history_entry_actor.html" with actor=entry.actor %}
                                             {% else %}
                                                 {% with display_changes=entry|history_changes_display subject=entry|related_entry_subject:model_name %}
                                                     {% if display_changes %}

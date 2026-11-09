@@ -624,6 +624,43 @@ def is_date_field(entry, field_label):
 
 
 @register.filter
+def linked_status_label(entry, primary_model_name=None):
+    """
+    For an UPDATE entry of a RELATED record whose model declares
+    HISTORY_CREATE_TYPE_FIELD and whose change moved that field (e.g. a mail's
+    status going from draft to failed), return a short label like
+    "Mail Failed". The row then reads as the event itself instead of
+    "Mail <subject> edited" plus a "Draft -> Failed" diff. Returns "" for
+    anything else. Models may map raw values to nicer wording through
+    HISTORY_STATUS_LABELS.
+    """
+    try:
+        if entry is None or getattr(entry, "action", None) != LogEntry.Action.UPDATE:
+            return ""
+        ct = getattr(entry, "content_type", None)
+        if ct is None or (primary_model_name and ct.model == primary_model_name):
+            return ""
+        model = ct.model_class()
+        field_name = _get_history_create_type_field(model)
+        if not field_name:
+            return ""
+        change = (getattr(entry, "changes_dict", None) or {}).get(field_name)
+        if not isinstance(change, (list, tuple)) or len(change) != 2:
+            return ""
+        value = change[1]
+        labels = getattr(model, "HISTORY_STATUS_LABELS", {})
+        if value in labels:
+            label = labels[value]
+        else:
+            label = dict(model._meta.get_field(field_name).flatchoices).get(
+                value, value
+            )
+        return "%s %s" % (content_type_verbose_name(ct), label)
+    except Exception:
+        return ""
+
+
+@register.filter
 def related_entry_subject(entry, primary_model_name):
     """
     For a history entry that belongs to a DIFFERENT model than the page's own
@@ -867,6 +904,9 @@ def create_extra_changes(entry, primary_model_name=None):
     try:
         ct = getattr(entry, "content_type", None)
         if ct is not None and primary_model_name and ct.model == primary_model_name:
+            return {}
+        model_class = ct.model_class() if ct is not None else None
+        if getattr(model_class, "HISTORY_CREATE_HIDE_FIELDS", False):
             return {}
     except Exception:
         pass

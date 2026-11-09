@@ -178,7 +178,7 @@ class Company(models.Model):
         verbose_name=_("Date Time Format"),
     )
     activate_multiple_currencies = models.BooleanField(
-        default=False, verbose_name=_("Activate Multiple Currencies")
+        default=False, verbose_name=_("Multiple Currencies")
     )
     all_objects = models.Manager()
     objects = models.Manager()
@@ -487,6 +487,8 @@ class HorillaCoreModel(models.Model, metaclass=ExtensionModelBase):
             if rel.many_to_many or rel.get_accessor_name() in skipped:
                 continue
             model = rel.related_model
+            if getattr(model, "HISTORY_EXCLUDE_FROM_RELATED", False):
+                continue
             field_name = rel.field.name
             fk_link_fields.setdefault(model, set()).add(field_name)
             _add_related(
@@ -496,6 +498,8 @@ class HorillaCoreModel(models.Model, metaclass=ExtensionModelBase):
 
         # GFK + string-GFK candidates only (cached list; CT deferred).
         for model in get_history_gfk_models():
+            if getattr(model, "HISTORY_EXCLUDE_FROM_RELATED", False):
+                continue
             opts = model._meta
             related_pks = set()
 
@@ -540,6 +544,16 @@ class HorillaCoreModel(models.Model, metaclass=ExtensionModelBase):
             ):
                 return True
             changes = entry.changes_dict or {}
+            if model in gfk_linked_models and entry.action == LogEntry.Action.UPDATE:
+                # A model can opt specific fields in (e.g. a mail's status
+                # moving from draft to sent) so its lifecycle reads in the
+                # parent's history; every other edit stays out.
+                tracked = getattr(model, "HISTORY_LINKED_UPDATE_FIELDS", ())
+                tracked_changes = {f: changes[f] for f in tracked if f in changes}
+                if tracked_changes:
+                    # In-memory only, the log row is never saved.
+                    entry.changes = tracked_changes
+                    return True
             link_changes = {}
             for field_name in fk_link_fields.get(model, ()):
                 change = changes.get(field_name)
@@ -584,6 +598,37 @@ class HorillaCoreModel(models.Model, metaclass=ExtensionModelBase):
                     }
                     for entry in entries:
                         entry.status = status_map.get(entry.object_pk)
+                # A record that is created in a placeholder state and then
+                # moved on (a mail is saved as a draft the moment the compose
+                # window opens, then sent) should read as its outcome only,
+                # not as "Draft created" followed by the outcome.
+                transient = getattr(model, "HISTORY_TRANSIENT_CREATE", None)
+                if transient:
+                    field_name, placeholder = transient
+                    moved_on = set()
+                    for entry in entries:
+                        change = (entry.changes_dict or {}).get(field_name)
+                        if (
+                            entry.action == LogEntry.Action.UPDATE
+                            and isinstance(change, (list, tuple))
+                            and len(change) == 2
+                            and str(change[0]) == placeholder
+                        ):
+                            moved_on.add(entry.object_pk)
+                    entries = [
+                        entry
+                        for entry in entries
+                        if not (
+                            entry.action == LogEntry.Action.CREATE
+                            and entry.object_pk in moved_on
+                            and str(
+                                (entry.changes_dict or {}).get(
+                                    field_name, [None, None]
+                                )[1]
+                            )
+                            == placeholder
+                        )
+                    ]
                 related_history.extend(entries)
 
         return sorted(

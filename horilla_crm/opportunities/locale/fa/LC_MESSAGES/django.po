@@ -216,6 +216,15 @@ msgstr "دسته پیش‌بینی"
 msgid "Delivery Installation Status"
 msgstr "وضعیت نصب و تحویل"
 
+msgid "Yet to Fulfill"
+msgstr "در انتظار تحویل"
+
+msgid "Partially Delivered"
+msgstr "بخشی تحویل شده"
+
+msgid "Completely Delivered"
+msgstr "کامل تحویل شده"
+
 msgid "Main Competitors"
 msgstr "رقبای اصلی"
 

@@ -336,7 +336,7 @@ Widgets: `rule`, `order`, `action_type` hidden. `delay_value` is `NumberInput` (
 | `_resolve_notification_users(to_value, also_notify_to, instance, user) -> list` | Same spec language, resolved to `User` instances. |
 | `_execute_update_field(action, instance, user)` | `action_config["field"]` and `["value"]`. Missing field name or unknown field: warning and return. Coerces int, float, and boolean internal types, then `setattr` and `save`. |
 | `_execute_email(action, instance, user)` | Sends with `action_config` `template_id`, `to`, `also_send_to` via `_resolve_email_recipients`. |
-| `_execute_assign_task(action, instance, user)` | Creates an `Activity` from `title`, `due_basis`, `due_in_days`, `status`, `priority`, `description`. |
+| `_execute_assign_task(action, instance, user)` | Creates an `Activity` from `title`, `due_basis`, `due_in_days`, `status`, `priority`, `description`. Due date is `due_in_days` after the basis: `record_submission_date` → `instance.created_at`, `record_update_date` → `instance.updated_at` (`TASK_DUE_BASIS_FIELDS`), `rule_trigger_date` or none → `timezone.now()`. A missing field or `None` value falls back to `timezone.now()`. |
 | `_execute_notification(action, instance, user)` | Sends an in-app notification from `template_id`, `to`, `also_notify_to`, `custom_message` via `_resolve_notification_users`. |
 | `_get_channel_template(action, channel, company) -> tuple` | `(template, ok)`. Kind from `get_channel_template_kind`. `ok` is `True` when the channel needs no template. Otherwise the id must be an int and the row must be that company or `company__isnull=True`. |
 | `_also_send_to_users(raw) -> list` | Comma-separated user primary keys → `User` queryset results. |

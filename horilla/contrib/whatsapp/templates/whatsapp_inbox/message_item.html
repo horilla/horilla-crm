@@ -1,0 +1,49 @@
+{% load i18n %}
+<div id="wa-msg-{{ message.pk }}" data-direction="{{ message.direction }}" class="flex {% if message.direction == 'out' %}justify-end{% else %}justify-start{% endif %}{% if message.group_start is False %} -mt-1{% endif %}">
+    <div class="relative max-w-[65%] min-w-[96px] rounded-lg px-2.5 pt-1.5 pb-1 text-sm shadow-sm
+        {% if message.direction == 'out' %}bg-primary-400 text-primary-600{% else %}bg-white text-color-900{% endif %}
+        {% if message.group_start is not False %}
+            before:absolute before:top-0 before:h-0 before:w-0 before:border-b-8 before:border-b-[transparent] before:content-['']
+            {% if message.direction == 'out' %}rounded-tr-none before:-right-2 before:border-l-8 before:border-l-primary-400{% else %}rounded-tl-none before:-left-2 before:border-r-8 before:border-r-white{% endif %}
+        {% endif %}">
+        {% if message.flow_sent_info %}
+            <div class="flex items-center gap-2">
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary-600/15">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2M9 17H7v-7h2zm4 0h-2V7h2zm4 0h-2v-4h2z"/></svg>
+                </span>
+                <div class="min-w-0">
+                    <p class="truncate font-medium">{{ message.flow_sent_info.title }}</p>
+                    <p class="text-[11px] opacity-70">{% trans "WhatsApp Flow" %}{% if message.flow_sent_info.cta %} · {{ message.flow_sent_info.cta }}{% endif %}</p>
+                </div>
+            </div>
+        {% elif message.flow_answer_items %}
+            <p class="mb-1 text-[11px] font-semibold uppercase tracking-wide text-color-400">{% trans "Flow response" %}</p>
+            <dl class="text-sm">
+                {% for label, value in message.flow_answer_items %}
+                    <div class="flex gap-1.5 py-0.5"><dt class="text-color-500">{{ label }}:</dt><dd class="break-words font-medium">{{ value }}</dd></div>
+                {% endfor %}
+            </dl>
+        {% elif message.body %}<p class="whitespace-pre-line break-words">{{ message.body }}</p>{% endif %}
+        {% for attachment in message.attachments.all %}
+            {% if attachment.file %}
+                {% if attachment.mime_type|slice:":6" == "image/" %}
+                    <a href="{{ attachment.file.url }}" target="_blank" class="block mt-1 -mx-0.5">
+                        <img src="{{ attachment.file.url }}" class="max-w-full max-h-56 rounded-md object-cover" alt="{{ attachment.file.name }}">
+                    </a>
+                {% else %}
+                    <div class="mt-1 flex items-center gap-2 rounded-md bg-black/5 px-2 py-1.5 text-xs">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="shrink-0 text-color-500">
+                            <path fill="currentColor" d="M16 2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7zm-1 6V3.5L18.5 8z"/>
+                        </svg>
+                        <a href="{{ attachment.file.url }}" target="_blank" class="underline truncate">{{ attachment.file.name }}</a>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="mt-1 text-xs italic opacity-70">
+                    {% trans "Attachment received" %}{% if attachment.mime_type %} ({{ attachment.mime_type }}){% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+        <div class="mt-0.5 flex justify-end">{% include 'whatsapp_inbox/message_meta.html' %}</div>
+    </div>
+</div>

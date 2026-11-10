@@ -1,0 +1,45 @@
+{% load i18n %}
+{# Out-of-band swap into the automation form: shown when WhatsApp is a selected delivery channel. #}
+{% if show %}
+    <div id="whatsapp_account_container" class="flex flex-col" hx-swap-oob="outerHTML">
+        <div class="flex justify-between items-center mb-1">
+            <label for="id_whatsapp_account" class="text-xs font-semibold text-color-600">
+                {{ account_label }} <span class="text-red-500">*</span>
+            </label>
+        </div>
+        <div class="relative">
+            <select name="whatsapp_account" id="id_whatsapp_account" class="js-example-basic-single headselect">
+                <option value="">---------</option>
+                {% for account in accounts %}
+                    <option value="{{ account.pk }}" {% if account.pk == selected_account %}selected="selected"{% endif %}>
+                        {{ account.display_name|default:account.display_phone_number|default:account.phone_number_id }}{% if account.display_phone_number %} · {{ account.display_phone_number }}{% endif %}
+                    </option>
+                {% empty %}
+                    <option value="" disabled>{% trans "No active WhatsApp account" %}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div id="whatsapp_template_container" class="flex flex-col" hx-swap-oob="outerHTML">
+        <div class="flex justify-between items-center mb-1">
+            <label for="id_whatsapp_template" class="text-xs font-semibold text-color-600">
+                {{ template_label }} <span class="text-red-500">*</span>
+            </label>
+        </div>
+        <div class="relative">
+            <select name="whatsapp_template" id="id_whatsapp_template" class="js-example-basic-single headselect">
+                <option value="">---------</option>
+                {% for template in templates %}
+                    <option value="{{ template.pk }}" {% if template.pk == selected_template %}selected="selected"{% endif %}>
+                        {{ template.title }}{% if template.account %} · {{ template.account }}{% endif %}
+                    </option>
+                {% empty %}
+                    <option value="" disabled>{% trans "No usable WhatsApp templates" %}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+{% else %}
+    <div id="whatsapp_account_container" style="display: none" hx-swap-oob="outerHTML"></div>
+    <div id="whatsapp_template_container" style="display: none" hx-swap-oob="outerHTML"></div>
+{% endif %}

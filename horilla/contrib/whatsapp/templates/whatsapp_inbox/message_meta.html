@@ -1,0 +1,37 @@
+{% load i18n %}{# Time and delivery ticks, on their own row at the bottom-right of the bubble. #}
+<span data-role="meta" class="flex shrink-0 items-center gap-1 text-[10px] leading-none {% if message.direction == 'out' %}text-primary-800{% else %}text-color-400{% endif %}">
+    {% if message.direction == "out" %}
+        {% if message.sent_by_bot %}
+            <span class="opacity-80">{% trans "Bot" %} ·</span>
+        {% elif message.sent_by %}
+            <span class="opacity-80">{{ message.sent_by.get_full_name|default:message.sent_by }} ·</span>
+        {% endif %}
+    {% endif %}
+    <span>{{ message.created_at|date:"g:i A" }}</span>
+    {% if message.direction == "out" %}
+        {% if message.status == "failed" %}
+            <span class="flex items-center gap-0.5 text-danger-dark" title="{{ message.status_message|default:message.get_status_display }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12 2a10 10 0 1 0 0 20a10 10 0 0 0 0-20m1 15h-2v-2h2zm0-4h-2V7h2z"/>
+                </svg>
+                {% trans "Failed" %}
+            </span>
+        {% elif message.status == "read" %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="10" viewBox="0 0 16 11" class="text-primary-600" title="{% trans 'Read' %}">
+                <path fill="currentColor" d="M11.071.653a.457.457 0 0 0-.304-.102.552.552 0 0 0-.381.178L5.15 6.44L2.72 4.01a.512.512 0 0 0-.381-.152a.552.552 0 0 0-.38.152l-.532.533a.5.5 0 0 0-.153.38c0 .153.05.28.152.381l3.015 3.016a.6.6 0 0 0 .436.203a.6.6 0 0 0 .436-.203L11.75 1.94a.53.53 0 0 0 .152-.38a.552.552 0 0 0-.152-.381zm4.184 0a.457.457 0 0 0-.304-.102a.552.552 0 0 0-.38.178L9.334 6.44L8.44 5.55l-.685.685l1.245 1.244a.6.6 0 0 0 .436.203a.6.6 0 0 0 .437-.203l6.28-6.284a.53.53 0 0 0 .153-.38a.552.552 0 0 0-.153-.381z"/>
+            </svg>
+        {% elif message.status == "delivered" %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="10" viewBox="0 0 16 11" class="text-primary-800/70" title="{% trans 'Delivered' %}">
+                <path fill="currentColor" d="M11.071.653a.457.457 0 0 0-.304-.102.552.552 0 0 0-.381.178L5.15 6.44L2.72 4.01a.512.512 0 0 0-.381-.152a.552.552 0 0 0-.38.152l-.532.533a.5.5 0 0 0-.153.38c0 .153.05.28.152.381l3.015 3.016a.6.6 0 0 0 .436.203a.6.6 0 0 0 .436-.203L11.75 1.94a.53.53 0 0 0 .152-.38a.552.552 0 0 0-.152-.381zm4.184 0a.457.457 0 0 0-.304-.102a.552.552 0 0 0-.38.178L9.334 6.44L8.44 5.55l-.685.685l1.245 1.244a.6.6 0 0 0 .436.203a.6.6 0 0 0 .437-.203l6.28-6.284a.53.53 0 0 0 .153-.38a.552.552 0 0 0-.153-.381z"/>
+            </svg>
+        {% elif message.status == "sent" %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="10" viewBox="0 0 13 11" class="text-primary-800/70" title="{% trans 'Sent' %}">
+                <path fill="currentColor" d="M11.071.653a.457.457 0 0 0-.304-.102.552.552 0 0 0-.381.178L5.15 6.44L2.72 4.01a.512.512 0 0 0-.381-.152a.552.552 0 0 0-.38.152l-.532.533a.5.5 0 0 0-.153.38c0 .153.05.28.152.381l3.015 3.016a.6.6 0 0 0 .436.203a.6.6 0 0 0 .436-.203L11.75 1.94a.53.53 0 0 0 .152-.38a.552.552 0 0 0-.152-.381z"/>
+            </svg>
+        {% else %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" class="text-primary-800/70" title="{% trans 'Pending' %}">
+                <path fill="currentColor" d="M12 2a10 10 0 1 0 0 20a10 10 0 0 0 0-20m1 15h-2v-6h2zm0-8h-2V7h2z" opacity=".6"/>
+            </svg>
+        {% endif %}
+    {% endif %}
+</span>

@@ -1,0 +1,79 @@
+{% load i18n %}
+<div id="whatsapp-connection-test" class="relative bg-white rounded-lg shadow-sm">
+    <div class="p-5">
+        {% modal_header _("Test Connection") %}
+        <p class="mb-4 text-sm text-color-600">
+            <span class="font-medium text-color-900">{{ account }}</span>
+            {% if account.display_phone_number %}· {{ account.display_phone_number }}{% endif %}
+        </p>
+
+        {% if checks %}
+            {% if overall == "ok" %}
+                <div class="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800">
+                    {% trans "Connected. Every check passed." %}
+                </div>
+            {% elif overall == "warn" %}
+                <div class="mb-4 rounded-lg bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+                    {% trans "Connected, with warnings. Review the items below." %}
+                </div>
+            {% else %}
+                <div class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {% trans "Connection problem. Fix the items marked below." %}
+                </div>
+            {% endif %}
+
+            <ul class="mb-4 flex flex-col gap-2">
+                {% for check in checks %}
+                    <li class="flex gap-3 rounded-lg border border-dark-50 px-3 py-2.5">
+                        <span
+                            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white
+                                {% if check.status == 'ok' %}bg-green-600{% elif check.status == 'warn' %}bg-yellow-600{% else %}bg-red-600{% endif %}"
+                            aria-hidden="true"
+                        >
+                            {% if check.status == "ok" %}&#10003;{% elif check.status == "warn" %}!{% else %}&times;{% endif %}
+                        </span>
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium text-color-900">
+                                {{ check.label }}
+                                <span class="sr-only">
+                                    {% if check.status == "ok" %}{% trans "passed" %}{% elif check.status == "warn" %}{% trans "warning" %}{% else %}{% trans "failed" %}{% endif %}
+                                </span>
+                            </p>
+                            <p class="break-words text-xs text-color-500">{{ check.detail }}</p>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+
+        {% if can_send %}
+            <form
+                hx-post="{{ account.get_test_connection_url }}"
+                hx-target="#whatsapp-test-feedback"
+                hx-swap="innerHTML"
+                hx-indicator="#whatsapp-test-spinner"
+            >
+                {% csrf_token %}
+                <div id="whatsapp-test-feedback"></div>
+                <label for="whatsapp-test-number" class="text-xs text-color-600">{% trans "Send a test message to" %}</label>
+                <input
+                    type="tel"
+                    id="whatsapp-test-number"
+                    name="to_number"
+                    value="{{ to_number|default:'' }}"
+                    required
+                    placeholder="{% trans 'Number with country code, e.g. 919876543210' %}"
+                    class="text-color-600 p-2 placeholder:text-xs font-normal w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm transition duration-300 focus:border-primary-600"
+                >
+
+                <div class="mt-1 text-xs text-gray-500">
+                    {% trans "A short test message is sent to this number. The number must be able to receive WhatsApp messages." %}
+                </div>
+                <div class="mt-4 flex justify-end gap-2">
+                    {% btn _("Send Test Message") type="submit" loading_id="whatsapp-test-spinner" %}
+                </div>
+            </form>
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,54 @@
+/*
+ * WhatsApp conversation panel: dark mode.
+ *
+ * The app's dark mode is `body.dark` (see static/assets/css/dark.css). Most panel
+ * colours come from Tailwind theme classes and are already remapped there
+ * (.bg-white, .bg-primary-50, .bg-dark-25, ...). What it doesn't cover is
+ * listed here, scoped to the panel. Sent bubbles take the theme's dark accent
+ * variable (--timeline-pill-bg / --timeline-pill-fg, defined per theme in
+ * theme/inject_html/tailwind_dynamic_config.html), so dark mode follows the theme.
+ */
+
+/* Received bubbles: dark.css turns .bg-white into this grey; the tail must match it. */
+body.dark #tab-whatsapp-content [data-direction="in"] > div::before {
+  border-right-color: rgb(42 42 42);
+}
+
+/* Sent bubbles */
+body.dark #tab-whatsapp-content [data-direction="out"] > div {
+  background-color: var(--timeline-pill-bg, #4a2e2b) !important;
+  color: rgb(255 255 255 / 0.92) !important;
+}
+body.dark #tab-whatsapp-content [data-direction="out"] > div::before {
+  border-left-color: var(--timeline-pill-bg, #4a2e2b);
+}
+body.dark #tab-whatsapp-content [data-direction="out"] > div p,
+body.dark #tab-whatsapp-content [data-direction="out"] > div span:not([data-role="meta"] *),
+body.dark #tab-whatsapp-content [data-direction="out"] > div a {
+  color: inherit !important;
+}
+body.dark #tab-whatsapp-content [data-direction="out"] [data-role="meta"],
+body.dark #tab-whatsapp-content [data-direction="out"] [data-role="meta"] span {
+  color: rgb(255 255 255 / 0.62) !important;
+}
+body.dark #tab-whatsapp-content [data-direction="out"] [data-role="meta"] svg {
+  color: rgb(255 255 255 / 0.55);
+}
+body.dark #tab-whatsapp-content [data-direction="out"] [data-role="meta"] svg[title="Read"] {
+  color: var(--timeline-pill-fg, #E54F38);
+}
+body.dark #tab-whatsapp-content [data-direction="out"] [data-role="meta"] .text-danger-dark,
+body.dark #tab-whatsapp-content [data-direction="out"] [data-role="meta"] .text-danger-dark svg {
+  color: #fca5a5 !important;
+}
+
+/* File pill inside a bubble */
+body.dark #tab-whatsapp-content .bg-black\/5 {
+  background-color: rgb(255 255 255 / 0.08) !important;
+}
+
+/* Message box: dark.css paints every textarea black, which shows as a black strip
+   inside the rounded box, so let the box's own background show through. */
+body.dark #tab-whatsapp-content textarea {
+  background-color: transparent !important;
+}

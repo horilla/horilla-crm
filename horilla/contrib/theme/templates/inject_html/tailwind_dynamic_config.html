@@ -107,7 +107,8 @@
         .progress li.active .sec::before {
             background-color: {{ theme.primary_600|default:"#E54F38" }};
         }
-        .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+        .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable,
+        .select2-container--default .select2-results__option--selected.select2-results__option--selectable {
             background-color: {{ theme.primary_100|default:"#e54f3817" }} !important;
             color: {{ theme.primary_600|default:"#E54F38" }} !important;
         }

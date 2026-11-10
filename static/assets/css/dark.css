@@ -71,7 +71,8 @@ body.dark .module-card
 }
 
 /* Select2: highlighted (hover) option in dark mode */
-body.dark .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+body.dark .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable,
+body.dark .select2-container--default .select2-results__option--selected.select2-results__option--selectable {
   background-color: color-mix(in srgb, var(--menu-arrow-fg, #E54F38) 18%, #2f2f2f) !important;
   color: rgb(255 255 255 / 95%) !important;
 }
@@ -689,3 +690,6 @@ body.dark .member-footer div.downline button[class*="role-action-"]:hover {
   background-color: var(--split-view-active-border, #e54f38) !important;
   border-color: var(--split-view-active-border, #e54f38) !important;
 }
+
+body.dark .bool-seg { background: transparent; border-color: #4a423e; }
+body.dark input[type="checkbox"]:not(:checked) + .bool-seg > span:first-child { background: #3a3a3a; color: #d4d4d4; }

@@ -17,7 +17,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
     HorillaView,
 )
-from horilla.contrib.mail.models import HorillaMailTemplate
+from horilla.contrib.mail.models import HorillaMailConfiguration, HorillaMailTemplate
 from horilla.contrib.notifications.models import NotificationTemplate
 from horilla.db.models import Q
 from horilla.urls import reverse, reverse_lazy
@@ -203,7 +203,7 @@ class LeadAssignmentForm(LoginRequiredMixin, HorillaSingleFormView):
     create and update from view for assignment rules."""
 
     model = LeadAssignmentRule
-    fields = ["name", "description", "is_active"]
+    fields = ["name", "description", "allow_owner_reassignment", "is_active"]
     full_width_fields = ["name", "description"]
     modal_height = False
 
@@ -459,6 +459,25 @@ class ToggleNotifyMethodFieldView(LoginRequiredMixin, TemplateView):
         notify_method = self.request.POST.get("notify_method") or self.request.GET.get(
             "notify_method", ""
         )
+
+        # Email needs an outgoing mail server. Without one, ask the user to set
+        # it up (same popup as the cadence email follow-up) and do not keep
+        # Email selected: "Both" falls back to the in-app notification.
+        show_popup = (
+            notify_method
+            in (
+                "email",
+                "both",
+            )
+            and not HorillaMailConfiguration.objects.filter(
+                mail_channel="outgoing", is_active=True
+            ).exists()
+        )
+        if show_popup:
+            notify_method = "notification" if notify_method == "both" else ""
+            context["show_mail_config_popup"] = True
+            context["reset_notify_method"] = notify_method
+            context["configure_url"] = reverse("mail:mail_server_view")
         context["notify_method"] = notify_method
 
         lead_template_qs = Q(content_type__isnull=True) | Q(

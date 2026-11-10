@@ -10,8 +10,8 @@
             "created_by": null,
             "updated_at": "2025-09-18T03:04:11.695Z",
             "updated_by": null,
-            "name": "Round Robin - Inbound Leads",
-            "description": "Distribute new website leads evenly across sales reps."
+            "name": "Website Leads - Round Robin",
+            "description": "Give each new website lead to the next Sales Representative in turn."
         }
     },
     {
@@ -28,10 +28,13 @@
             "rule": 1,
             "assign_to_type": "role",
             "assign_to_users": [],
-            "assign_to_roles": [7],
-            "notify_method": "email",
-            "mail_template": 1,
-            "notification_template": null
+            "assign_to_roles": [
+                10
+            ],
+            "assignment_method": "round_robin",
+            "notify_method": "notification",
+            "mail_template": null,
+            "notification_template": 1
         }
     },
     {
@@ -56,15 +59,15 @@
         "model": "leads.leadassignmentrule",
         "pk": 2,
         "fields": {
-            "is_active": true,
+            "is_active": false,
             "additional_info": null,
-            "company": 3,
+            "company": 1,
             "created_at": "2025-09-18T03:04:11.695Z",
             "created_by": null,
             "updated_at": "2025-09-18T03:04:11.695Z",
             "updated_by": null,
-            "name": "Round Robin - Referral Leads",
-            "description": "Distribute new referral leads evenly across sales reps."
+            "name": "Referral Leads - Round Robin",
+            "description": "Give each new referral lead to the next Sales Manager in turn."
         }
     },
     {
@@ -73,7 +76,7 @@
         "fields": {
             "is_active": true,
             "additional_info": null,
-            "company": 3,
+            "company": 1,
             "created_at": "2025-09-18T03:04:11.695Z",
             "created_by": null,
             "updated_at": "2025-09-18T03:04:11.695Z",
@@ -81,10 +84,13 @@
             "rule": 2,
             "assign_to_type": "role",
             "assign_to_users": [],
-            "assign_to_roles": [13],
-            "notify_method": "email",
-            "mail_template": 3,
-            "notification_template": null
+            "assign_to_roles": [
+                7
+            ],
+            "assignment_method": "round_robin",
+            "notify_method": "notification",
+            "mail_template": null,
+            "notification_template": 1
         }
     },
     {
@@ -93,7 +99,7 @@
         "fields": {
             "is_active": true,
             "additional_info": null,
-            "company": 3,
+            "company": 1,
             "created_at": "2025-09-18T03:04:11.695Z",
             "created_by": null,
             "updated_at": "2025-09-18T03:04:11.695Z",
@@ -102,6 +108,342 @@
             "field": "lead_source",
             "operator": "exact",
             "value": "referral",
+            "logical_operator": "and"
+        }
+    },
+    {
+        "model": "leads.leadassignmentrule",
+        "pk": 3,
+        "fields": {
+            "is_active": false,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Phone Leads - Least Lead Count",
+            "description": "Give each new phone lead to the Sales Support member who owns the fewest leads."
+        }
+    },
+    {
+        "model": "leads.leadassignmentcondition",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 3,
+            "assign_to_type": "role",
+            "assign_to_users": [],
+            "assign_to_roles": [
+                11
+            ],
+            "assignment_method": "least_leads",
+            "notify_method": "notification",
+            "mail_template": null,
+            "notification_template": 1
+        }
+    },
+    {
+        "model": "leads.leadassignmentmatchcriteria",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "condition": 3,
+            "field": "lead_source",
+            "operator": "exact",
+            "value": "phone",
+            "logical_operator": "and"
+        }
+    },
+    {
+        "model": "leads.leadassignmentrule",
+        "pk": 4,
+        "fields": {
+            "is_active": false,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Campaign Leads - Least Lead Count",
+            "description": "Give each new campaign lead to the Marketing Manager who owns the fewest leads."
+        }
+    },
+    {
+        "model": "leads.leadassignmentcondition",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 4,
+            "assign_to_type": "role",
+            "assign_to_users": [],
+            "assign_to_roles": [
+                9
+            ],
+            "assignment_method": "least_leads",
+            "notify_method": "notification",
+            "mail_template": null,
+            "notification_template": 1
+        }
+    },
+    {
+        "model": "leads.leadassignmentmatchcriteria",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "condition": 4,
+            "field": "lead_source",
+            "operator": "exact",
+            "value": "campaign",
+            "logical_operator": "and"
+        }
+    },
+    {
+        "model": "leads.leadassignmentrule",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 3,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Website Leads - Round Robin",
+            "description": "Give each new website lead to the next Account Executive in turn."
+        }
+    },
+    {
+        "model": "leads.leadassignmentcondition",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 3,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 5,
+            "assign_to_type": "role",
+            "assign_to_users": [],
+            "assign_to_roles": [
+                16
+            ],
+            "assignment_method": "round_robin",
+            "notify_method": "notification",
+            "mail_template": null,
+            "notification_template": 3
+        }
+    },
+    {
+        "model": "leads.leadassignmentmatchcriteria",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 3,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "condition": 5,
+            "field": "lead_source",
+            "operator": "exact",
+            "value": "website",
+            "logical_operator": "and"
+        }
+    },
+    {
+        "model": "leads.leadassignmentrule",
+        "pk": 6,
+        "fields": {
+            "is_active": false,
+            "additional_info": null,
+            "company": 3,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Referral Leads - Round Robin",
+            "description": "Give each new referral lead to the next Regional Sales Head in turn."
+        }
+    },
+    {
+        "model": "leads.leadassignmentcondition",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 3,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 6,
+            "assign_to_type": "role",
+            "assign_to_users": [],
+            "assign_to_roles": [
+                13
+            ],
+            "assignment_method": "round_robin",
+            "notify_method": "notification",
+            "mail_template": null,
+            "notification_template": 3
+        }
+    },
+    {
+        "model": "leads.leadassignmentmatchcriteria",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 3,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "condition": 6,
+            "field": "lead_source",
+            "operator": "exact",
+            "value": "referral",
+            "logical_operator": "and"
+        }
+    },
+    {
+        "model": "leads.leadassignmentrule",
+        "pk": 7,
+        "fields": {
+            "is_active": false,
+            "additional_info": null,
+            "company": 3,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Phone Leads - Least Lead Count",
+            "description": "Give each new phone lead to the Support Associate who owns the fewest leads."
+        }
+    },
+    {
+        "model": "leads.leadassignmentcondition",
+        "pk": 7,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 3,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 7,
+            "assign_to_type": "role",
+            "assign_to_users": [],
+            "assign_to_roles": [
+                17
+            ],
+            "assignment_method": "least_leads",
+            "notify_method": "notification",
+            "mail_template": null,
+            "notification_template": 3
+        }
+    },
+    {
+        "model": "leads.leadassignmentmatchcriteria",
+        "pk": 7,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 3,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "condition": 7,
+            "field": "lead_source",
+            "operator": "exact",
+            "value": "phone",
+            "logical_operator": "and"
+        }
+    },
+    {
+        "model": "leads.leadassignmentrule",
+        "pk": 8,
+        "fields": {
+            "is_active": false,
+            "additional_info": null,
+            "company": 3,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Campaign Leads - Least Lead Count",
+            "description": "Give each new campaign lead to the Brand Marketing Head who owns the fewest leads."
+        }
+    },
+    {
+        "model": "leads.leadassignmentcondition",
+        "pk": 8,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 3,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 8,
+            "assign_to_type": "role",
+            "assign_to_users": [],
+            "assign_to_roles": [
+                15
+            ],
+            "assignment_method": "least_leads",
+            "notify_method": "notification",
+            "mail_template": null,
+            "notification_template": 3
+        }
+    },
+    {
+        "model": "leads.leadassignmentmatchcriteria",
+        "pk": 8,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 3,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "condition": 8,
+            "field": "lead_source",
+            "operator": "exact",
+            "value": "campaign",
             "logical_operator": "and"
         }
     }

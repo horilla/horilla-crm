@@ -1,0 +1,85 @@
+{# Same popup as the cadence "Mail Configuration Required" one, for the assignment rule condition form. #}
+<div class="fixed inset-0 flex items-center justify-center z-[1000]" id="assignment-mail-config-overlay">
+    <div class="absolute inset-0 bg-black/35"></div>
+    <div class="relative bg-white rounded-xl max-w-sm w-full mx-4 overflow-hidden shadow-[0_0_0_1px_rgba(15,23,42,0.06),0_0_28px_rgba(15,23,42,0.20)]">
+        <div class="flex justify-between items-center px-5 py-3">
+            <h3 class="text-base font-semibold text-gray-900">
+                {% trans "Mail Configuration Required" %}
+            </h3>
+            <button
+                type="button"
+                class="text-gray-500 hover:text-red-500 text-xl cursor-pointer"
+                id="assignment-mail-config-close"
+            >
+                <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
+            </button>
+        </div>
+        <div class="px-5 py-6 text-center">
+            <div class="mb-4 flex justify-center">
+                <div class="w-16 h-16 rounded-full bg-primary-100 border-2 border-primary-400 flex items-center justify-center">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="34"
+                        height="34"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#DC2626"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                        <line x1="12" y1="9" x2="12" y2="13" />
+                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                </div>
+            </div>
+            <h4 class="text-lg font-semibold text-gray-900 mb-2">
+                {% trans "Cannot use Email notification" %}
+            </h4>
+            <p class="text-sm text-gray-600 mb-5 leading-relaxed">
+                {% trans "Configure outgoing mail to send an email when a lead is assigned by this rule." %}
+            </p>
+            <button
+                type="button"
+                id="assignment-mail-config-btn"
+                class="inline-flex items-center justify-center px-4 py-2 bg-primary-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
+            >
+                {% trans "Configure" %}
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+    (function () {
+      var overlay = document.getElementById("assignment-mail-config-overlay");
+      if (!overlay) return;
+      // The popup arrives inside the swapped form fields: show it over the whole
+      // page instead, and never leave an older copy behind.
+      document.querySelectorAll("body > #assignment-mail-config-overlay").forEach(function (old) {
+        old.remove();
+      });
+      document.body.appendChild(overlay);
+
+      // Email can not be kept selected: put the notify method back.
+      var select = document.getElementById("id_notify_method");
+      var value = "{{ reset_notify_method }}";
+      if (select) {
+        if (window.jQuery) {
+          window.jQuery(select).val(value).trigger("change.select2");
+        } else {
+          select.value = value;
+        }
+      }
+
+      function closePopup() {
+        overlay.remove();
+      }
+      var closeBtn = document.getElementById("assignment-mail-config-close");
+      var cfgBtn = document.getElementById("assignment-mail-config-btn");
+      closeBtn && closeBtn.addEventListener("click", closePopup);
+      cfgBtn && cfgBtn.addEventListener("click", function () {
+        window.location.href = "{{ configure_url }}";
+      });
+    })();
+</script>

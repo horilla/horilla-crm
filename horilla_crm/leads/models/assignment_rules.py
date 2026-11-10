@@ -37,6 +37,14 @@ ASSIGN_TO_CHOICES = [
     ("role", _("Role")),
 ]
 
+# How one person is chosen from the people a condition can assign to.
+ASSIGNMENT_METHOD_LEAST_LEADS = "least_leads"
+ASSIGNMENT_METHOD_ROUND_ROBIN = "round_robin"
+ASSIGNMENT_METHOD_CHOICES = [
+    (ASSIGNMENT_METHOD_LEAST_LEADS, _("Least Lead Count")),
+    (ASSIGNMENT_METHOD_ROUND_ROBIN, _("Round Robin")),
+]
+
 
 class LeadAssignmentRule(HorillaCoreModel):
     """
@@ -49,6 +57,18 @@ class LeadAssignmentRule(HorillaCoreModel):
 
     name = models.CharField(max_length=256, verbose_name=_("Rule Name"))
     description = models.TextField(blank=True, verbose_name=_("Description"))
+    # On by default: a lead's owner stays editable exactly as it was before this
+    # option existed. Turned off, users without the "change all leads"
+    # permission cannot change the owner of a lead a rule assigned.
+    allow_owner_reassignment = models.BooleanField(
+        default=True,
+        verbose_name=_("Allow Owner Reassignment"),
+        help_text=_(
+            "Allow users to change the owner of a lead that was assigned by "
+            "this rule. When off, only users who can change all leads can "
+            "change it."
+        ),
+    )
 
     def save(self, *args, **kwargs):
         """Save the rule; if it is active, deactivate the company's other rules."""
@@ -146,6 +166,26 @@ class LeadAssignmentCondition(HorillaCoreModel):
         blank=True,
         related_name="lead_assignment_conditions",
         verbose_name=_("Assign To Roles"),
+    )
+    assignment_method = models.CharField(
+        max_length=20,
+        choices=ASSIGNMENT_METHOD_CHOICES,
+        default=ASSIGNMENT_METHOD_LEAST_LEADS,
+        verbose_name=_("Assignment Method"),
+        help_text=_(
+            "How one person is chosen when several can be assigned: "
+            "the one with the fewest leads, or each person in turn."
+        ),
+    )
+    # Round robin pointer: the person who got the last lead from this condition.
+    last_assigned_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name=_("Last Assigned User"),
     )
 
     # Notification

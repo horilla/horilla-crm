@@ -5,7 +5,8 @@ When at least one active assignment rule exists, a new lead's form shows an
 "Assign using rules" checkbox right below the Owner field. With it ticked:
 
 * the Owner field is limited to the people the matching rule can assign to,
-  with the person who currently owns the fewest leads pre-selected;
+  with the person the condition's assignment method picks (least lead count
+  or round robin) pre-selected;
 * the lead must satisfy a rule condition, otherwise the form is rejected;
 * the form records its decision on the lead (``_assignment_condition_id``) so
   the post-save engine does not pick an owner a second time.
@@ -36,6 +37,7 @@ from horilla.utils.html import format_html
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
+from horilla_crm.leads.assignment.owner_lock import owner_locked
 from horilla_crm.leads.assignment.pool import (
     MATCHED,
     NO_ASSIGNEES,
@@ -49,6 +51,7 @@ from horilla_crm.leads.assignment.pool import (
     resolve_for_data,
     union_resolution,
 )
+from horilla_crm.leads.models.assignment_rules import ASSIGNMENT_METHOD_ROUND_ROBIN
 
 APPLY_FIELD = "apply_assignment_rule"
 
@@ -88,7 +91,10 @@ class LeadAssignmentRuleFormMixin:
     _conditions_cache = None
 
     def __init__(self, *args, **kwargs):
+        owner_is_locked = self._lock_owner_field(kwargs)
         super().__init__(*args, **kwargs)
+        if owner_is_locked:
+            self._keep_current_owner()
         self.assignment_resolution = None
         self._assignment_decision = None
         self._pool_mode = False
@@ -112,6 +118,47 @@ class LeadAssignmentRuleFormMixin:
         self._draw_checkbox_with_owner()
 
     # ------------------------------------------------------------------ setup
+
+    @staticmethod
+    def _lock_owner_field(kwargs):
+        """
+        Make the Owner read-only when the lead's rule does not let this user
+        change it (see ``assignment.owner_lock``).
+
+        The form classes already show a read-only field disabled and put the
+        stored value back in ``clean()``, so the field is only marked here.
+        """
+        request = kwargs.get("request")
+        user = getattr(request, "user", None)
+        if not owner_locked(kwargs.get("instance"), user):
+            return False
+        permissions = dict(kwargs.get("field_permissions") or {})
+        permissions[OWNER_FIELD] = "readonly"
+        kwargs["field_permissions"] = permissions
+        return True
+
+    def _keep_current_owner(self):
+        """
+        Let the locked Owner field accept the lead's current owner.
+
+        A read-only field is checked against its queryset and against the
+        user's own list of people like any other, and that list may not contain
+        the owner (a deactivated user, or one outside the user's hierarchy).
+        Without this the lead could not be saved at all, though only the owner
+        is locked. The owner cannot change, because the form puts the stored
+        one back in ``clean()``.
+        """
+        self._unrestricted_fields = set(getattr(self, "_unrestricted_fields", ())) | {
+            OWNER_FIELD
+        }
+        field = self.fields.get(OWNER_FIELD)
+        queryset = getattr(field, "queryset", None)
+        if queryset is None:
+            return
+        owner_id = getattr(
+            self.instance, self.instance._meta.get_field(OWNER_FIELD).attname
+        )
+        field.queryset = queryset.model._base_manager.filter(pk=owner_id)
 
     def _assignment_applicable(self):
         """The option is offered on create forms while an active rule exists."""
@@ -277,12 +324,17 @@ class LeadAssignmentRuleFormMixin:
         )
 
     def _prefer_owner(self, resolution):
-        """Select the least-loaded person unless the chosen owner is in the pool."""
+        """
+        Pre-select the person the condition's method suggests.
+
+        The form often arrives with an owner (Duplicate copies the source
+        lead's, an owner left from an earlier preview stays). Keeping it would
+        hand the same person every lead, whatever the method (least lead count
+        or round robin), so the suggestion is selected again on each preview.
+        The user can still pick anyone from the list afterwards.
+        """
         owner = resolution.default_owner
         if owner is None:
-            return
-        current = self.data.get(OWNER_FIELD) if self.data else None
-        if str(current).isdigit() and resolution.users.filter(pk=current).exists():
             return
         data = self.data.copy()
         data[OWNER_FIELD] = owner.pk
@@ -417,6 +469,7 @@ class LeadAssignmentRuleFormMixin:
         if decision is not None:
             condition, owner = decision
             self.instance._assignment_condition_id = condition.pk
+            self.instance._assignment_owner_id = owner.pk
             self.instance.additional_info = build_assignment_info(
                 self.instance.additional_info, condition, owner, VIA_FORM
             )
@@ -437,10 +490,18 @@ class LeadAssignmentRuleFormMixin:
             return str(self[OWNER_FIELD])
 
         if resolution.state == MATCHED:
-            note = _(
-                "Rule “%(rule)s” applies. The owner is picked from its people "
-                "by the fewest leads; you can choose another one."
-            ) % {"rule": resolution.rule.name}
+            if resolution.condition.assignment_method == ASSIGNMENT_METHOD_ROUND_ROBIN:
+                note = _(
+                    "Rule “%(rule)s” applies. The owner is picked from its people "
+                    "by round robin, the next person in turn; you can choose "
+                    "another one."
+                )
+            else:
+                note = _(
+                    "Rule “%(rule)s” applies. The owner is picked from its people "
+                    "by the fewest leads; you can choose another one."
+                )
+            note = note % {"rule": resolution.rule.name}
             css = "text-gray-500"
         elif resolution.state == UNDETERMINED:
             note = _("The rule is confirmed when the remaining fields are filled in.")

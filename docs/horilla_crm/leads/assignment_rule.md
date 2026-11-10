@@ -33,6 +33,27 @@ Only one rule of a company is active at a time. `LeadAssignmentRule.save()` deac
 
 `ToggleAssignToFieldView` and `ToggleNotifyMethodFieldView` are lightweight `TemplateView` endpoints that return only a field partial. The form calls them via HTMX when the user changes the assignment type or notification method, swapping the visible field without re-rendering the full modal.
 
+### Assignment method
+
+When a condition can assign to several people (a role with many users, or several selected users), its **Assignment Method** decides who gets the lead:
+
+| Method | Value | Who gets the lead |
+|--------|-------|-------------------|
+| Least Lead Count (default) | `least_leads` | the person who owns the fewest leads; ties go to the lowest user id |
+| Round Robin | `round_robin` | each person in turn, in user id order, wrapping back to the first |
+
+- Stored on `LeadAssignmentCondition.assignment_method`. Each condition has its own rotation, kept in `last_assigned_user` (the person who got its last lead; not editable in the form). The pointer is a user id, so people joining, leaving or being deactivated never break the rotation; if the pointer user is deleted the rotation restarts from the lowest id.
+- Conditions that existed before the option was added keep `least_leads`, so nothing changes for them.
+- **Engine** (`apply_assignment_rules`): `pick_for_condition(..., advance=True)` takes the next turn under a row lock, so leads created at the same time get different people.
+- **Form** ("Assign using rules"): the owner box only *previews* the next person; the turn is taken after the lead is saved (`advance_rotation`), for the person actually chosen, so choosing someone else means the rotation continues from them.
+- On the lead form, ticking "Assign using rules" always pre-selects the person the condition's method suggests (the next in turn, or the one with the fewest leads), even when the form arrives with an owner (for example Duplicate, which copies the source lead's owner). The suggestion is re-selected on each preview, and the user can still pick anyone from the list before saving.
+- Round robin ignores how many leads someone already owns; use Least Lead Count to balance workload.
+- After updating, run `python manage.py makemigrations leads` and `python manage.py migrate` (adds the two columns; existing rows get the default).
+
+### Mail configuration popup
+
+`ToggleNotifyMethodFieldView` also checks the mail setup. When **Notify as Email** or **Both** is picked and no active outgoing mail configuration exists (`HorillaMailConfiguration`, `mail_channel="outgoing"`, `is_active=True`), the partial returned to the form carries `lead_assignment_rule/mail_config_popup.html`, the same "Mail Configuration Required" popup the cadence email follow-up uses, with a **Configure** button to the mail server page. Email is not kept: the select goes back to empty (or to *Notify as Notification* when *Both* was picked) and the mail template field stays hidden. Saving is still checked by `LeadAssignmentCondition.clean()`.
+
 ### Rule pre-fill in condition form
 
 `AssignmentConditionFormView` reads `rule_pk` from GET params and pre-fills the `rule` FK in the form's initial data. This allows opening the condition form directly from the rule detail page without manual input.
@@ -76,7 +97,7 @@ When at least one **active** rule has a condition, the lead **create** forms (si
 | Checkbox | Owner field | On save |
 |--------|-------------|---------|
 | unticked | normal (ajax select) | the owner picked in the form is saved, then the post-save engine runs as it always did and may re-assign by rule |
-| ticked, a condition matches | limited to the people that condition can assign to (role members *or* the selected users), the person owning the fewest leads pre-selected | the chosen person owns the lead; the engine does **not** pick again, only the condition's notifications are sent |
+| ticked, a condition matches | limited to the people that condition can assign to (role members *or* the selected users), the person the condition's **Assignment Method** picks pre-selected | the chosen person owns the lead; the engine does **not** pick again, only the condition's notifications are sent |
 | ticked, no condition matches | normal field plus a notice | rejected with *"The lead does not satisfy any active assignment rule (…). Change the values or untick "Assign using rules"."* |
 
 Pieces (all inside the leads app; nothing under `horilla/` is changed and no form/view extension is used):
@@ -84,7 +105,7 @@ Pieces (all inside the leads app; nothing under `horilla/` is changed and no for
 | Piece | Role |
 |-------|------|
 | `horilla_crm/leads/assignment/evaluation.py` | `compare`/`normalise` (shared operator semantics) and a three-valued (`YES`/`NO`/`UNKNOWN`) evaluation of conditions against a plain dict such as `cleaned_data` |
-| `horilla_crm/leads/assignment/pool.py` | `active_conditions`, `condition_users`, `pick_least_loaded` (the same functions the engine uses) and `resolve_for_data` ("first matching condition with someone to assign to wins") |
+| `horilla_crm/leads/assignment/pool.py` | `active_conditions`, `condition_users`, `pick_least_loaded`, `pick_round_robin`, `pick_for_condition`, `advance_rotation` (the same functions the engine uses) and `resolve_for_data` ("first matching condition with someone to assign to wins") |
 | `horilla_crm/leads/assignment/notify.py` | the email / in-app notification senders, plus `notify_assignment` for the form path |
 | `horilla_crm/leads/form_mixins.py` | `LeadAssignmentRuleFormMixin`, the **outermost** base of both lead forms (it must come after `OwnerQuerysetMixin.__init__` has set the owner queryset) |
 | `horilla_crm/leads/views/assignment_rule_form.py` | `LeadAssignmentOwnerView` (`leads:assignment_rule_owner`): redraws the Owner box (field and checkbox) when the checkbox is toggled, or a field the rules look at changes while it is ticked |
@@ -111,7 +132,7 @@ Limitations:
 
 - Sub-roles of a role target are not expanded (same as the engine).
 - Custom Date / Date and Time criteria that use `gt`/`lt`/`between` or the relative operators are evaluated by value by `custom_fields` for the engine, which needs a saved lead. The form compares the submitted values as text, so such a criterion may report "does not satisfy" on the form; untick the checkbox and the engine assigns as before.
-- "Fewest leads" counts every lead the person owns, including converted ones (parity with the engine).
+- "Least Lead Count" counts every lead the person owns, including converted ones (parity with the engine).
 - **Assign To** users and roles on a condition are limited to the active company. `AssignmentRuleConditionForm` uses `OwnerQuerysetMixin`, the same scoping as the other CRM user and role fields, including the filter next to those fields.
 
 ---

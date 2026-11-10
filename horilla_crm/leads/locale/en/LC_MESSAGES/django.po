@@ -135,6 +135,18 @@ msgstr ""
 msgid "Assign To Roles"
 msgstr ""
 
+msgid "Assignment Method"
+msgstr ""
+
+msgid "Least Lead Count"
+msgstr ""
+
+msgid "Round Robin"
+msgstr ""
+
+msgid "Last Assigned User"
+msgstr ""
+
 msgid "Notify Method"
 msgstr ""
 

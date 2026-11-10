@@ -4,7 +4,8 @@ Who can a lead be assigned to?
 ``resolve_for_data`` mirrors the engine's "first matching condition wins" rule
 over a form's data and returns the people that condition can assign to. The
 people are found with ``condition_users`` and the owner is picked with
-``pick_least_loaded``, the same functions the post-save engine uses.
+``pick_for_condition`` (least lead count or round robin, as the condition says),
+the same functions the post-save engine uses.
 """
 
 # Standard library imports
@@ -12,12 +13,14 @@ from dataclasses import dataclass, field
 
 # First party imports (Horilla)
 from horilla.auth.models import User
+from horilla.db import transaction
 from horilla.db.models import Count
 from horilla.utils import timezone
 from horilla.utils.translation import gettext as _
 
 # Local imports
 from horilla_crm.leads.models import Lead, LeadAssignmentCondition
+from horilla_crm.leads.models.assignment_rules import ASSIGNMENT_METHOD_ROUND_ROBIN
 
 from .evaluation import Match, condition_result, explain_failure
 
@@ -115,6 +118,67 @@ def pick_least_loaded(users_qs):
     )
 
 
+def pick_round_robin(users_qs, last_user_id=None):
+    """
+    From a queryset of users, return the next one in turn.
+
+    People are taken in PK order. The turn goes to the first person after
+    ``last_user_id``; after the last person it wraps to the first. The pointer
+    is a PK, not a position, so people joining, leaving or being deactivated
+    never break the rotation.
+    """
+    ordered = users_qs.order_by("pk")
+    if last_user_id is not None:
+        following = ordered.filter(pk__gt=last_user_id).first()
+        if following is not None:
+            return following
+    return ordered.first()
+
+
+def pick_for_condition(condition, users_qs, *, advance=False):
+    """
+    Pick one person from ``users_qs`` with the method the condition is set to.
+
+    * least lead count (the default): see ``pick_least_loaded``.
+    * round robin: the next person after the one who got the condition's last
+      lead. With ``advance=True`` the turn is taken: the condition's pointer
+      moves to the person returned, under a row lock so two leads created at
+      the same time get different people. With ``advance=False`` (a preview)
+      nothing is stored.
+    """
+    if condition.assignment_method != ASSIGNMENT_METHOD_ROUND_ROBIN:
+        return pick_least_loaded(users_qs)
+    if not advance:
+        return pick_round_robin(users_qs, condition.last_assigned_user_id)
+
+    with transaction.atomic():
+        current = (
+            LeadAssignmentCondition.all_objects.select_for_update()
+            .values_list("last_assigned_user_id", flat=True)
+            .get(pk=condition.pk)
+        )
+        user = pick_round_robin(users_qs, current)
+        if user is not None:
+            LeadAssignmentCondition.all_objects.filter(pk=condition.pk).update(
+                last_assigned_user=user
+            )
+            condition.last_assigned_user_id = user.pk
+    return user
+
+
+def advance_rotation(condition_id, user_id):
+    """
+    Record that ``user_id`` took the turn of a round robin condition.
+
+    Used when the owner was chosen on a form: the form only previews the next
+    person, so the turn is taken once the lead is saved. Does nothing for a
+    condition that uses another method.
+    """
+    LeadAssignmentCondition.all_objects.filter(
+        pk=condition_id, assignment_method=ASSIGNMENT_METHOD_ROUND_ROBIN
+    ).update(last_assigned_user_id=user_id)
+
+
 def _pool_groups(conditions, company):
     """
     Group the people of ``conditions`` by where they come from, for display.
@@ -161,12 +225,17 @@ def _build(state, conditions, company, *, condition=None, reason=""):
     for candidate in conditions:
         pks.update(condition_users(candidate, company).values_list("pk", flat=True))
     users = User.objects.filter(pk__in=pks, is_active=True)
+    if state == MATCHED and condition is not None:
+        # Only a preview: showing a form must not take anyone's turn.
+        default_owner = pick_for_condition(condition, users)
+    else:
+        default_owner = pick_least_loaded(users)
     return Resolution(
         state=state,
         condition=condition,
         conditions=list(conditions),
         users=users,
-        default_owner=pick_least_loaded(users),
+        default_owner=default_owner,
         reason=reason,
         groups=_pool_groups(conditions, company),
     )

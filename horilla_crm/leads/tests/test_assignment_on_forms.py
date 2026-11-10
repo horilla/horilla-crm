@@ -19,6 +19,7 @@ from horilla.contrib.core.models import Company, HorillaContentType, Role
 
 # First party imports (Horilla)
 from horilla.contrib.field_management.models import CustomFieldDefinition
+from horilla.contrib.mail.models import HorillaMailConfiguration
 from horilla.contrib.utils.middlewares import _thread_local
 from horilla.extension.forms.resolve import resolve_form_class
 from horilla.urls import reverse
@@ -35,8 +36,11 @@ from horilla_crm.leads.assignment.pool import (
     NO_ASSIGNEES,
     NO_MATCH,
     UNDETERMINED,
+    advance_rotation,
     condition_users,
+    pick_for_condition,
     pick_least_loaded,
+    pick_round_robin,
     resolve_for_data,
 )
 from horilla_crm.leads.form_mixins import APPLY_FIELD
@@ -256,11 +260,13 @@ class AssignmentFixtureMixin:
         users=(),
         roles=(),
         notify_method="",
+        assignment_method="least_leads",
     ):
         """Add a condition to ``rule``; rows are (field, op, value[, logic])."""
         condition = LeadAssignmentCondition.objects.create(
             rule=rule,
             assign_to_type="role" if roles else "user",
+            assignment_method=assignment_method,
             notify_method=notify_method,
             company=self.company,
         )
@@ -278,18 +284,11 @@ class AssignmentFixtureMixin:
             )
         return condition
 
-    def make_rule(
-        self, name="Website leads", *, active=True, rule=None, **condition_kwargs
-    ):
-        """Create a rule with one condition and return the condition.
-
-        Only one rule of a company can be active, so pass ``rule`` to add a
-        further condition to an existing rule.
-        """
-        if rule is None:
-            rule = LeadAssignmentRule.objects.create(
-                name=name, company=self.company, is_active=active
-            )
+    def make_rule(self, name="Website leads", *, active=True, **condition_kwargs):
+        """Create a rule with one condition and return the condition."""
+        rule = LeadAssignmentRule.objects.create(
+            name=name, company=self.company, is_active=active
+        )
         return self.add_condition(rule, **condition_kwargs)
 
     def lead_payload(self, **overrides):
@@ -402,6 +401,130 @@ class PoolTests(AssignmentFixtureMixin, TestCase):
         self.assertIsNone(pick_least_loaded(User.objects.none()))
 
 
+class AssignmentMethodPickTests(AssignmentFixtureMixin, TestCase):
+    """Least lead count and round robin picks (no signals involved)."""
+
+    def setUp(self):
+        """Create the company, users, and a lead stage."""
+        self.create_fixture()
+        self.pool = User.objects.filter(pk__in=[user.pk for user in self.sales])
+
+    def test_new_condition_defaults_to_least_leads(self):
+        """A condition made without a method keeps today's behaviour."""
+        rule = LeadAssignmentRule.objects.create(name="Old", company=self.company)
+        condition = LeadAssignmentCondition.objects.create(
+            rule=rule, company=self.company
+        )
+        self.assertEqual(condition.assignment_method, "least_leads")
+        self.assertIsNone(condition.last_assigned_user_id)
+
+    def test_round_robin_cycles_and_wraps(self):
+        """Each person gets a turn in pk order, then it starts over."""
+        first, second, third = self.sales
+        self.assertEqual(pick_round_robin(self.pool), first)
+        self.assertEqual(pick_round_robin(self.pool, first.pk), second)
+        self.assertEqual(pick_round_robin(self.pool, second.pk), third)
+        self.assertEqual(pick_round_robin(self.pool, third.pk), first)
+
+    def test_round_robin_survives_pool_changes(self):
+        """The pointer is a pk: leaving, joining and deleted people are fine."""
+        first, second, third = self.sales
+        # The pointer person left the pool: the next higher pk still goes next.
+        User.objects.filter(pk=second.pk).update(is_active=False)
+        active = User.objects.filter(pk__in=[u.pk for u in self.sales], is_active=True)
+        self.assertEqual(pick_round_robin(active, second.pk), third)
+        # A pointer past everyone wraps to the first.
+        self.assertEqual(pick_round_robin(active, third.pk + 1000), first)
+
+    def test_round_robin_empty_pool(self):
+        """Nobody to pick."""
+        self.assertIsNone(pick_round_robin(User.objects.none(), 5))
+
+    def test_least_leads_condition_ignores_the_pointer(self):
+        """The default method still picks the person owning the fewest leads."""
+        condition = self.make_rule(roles=[self.sales_role])
+        self.create_lead(self.sales[0], email="a@example.com")
+        self.assertEqual(
+            pick_for_condition(condition, self.pool, advance=True), self.sales[1]
+        )
+        condition.refresh_from_db()
+        self.assertIsNone(condition.last_assigned_user_id)
+
+    def test_round_robin_preview_does_not_take_the_turn(self):
+        """Without ``advance`` nothing is stored, so previews are free."""
+        condition = self.make_rule(
+            roles=[self.sales_role], assignment_method="round_robin"
+        )
+        for _ in range(3):
+            self.assertEqual(pick_for_condition(condition, self.pool), self.sales[0])
+        condition.refresh_from_db()
+        self.assertIsNone(condition.last_assigned_user_id)
+
+    def test_round_robin_advance_moves_the_pointer(self):
+        """Each advancing pick hands the turn to the next person."""
+        condition = self.make_rule(
+            roles=[self.sales_role], assignment_method="round_robin"
+        )
+        picked = [
+            pick_for_condition(condition, self.pool, advance=True) for _ in range(4)
+        ]
+        self.assertEqual(
+            picked, [self.sales[0], self.sales[1], self.sales[2], self.sales[0]]
+        )
+        condition.refresh_from_db()
+        self.assertEqual(condition.last_assigned_user_id, self.sales[0].pk)
+
+    def test_conditions_rotate_independently(self):
+        """Two round robin conditions each keep their own turn."""
+        one = self.make_rule(
+            "One", roles=[self.sales_role], assignment_method="round_robin"
+        )
+        two = self.make_rule(
+            "Two",
+            active=False,
+            roles=[self.sales_role],
+            assignment_method="round_robin",
+        )
+        pick_for_condition(one, self.pool, advance=True)
+        pick_for_condition(one, self.pool, advance=True)
+        self.assertEqual(
+            pick_for_condition(two, self.pool, advance=True), self.sales[0]
+        )
+
+    def test_deleted_pointer_user_restarts_the_rotation(self):
+        """Deleting the last person clears the pointer (SET_NULL)."""
+        condition = self.make_rule(
+            roles=[self.sales_role], assignment_method="round_robin"
+        )
+        gone = self.make_user("gone", role=self.sales_role)
+        advance_rotation(condition.pk, gone.pk)
+        gone.delete()
+        condition.refresh_from_db()
+        self.assertIsNone(condition.last_assigned_user_id)
+        self.assertEqual(pick_for_condition(condition, self.pool), self.sales[0])
+
+    def test_advance_rotation_leaves_other_methods_alone(self):
+        """A least-leads condition never stores a pointer."""
+        condition = self.make_rule(roles=[self.sales_role])
+        advance_rotation(condition.pk, self.sales[1].pk)
+        condition.refresh_from_db()
+        self.assertIsNone(condition.last_assigned_user_id)
+
+    def test_matched_preview_suggests_the_next_person(self):
+        """The form preview follows the matched condition's method."""
+        condition = self.make_rule(
+            roles=[self.sales_role], assignment_method="round_robin"
+        )
+        advance_rotation(condition.pk, self.sales[0].pk)
+        resolution = resolve_for_data(
+            {"lead_source": "website"}, final=True, company=self.company
+        )
+        self.assertEqual(resolution.state, MATCHED)
+        self.assertEqual(resolution.default_owner, self.sales[1])
+        condition.refresh_from_db()
+        self.assertEqual(condition.last_assigned_user_id, self.sales[0].pk)
+
+
 class ResolveTests(AssignmentFixtureMixin, TestCase):
     """``resolve_for_data`` follows the engine's "first match wins"."""
 
@@ -427,7 +550,7 @@ class ResolveTests(AssignmentFixtureMixin, TestCase):
     def test_first_matching_condition_wins(self):
         """Rules are tried by creation date; the first match decides."""
         first = self.make_rule("First", users=[self.direct])
-        self.make_rule("Second", rule=first.rule, users=[self.outsider])
+        self.make_rule("Second", users=[self.outsider])
         result = resolve_for_data({"lead_source": "website"}, final=True)
         self.assertEqual(result.condition, first)
 
@@ -469,9 +592,7 @@ class ResolveTests(AssignmentFixtureMixin, TestCase):
             ],
             users=[self.direct],
         )
-        second = self.make_rule(
-            "Second", rule=first.rule, criteria=[], users=[self.outsider]
-        )
+        second = self.make_rule("Second", criteria=[], users=[self.outsider])
         result = resolve_for_data({"lead_source": "website"}, final=False)
 
         self.assertEqual(result.state, UNDETERMINED)
@@ -576,10 +697,9 @@ class SingleFormTests(AssignmentFixtureMixin, TestCase):
 
     def test_owner_must_be_in_the_matching_pool(self):
         """A person of another condition is not accepted for this lead."""
-        website = self.make_rule("Website", users=[self.direct])
+        self.make_rule("Website", users=[self.direct])
         self.make_rule(
             "Referral",
-            rule=website.rule,
             criteria=[("lead_source", "exact", "referral")],
             users=[self.outsider],
         )
@@ -750,9 +870,7 @@ class OwnerPreviewViewTests(AssignmentFixtureMixin, TestCase):
         self.assertNotContains(response, "Website leads · Sales")
         self.assertNotContains(response, "data-url")
         self.assertNotContains(response, f'<option value="{self.outsider.pk}"')
-        self.assertContains(
-            response, "applies. The owner is picked from its people by the fewest leads"
-        )
+        self.assertContains(response, "Assigned by rule")
         self.assertRegex(html, rf'<option value="{self.sales[1].pk}"[^>]*selected')
 
     def test_switch_on_loads_the_rule_people_once(self):
@@ -775,9 +893,104 @@ class OwnerPreviewViewTests(AssignmentFixtureMixin, TestCase):
             ]
             self.assertEqual(len(hits), 1, table)
 
-    def test_current_pick_is_kept_when_in_the_pool(self):
-        """A person already chosen who is in the pool stays selected."""
+    def _toggle_notify_method(self, notify_method):
+        """Pick a Notify Method like the condition form does."""
+        return self.client.post(
+            reverse("leads:toggle_notify_method_field"),
+            {"notify_method": notify_method},
+            HTTP_HX_REQUEST="true",
+        )
+
+    def test_email_without_a_mail_server_shows_the_popup(self):
+        """Email or Both with no outgoing mail server asks to configure one."""
+        popup = "Mail Configuration Required"
+        for method in ("email", "both"):
+            response = self._toggle_notify_method(method)
+            self.assertContains(response, popup)
+            self.assertContains(response, "/mail/mail-server/")
+        # Email is not kept: the template pickers follow the reset method.
+        email = self._toggle_notify_method("email").content.decode()
+        self.assertIn('id="mail_template_container"', email)
+        self.assertRegex(
+            email, r'id="mail_template_container"[^>]*style="display: none"'
+        )
+        self.assertIn('var value = "";', email)
+        both = self._toggle_notify_method("both").content.decode()
+        self.assertIn('var value = "notification";', both)
+
+    def test_other_methods_never_show_the_mail_popup(self):
+        """In-app notifications and an empty method need no mail server."""
+        for method in ("notification", ""):
+            self.assertNotContains(
+                self._toggle_notify_method(method), "Mail Configuration Required"
+            )
+
+    def test_email_with_a_mail_server_shows_no_popup(self):
+        """With an active outgoing mail server the mail template stays shown."""
+        HorillaMailConfiguration.objects.create(
+            type="mail",
+            mail_channel="outgoing",
+            host="smtp.example.com",
+            port=587,
+            username="sender@example.com",
+            from_email="sender@example.com",
+            is_active=True,
+            company=self.company,
+        )
+        response = self._toggle_notify_method("email")
+        self.assertNotContains(response, "Mail Configuration Required")
+        self.assertNotRegex(
+            response.content.decode(),
+            r'id="mail_template_container"[^>]*style="display: none"',
+        )
+
+    def test_round_robin_preselects_next_in_turn_over_a_prefilled_owner(self):
+        """A prefilled owner (Duplicate, earlier pick) does not hide the turn."""
+        condition = self.make_rule(
+            roles=[self.sales_role], assignment_method="round_robin"
+        )
+        advance_rotation(condition.pk, self.sales[0].pk)
+        params = {
+            APPLY_FIELD: "on",
+            "lead_source": "website",
+            "lead_owner": self.sales[0].pk,
+            "mode": "single",
+        }
+        response = self.get(params)
+        self.assertRegex(
+            response.content.decode(),
+            rf'<option value="{self.sales[1].pk}"[^>]*selected',
+        )
+        self.assertNotRegex(
+            response.content.decode(),
+            rf'<option value="{self.sales[0].pk}"[^>]*selected',
+        )
+
+    def test_note_names_the_conditions_assignment_method(self):
+        """The note under Owner says how the rule picks, per method."""
+        params = {
+            APPLY_FIELD: "on",
+            "lead_source": "website",
+            "lead_owner": self.direct.pk,
+            "mode": "single",
+        }
+        condition = self.make_rule(roles=[self.sales_role])
+        response = self.get(params)
+        self.assertContains(response, "by the fewest leads")
+        self.assertNotContains(response, "round robin")
+
+        LeadAssignmentCondition.objects.filter(pk=condition.pk).update(
+            assignment_method="round_robin"
+        )
+        response = self.get(params)
+        self.assertContains(response, "by round robin, the next person in turn")
+        self.assertNotContains(response, "by the fewest leads")
+
+    def test_least_leads_preselects_the_suggestion_over_a_prefilled_owner(self):
+        """A prefilled owner (Duplicate, earlier pick) does not hide the pick."""
         self.make_rule(roles=[self.sales_role])
+        # sales0 owns a lead, so sales1 is the least loaded.
+        self.create_lead(self.sales[0])
         response = self.get(
             {
                 APPLY_FIELD: "on",
@@ -786,10 +999,9 @@ class OwnerPreviewViewTests(AssignmentFixtureMixin, TestCase):
                 "mode": "single",
             }
         )
-        self.assertRegex(
-            response.content.decode(),
-            rf'<option value="{self.sales[2].pk}"[^>]*selected',
-        )
+        html = response.content.decode()
+        self.assertRegex(html, rf'<option value="{self.sales[1].pk}"[^>]*selected')
+        self.assertNotRegex(html, rf'<option value="{self.sales[2].pk}"[^>]*selected')
 
     def test_no_match_gives_a_notice_and_the_normal_field(self):
         """Tick with values no rule accepts: a notice, and the normal owner field."""
@@ -819,9 +1031,7 @@ class OwnerPreviewViewTests(AssignmentFixtureMixin, TestCase):
             {APPLY_FIELD: "on", "industry": "education", "mode": "single"}
         )
         self.assertContains(response, f'<option value="{self.direct.pk}"')
-        self.assertContains(
-            response, "applies. The owner is picked from its people by the fewest leads"
-        )
+        self.assertContains(response, "Assigned by rule")
 
     def test_nobody_is_suggested_until_a_rule_is_settled(self):
         """While the rule is undecided, no owner is preselected."""
@@ -1030,6 +1240,46 @@ class SingleFormSaveTests(ViewFixtureMixin, TransactionTestCase):
 # ---------------------------------------------------------------------------
 
 
+class AssignmentMethodSaveTests(ViewFixtureMixin, TransactionTestCase):
+    """Round robin through the engine and through the lead form."""
+
+    def test_engine_gives_each_person_a_turn(self):
+        """Six new leads go to a three person role in strict rotation."""
+        self.make_rule(roles=[self.sales_role], assignment_method="round_robin")
+        owners = []
+        for i in range(6):
+            lead = self.create_lead(self.direct, email=f"rr{i}@example.com")
+            lead.refresh_from_db()
+            owners.append(lead.lead_owner_id)
+        expected = [user.pk for user in self.sales] * 2
+        self.assertEqual(owners, expected)
+
+    def test_engine_least_leads_is_unchanged(self):
+        """The default method still balances by lead count."""
+        self.make_rule(roles=[self.sales_role])
+        owners = []
+        for i in range(3):
+            lead = self.create_lead(self.direct, email=f"ll{i}@example.com")
+            lead.refresh_from_db()
+            owners.append(lead.lead_owner_id)
+        self.assertEqual(sorted(owners), sorted(user.pk for user in self.sales))
+
+    def test_ticked_form_takes_the_turn_of_the_chosen_person(self):
+        """The form previews; saving moves the pointer to who was chosen."""
+        condition = self.make_rule(
+            roles=[self.sales_role], assignment_method="round_robin"
+        )
+        chosen = self.sales[1]
+        with mock.patch(
+            "horilla_crm.leads.assignment.notify.deliver_assignment_notifications"
+        ):
+            response = self.post_single(lead_owner=chosen.pk, **{APPLY_FIELD: "on"})
+        self.assertIn("HX-Redirect", response)
+        condition.refresh_from_db()
+        self.assertEqual(condition.last_assigned_user_id, chosen.pk)
+        self.assertEqual(self.saved_lead().lead_owner_id, chosen.pk)
+
+
 class WizardTests(ViewFixtureMixin, TransactionTestCase):
     """The same option on the four-step form."""
 
@@ -1136,14 +1386,13 @@ class WizardTests(ViewFixtureMixin, TransactionTestCase):
 
     def test_owner_must_still_be_in_the_pool_at_the_end(self):
         """Later steps can change the pool; the owner is checked at the end."""
-        us = self.make_rule(
+        self.make_rule(
             "US",
             criteria=[("country", "exact", "US")],
             users=[self.direct],
         )
         self.make_rule(
             "Elsewhere",
-            rule=us.rule,
             criteria=[("country", "exact", "GB")],
             users=[self.outsider],
         )

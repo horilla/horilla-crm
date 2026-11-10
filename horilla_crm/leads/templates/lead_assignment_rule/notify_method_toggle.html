@@ -6,7 +6,7 @@
     {% endif %}
 >
     <div class="flex justify-between items-center mb-1">
-        <label for="id_mail_template" class="text-xs text-color-600">{% trans "Mail Template" %}</label>
+        <label for="id_mail_template" class="text-xs font-semibold text-color-600">{% trans "Mail Template" %}</label>
     </div>
     <div class="relative">
         <select
@@ -33,7 +33,7 @@
     {% endif %}
 >
     <div class="flex justify-between items-center mb-1">
-        <label for="id_notification_template" class="text-xs text-color-600">{% trans "Notification Template" %}</label>
+        <label for="id_notification_template" class="text-xs font-semibold text-color-600">{% trans "Notification Template" %}</label>
     </div>
     <div class="relative">
         <select
@@ -55,3 +55,6 @@
         </select>
     </div>
 </div>
+{% if show_mail_config_popup %}
+    {% include "lead_assignment_rule/mail_config_popup.html" %}
+{% endif %}

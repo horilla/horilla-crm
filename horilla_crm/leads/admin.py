@@ -31,6 +31,8 @@ class LeadAssignmentConditionAdmin(admin.ModelAdmin):
     """Admin for lead assignment conditions with M2M assignee widgets."""
 
     filter_horizontal = ("assign_to_users", "assign_to_roles")
+    list_display = ("__str__", "assign_to_type", "assignment_method")
+    readonly_fields = ("last_assigned_user",)
 
 
 @admin.register(LogEntry)

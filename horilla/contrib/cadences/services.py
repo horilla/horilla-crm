@@ -21,6 +21,7 @@ from dateutil.relativedelta import relativedelta
 # Third-party imports (Django)
 from django.db import IntegrityError
 
+from horilla.auth.models import User
 from horilla.contrib.activity.models import Activity
 from horilla.contrib.automations.methods import resolve_mail_recipients
 from horilla.contrib.core.models import HorillaContentType
@@ -33,6 +34,7 @@ from horilla.contrib.mail.services import HorillaMailManager
 from horilla.contrib.utils.middlewares import _thread_local
 
 # First party imports (Horilla)
+from horilla.core.exceptions import FieldDoesNotExist
 from horilla.db import transaction
 from horilla.db.models import Max, Q
 from horilla.utils import timezone
@@ -171,6 +173,91 @@ def _runtime_info(cadence, followup, enrollment):
             "branch_from_id": followup.branch_from_id,
         }
     }
+
+
+def _record_owner_id(instance):
+    """
+    The pk of the user who owns ``instance``: the first of the model's
+    ``OWNER_FIELDS`` that holds a user, or ``None``.
+
+    A foreign key is read from its ``<field>_id`` column (no query); a
+    many-to-many owner field gives its first user by pk (one query).
+    """
+    for field_name in getattr(instance, "OWNER_FIELDS", None) or ():
+        try:
+            field = instance._meta.get_field(field_name)
+        except FieldDoesNotExist:
+            continue
+        if not field.is_relation or field.related_model is not User:
+            continue
+        if field.many_to_many:
+            user_id = (
+                getattr(instance, field_name)
+                .order_by("pk")
+                .values_list("pk", flat=True)
+                .first()
+            )
+        elif field.many_to_one or field.one_to_one:
+            user_id = getattr(instance, field.attname, None)
+        else:
+            continue
+        if user_id:
+            return user_id
+    return None
+
+
+def followup_owner_setting(followup):
+    """``(fixed owner id, use record owner)`` of a task or call follow-up."""
+    if followup.followup_type == "call":
+        return followup.call_owner_id, followup.call_owner_from_record
+    return followup.task_owner_id, followup.task_owner_from_record
+
+
+def resolve_followup_owner(followup, instance, cadence=None):
+    """
+    The owner of the task or call created by ``followup`` for ``instance``.
+
+    Returns ``(user_id, source)``. ``source`` says where the owner came from:
+    ``"fixed"`` (Task / Call Owner), ``"record"`` (the record's owner),
+    ``"cadence_creator"`` or ``"none"``. When the follow-up asks for the
+    record owner and the record has none, the fixed owner is used, then the
+    creator of the cadence.
+    """
+    fixed_id, from_record = followup_owner_setting(followup)
+    if not from_record:
+        return fixed_id, ("fixed" if fixed_id else "none")
+    owner_id = _record_owner_id(instance)
+    if owner_id:
+        return owner_id, "record"
+    if fixed_id:
+        source = "fixed"
+    else:
+        cadence = cadence or followup.cadence
+        fixed_id = getattr(cadence, "created_by_id", None)
+        source = "cadence_creator" if fixed_id else "none"
+    logger.warning(
+        "Cadence follow-up %s: %s %s has no owner in OWNER_FIELDS; "
+        "the %s is used instead",
+        followup.pk,
+        instance._meta.label,
+        instance.pk,
+        source.replace("_", " "),
+    )
+    return fixed_id, source
+
+
+def note_owner_source(runtime, owner_source, from_record):
+    """
+    Note in ``runtime`` (an activity's ``cadence_runtime``) how the owner was
+    chosen for a "record owner" follow-up, so a record without an owner shows.
+    """
+    runtime.pop("owner_source", None)
+    runtime.pop("record_owner_missing", None)
+    if from_record:
+        runtime["owner_source"] = owner_source
+        if owner_source != "record":
+            runtime["record_owner_missing"] = True
+    return runtime
 
 
 def _resolve_outgoing_mail_sender(company):
@@ -455,6 +542,10 @@ def _build_followup_item(instance, enrollment, followup, trigger_time=None):
             instance, cadence, followup, enrollment, content_type
         )
     runtime = _runtime_info(cadence, followup, enrollment)
+    owner_id, owner_source = resolve_followup_owner(followup, instance, cadence)
+    note_owner_source(
+        runtime["cadence_runtime"], owner_source, followup_owner_setting(followup)[1]
+    )
     if followup.followup_type == "task":
         due_dt = now + timedelta(days=(followup.due_after_days or 0))
         subject_text = followup.subject or f"{cadence.name} - Task"
@@ -466,14 +557,14 @@ def _build_followup_item(instance, enrollment, followup, trigger_time=None):
             task_priority=followup.task_priority or "medium",
             due_datetime=due_dt,
             start_datetime=now,
-            owner=followup.task_owner,
+            owner_id=owner_id,
             company=getattr(instance, "company", None),
             content_type=content_type,
             object_id=instance.pk,
             additional_info=runtime,
         )
-        if followup.task_owner:
-            activity.assigned_to.add(followup.task_owner)
+        if owner_id:
+            activity.assigned_to.add(owner_id)
         return activity
     start_dt = now + timedelta(days=(followup.call_start_after_days or 0))
     call_text = followup.purpose or f"{cadence.name} - Call"
@@ -486,7 +577,7 @@ def _build_followup_item(instance, enrollment, followup, trigger_time=None):
         call_purpose=followup.purpose,
         start_datetime=start_dt,
         due_datetime=start_dt,
-        owner=followup.call_owner,
+        owner_id=owner_id,
         company=getattr(instance, "company", None),
         content_type=content_type,
         object_id=instance.pk,

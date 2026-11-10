@@ -710,3 +710,23 @@ msgstr "پیگیری توالی"
 
 msgid "Cadence Follow Ups"
 msgstr "پیگیری‌های توالی"
+
+msgid "Assign Task to Record Owner"
+msgstr "واگذاری وظیفه به مالک رکورد"
+
+msgid ""
+"Give the task to the owner of the enrolled record. Task Owner is used when "
+"the record has no owner, then the creator of the cadence."
+msgstr ""
+"وظیفه به مالک رکوردی که در توالی ثبت شده داده می‌شود. اگر رکورد مالک "
+"نداشته باشد، مالک وظیفه و سپس سازنده توالی استفاده می‌شود."
+
+msgid "Assign Call to Record Owner"
+msgstr "واگذاری تماس به مالک رکورد"
+
+msgid ""
+"Give the call to the owner of the enrolled record. Call Owner is used when "
+"the record has no owner, then the creator of the cadence."
+msgstr ""
+"تماس به مالک رکوردی که در توالی ثبت شده داده می‌شود. اگر رکورد مالک "
+"نداشته باشد، مالک تماس و سپس سازنده توالی استفاده می‌شود."

@@ -251,6 +251,14 @@ class CadenceFollowUp(HorillaCoreModel):
         related_name="cadence_task_followups",
         verbose_name=_("Task Owner"),
     )
+    task_owner_from_record = models.BooleanField(
+        default=False,
+        verbose_name=_("Assign Task to Record Owner"),
+        help_text=_(
+            "Give the task to the owner of the enrolled record. Task Owner is used "
+            "when the record has no owner, then the creator of the cadence."
+        ),
+    )
 
     # Call
     call_type = models.CharField(
@@ -275,6 +283,14 @@ class CadenceFollowUp(HorillaCoreModel):
         blank=True,
         related_name="cadence_call_followups",
         verbose_name=_("Call Owner"),
+    )
+    call_owner_from_record = models.BooleanField(
+        default=False,
+        verbose_name=_("Assign Call to Record Owner"),
+        help_text=_(
+            "Give the call to the owner of the enrolled record. Call Owner is used "
+            "when the record has no owner, then the creator of the cadence."
+        ),
     )
     purpose = models.CharField(
         max_length=255, null=True, blank=True, verbose_name=_("Purpose")
@@ -390,6 +406,12 @@ class CadenceFollowUp(HorillaCoreModel):
         "email": ("to", "email_template"),
     }
 
+    # The owner field that is optional while its "record owner" flag is set.
+    RECORD_OWNER_FLAGS = {
+        "task_owner": "task_owner_from_record",
+        "call_owner": "call_owner_from_record",
+    }
+
     def _validate_followup_number(self, errors):
         if self.followup_number == 1:
             self.previous_status = None
@@ -422,6 +444,9 @@ class CadenceFollowUp(HorillaCoreModel):
         required_fields = self.TYPE_REQUIRED_FIELDS.get(self.followup_type, ())
         msg = _("This field is required for selected follow-up type.")
         for field_name in required_fields:
+            flag = self.RECORD_OWNER_FLAGS.get(field_name)
+            if flag and getattr(self, flag, False):
+                continue
             if getattr(self, field_name, None) in (None, ""):
                 errors[field_name] = msg
 

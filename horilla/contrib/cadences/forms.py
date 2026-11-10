@@ -214,8 +214,14 @@ class CadenceFollowUpForm(HorillaModelForm):
             "task_status",
             "task_priority",
             "task_owner",
+            "task_owner_from_record",
         ],
-        "call": ["call_start_after_days", "call_owner", "purpose"],
+        "call": [
+            "call_start_after_days",
+            "call_owner",
+            "call_owner_from_record",
+            "purpose",
+        ],
         "email": ["to", "email_template"],
     }
 
@@ -232,8 +238,10 @@ class CadenceFollowUpForm(HorillaModelForm):
         "task_status",
         "task_priority",
         "task_owner",
+        "task_owner_from_record",
         "call_start_after_days",
         "call_owner",
+        "call_owner_from_record",
         "purpose",
         "to",
         "email_template",

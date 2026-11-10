@@ -15,17 +15,42 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
 
 # application = get_asgi_application()
 
+import importlib
 import os
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "horilla.settings")
+
+from django.apps import apps
+from django.core.asgi import get_asgi_application
+
+# Runs django.setup(), so the app registry is ready for the discovery below.
+django_asgi_app = get_asgi_application()
 
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
-from django.core.asgi import get_asgi_application
 
-import calls.routing
-import horilla.contrib.notifications.routing
 from horilla.utils.asgi import FreshContextMiddleware
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "horilla.settings")
+
+def collect_websocket_urlpatterns():
+    """
+    Gather ``websocket_urlpatterns`` from every installed app's ``routing`` module
+    (``<app>/routing.py``), so a new app with WebSockets just ships that file and
+    this module never needs editing. Apps without a ``routing`` module, or whose
+    module defines no ``websocket_urlpatterns``, are skipped.
+    """
+    patterns = []
+    for app_config in apps.get_app_configs():
+        module_name = f"{app_config.name}.routing"
+        try:
+            module = importlib.import_module(module_name)
+        except ModuleNotFoundError as exc:
+            if exc.name == module_name:  # this app simply has no routing module
+                continue
+            raise  # the module exists but one of its own imports is broken
+        patterns.extend(getattr(module, "websocket_urlpatterns", []))
+    return patterns
+
 
 # Each connection runs in a fresh context so one request's Django
 # ThreadSensitiveContext cannot leak into the next request on the same
@@ -33,12 +58,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "horilla.settings")
 application = FreshContextMiddleware(
     ProtocolTypeRouter(
         {
-            "http": get_asgi_application(),
+            "http": django_asgi_app,
             "websocket": AuthMiddlewareStack(
-                URLRouter(
-                    horilla.contrib.notifications.routing.websocket_urlpatterns
-                    + calls.routing.websocket_urlpatterns
-                )
+                URLRouter(collect_websocket_urlpatterns())
             ),
         }
     )

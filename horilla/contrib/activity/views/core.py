@@ -225,6 +225,10 @@ class HorillaActivitySectionView(DetailView):
         context["add_call_button"] = self.add_call_button() or {}
         context["add_email_button"] = self.add_email_button() or {}
         context["add_event_button"] = self.add_event_button() or {}
+        # Extra side-menu tabs for extensions to append to (see
+        # docs/horilla/contrib/activity/activity.md): each is a dict with
+        # id, title, url and icon_class / icon_template.
+        context["extra_tabs"] = []
         user = self.request.user
 
         can_view_record = check_record_access(user, self.object)

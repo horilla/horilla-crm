@@ -338,6 +338,30 @@ optional context without raising `TypeError` when composing invite emails.
 
 ---
 
+## Adding a tab to the Activity tab from another app
+
+The Activity tab's side menu (Tasks, Meetings, Call, Email, Events) accepts extra tabs from other apps through the normal view extension mechanism (`_inherit_view`), the same way the Cadence app adds its detail tab. `HorillaActivitySectionView` puts an empty `extra_tabs` list in its context; an extension appends to it.
+
+```python
+from horilla.extension.view import ViewExtension
+
+class MyActivityTabExtension(ViewExtension):
+    _inherit_view = "horilla.contrib.activity.views.core.HorillaActivitySectionView"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if wanted_for(self.object):
+            context["extra_tabs"].append({
+                "id": "my-tab",                    # pane id becomes tab-my-tab
+                "title": _("My Tab"),
+                "url": reverse("myapp:my_tab", kwargs={"pk": self.object.pk}),
+                "icon_class": "fa-solid fa-star",  # or "icon_template": "myapp/icon.html"
+            })
+        return context
+```
+
+Put the extension in a module the app imports at startup (for example `view_extensions`, listed in the app's `auto_import_modules`). `activity_tab.html` renders each tab as a side-menu item and an empty pane. The menu item carries `hx-get="{{ tab.url }}" hx-trigger="click once"`, so `url` is fetched into the pane the first time the tab is opened and heavy content loads only when wanted. No JavaScript is needed. The WhatsApp app (`horilla/contrib/whatsapp/view_extensions.py`) is a working example.
+
 ## UI details — call sub-tab styling (`activity_tab.html`)
 
 The **Pending Calls** and **Completed Calls** sub-tab buttons inside the activity tab include the `cursor-pointer` CSS class. This ensures the browser renders a pointer cursor on hover, giving users a consistent clickable affordance on both sub-tabs without requiring any JavaScript.

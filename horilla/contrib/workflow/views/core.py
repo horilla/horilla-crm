@@ -462,6 +462,7 @@ class WorkflowTimeTriggerHistoryView(LoginRequiredMixin, HorillaListView):
         "scheduled_at",
         "executed_at",
         "status",
+        (_("Details"), "error_message"),
     ]
 
     @cached_property

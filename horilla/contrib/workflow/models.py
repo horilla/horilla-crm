@@ -306,10 +306,12 @@ class ScheduledWorkflowExecution(HorillaCoreModel):
     STATUS_PENDING = "pending"
     STATUS_COMPLETED = "completed"
     STATUS_FAILED = "failed"
+    STATUS_SKIPPED = "skipped"
     STATUS_CHOICES = [
         (STATUS_PENDING, _("Pending")),
         (STATUS_COMPLETED, _("Completed")),
         (STATUS_FAILED, _("Failed")),
+        (STATUS_SKIPPED, _("Skipped")),
     ]
 
     time_trigger = models.ForeignKey(

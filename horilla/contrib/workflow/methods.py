@@ -927,12 +927,21 @@ def execute_action(action, instance, user):
 # ---------------------------------------------------------------------------
 
 
-def execute_workflow_rule(rule, instance, user, trigger_type):
+def execute_workflow_rule(rule, instance, user, trigger_type, met_before=None):
     """
     Execute all actions for a single WorkflowRule in order.
 
-    trigger_type is "on_create" or "on_update".
+    trigger_type is "on_create" or "on_update". ``met_before`` maps rule pks
+    to whether the record met the rule's criteria before this save (see
+    ``criteria_met_before_save``). An update runs a rule only when the record
+    enters its criteria: not when they were already met before the save. An
+    update that takes the record out of the criteria skips the rule's pending
+    time triggers for it. A rule missing from ``met_before`` (one without
+    criteria, or with no stored before-state) runs on every matching update.
     """
+    met_before_save = trigger_type == "on_update" and bool(
+        (met_before or {}).get(rule.pk)
+    )
     # Check trigger flags
     if trigger_type == "on_create" and not rule.trigger_on_create:
         return
@@ -941,8 +950,23 @@ def execute_workflow_rule(rule, instance, user, trigger_type):
 
     # Evaluate entry criteria
     if not evaluate_workflow_conditions(rule, instance):
+        if met_before_save:
+            skip_pending_time_triggers(
+                rule,
+                instance,
+                "The record stopped meeting the workflow rule's criteria.",
+            )
         logger.debug(
             "Workflow rule '%s' conditions not met for %s pk=%s",
+            rule.name,
+            instance.__class__.__name__,
+            instance.pk,
+        )
+        return
+
+    if met_before_save:
+        logger.debug(
+            "Workflow rule '%s' criteria already met before this edit of %s pk=%s",
             rule.name,
             instance.__class__.__name__,
             instance.pk,
@@ -971,6 +995,40 @@ def execute_workflow_rule(rule, instance, user, trigger_type):
             )
 
     _schedule_time_triggers(rule, instance)
+
+
+def time_trigger_skip_reason(time_trigger, instance):
+    """
+    Return why a due time trigger must not run on ``instance``, or "".
+
+    A time trigger fires some time after its rule matched, so the rule and
+    the time trigger must still be active and the record must still meet
+    the rule's criteria when it is due.
+    """
+    rule = time_trigger.rule
+    if not rule.is_active:
+        return "The workflow rule is inactive."
+    if not time_trigger.is_active:
+        return "The time trigger is inactive."
+    if not evaluate_workflow_conditions(rule, instance):
+        return "The record no longer meets the workflow rule's criteria."
+    return ""
+
+
+def skip_pending_time_triggers(rule, instance, reason):
+    """
+    Mark the pending time-trigger executions of ``rule`` for ``instance``
+    skipped with ``reason``, in one query. Returns how many were skipped.
+    """
+    return ScheduledWorkflowExecution.all_objects.filter(
+        time_trigger__rule=rule,
+        object_id=instance.pk,
+        status=ScheduledWorkflowExecution.STATUS_PENDING,
+    ).update(
+        status=ScheduledWorkflowExecution.STATUS_SKIPPED,
+        error_message=reason,
+        executed_at=timezone.now(),
+    )
 
 
 def _schedule_time_triggers(rule, instance):
@@ -1029,32 +1087,65 @@ def _schedule_time_triggers(rule, instance):
             )
 
 
-def trigger_workflow_rules(instance, trigger_type="on_create", user=None):
+def active_workflow_rules(instance):
+    """
+    The active WorkflowRules for the instance's model and company (the
+    instance's company, else the request's active company).
+    """
+    content_type = HorillaContentType.objects.get_for_model(instance)
+
+    company = getattr(instance, "company", None)
+    if not company:
+        request = getattr(_thread_local, "request", None)
+        if request:
+            company = getattr(request, "active_company", None)
+
+    filter_kwargs = {"model": content_type, "is_active": True}
+    if company:
+        filter_kwargs["company"] = company
+    return WorkflowRule.objects.filter(**filter_kwargs)
+
+
+def criteria_met_before_save(instance):
+    """
+    For an existing record about to be saved: ``{rule pk: bool}``, whether the
+    stored copy meets the criteria of each active rule that runs on edit and
+    has criteria. Empty (and no record read) when there is no such rule. A
+    rule without criteria is left out: a record cannot enter criteria that do
+    not exist, so such a rule runs on every edit.
+    """
+    rules = list(
+        active_workflow_rules(instance)
+        .filter(trigger_on_edit=True, conditions__isnull=False)
+        .distinct()
+    )
+    if not rules:
+        return {}
+    stored = instance.__class__._base_manager.filter(pk=instance.pk).first()
+    if stored is None:
+        return {}
+    return {rule.pk: evaluate_workflow_conditions(rule, stored) for rule in rules}
+
+
+def trigger_workflow_rules(
+    instance, trigger_type="on_create", user=None, met_before=None
+):
     """
     Find all active WorkflowRules for the given instance's model and execute them.
 
-    Called from the post_save signal handler.
+    Called from the post_save signal handler. ``met_before`` is passed on to
+    ``execute_workflow_rule``.
     """
     try:
-        content_type = HorillaContentType.objects.get_for_model(instance)
-
-        company = getattr(instance, "company", None)
-        if not company:
-            request = getattr(_thread_local, "request", None)
-            if request:
-                company = getattr(request, "active_company", None)
-
-        filter_kwargs = {"model": content_type, "is_active": True}
-        if company:
-            filter_kwargs["company"] = company
-
-        rules = WorkflowRule.objects.filter(**filter_kwargs).prefetch_related(
+        rules = active_workflow_rules(instance).prefetch_related(
             "conditions", "actions"
         )
 
         for rule in rules:
             try:
-                execute_workflow_rule(rule, instance, user, trigger_type)
+                execute_workflow_rule(
+                    rule, instance, user, trigger_type, met_before=met_before
+                )
             except Exception as exc:
                 logger.error(
                     "Error executing workflow rule '%s': %s",

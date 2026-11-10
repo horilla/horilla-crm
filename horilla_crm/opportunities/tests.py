@@ -1,5 +1,6 @@
 """Tests for Opportunity field requirements and the phone mode."""
 
+from types import SimpleNamespace
 from unittest import skipUnless
 
 from django.contrib.auth.models import Permission
@@ -15,7 +16,17 @@ from horilla.contrib.utils.middlewares import _thread_local
 from horilla.extension.forms import resolve_form_class
 from horilla.extension.forms.bootstrap import apply_form_extensions
 from horilla.extension.forms.registry import FORM_EXTENSION_REGISTRY
-from horilla_crm.opportunities.models import Opportunity, OpportunityStage
+from horilla.registry.delivery import (
+    ADDRESS_PHONE,
+    DeliveryChannel,
+    get_delivery_channel,
+)
+from horilla_crm.contacts.models import Contact
+from horilla_crm.opportunities.models import (
+    Opportunity,
+    OpportunityContactRole,
+    OpportunityStage,
+)
 
 _FIELD_REQUIREMENTS_INSTALLED = apps.is_installed("horilla.contrib.field_management")
 
@@ -187,3 +198,140 @@ class OpportunityOnThePhoneTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'href="mailto:it@example.com"')
         self.assertEqual(response.context["status"]["field"], "stage")
+
+
+class PrimaryContactPhoneChannel(DeliveryChannel):
+    """A phone channel, like an SMS app would register; sends nothing."""
+
+    key = "primary_contact_test_sms"
+    label = "Test SMS"
+    address_kind = ADDRESS_PHONE
+
+    def send(self, automation, instance, recipients, context, user):
+        """Not used: these tests only read and resolve recipients."""
+
+
+class OpportunityPrimaryContactRecipientTests(TestCase):
+    """
+    The opportunity's primary contact is offered in the "Send to" picker of
+    mail and phone channels, and resolves through ``Opportunity.primary_contact``.
+    """
+
+    def setUp(self):
+        self.company = Company.objects.create(
+            name="Acme", email="acme@example.com", country="US"
+        )
+        self.seller = User.objects.create_user(
+            username="seller",
+            email="seller@example.com",
+            password="pass",
+            company=self.company,
+        )
+        stage = OpportunityStage.objects.create(
+            name="Needs Analysis", order=1, probability=30, company=self.company
+        )
+        self.opportunity = Opportunity.objects.create(
+            name="License renewal", stage=stage, owner=self.seller, company=self.company
+        )
+        self.buyer = self.contact("Sara", "09121111111", "sara@example.com")
+        self.other = self.contact("Reza", "09122222222", "reza@example.com")
+        self.sms = PrimaryContactPhoneChannel()
+        self.mail = get_delivery_channel("mail")
+
+    def contact(self, name, phone, email):
+        return Contact.objects.create(
+            first_name=name,
+            last_name="Test",
+            email=email,
+            contact_number=phone,
+            contact_owner=self.seller,
+            company=self.company,
+        )
+
+    def role(self, contact, is_primary=True, **fields):
+        return OpportunityContactRole.objects.create(
+            contact=contact,
+            opportunity=self.opportunity,
+            is_primary=is_primary,
+            company=self.company,
+            **fields,
+        )
+
+    def send_to(self, channel, spec):
+        opportunity = Opportunity.all_objects.get(pk=self.opportunity.pk)
+        return channel.resolve_recipients(spec, opportunity, None)
+
+    def test_the_picker_offers_the_primary_contact(self):
+        sms = dict(self.sms.get_recipient_choices(Opportunity))
+        self.assertEqual(
+            str(sms["instance.primary_contact.contact_number"]),
+            "Primary Contact - Contact Number",
+        )
+        self.assertIn("instance.primary_contact.secondary_contact_number", sms)
+        # The account phone from the relation one away is still there.
+        self.assertIn("instance.account.contact_number", sms)
+        mail = dict(self.mail.get_recipient_choices(Opportunity))
+        self.assertIn("instance.primary_contact.email", mail)
+        notification = dict(
+            get_delivery_channel("notification").get_recipient_choices(Opportunity)
+        )
+        self.assertFalse([key for key in notification if "primary_contact" in key])
+
+    def test_the_primary_contact_receives_the_message(self):
+        self.role(self.other, is_primary=False)
+        self.role(self.buyer)
+        self.assertEqual(
+            self.send_to(self.sms, "instance.primary_contact.contact_number"),
+            ["09121111111"],
+        )
+        self.assertEqual(
+            self.send_to(self.mail, "instance.primary_contact.email"),
+            ["sara@example.com"],
+        )
+
+    def test_without_a_primary_contact_nobody_is_sent_to(self):
+        self.assertEqual(
+            self.send_to(self.sms, "instance.primary_contact.contact_number"), []
+        )
+        self.role(self.other, is_primary=False)
+        self.assertIsNone(self.opportunity.primary_contact)
+        self.assertEqual(
+            self.send_to(self.sms, "instance.primary_contact.contact_number"), []
+        )
+
+    def test_a_primary_contact_without_a_phone_gives_nobody(self):
+        self.buyer.contact_number = ""
+        self.buyer.save()
+        self.role(self.buyer)
+        self.assertEqual(
+            self.send_to(self.sms, "instance.primary_contact.contact_number"), []
+        )
+
+    def test_several_primary_roles_use_the_one_added_first(self):
+        self.role(self.other)
+        self.role(self.buyer)
+        self.assertEqual(self.opportunity.primary_contact, self.other)
+
+    def test_inactive_roles_and_contacts_are_skipped(self):
+        self.role(self.other, is_active=False)
+        self.role(self.buyer)
+        self.assertEqual(self.opportunity.primary_contact, self.buyer)
+        Contact.all_objects.filter(pk=self.buyer.pk).update(is_active=False)
+        self.assertIsNone(self.opportunity.primary_contact)
+
+    def test_an_unsaved_opportunity_has_none_and_reads_nothing(self):
+        with self.assertNumQueries(0):
+            self.assertIsNone(Opportunity(name="Draft").primary_contact)
+
+    def test_read_without_the_active_company_filter(self):
+        """Workflow and Cadences may send while another company is active."""
+        self.role(self.buyer)
+        other = Company.objects.create(
+            name="Other", email="other@example.com", country="US"
+        )
+        previous = getattr(_thread_local, "request", None)
+        _thread_local.request = SimpleNamespace(active_company=other, user=None)
+        try:
+            self.assertEqual(self.opportunity.primary_contact, self.buyer)
+        finally:
+            _thread_local.request = previous

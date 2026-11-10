@@ -730,3 +730,9 @@ msgid ""
 msgstr ""
 "تماس به مالک رکوردی که در توالی ثبت شده داده می‌شود. اگر رکورد مالک "
 "نداشته باشد، مالک تماس و سپس سازنده توالی استفاده می‌شود."
+
+msgid "The cadence is inactive."
+msgstr "توالی غیرفعال است."
+
+msgid "The record no longer meets the cadence conditions."
+msgstr "رکورد دیگر با شرط‌های توالی مطابقت ندارد."

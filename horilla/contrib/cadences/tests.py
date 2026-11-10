@@ -40,6 +40,7 @@ from .followup_types import (
 from .forms import CadenceFollowUpForm
 from .models import (
     Cadence,
+    CadenceCondition,
     CadenceEnrollment,
     CadenceFollowUp,
     CadenceScheduledFollowUp,
@@ -1040,3 +1041,225 @@ class ChannelFollowUpDetailTests(ChannelFollowUpTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Send as Fake SMS")
         self.assertContains(response, "Notice")
+
+
+class ConditionRecheckTests(TestCase):
+    """
+    A cadence on companies with the condition "name is Acme": a later follow-up
+    of an automatic enrollment is created only while the record still meets it.
+    """
+
+    def setUp(self):
+        self.record = Company.objects.create(name="Acme")
+        self.content_type = HorillaContentType.objects.get_for_model(Company)
+        self.cadence = Cadence.objects.create(
+            name="Acme only", module=self.content_type
+        )
+        CadenceCondition.objects.create(
+            cadence=self.cadence, field="name", operator="exact", value="Acme", order=1
+        )
+        self.first = CadenceFollowUp.objects.create(
+            cadence=self.cadence,
+            followup_number=1,
+            followup_type="task",
+            subject="first",
+            due_after_days=1,
+        )
+        self.second = self.delayed("call back")
+        self.enrollment = self.enroll("auto")
+
+    def delayed(self, purpose, **fields):
+        """A call two minutes after the first follow-up is completed."""
+        values = {
+            "cadence": self.cadence,
+            "followup_number": 2,
+            "followup_type": "call",
+            "previous_status": "completed",
+            "branch_from": self.first,
+            "purpose": purpose,
+            "call_start_after_days": 0,
+            "do_this_unit": "minute",
+            "do_this_value": 2,
+        }
+        values.update(fields)
+        return CadenceFollowUp.objects.create(**values)
+
+    def enroll(self, source):
+        return CadenceEnrollment.all_objects.create(
+            cadence=self.cadence,
+            content_type=self.content_type,
+            object_id=self.record.pk,
+            started_at=timezone.now(),
+            source=source,
+        )
+
+    def schedule(self, enrollment=None):
+        """Schedule the delayed follow-ups and make them due."""
+        enrollment = enrollment or self.enrollment
+        services.create_next_followups(enrollment, self.record, self.first, "completed")
+        CadenceScheduledFollowUp.all_objects.filter(enrollment=enrollment).update(
+            scheduled_at=timezone.now() - timedelta(seconds=1)
+        )
+        return CadenceScheduledFollowUp.all_objects.get(
+            enrollment=enrollment, followup=self.second
+        )
+
+    def run_due(self, scheduled):
+        services.run_scheduled_followup(scheduled.pk)
+        scheduled.refresh_from_db()
+        return scheduled
+
+    def rename(self, name):
+        Company.objects.filter(pk=self.record.pk).update(name=name)
+
+    def calls(self, enrollment=None):
+        return Activity.all_objects.filter(
+            activity_type="log_call",
+            additional_info__cadence_runtime__enrollment_id=(
+                enrollment or self.enrollment
+            ).pk,
+        )
+
+    def assert_stopped(self, enrollment=None):
+        enrollment = enrollment or self.enrollment
+        enrollment.refresh_from_db()
+        self.assertEqual(enrollment.status, "unenrolled")
+        self.assertIsNotNone(enrollment.ended_at)
+        self.assertIsNone(enrollment.unenrolled_by)
+        self.assertEqual(str(enrollment.cadence_status_col()), "Stopped")
+
+    def test_created_while_the_record_meets_the_conditions(self):
+        scheduled = self.run_due(self.schedule())
+        self.assertEqual(scheduled.status, "completed")
+        self.assertEqual(self.calls().count(), 1)
+
+    def test_record_that_left_the_conditions_stops_the_run(self):
+        # A first-stage call that waits longer, still pending when the run stops.
+        other = CadenceFollowUp.objects.create(
+            cadence=self.cadence,
+            followup_number=1,
+            followup_type="call",
+            purpose="later call",
+            call_start_after_days=0,
+            do_this_unit="minute",
+            do_this_value=30,
+        )
+        services.create_first_followups(self.enrollment, self.record)
+        scheduled = self.schedule()
+        self.rename("Other")
+        scheduled = self.run_due(scheduled)
+        self.assertEqual(scheduled.status, "cancelled")
+        self.assertEqual(
+            scheduled.error_message,
+            "The record no longer meets the cadence conditions.",
+        )
+        self.assertIsNotNone(scheduled.executed_at)
+        self.assertFalse(self.calls().exists())
+        self.assert_stopped()
+        # The other follow-up still waiting is cancelled with the same reason.
+        other_row = CadenceScheduledFollowUp.all_objects.get(followup=other)
+        self.assertEqual(other_row.status, "cancelled")
+        self.assertEqual(other_row.error_message, scheduled.error_message)
+
+    def test_back_in_the_conditions_by_the_time_it_is_due(self):
+        scheduled = self.schedule()
+        self.rename("Other")
+        self.rename("Acme")
+        self.assertEqual(self.run_due(scheduled).status, "completed")
+        self.assertEqual(self.calls().count(), 1)
+
+    def test_the_conditions_are_read_as_they_are_when_due(self):
+        scheduled = self.schedule()
+        self.cadence.conditions.update(value="Other")
+        self.assertEqual(self.run_due(scheduled).status, "cancelled")
+        self.assert_stopped()
+
+    def test_a_cadence_without_conditions_never_stops(self):
+        self.cadence.conditions.all().delete()
+        scheduled = self.schedule()
+        self.rename("Other")
+        self.assertEqual(self.run_due(scheduled).status, "completed")
+
+    def test_a_manual_enrollment_ignores_the_conditions(self):
+        CadenceEnrollment.all_objects.filter(pk=self.enrollment.pk).update(
+            status="completed"
+        )
+        manual = self.enroll("manual")
+        scheduled = self.schedule(manual)
+        self.rename("Other")
+        self.assertEqual(self.run_due(scheduled).status, "completed")
+        self.assertEqual(self.calls(manual).count(), 1)
+        manual.refresh_from_db()
+        self.assertEqual(manual.status, "active")
+
+    def test_an_inactive_cadence_cancels_without_stopping_the_run(self):
+        scheduled = self.schedule()
+        Cadence.objects.filter(pk=self.cadence.pk).update(is_active=False)
+        scheduled = self.run_due(scheduled)
+        self.assertEqual(scheduled.status, "cancelled")
+        self.assertEqual(scheduled.error_message, "The cadence is inactive.")
+        self.assertFalse(self.calls().exists())
+        self.enrollment.refresh_from_db()
+        self.assertEqual(self.enrollment.status, "active")
+
+    def test_tasks_already_created_are_kept(self):
+        services.create_first_followups(self.enrollment, self.record)
+        scheduled = self.schedule()
+        self.rename("Other")
+        self.run_due(scheduled)
+        task = Activity.all_objects.get(
+            activity_type="task",
+            additional_info__cadence_runtime__enrollment_id=self.enrollment.pk,
+        )
+        self.assertNotEqual(task.status, "cancelled")
+
+    def test_completing_a_task_after_leaving_stops_instead_of_advancing(self):
+        services.create_first_followups(self.enrollment, self.record)
+        task = Activity.all_objects.get(
+            activity_type="task",
+            additional_info__cadence_runtime__enrollment_id=self.enrollment.pk,
+        )
+        self.rename("Other")
+        task.status = "completed"
+        task.save()
+        self.assertFalse(
+            CadenceScheduledFollowUp.all_objects.filter(
+                enrollment=self.enrollment
+            ).exists()
+        )
+        self.assert_stopped()
+
+    def test_completing_a_task_while_matching_still_advances(self):
+        services.create_first_followups(self.enrollment, self.record)
+        task = Activity.all_objects.get(
+            activity_type="task",
+            additional_info__cadence_runtime__enrollment_id=self.enrollment.pk,
+        )
+        task.status = "completed"
+        task.save()
+        self.assertEqual(
+            CadenceScheduledFollowUp.all_objects.get(enrollment=self.enrollment).status,
+            "pending",
+        )
+        self.enrollment.refresh_from_db()
+        self.assertEqual(self.enrollment.status, "active")
+
+    def test_a_stopped_run_is_not_restarted_by_a_later_match(self):
+        scheduled = self.schedule()
+        self.rename("Other")
+        self.run_due(scheduled)
+        self.rename("Acme")
+        signals._trigger_initial_followups(Company.objects.get(pk=self.record.pk))
+        self.assertEqual(
+            CadenceEnrollment.all_objects.filter(cadence=self.cadence).count(), 1
+        )
+        self.assert_stopped()
+
+    def test_stopping_a_finished_run_changes_nothing(self):
+        CadenceEnrollment.all_objects.filter(pk=self.enrollment.pk).update(
+            status="completed"
+        )
+        self.enrollment.refresh_from_db()
+        services.stop_enrollment(self.enrollment, "reason")
+        self.enrollment.refresh_from_db()
+        self.assertEqual(self.enrollment.status, "completed")

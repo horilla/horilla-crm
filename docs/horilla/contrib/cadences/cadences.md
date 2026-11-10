@@ -90,6 +90,9 @@ Task / call / email creation lives here (moved out of `signals.py`); every creat
 | `unenroll(enrollment, user)` | Closes the enrollment **first** (so cancelling activities cannot advance it), then cancels open items and keeps completed ones. Raises `EnrollmentError`. |
 | `get_or_create_auto_enrollment(cadence, instance)` | Creates an automatic enrollment only if the record was **never** enrolled in that cadence, so a save never restarts a completed or un-enrolled record. |
 | `create_first_followups` / `create_next_followups` | Create items limited to the enrollment's own items. |
+| `cadence_conditions_met(cadence, instance)` | AND / OR evaluation of the cadence conditions (always met without any); uses the prefetched `conditions`. `signals._evaluate_cadence_conditions` is the same function. |
+| `followup_stop_reason(enrollment, instance)` | Why the next follow-up must not be created now, or `""`: the cadence is inactive, or the record of an **automatic** enrollment no longer meets the conditions. See [Conditions after enrollment](#conditions-after-enrollment). |
+| `stop_enrollment(enrollment, reason)` | Stops a running enrollment whose record left the conditions: `unenrolled` (Stopped, `unenrolled_by` empty), its pending delayed follow-ups `cancelled` with `reason`. Items already created are kept. |
 | `refresh_status(enrollment)` | `completed` once all items are closed; `failed` when nothing could be created (automatic runs stay ongoing and retry on next save). |
 | `eligible_cadences(instance)` / `get_ineligible_reason(...)` | Active, same module, has a follow-up 1, not already running for the record. |
 | `adopt_legacy_enrollment(...)` | Lazily adopts items created before enrollments existed by adding `enrollment_id` to their JSON — no data migration. |
@@ -141,10 +144,24 @@ The cadence report still has Task, Call and Email tabs only.
 
 **Adding a channel** is the same as for Automations and Workflow: a `DeliveryChannel` registered from another app's `registration.py`. It appears in the follow-up types with no change here and no migration.
 
+## Conditions after enrollment
+
+The cadence conditions decide which records are enrolled **automatically**, and they keep applying for the whole run: a later follow-up is created only while the record still meets them, read as they are at that moment.
+
+- **Delayed follow-up** (`run_scheduled_followup`): when it is due, `followup_stop_reason()` is asked first.
+  - If the record no longer meets the conditions, the row is `cancelled` with "The record no longer meets the cadence conditions." and the run is stopped (`stop_enrollment()`): it shows as **Stopped**, and its other pending rows are cancelled with the same reason.
+  - If the cadence was deactivated, the row is `cancelled` with "The cadence is inactive."; the run itself stays ongoing.
+  - A record that left and came back before the follow-up was due gets it.
+- **Next follow-up after a status change** (`_trigger_next_followups_from_activity`): a record that no longer meets the conditions stops the run, instead of leaving it ongoing with nothing to come.
+- **Manual enrollments** ignore the conditions, as when they were enrolled. A cadence without conditions never stops a run.
+- Tasks and calls the run already created are kept; changing their status no longer advances it. A stopped run is not restarted by a later save that meets the conditions again (`get_or_create_auto_enrollment()` never restarts a finished record); enroll the record by hand to run it again.
+
+For a cadence on leads, for example, the condition "Lead Status is not equal to" the final status that lead conversion sets stops a lead's run once it is converted, so its remaining messages are not sent. (`is_convert` itself is not editable, so it is not offered as a condition field.)
+
 ## Signals (`signals.py`)
 
 - Record save → `_run_automatic_enrollment()` for matching cadences (conditions apply to **automatic** enrollments only).
-- Activity status change → advance the next follow-up, **only while its enrollment is active**; manual enrollments ignore cadence conditions.
+- Activity status change → advance the next follow-up, **only while its enrollment is active**; an automatic enrollment whose record left the conditions is stopped instead, and manual enrollments ignore cadence conditions.
 - Runtime activities are de-duplicated per `(enrollment, follow-up)`; items without an enrollment keep the old per-cadence key.
 - Follow-ups added later are backfilled into manual enrollments that are still running.
 

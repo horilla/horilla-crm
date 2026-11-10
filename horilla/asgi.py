@@ -23,17 +23,23 @@ from django.core.asgi import get_asgi_application
 
 import calls.routing
 import horilla.contrib.notifications.routing
+from horilla.utils.asgi import FreshContextMiddleware
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "horilla.settings")
 
-application = ProtocolTypeRouter(
-    {
-        "http": get_asgi_application(),
-        "websocket": AuthMiddlewareStack(
-            URLRouter(
-                horilla.contrib.notifications.routing.websocket_urlpatterns
-                + calls.routing.websocket_urlpatterns
-            )
-        ),
-    }
+# Each connection runs in a fresh context so one request's Django
+# ThreadSensitiveContext cannot leak into the next request on the same
+# keep-alive connection and deadlock the worker (see FreshContextMiddleware).
+application = FreshContextMiddleware(
+    ProtocolTypeRouter(
+        {
+            "http": get_asgi_application(),
+            "websocket": AuthMiddlewareStack(
+                URLRouter(
+                    horilla.contrib.notifications.routing.websocket_urlpatterns
+                    + calls.routing.websocket_urlpatterns
+                )
+            ),
+        }
+    )
 )

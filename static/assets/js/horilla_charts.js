@@ -10,6 +10,17 @@ var EChartsConfig = {
         '#a78bfa', '#4ade80', '#f59e0b', '#ec4899', '#06b6d4'
     ],
 
+    /** Escape a value for safe use inside ECharts HTML tooltips */
+    escapeHtml: function(value) {
+        if (value === null || value === undefined) return '';
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
     isDarkMode: function() {
         return document.body.classList.contains('dark');
     },
@@ -42,20 +53,48 @@ var EChartsConfig = {
         return d && d.url && d.url !== '#';
     },
 
-    /** Shared: axis tooltip for column/bar (identical formatter body) */
+    /** Radar: index of the data point (axis) the pointer is on, or -1 if it is not on a point */
+    _radarHoveredIndex: function(vals, indicator) {
+        try {
+            var ev = EChartsConfig._lastPointer;
+            if (!ev || typeof echarts === 'undefined') return -1;
+            var dom = ev.target && ev.target.closest ? ev.target.closest('[_echarts_instance_]') : null;
+            var inst = dom && echarts.getInstanceByDom(dom);
+            var cs = inst && inst.getModel().getComponent('radar', 0).coordinateSystem;
+            if (!cs) return -1;
+            var rect = dom.getBoundingClientRect();
+            var mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
+            var n = indicator.length, best = -1, bestD = 18;
+            for (var i = 0; i < n; i++) {
+                var max = Number(indicator[i].max) || 1;
+                var rr = cs.r * Math.min(1, (Number(vals[i]) || 0) / max);
+                var ang = Math.PI / 2 + i * 2 * Math.PI / n;
+                var px = cs.cx + rr * Math.cos(ang), py = cs.cy - rr * Math.sin(ang);
+                var d = Math.sqrt((px - mx) * (px - mx) + (py - my) * (py - my));
+                if (d < bestD) { bestD = d; best = i; }
+            }
+            return best;
+        } catch (e) { return -1; }
+    },
+
+    /** Radar tooltip body: only the hovered point's count (falls back to all counts) */
+    _radarTooltipHtml: function(title, vals, indicator) {
+        var lines = ['<strong>' + EChartsConfig.escapeHtml(title) + '</strong>'];
+        var idx = EChartsConfig._radarHoveredIndex(vals, indicator);
+        var from = idx >= 0 ? idx : 0, to = idx >= 0 ? idx + 1 : Math.min(vals.length, indicator.length);
+        for (var i = from; i < to; i++) {
+            lines.push(EChartsConfig.escapeHtml(indicator[i].name) + ': <strong>' + EChartsConfig.escapeHtml(vals[i]) + '</strong>');
+        }
+        return lines.join('<br/>');
+    },
+
+    /** Shared: item tooltip for column/bar (hovered bar only, like donut) */
     _barColumnTooltipFormatter: function(urls) {
+        var self = this;
         return function(params) {
-            var tooltip = '';
-            for (var i = 0; i < params.length; i++) {
-                var param = params[i];
-                if (param.value > 0) {
-                    tooltip += param.marker + ' ' + param.seriesName + ': ' + param.value + '<br/>';
-                }
-            }
-            if (urls && urls.length > 0) {
-                tooltip += '<i style="color: #999; font-size: 11px;">Click to view details</i>';
-            }
-            return tooltip;
+            var hasUrl = (urls && urls.length > 0) || self._dataHasUrl(params.data);
+            return params.marker + ' ' + EChartsConfig.escapeHtml(params.seriesName) + ': ' + EChartsConfig.escapeHtml(params.value) +
+                (hasUrl ? '<br/><i style="color: #999; font-size: 11px;">Click to view details</i>' : '');
         };
     },
 
@@ -63,14 +102,14 @@ var EChartsConfig = {
     _lineAreaTooltipFormatter: function() {
         return function(params) {
             if (!params || !params.length) return '';
-            var tooltip = '<strong>' + params[0].axisValue + '</strong><br/>';
+            var tooltip = '<strong>' + EChartsConfig.escapeHtml(params[0].axisValue) + '</strong><br/>';
             for (var i = 0; i < params.length; i++) {
                 var param = params[i];
                 var v = param.data && typeof param.data === 'object' && param.data.value !== undefined
                     ? param.data.value
                     : param.value;
                 var hasUrl = param.data && param.data.url && param.data.url !== '#';
-                tooltip += param.marker + ' ' + param.seriesName + ': ' + v;
+                tooltip += param.marker + ' ' + EChartsConfig.escapeHtml(param.seriesName) + ': ' + EChartsConfig.escapeHtml(v);
                 if (hasUrl) {
                     tooltip += '<br/><i style="color: #999; font-size: 11px;">Click to view details</i>';
                 }
@@ -223,7 +262,7 @@ var EChartsConfig = {
                 trigger: 'item',
                 formatter: function(params) {
                     var hasUrl = self._dataHasUrl(params.data);
-                    return params.seriesName + '<br/>' + params.name + ': ' + params.value + ' (' + params.percent + '%)' +
+                    return EChartsConfig.escapeHtml(params.seriesName) + '<br/>' + EChartsConfig.escapeHtml(params.name) + ': ' + EChartsConfig.escapeHtml(params.value) + ' (' + params.percent + '%)' +
                         (hasUrl ? '<br/><i>Click to view details</i>' : '');
                 }
             },
@@ -268,6 +307,7 @@ var EChartsConfig = {
     getDonutChartOption: function(labels, data, colors, labelField, urls) {
         var pieData = this._mapPieData(labels, data, urls);
         var self = this;
+        var total = (data || []).reduce(function(sum, v) { return sum + (Number(v) || 0); }, 0);
 
         return {
             ...this.getAnimationConfig(),
@@ -275,11 +315,11 @@ var EChartsConfig = {
                 trigger: 'item',
                 formatter: function(params) {
                     var hasUrl = self._dataHasUrl(params.data);
-                    return params.seriesName + '<br/>' + params.name + ': ' + params.value + ' (' + params.percent + '%)' +
+                    return EChartsConfig.escapeHtml(params.seriesName) + '<br/>' + EChartsConfig.escapeHtml(params.name) + ': ' + EChartsConfig.escapeHtml(params.value) + ' (' + params.percent + '%)' +
                         (hasUrl ? '<br/><i style="color: #999; font-size: 11px;">Click to view details</i>' : '');
                 }
             },
-            legend: this.getLegendConfig(),
+            legend: Object.assign({}, this.getLegendConfig(), { data: pieData.map(function(d) { return d.name; }) }),
             color: colors,
             series: [{
                 name: labelField,
@@ -312,6 +352,26 @@ var EChartsConfig = {
                     show: false
                 },
                 data: pieData
+            }, {
+                // Invisible pie whose centered label shows the total inside the donut hole
+                type: 'pie',
+                radius: ['0%', '40%'],
+                center: ['50%', '45%'],
+                silent: true,
+                tooltip: { show: false },
+                legendHoverLink: false,
+                itemStyle: { color: 'transparent' },
+                labelLine: { show: false },
+                label: {
+                    show: true,
+                    position: 'center',
+                    formatter: '{label|Total}\n{value|' + total + '}',
+                    rich: {
+                        label: { fontSize: 14, color: '#8a8f98', lineHeight: 22, align: 'center' },
+                        value: { fontSize: 28, fontWeight: 'bold', color: this.getTextColor(), lineHeight: 36, align: 'center' }
+                    }
+                },
+                data: [{ value: 1, name: '' }]
             }]
         };
     },
@@ -325,14 +385,20 @@ var EChartsConfig = {
             itemStyle: {
                 color: colors[index % colors.length],
                 borderRadius: [4, 4, 0, 0]
+            },
+            emphasis: {
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
             }
         }));
 
         return {
             ...this.getAnimationConfig(),
             tooltip: {
-                trigger: 'axis',
-                axisPointer: { type: 'shadow' },
+                trigger: 'item',
                 formatter: this._barColumnTooltipFormatter(urls)
             },
             legend: {
@@ -367,14 +433,20 @@ var EChartsConfig = {
             itemStyle: {
                 color: colors[index % colors.length],
                 borderRadius: [0, 4, 4, 0]
+            },
+            emphasis: {
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
             }
         }));
 
         return {
             ...this.getAnimationConfig(),
             tooltip: {
-                trigger: 'axis',
-                axisPointer: { type: 'shadow' },
+                trigger: 'item',
                 formatter: this._barColumnTooltipFormatter(urls)
             },
             legend: {
@@ -471,7 +543,7 @@ var EChartsConfig = {
                 trigger: 'item',
                 formatter: function(params) {
                     var hasUrl = self._dataHasUrl(params.data);
-                    return params.seriesName + '<br/>' + params.name + ': ' + params.value +
+                    return EChartsConfig.escapeHtml(params.seriesName) + '<br/>' + EChartsConfig.escapeHtml(params.name) + ': ' + EChartsConfig.escapeHtml(params.value) +
                         (hasUrl ? '<br/><i>Click to view details</i>' : '');
                 }
             },
@@ -546,7 +618,7 @@ var EChartsConfig = {
                 trigger: 'item',
                 formatter: function(params) {
                     const hasUrl = params.data[2] && params.data[2] !== '#';
-                    return `${params.seriesName}: ${params.data[1]}${hasUrl ? '<br/><i style="color: #999; font-size: 11px;">Click to view details</i>' : ''}`;
+                    return `${EChartsConfig.escapeHtml(params.seriesName)}: ${EChartsConfig.escapeHtml(params.data[1])}${hasUrl ? '<br/><i style="color: #999; font-size: 11px;">Click to view details</i>' : ''}`;
                 }
             },
             legend: {
@@ -616,11 +688,11 @@ var EChartsConfig = {
                     const hasUrl = d && d.url && d.url !== '#';
                     return (
                         (params.treePathInfo && params.treePathInfo.length
-                            ? params.treePathInfo.map(function(p) { return p.name; }).join(' / ')
-                            : params.name) +
+                            ? params.treePathInfo.map(function(p) { return EChartsConfig.escapeHtml(p.name); }).join(' / ')
+                            : EChartsConfig.escapeHtml(params.name)) +
                         '<br/>' +
-                        (labelField ? labelField + ': ' : '') +
-                        params.value +
+                        (labelField ? EChartsConfig.escapeHtml(labelField) + ': ' : '') +
+                        EChartsConfig.escapeHtml(params.value) +
                         (hasUrl ? '<br/><i style="color: #999; font-size: 11px;">Click to view details</i>' : '')
                     );
                 }
@@ -820,7 +892,11 @@ var EChartsConfig = {
                 borderRadius: index === stackedData.series.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]
             },
             emphasis: {
-                focus: 'series'
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
             }
         }));
 
@@ -869,25 +945,14 @@ var EChartsConfig = {
         return {
             ...this.getAnimationConfig(),
             tooltip: {
-                trigger: 'axis',
-                axisPointer: {
-                    type: 'shadow'
-                },
-                formatter: function(params) {
-                    if (!params || !params.length) return '';
-                    if (params[0].seriesType === 'bar' && params[0].seriesName && params[0].seriesName.indexOf('__g_') === 0) return '';
-                    let tooltip = `<strong>${params[0].axisValue}</strong><br/>`;
-                    let total = 0;
-                    params.forEach(param => {
-                        const v = param.data && typeof param.data === 'object' && param.data.value !== undefined
-                            ? param.data.value
-                            : param.value;
-                        const hasUrl = param.data && param.data.url && param.data.url !== '#';
-                        tooltip += `${param.marker} ${param.seriesName}: ${v}${hasUrl ? '<br/><i style="color: #999; font-size: 11px;">Click to view details</i>' : ''}<br/>`;
-                        total += Number(v) || 0;
-                    });
-                    tooltip += `<strong>Total: ${total}</strong>`;
-                    return tooltip;
+                trigger: 'item',
+                formatter: function(param) {
+                    if (!param || (param.seriesName && param.seriesName.indexOf('__g_') === 0)) return '';
+                    const v = param.data && typeof param.data === 'object' && param.data.value !== undefined
+                        ? param.data.value
+                        : param.value;
+                    const hasUrl = param.data && param.data.url && param.data.url !== '#';
+                    return `<strong>${EChartsConfig.escapeHtml(param.name)}</strong><br/>${param.marker} ${EChartsConfig.escapeHtml(param.seriesName)}: ${EChartsConfig.escapeHtml(v)}${hasUrl ? '<br/><i style="color: #999; font-size: 11px;">Click to view details</i>' : ''}`;
                 }
             },
             legend: dualLegend,
@@ -968,7 +1033,11 @@ var EChartsConfig = {
                 borderRadius: index === stackedData.series.length - 1 ? [0, 4, 4, 0] : [0, 0, 0, 0]
             },
             emphasis: {
-                focus: 'series'
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
             }
         }));
 
@@ -1017,22 +1086,13 @@ var EChartsConfig = {
         return {
             ...this.getAnimationConfig(),
             tooltip: {
-                trigger: 'axis',
-                axisPointer: { type: 'shadow' },
-                formatter: function(params) {
-                    if (!params || !params.length) return '';
-                    if (params[0].seriesName && params[0].seriesName.indexOf('__g_') === 0) return '';
-                    let tooltip = `<strong>${params[0].axisValue}</strong><br/>`;
-                    let total = 0;
-                    params.forEach(function(param) {
-                        const v = param.data && typeof param.data === 'object' && param.data.value !== undefined
-                            ? param.data.value : param.value;
-                        const hasUrl = param.data && param.data.url && param.data.url !== '#';
-                        tooltip += `${param.marker} ${param.seriesName}: ${v}${hasUrl ? '<br/><i style="color: #999; font-size: 11px;">Click to view details</i>' : ''}<br/>`;
-                        total += Number(v) || 0;
-                    });
-                    tooltip += `<strong>Total: ${total}</strong>`;
-                    return tooltip;
+                trigger: 'item',
+                formatter: function(param) {
+                    if (!param || (param.seriesName && param.seriesName.indexOf('__g_') === 0)) return '';
+                    const v = param.data && typeof param.data === 'object' && param.data.value !== undefined
+                        ? param.data.value : param.value;
+                    const hasUrl = param.data && param.data.url && param.data.url !== '#';
+                    return `<strong>${EChartsConfig.escapeHtml(param.name)}</strong><br/>${param.marker} ${EChartsConfig.escapeHtml(param.seriesName)}: ${EChartsConfig.escapeHtml(v)}${hasUrl ? '<br/><i style="color: #999; font-size: 11px;">Click to view details</i>' : ''}`;
                 }
             },
             legend: dualLegend,
@@ -1202,7 +1262,7 @@ var EChartsConfig = {
                     const val = params.data[2];
                     const xLabel = categories[xIdx] != null ? categories[xIdx] : xIdx;
                     const yLabel = yNames[yIdx] != null ? yNames[yIdx] : yIdx;
-                    let s = xLabel + ' × ' + yLabel + '<br/><strong>' + val + '</strong>';
+                    let s = EChartsConfig.escapeHtml(xLabel) + ' × ' + EChartsConfig.escapeHtml(yLabel) + '<br/><strong>' + EChartsConfig.escapeHtml(val) + '</strong>';
                     if (urls && urls[xIdx] && urls[xIdx] !== '#') {
                         s += '<br/><i style="color: #999; font-size: 11px;">Click to view details</i>';
                     }
@@ -1472,11 +1532,11 @@ var EChartsConfig = {
                     if (params.dataType === 'edge') {
                         var tgt = params.data.target;
                         if (rightIdToLabel[tgt] != null) tgt = rightIdToLabel[tgt];
-                        return params.data.source + ' → ' + tgt + '<br/><strong>' + params.data.value + '</strong>';
+                        return EChartsConfig.escapeHtml(params.data.source) + ' → ' + EChartsConfig.escapeHtml(tgt) + '<br/><strong>' + EChartsConfig.escapeHtml(params.data.value) + '</strong>';
                     }
                     if (params.dataType === 'node') {
-                        if (rightIdToLabel[params.name] != null) return rightIdToLabel[params.name];
-                        return params.name;
+                        if (rightIdToLabel[params.name] != null) return EChartsConfig.escapeHtml(rightIdToLabel[params.name]);
+                        return EChartsConfig.escapeHtml(params.name);
                     }
                     return '';
                 }
@@ -1506,7 +1566,10 @@ var EChartsConfig = {
                 type: 'sankey',
                 top: dualLegend.length > 1 ? '10%' : '2%',
                 bottom: dualLegend.length > 1 ? '14%' : undefined,
-                emphasis: { focus: 'adjacency' },
+                emphasis: {
+                    itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.5)' },
+                    lineStyle: { opacity: 0.8 }
+                },
                 layoutIterations: 32,
                 data: nodes,
                 links: links,
@@ -1568,15 +1631,10 @@ var EChartsConfig = {
                 trigger: 'item',
                 formatter: function(params) {
                     if (!params.data || !params.data.value || !indicator.length) {
-                        return params.name || params.seriesName || '';
+                        return EChartsConfig.escapeHtml(params.name || params.seriesName || '');
                     }
                     var seriesName = params.data.name || params.seriesName || (labelField || 'Radar');
-                    var vals = params.data.value;
-                    var lines = ['<strong>' + seriesName + '</strong>'];
-                    for (var i = 0; i < vals.length && i < indicator.length; i++) {
-                        lines.push(indicator[i].name + ': <strong>' + vals[i] + '</strong>');
-                    }
-                    return lines.join('<br/>');
+                    return EChartsConfig._radarTooltipHtml(seriesName, params.data.value, indicator);
                 }
             },
             legend: {
@@ -1756,14 +1814,9 @@ var EChartsConfig = {
                     var n = params.name;
                     if (serLabelById[n] != null) n = serLabelById[n];
                     if (params.data && params.data.value && built.indicator && built.indicator.length) {
-                        var vals = params.data.value;
-                        var lines = ['<strong>' + n + '</strong>'];
-                        for (var i = 0; i < vals.length && i < built.indicator.length; i++) {
-                            lines.push(built.indicator[i].name + ': <strong>' + vals[i] + '</strong>');
-                        }
-                        return lines.join('<br/>');
+                        return EChartsConfig._radarTooltipHtml(n, params.data.value, built.indicator);
                     }
-                    return n || '';
+                    return EChartsConfig.escapeHtml(n || '');
                 }
             },
             legend: dualLegend,
@@ -2252,3 +2305,6 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = EChartsConfig;
 }
+
+// Track the latest pointer position so radar tooltips can show only the hovered point
+document.addEventListener('mousemove', function(e) { EChartsConfig._lastPointer = e; }, true);

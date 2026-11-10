@@ -1,7 +1,6 @@
 """Views for rendering charts and KPIs in dashboard components."""
 
 # Standard library imports
-import json
 import logging
 from urllib.parse import urlencode
 
@@ -24,7 +23,7 @@ from horilla.utils.decorators import (
     method_decorator,
     permission_required_or_denied,
 )
-from horilla.utils.translation import gettext_lazy as _
+from horilla.utils.html import js_json
 from horilla.views.generic import View
 
 # Local imports
@@ -870,7 +869,7 @@ class DashboardComponentChartView(View):
                     }
 
                 chart_config = {"type": component.chart_type, **chart_data}
-                chart_config_json = json.dumps(chart_config)
+                chart_config_json = js_json(chart_config)
                 return render(
                     request,
                     "chart/component_chart.html",

@@ -32,6 +32,7 @@ from horilla.utils.decorators import (
     method_decorator,
     permission_required_or_denied,
 )
+from horilla.utils.html import js_json
 from horilla.utils.translation import gettext_lazy as _
 from horilla.utils.urls import build_absolute_url
 from horilla.views.generic import FormView, TemplateView, View
@@ -653,7 +654,7 @@ class RemoveFieldView(LoginRequiredMixin, View):
         """Handle POST request to remove a field from selected list."""
         field_name = request.POST.get("field_name")
         # Escape for safe embedding in JavaScript (prevents XSS)
-        field_name_escaped = json.dumps(field_name) if field_name is not None else '""'
+        field_name_escaped = js_json(field_name) if field_name is not None else '""'
         context = {"field_name_escaped": field_name_escaped}
         response = render(request, "web_to_lead/remove_field_script.html", context)
         response["HX-Trigger"] = "updatePreview"

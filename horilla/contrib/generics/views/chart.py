@@ -31,6 +31,7 @@ from horilla.db.models import (
     Sum,
 )
 from horilla.urls import reverse
+from horilla.utils.html import js_json
 from horilla.utils.text import slugify
 from horilla.utils.translation import gettext_lazy as _
 
@@ -178,6 +179,8 @@ class HorillaChartView(HorillaListView):
         """
         exclude_fields, include_fields = self._get_kanban_exclude_include_fields()
         exclude_fields = list(exclude_fields) + ["country"]
+        if not self.request.session.get("show_all_companies", False):
+            exclude_fields.append("company")
         choices = []
         for field in self.model._meta.get_fields():
             if not getattr(field, "name", None):
@@ -831,7 +834,7 @@ class HorillaChartView(HorillaListView):
                 "labelField": label_field,
                 "urls": payload.get("urls") or [],
             }
-        context["chart_config_json"] = json.dumps(config, cls=ChartConfigJSONEncoder)
+        context["chart_config_json"] = js_json(config, cls=ChartConfigJSONEncoder)
         context["chart_type"] = chart_type
         context["chart_type_choices"] = CHART_TYPE_CHOICES
         context["chart_error"] = None
@@ -899,7 +902,7 @@ class HorillaChartView(HorillaListView):
             context["chart_push_url"] = (
                 f"{main_path}?{urlencode(push_params, doseq=True)}"
             )
-            context["chart_push_url_json"] = json.dumps(context["chart_push_url"])
+            context["chart_push_url_json"] = js_json(context["chart_push_url"])
         else:
             context["chart_push_url"] = None
             context["chart_push_url_json"] = "null"

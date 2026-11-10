@@ -16,9 +16,10 @@ from horilla.contrib.generics.views import (
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import method_decorator, permission_required_or_denied
 from horilla.utils.functional import cached_property
-from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
+from horilla_crm.leads.assignment.owner_lock import owner_locked
+from horilla_crm.leads.assignment.pool import OWNER_FIELD
 from horilla_crm.leads.models import Lead
 
 
@@ -30,6 +31,22 @@ class LeadsDetailTab(LoginRequiredMixin, HorillaDetailSectionView):
     """Lead Detail Tab View"""
 
     model = Lead
+
+    @property
+    def non_editable_fields(self):
+        """
+        The owner cannot be edited here when the lead's assignment rule does not
+        let this user change it (see ``assignment.owner_lock``). Edit Details
+        shows it as plain text, and a posted owner is not applied.
+        """
+        if not hasattr(self, "_owner_is_locked"):
+            lead = getattr(self, "object", None)
+            if not isinstance(lead, Lead):
+                pk = getattr(self, "kwargs", {}).get("pk")
+                lead = Lead.objects.filter(pk=pk).first() if pk else None
+            user = getattr(getattr(self, "request", None), "user", None)
+            self._owner_is_locked = owner_locked(lead, user)
+        return [OWNER_FIELD] if self._owner_is_locked else []
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

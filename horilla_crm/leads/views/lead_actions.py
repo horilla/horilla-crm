@@ -11,16 +11,13 @@ from horilla.contrib.generics.views import (
 )
 from horilla.db import transaction
 from horilla.urls import reverse_lazy
-from horilla.utils.decorators import (
-    htmx_required,
-    method_decorator,
-    permission_required_or_denied,
-)
+from horilla.utils.decorators import htmx_required, method_decorator
 from horilla.utils.functional import cached_property
 from horilla.utils.translation import gettext_lazy as _
 from horilla.web import HxTriggerResponse, ScriptResponse
 
 # Local imports
+from horilla_crm.leads.assignment.owner_lock import owner_locked
 from horilla_crm.leads.assignment.pool import has_active_rules
 from horilla_crm.leads.form_mixins import APPLY_FIELD
 from horilla_crm.leads.forms import LeadFormClass, LeadSingleForm
@@ -46,10 +43,26 @@ class ConvertedLeadLockMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+class OwnerReassignmentLockMixin:
+    """Refuse to change the owner of a lead its assignment rule keeps fixed."""
+
+    def dispatch(self, request, *args, **kwargs):
+        """Refuse when the lead's rule does not let this user change its owner."""
+        pk = kwargs.get("pk") or request.GET.get("id")
+        lead = Lead.objects.filter(pk=pk).first() if pk else None
+        if lead is not None and owner_locked(lead, request.user):
+            messages.error(
+                request,
+                _(
+                    "The owner of a lead assigned by an assignment rule "
+                    "cannot be changed."
+                ),
+            )
+            return ScriptResponse(reload=True, msgs=True, close=True)
+        return super().dispatch(request, *args, **kwargs)
+
+
 @method_decorator(htmx_required, name="dispatch")
-@method_decorator(
-    permission_required_or_denied("leads.delete_lead", modal=True), name="dispatch"
-)
 class LeadDeleteView(
     LoginRequiredMixin, ConvertedLeadLockMixin, HorillaSingleDeleteView
 ):
@@ -78,7 +91,7 @@ class LeadFormView(
     detail_url_name = "leads:leads_detail"
     dynamic_create_field_mapping = {
         "lead_status": {
-            "fields": ["name", "order", "color", "probability"],
+            "fields": ["name", "order", "probability"],
             "initial": {
                 "order": LeadStatus.get_next_order_for_company,
             },
@@ -164,7 +177,7 @@ class LeadsSingleFormView(
     dynamic_create_fields = ["lead_status"]
     dynamic_create_field_mapping = {
         "lead_status": {
-            "fields": ["name", "order", "color", "probability", "is_final"],
+            "fields": ["name", "order", "probability", "is_final"],
             "initial": {
                 "order": LeadStatus.get_next_order_for_company,
             },
@@ -200,7 +213,10 @@ class LeadsSingleFormView(
 
 @method_decorator(htmx_required, name="dispatch")
 class LeadChangeOwnerForm(
-    LoginRequiredMixin, ConvertedLeadLockMixin, HorillaSingleFormView
+    LoginRequiredMixin,
+    ConvertedLeadLockMixin,
+    OwnerReassignmentLockMixin,
+    HorillaSingleFormView,
 ):
     """
     change owner form for lead

@@ -41,6 +41,41 @@ PICKER_EXCLUDED_FIELDS = {
 }
 
 
+def _load_form_class(form_class_path):
+    """Import an allow-listed form class from a dotted path, or return None."""
+    from .select2 import _is_allowed_import_module_path
+
+    form_class_path = (form_class_path or "").strip()
+    if not form_class_path or "." not in form_class_path:
+        return None
+    module_path, class_name = form_class_path.rsplit(".", 1)
+    if not _is_allowed_import_module_path(module_path):
+        return None
+    try:
+        return getattr(importlib.import_module(module_path), class_name, None)
+    except Exception:
+        return None
+
+
+def _picker_access(request, model):
+    """
+    Return (allowed, can_view, form_class) for the requested picker model.
+
+    Allowed only for a superuser, a user with view / view_own on the model, or a
+    user using a form (add/change rights on the form's model) for the field.
+    """
+    from .select2 import _can_use_form_for_model, _can_view_model
+
+    user = request.user
+    can_view = bool(user.is_superuser or _can_view_model(user, model))
+    form_class = _load_form_class(request.GET.get("form_class"))
+    field_name = request.GET.get("field_name", "").strip()
+    via_form = bool(
+        form_class and field_name and _can_use_form_for_model(user, form_class)
+    )
+    return (can_view or via_form), can_view, form_class
+
+
 def _get_model_fields(model):
     """Return filter-field metadata for a model."""
     from horilla.contrib.generics.filters import HorillaFilterSet
@@ -224,9 +259,13 @@ class UserPickerModalView(LoginRequiredMixin, View):
         object_id = request.GET.get("object_id", "")
 
         try:
-            apps.get_model(app_label=app_label, model_name=model_name)
+            model = apps.get_model(app_label=app_label, model_name=model_name)
         except LookupError:
             return HttpResponse("Model not found", status=404)
+
+        allowed, _, _ = _picker_access(request, model)
+        if not allowed:
+            return HttpResponse("Forbidden", status=403)
 
         extra_qs = ""
         if form_class and field_name:
@@ -255,44 +294,73 @@ class UserPickerListView(LoginRequiredMixin, View):
     Accepts: search, field[], operator[], value[], start_value[], end_value[], page.
     """
 
-    def _resolve_queryset(self, request, model):
-        """Try to get a filtered queryset from the form field's queryset, fall back to all()."""
-        from .select2 import _is_allowed_import_module_path
+    def _resolve_queryset(self, request, model, can_view, form_class):
+        """
+        Return the queryset to list, or None when it cannot be served safely.
 
-        form_class_path = request.GET.get("form_class", "").strip()
+        Prefers the form field's queryset; otherwise falls back to the model's
+        records, which requires view permission. Always scoped to the user's
+        active company.
+        """
         field_name = request.GET.get("field_name", "").strip()
         object_id = request.GET.get("object_id", "").strip()
-        if form_class_path and field_name:
+        active_company = getattr(request, "active_company", None)
+        qs = None
+
+        if form_class and field_name:
             try:
-                module_path, class_name = form_class_path.rsplit(".", 1)
-                if _is_allowed_import_module_path(module_path):
-                    module = importlib.import_module(module_path)
-                    form_class = getattr(module, class_name)
-                    form_kwargs = {"request": request}
-                    if (
-                        object_id
-                        and hasattr(form_class, "_meta")
-                        and hasattr(form_class._meta, "model")
-                    ):
-                        parent_model = form_class._meta.model
+                form_kwargs = {"request": request}
+                if (
+                    object_id
+                    and hasattr(form_class, "_meta")
+                    and hasattr(form_class._meta, "model")
+                ):
+                    parent_model = form_class._meta.model
+                    try:
+                        instance_qs = parent_model.all_objects.all()
                         try:
-                            form_kwargs["instance"] = parent_model.all_objects.get(
-                                pk=object_id
-                            )
-                        except (parent_model.DoesNotExist, ValueError):
+                            parent_model._meta.get_field("company")
+                            instance_qs = instance_qs.filter(company=active_company)
+                        except Exception:
                             pass
-                    form = form_class(**form_kwargs)
-                    if field_name in form.fields:
-                        qs = getattr(form.fields[field_name], "queryset", None)
-                        if qs is not None:
-                            return qs
+                        form_kwargs["instance"] = instance_qs.get(pk=object_id)
+                    except (parent_model.DoesNotExist, ValueError):
+                        pass
+                form = form_class(**form_kwargs)
+                if field_name in form.fields:
+                    qs = getattr(form.fields[field_name], "queryset", None)
             except Exception as e:
                 logger.debug("[UserPicker] Could not resolve queryset from form: %s", e)
-        return model.objects.all()
 
-    def _filtered_queryset(self, request, model):
+        if qs is not None:
+            qs_model = qs.model
+            if not (issubclass(qs_model, model) or issubclass(model, qs_model)):
+                return None
+        else:
+            if not can_view:
+                return None
+            qs = model.objects.all()
+            if not request.user.is_superuser and not request.user.has_perm(
+                f"{model._meta.app_label}.view_{model._meta.model_name}"
+            ):
+                # view_own only: restrict to own / subordinates' records.
+                from .queryset_utils import filter_viewable_queryset
+
+                qs = filter_viewable_queryset(request.user, model, qs)
+
+        if active_company:
+            try:
+                model._meta.get_field("company")
+                qs = qs.filter(company=active_company)
+            except Exception:
+                pass
+        return qs
+
+    def _filtered_queryset(self, request, model, can_view, form_class):
         """Resolve the base queryset and apply search + filters from the request."""
-        queryset = self._resolve_queryset(request, model)
+        queryset = self._resolve_queryset(request, model, can_view, form_class)
+        if queryset is None:
+            return None
 
         # Apply search
         search = request.GET.get("search", "").strip()
@@ -316,7 +384,13 @@ class UserPickerListView(LoginRequiredMixin, View):
         except LookupError:
             return HttpResponse("Model not found", status=404)
 
-        queryset = self._filtered_queryset(request, model)
+        allowed, can_view, form_class = _picker_access(request, model)
+        if not allowed:
+            return HttpResponse("Forbidden", status=403)
+
+        queryset = self._filtered_queryset(request, model, can_view, form_class)
+        if queryset is None:
+            return HttpResponse("Forbidden", status=403)
 
         # Return every id/text matching the current search + filters (no pagination),
         # used by "select all" so it can select beyond the currently loaded page.
@@ -375,6 +449,11 @@ class UserPickerFilterView(LoginRequiredMixin, View):
             model = apps.get_model(app_label=app_label, model_name=model_name)
         except LookupError:
             return HttpResponse("Model not found", status=404)
+
+        from .select2 import _can_view_model
+
+        if not (request.user.is_superuser or _can_view_model(request.user, model)):
+            return HttpResponse("Forbidden", status=403)
 
         filter_url = request.path
         filter_fields = _get_model_fields(model)

@@ -36,6 +36,7 @@ class CoreConfig(AppLauncher):
         "scheduler",
         "login_history",
         "menu",
+        "onboarding",
     ]
 
     celery_schedule_module = "celery_schedules"

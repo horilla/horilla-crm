@@ -357,6 +357,127 @@ function formatOption(option) {
     return option.text;
 }
 
+// Filter multi-selects (.filterMultiSelect) keep their chips on ONE line, so a filter row stays a single
+// row. As many chips as fit are shown, followed by a "+N" chip for the rest (its tooltip lists the
+// hidden values). The fit is recalculated whenever the chips change or the cell is resized, for example
+// when the filter panel is shrunk or expanded. Every other select is left alone.
+const FILTER_MORE_RESERVE = 40; // room kept for the "+N" chip
+const FILTER_PARTIAL_MIN = 40;
+const FILTER_CLEAR_RESERVE = 20; // room kept for select2's clear button
+const filterChipFitQueue = new Set();
+const filterChipObserved = new WeakSet();
+let filterChipFitScheduled = false;
+
+function fitFilterChips(selectEl) {
+    const $select = $(selectEl);
+    const container = $select.next(".select2-container")[0];
+    const rendered = container && container.querySelector(".select2-selection__rendered");
+    if (!rendered) return;
+
+    const $rendered = $(rendered);
+    $rendered.children(".filter-more-chip").remove();
+    const $chips = $rendered.children(".select2-selection__choice");
+    $chips.removeClass("filter-summary-hidden").css("width", "");
+    if ($chips.length < 2 || !rendered.clientWidth) return;
+
+    const style = getComputedStyle(rendered);
+    const available =
+        rendered.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - FILTER_CLEAR_RESERVE;
+    const widths = $chips
+        .map(function () {
+            const chipStyle = getComputedStyle(this);
+            return this.getBoundingClientRect().width + parseFloat(chipStyle.marginLeft) + parseFloat(chipStyle.marginRight);
+        })
+        .get();
+    if (widths.reduce(function (sum, width) { return sum + width; }, 0) <= available) return;
+
+    let used = 0;
+    let shown = 0;
+    while (shown < widths.length && used + widths[shown] + FILTER_MORE_RESERVE <= available) {
+        used += widths[shown];
+        shown += 1;
+    }
+
+    // The next pill that does not fit whole is still shown, cut short with "...", before "+N"
+    let partial = -1;
+    if (shown < widths.length) {
+        const isLast = shown === widths.length - 1;
+        const room = available - used - (isLast ? 0 : FILTER_MORE_RESERVE);
+        if (room >= FILTER_PARTIAL_MIN) {
+            partial = shown;
+            const chip = $chips[partial];
+            const chipStyle = getComputedStyle(chip);
+            chip.style.width = Math.min(room, widths[partial]) - parseFloat(chipStyle.marginLeft) - parseFloat(chipStyle.marginRight) + "px";
+            shown += 1;
+        } else if (shown === 0) {
+            shown = 1;
+        }
+    }
+
+    const hiddenLabels = [];
+    $chips.each(function (index) {
+        if (index >= shown) {
+            $(this).addClass("filter-summary-hidden");
+            hiddenLabels.push($(this).text().replace(/^\s*×/, "").trim());
+        }
+    });
+    if (!hiddenLabels.length) return;
+    $("<li>")
+        .addClass("select2-selection__choice filter-more-chip")
+        .attr("title", hiddenLabels.join(", "))
+        .text("+" + hiddenLabels.length)
+        .appendTo($rendered);
+}
+
+function scheduleFilterChipFit(selectEl) {
+    filterChipFitQueue.add(selectEl);
+    if (filterChipFitScheduled) return;
+    filterChipFitScheduled = true;
+    requestAnimationFrame(function () {
+        filterChipFitScheduled = false;
+        const selects = Array.from(filterChipFitQueue);
+        filterChipFitQueue.clear();
+        selects.forEach(function (selectEl) {
+            if (!document.contains(selectEl)) return;
+            fitFilterChips(selectEl);
+            // Watch the selection box, not .select2-container: the app styles that one as an inline
+            // element and a ResizeObserver never reports size changes for inline elements
+            const selection = $(selectEl).next(".select2-container").find(".select2-selection")[0];
+            if (selection && window.ResizeObserver && !filterChipObserved.has(selection)) {
+                filterChipObserved.add(selection);
+                new ResizeObserver(function () { scheduleFilterChipFit(selectEl); }).observe(selection);
+            }
+        });
+    });
+}
+
+// select2 builds and rebuilds the chips on its own, so watch for that instead of hooking every place a
+// filter multi-select is started
+if (window.MutationObserver) {
+    new MutationObserver(function (records) {
+        records.forEach(function (record) {
+            const nodes = Array.from(record.addedNodes).concat(Array.from(record.removedNodes));
+            // the "+N" chip is our own change
+            if (nodes.length && nodes.every(function (node) { return node.classList && node.classList.contains("filter-more-chip"); })) return;
+            const target = record.target.nodeType === 1 ? record.target : record.target.parentElement;
+            const container = target && (target.closest ? target.closest(".select2-container") : null);
+            const candidate = container ? container.previousElementSibling : null;
+            if (candidate && candidate.classList.contains("filterMultiSelect")) {
+                scheduleFilterChipFit(candidate);
+                return;
+            }
+            record.addedNodes.forEach(function (node) {
+                if (node.nodeType !== 1) return;
+                const containers = node.matches(".select2-container") ? [node] : Array.from(node.querySelectorAll(".select2-container"));
+                containers.forEach(function (box) {
+                    const select = box.previousElementSibling;
+                    if (select && select.classList.contains("filterMultiSelect")) scheduleFilterChipFit(select);
+                });
+            });
+        });
+    }).observe(document.documentElement, { childList: true, subtree: true });
+}
+
 // Sidebar Management
 const SidebarManager = {
     getAppLabelFromUrl() {
@@ -1234,6 +1355,13 @@ function initializeSelect2Pagination() {
                     processResults: function (data, params) {
                         params.page = params.page || 1;
                         let results = data.results || [];
+                        // Select2 matches selected values by string id; numeric ids from the server
+                        // would make clicking a selected option fail to unselect it.
+                        results = results.map(function (r) {
+                            return r && r.id !== undefined && r.id !== null && typeof r.id !== 'string'
+                                ? Object.assign({}, r, { id: String(r.id) })
+                                : r;
+                        });
                         // Offer an empty choice for optional single selects so a value can be unset.
                         // Select2 hides results whose id equals the placeholder id (''), hence the stand-in id.
                         if (!isMultiple && !$this.prop('required') && params.page === 1 && !params.term) {
@@ -1758,6 +1886,18 @@ $(document).ready(function () {
     $("select").on("select2:select", function (e) {
         $(this).closest("select")[0].dispatchEvent(new Event("change"));
     });
+
+    // Removing a tag or clearing a multi-select does not fire a native change
+    // event, so HTMX never refreshes dependent fields. Forward it, as
+    // select2:select already does, for any select whose hx-trigger listens
+    // for "change" (delegated: forms load via HTMX).
+    $(document).on(
+        "select2:unselect select2:clear",
+        "select[hx-trigger*='change']",
+        function () {
+            this.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+    );
 
     // Kanban drag handlers
     $(".kanban-block").each(function () {

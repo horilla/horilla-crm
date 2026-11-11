@@ -18,6 +18,7 @@ from horilla.apps import apps
 # First party imports (Horilla)
 from horilla.auth.mixins import login_redirect
 from horilla.contrib.core.models import RecycleBin
+from horilla.contrib.core.utils import get_allowed_user_ids
 from horilla.core.exceptions import (
     ImproperlyConfigured,
     ObjectDoesNotExist,
@@ -66,11 +67,9 @@ class HorillaSingleDeleteView(DeleteDependencyMixin, DeleteReassignMixin, Delete
                 self.model = apps.get_model(app_label, model_name)
             except LookupError:
                 return render(self.request, "403.html", {"modal": True})
-        return (
-            self.model.all_objects.all()
-            if hasattr(self.model, "all_objects")
-            else self.model.objects.all()
-        )
+        # Use the default (company-scoped) manager so a record that belongs to
+        # another company can never be resolved from a URL pk (cross-tenant IDOR).
+        return self.model.objects.all()
 
     def get(self, request, *args, **kwargs):
         """Handle GET requests for delete view, including dependency check and form rendering."""
@@ -217,6 +216,28 @@ class HorillaSingleDeleteView(DeleteDependencyMixin, DeleteReassignMixin, Delete
                 reload=True, extra="closeDeleteModeModal();", close=True
             )
 
+    @staticmethod
+    def _is_owned_by_user_or_subordinate(obj, user):
+        """
+        Return True if any OWNER_FIELDS value on ``obj`` (ForeignKey or
+        ManyToMany) is the user or a user in a subordinate role. Same rule the
+        list, detail and related-tab views use for ``*_own`` permissions.
+        """
+        owner_fields = getattr(obj.__class__, "OWNER_FIELDS", None)
+        if not owner_fields:
+            return False
+        allowed_ids = get_allowed_user_ids(user)
+        for field_name in owner_fields:
+            value = getattr(obj, field_name, None)
+            if value is None:
+                continue
+            if hasattr(value, "all"):
+                if any(member.pk in allowed_ids for member in value.all()):
+                    return True
+            elif getattr(value, "pk", None) in allowed_ids:
+                return True
+        return False
+
     def get_object(self, queryset=None):
         """Override to check delete permissions on the specific object."""
         if queryset is None:
@@ -238,14 +259,8 @@ class HorillaSingleDeleteView(DeleteDependencyMixin, DeleteReassignMixin, Delete
             if has_delete_all:
                 return obj
             if has_delete_own:
-                owner_fields = getattr(self.model, "OWNER_FIELDS", None)
-                if owner_fields:
-                    is_owner = any(
-                        getattr(obj, field_name, None) == user
-                        for field_name in owner_fields
-                    )
-                    if is_owner:
-                        return obj
+                if self._is_owned_by_user_or_subordinate(obj, user):
+                    return obj
 
                 from .helpers.queryset_utils import user_has_granted_access
 
@@ -681,8 +696,9 @@ class HorillaSingleDeleteView(DeleteDependencyMixin, DeleteReassignMixin, Delete
             related_name = related.get_accessor_name()
             if related_name and self._is_field_nullable(related_model):
                 try:
-                    record_to_update = related_model.all_objects.get(
-                        id=record_id_to_update
+                    fk_name = related.field.name
+                    record_to_update = related_model.objects.get(
+                        id=record_id_to_update, **{fk_name: self.object}
                     )
                     field_name = get_fk_field_name(related_model, self.model)
                     if field_name:

@@ -371,7 +371,7 @@ class DeleteReassignMixin:
         """Reassign all dependent records to a new target. Returns the number of reassigned records."""
         try:
             obj = self.model.all_objects.get(id=record_id)
-            new_target = self.model.all_objects.get(id=new_target_id)
+            new_target = self.model.objects.get(id=new_target_id)
             related_objects = self.model._meta.related_objects
             reassigned_count = 0
             excluded_models = self._get_excluded_models()
@@ -455,7 +455,7 @@ class DeleteReassignMixin:
                             "new_target_id"
                         ):
                             try:
-                                new_target = self.model.all_objects.get(
+                                new_target = self.model.objects.get(
                                     id=action["new_target_id"]
                                 )
                                 setattr(rec, field_name, new_target)
@@ -527,7 +527,11 @@ class DeleteReassignMixin:
             if related_model in excluded_models:
                 continue
             try:
-                return related_model.all_objects.get(id=record_id_to_find)
+                # Company-scoped manager, and only records that actually
+                # reference the main object, so arbitrary ids can't be deleted.
+                return related_model.objects.get(
+                    id=record_id_to_find, **{related.field.name: self.object}
+                )
             except ObjectDoesNotExist:
                 continue
         return None

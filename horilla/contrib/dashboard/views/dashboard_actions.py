@@ -44,9 +44,9 @@ class DashboardDefaultToggleView(LoginRequiredMixin, View):
             messages.error(request, str(e))
             return ScriptResponse(reload=True)
         user = request.user
-        if (
-            user.has_perm("dashboard.change_dashboard")
-            or dashboard.dashboard_owner == user
+        if user.has_perm("dashboard.change_dashboard") or (
+            user.has_perm("dashboard.change_own_dashboard")
+            and dashboard.dashboard_owner == user
         ):
             if not dashboard.is_default:
                 Dashboard.objects.filter(
@@ -61,7 +61,10 @@ class DashboardDefaultToggleView(LoginRequiredMixin, View):
                 messages.success(request, f"{dashboard.name} removed from default.")
             dashboard.save()
             return ScriptResponse(reload=True)
-        return render(request, "403.html")
+        messages.error(
+            request, _("You don't have permission to change this dashboard.")
+        )
+        return ScriptResponse(reload=True)
 
     def get(self, request, *args, **kwargs):
         """Handle GET request to return the 403 page for non-POST requests."""
@@ -81,9 +84,9 @@ class DashboardFavoriteToggleView(LoginRequiredMixin, View):
             return ScriptResponse(reload=True)
 
         user = request.user
-        if (
-            user.has_perm("dashboard.change_dashboardfolder")
-            or dashboard.dashboard_owner == user
+        if user.has_perm("dashboard.change_dashboard") or (
+            user.has_perm("dashboard.change_own_dashboard")
+            and dashboard.dashboard_owner == user
         ):
             if user in dashboard.favourited_by.all():
                 dashboard.favourited_by.remove(user)
@@ -132,10 +135,6 @@ class DashboardCreateFormView(LoginRequiredMixin, HorillaSingleFormView):
 
 
 @method_decorator(htmx_required, name="dispatch")
-@method_decorator(
-    permission_required_or_denied("dashboard.delete_dashboard", modal=True),
-    name="dispatch",
-)
 class DashboardDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
     """View to handle deletion of dashboard."""
 
@@ -148,6 +147,12 @@ class DashboardDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
 
 @method_decorator(
     permission_required_or_denied("dashboard.change_dashboard"), name="dispatch"
+)
+@method_decorator(
+    permission_required_or_denied(
+        ["dashboard.change_dashboard", "dashboard.change_own_dashboard"]
+    ),
+    name="dispatch",
 )
 class ResetDashboardLayoutOrderView(LoginRequiredMixin, View):
     """Remove the current user's saved layout order for this dashboard so default order is used."""

@@ -1,6 +1,7 @@
 <div class="flex rounded-md overflow-hidden">
     {% has_perm "dashboard.change_dashboard" as can_change_dashboard %}
-    {% if can_change_dashboard  or instance.dashboard_owner == request.user %}
+    {% has_perm "dashboard.change_own_dashboard" as can_change_own_dashboard %}
+    {% if can_change_dashboard or can_change_own_dashboard and instance.dashboard_owner == request.user %}
         <button
             class="w-10 h-7 bg-dark-25 flex-1 flex justify-center border-e border-e-[white] hover:bg-dark-50 transition duration-300 items-center"
             hx-get="{% url 'dashboard:dashboard_update' instance.id %}?{{ request.GET.urlencode}}"

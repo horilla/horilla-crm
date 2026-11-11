@@ -227,17 +227,50 @@ class DashboardComponentFormView(LoginRequiredMixin, HorillaSingleFormView):
 
     def get(self, request, *args, **kwargs):
         component_id = self.kwargs.get("pk")
+        if not component_id:
+            # Create: the component add / add own permission is already enforced by
+            # the generic form; here make sure the target dashboard is allowed too.
+            if self._can_add_to_requested_dashboard():
+                return super().get(request, *args, **kwargs)
+            return render(request, "403.html")
+
         if request.user.has_perm("dashboard.change_dashboard") or request.user.has_perm(
             "dashboard.add_dashboard"
         ):
             return super().get(request, *args, **kwargs)
 
-        if component_id:
-            component = get_object_or_404(DashboardComponent, pk=component_id)
-            if component.component_owner == request.user:
-                return super().get(request, *args, **kwargs)
+        component = get_object_or_404(DashboardComponent, pk=component_id)
+        if component.component_owner == request.user:
+            return super().get(request, *args, **kwargs)
 
         return render(request, "403.html")
+
+    def post(self, request, *args, **kwargs):
+        """Block creating a component on a dashboard the user may not add to."""
+        if not self.kwargs.get("pk") and not self._can_add_to_requested_dashboard():
+            return render(request, "403.html")
+        return super().post(request, *args, **kwargs)
+
+    def _can_add_to_requested_dashboard(self):
+        """Every dashboard id sent (URL and body) must allow adding a component."""
+        dashboard_ids = {
+            value
+            for value in (
+                self.request.GET.get("dashboard"),
+                self.request.POST.get("dashboard"),
+            )
+            if value
+        }
+        if not dashboard_ids:
+            return False
+        for dashboard_id in dashboard_ids:
+            try:
+                dashboard = Dashboard.objects.filter(pk=dashboard_id).first()
+            except (TypeError, ValueError):
+                return False
+            if not dashboard or not dashboard.can_add_component(self.request.user):
+                return False
+        return True
 
     def form_valid(self, form):
         """Handle form submission and ensure proper file path"""
@@ -251,10 +284,6 @@ class DashboardComponentFormView(LoginRequiredMixin, HorillaSingleFormView):
 
 
 @method_decorator(htmx_required, name="dispatch")
-@method_decorator(
-    permission_required_or_denied("dashboard.delete_dashboard", modal=True),
-    name="dispatch",
-)
 class ComponentDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
     """View to handle deletion of dashboard components."""
 

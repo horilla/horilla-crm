@@ -1,15 +1,32 @@
-<label class="inline-flex items-center cursor-pointer">
-    <input
-        type="checkbox"
-        class="sr-only peer"
-        {% if instance.is_default %}
-            checked
-        {% endif %}
-        hx-post="{% url 'dashboard:dashboard_toggle_default' instance.id %}?{{ request.GET.urlencode}}"
-        value="{{instance.is_default}}"
-        hx-swap="innerHTML"
-        hx-trigger="change"
-    >
-    <div class="relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6">
-    </div>
-</label>
+{% has_perm "dashboard.change_dashboard" as can_change_dashboard %}
+{% has_perm "dashboard.change_own_dashboard" as can_change_own_dashboard %}
+{% if can_change_dashboard or can_change_own_dashboard and instance.dashboard_owner == request.user %}
+    <label class="inline-flex items-center cursor-pointer">
+        <input
+            type="checkbox"
+            class="sr-only peer"
+            {% if instance.is_default %}
+                checked
+            {% endif %}
+            hx-post="{% url 'dashboard:dashboard_toggle_default' instance.id %}?{{ request.GET.urlencode}}"
+            value="{{instance.is_default}}"
+            hx-swap="innerHTML"
+            hx-trigger="change"
+        >
+        <div class="relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6">
+        </div>
+    </label>
+{% else %}
+    <label class="inline-flex items-center cursor-not-allowed opacity-60" title="You don't have permission to change this dashboard">
+        <input
+            type="checkbox"
+            class="sr-only peer"
+            {% if instance.is_default %}
+                checked
+            {% endif %}
+            disabled
+        >
+        <div class="relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6">
+        </div>
+    </label>
+{% endif %}

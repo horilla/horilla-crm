@@ -11,9 +11,10 @@ from django.contrib import messages
 from horilla.auth.mixins import LoginRequiredMixin, login_redirect
 from horilla.contrib.generics.mixins import RecentlyViewedMixin
 from horilla.contrib.generics.views import HorillaListView, HorillaNavView
+from horilla.contrib.utils.middlewares import _thread_local
 from horilla.db.models import Case, When
 from horilla.shortcuts import get_object_or_404, redirect, render
-from horilla.urls import reverse_lazy
+from horilla.urls import reverse, reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
     method_decorator,
@@ -26,7 +27,7 @@ from horilla.views.generic import TemplateView
 from horilla.web import HttpNotFound, HttpResponse, RefreshResponse
 
 # Local imports
-from ..filters import DashboardFilter
+from ..filters import DashboardFilter, DashboardFolderFilter
 from ..models import Dashboard, DashboardComponent, DefaultHomeLayoutOrder
 from ..utils import (
     DATE_RANGE_CHOICES,
@@ -54,7 +55,31 @@ class DashboardNavbar(LoginRequiredMixin, HorillaNavView):
     reload_option = False
     model_name = "Dashboard"
     model_app_label = "dashboard"
-    search_option = False
+    search_option = True
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        request = getattr(_thread_local, "request", None)
+        title = request.GET.get("title")
+        # One navbar serves every dashboard page: search the list of the current page
+        pk = request.GET.get("pk")
+        if pk and pk.isdigit():
+            url = reverse(
+                "dashboard:dashboard_folder_detail_list", kwargs={"pk": int(pk)}
+            )
+            self.filterset_class = DashboardFolderFilter
+        elif title == "Favourite Dashboards":
+            url = reverse("dashboard:dashboard_favourite_list_view")
+        elif title == "Folders":
+            url = reverse("dashboard:dashboard_folder_list_view")
+            self.filterset_class = DashboardFolderFilter
+        elif title == "Favourite Folders":
+            url = reverse("dashboard:folder_favourite_list_view")
+            self.filterset_class = DashboardFolderFilter
+        else:
+            url = reverse("dashboard:dashboard_list_view")
+        self.search_url = url
+        self.main_url = url
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -90,6 +115,10 @@ class DashboardNavbar(LoginRequiredMixin, HorillaNavView):
 
 
 @method_decorator(htmx_required, name="dispatch")
+@method_decorator(
+    permission_required(["dashboard.view_dashboard", "dashboard.view_own_dashboard"]),
+    name="dispatch",
+)
 class DashboardDetailNavbar(LoginRequiredMixin, HorillaNavView):
     """Navbar for dashboard detail (back, title, Add components, Reorder/Save/Cancel)."""
 
@@ -141,9 +170,7 @@ class DashboardDetailNavbar(LoginRequiredMixin, HorillaNavView):
     def new_button(self):
         """Primary: add a component to the dashboard (opens modal)."""
         dashboard = self._dashboard()
-        if not dashboard or not self.request.user.has_perm(
-            "dashboard.add_dashboardcomponent"
-        ):
+        if not dashboard or not dashboard.can_add_component(self.request.user):
             return None
         return {
             "title": _("Add Components"),
@@ -164,6 +191,7 @@ class DashboardListView(LoginRequiredMixin, HorillaListView):
     model = Dashboard
     template_name = "dashboard_list_view.html"
     view_id = "dashboard-list"
+    filterset_class = DashboardFilter
     search_url = reverse_lazy("dashboard:dashboard_list_view")
     main_url = reverse_lazy("dashboard:dashboard_list_view")
     max_visible_actions = 5

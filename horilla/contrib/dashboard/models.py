@@ -174,6 +174,17 @@ class Dashboard(HorillaCoreModel):
             context={"instance": self},
         )
 
+    def can_add_component(self, user):
+        """Whether `user` may add a component to this dashboard.
+
+        `add_dashboardcomponent` allows any dashboard; `add_own_dashboardcomponent`
+        only dashboards the user owns.
+        """
+        return user.has_perm("dashboard.add_dashboardcomponent") or (
+            user.has_perm("dashboard.add_own_dashboardcomponent")
+            and self.dashboard_owner == user
+        )
+
     def is_default_col(self):
         """Return rendered HTML indicating whether this dashboard is the default."""
 
@@ -550,3 +561,39 @@ class DefaultHomeLayoutOrder(models.Model):
                 "dashboard": self.dashboard,
             }
         return _("Default home layout order for %(user)s") % {"user": self.user}
+
+
+class OnboardingState(models.Model):
+    """
+    Whether the home page "Get started" guide was dismissed, kept separately for
+    each company so dismissing it in one company never changes another. It is
+    shared by the company's superusers. No row means the guide is shown.
+    """
+
+    company = models.OneToOneField(
+        "core.Company",
+        on_delete=models.CASCADE,
+        related_name="onboarding_state",
+        verbose_name=_("Company"),
+    )
+    is_hidden = models.BooleanField(default=False, verbose_name=_("Hidden"))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_("Updated At"))
+
+    class Meta:
+        """Meta class for OnboardingState: one row per company."""
+
+        verbose_name = _("Onboarding State")
+        verbose_name_plural = _("Onboarding States")
+
+    def __str__(self):
+        return f"{self.company}: {'hidden' if self.is_hidden else 'shown'}"
+
+    @classmethod
+    def is_hidden_for(cls, company):
+        """Whether the guide was dismissed for ``company``."""
+        return cls.objects.filter(company=company, is_hidden=True).exists()
+
+    @classmethod
+    def set_hidden(cls, company, hidden):
+        """Dismiss (``True``) or show again (``False``) the guide for ``company`` only."""
+        cls.objects.update_or_create(company=company, defaults={"is_hidden": hidden})

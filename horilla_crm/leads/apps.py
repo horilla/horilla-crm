@@ -24,6 +24,7 @@ class LeadsConfig(AppLauncher):
         "signals",
         "menu",
         "dashboard",
+        "onboarding",
     ]
 
     demo_data = [

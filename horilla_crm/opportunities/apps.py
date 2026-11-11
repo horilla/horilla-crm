@@ -23,6 +23,7 @@ class OpportunitiesConfig(AppLauncher):
         "signals",
         "menu",
         "dashboard",
+        "onboarding",
     ]
 
     demo_data = [

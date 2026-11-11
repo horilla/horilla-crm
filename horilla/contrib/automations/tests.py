@@ -593,6 +593,94 @@ class RelatedRecipientTests(SimpleTestCase):
             [],
         )
 
+    def booking_model(self, relations):
+        """A record that declares ``relations`` as RECIPIENT_RELATIONS."""
+        customer_model = self.customer_model
+
+        class Booking(models.Model):
+            RECIPIENT_RELATIONS = relations
+
+            class Meta:
+                app_label = "automations"
+
+            @property
+            def main_customer(self):
+                return getattr(self, "_main_customer", None)
+
+        Booking.customer_model = customer_model
+        return Booking
+
+    def test_declared_relations_are_offered(self):
+        """RECIPIENT_RELATIONS adds the related record's addresses under its label."""
+        booking = self.booking_model(
+            {"main_customer": (self.customer_model, "Main Customer")}
+        )
+        sms = dict(self.fake.get_recipient_choices(booking))
+        self.assertEqual(sms["instance.main_customer.mobile"], "Main Customer - Mobile")
+        mail = dict(get_delivery_channel("mail").get_recipient_choices(booking))
+        self.assertEqual(mail["instance.main_customer.email"], "Main Customer - Email")
+        notification = dict(
+            get_delivery_channel("notification").get_recipient_choices(booking)
+        )
+        self.assertFalse([key for key in notification if "main_customer" in key])
+
+    def test_declared_relations_skip_users_companies_and_missing_models(self):
+        booking = self.booking_model(
+            {
+                "manager": (User, "Manager"),
+                "tenant": ("core.Company", "Tenant"),
+                "gone": ("nowhere.Model", "Gone"),
+                "bad": ("not-a-label", "Bad"),
+            }
+        )
+        with self.assertLogs("horilla.registry.delivery", "WARNING") as logs:
+            for channel in (self.fake, get_delivery_channel("mail")):
+                keys = dict(channel.get_recipient_choices(booking))
+                for name in ("manager", "tenant", "gone", "bad"):
+                    self.assertFalse(
+                        [key for key in keys if key.startswith(f"instance.{name}.")]
+                    )
+        self.assertTrue(any("nowhere.Model" in line for line in logs.output))
+
+    def test_declared_relation_resolves_through_the_attribute(self):
+        """Sending reads the attribute; a record without one gives nobody."""
+        booking_model = self.booking_model(
+            {"main_customer": (self.customer_model, "Main Customer")}
+        )
+        booking = booking_model()
+        self.assertEqual(
+            self.fake.resolve_recipients(
+                "instance.main_customer.mobile", booking, None
+            ),
+            [],
+        )
+        booking._main_customer = self.customer_model(
+            mobile="09126666666", email="m@example.com"
+        )
+        self.assertEqual(
+            self.fake.resolve_recipients(
+                "instance.main_customer.mobile", booking, None
+            ),
+            ["09126666666"],
+        )
+        self.assertEqual(
+            get_delivery_channel("mail").resolve_recipients(
+                "instance.main_customer.email", booking, None
+            ),
+            ["m@example.com"],
+        )
+
+    def test_a_model_without_declared_relations_is_unchanged(self):
+        self.assertFalse(hasattr(self.deal_model, "RECIPIENT_RELATIONS"))
+        self.assertEqual(
+            [
+                key
+                for key, _l in self.fake.get_recipient_choices(self.deal_model)
+                if key.startswith("instance.")
+            ],
+            ["instance.owner", "instance.customer.mobile"],
+        )
+
 
 class ExecuteAutomationTests(AutomationTestCase):
     """execute_automation() sends through each selected channel."""

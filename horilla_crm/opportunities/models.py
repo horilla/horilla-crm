@@ -438,6 +438,11 @@ class Opportunity(HorillaCoreModel):
 
     OWNER_FIELDS = ["owner"]
     CURRENCY_FIELDS = ["amount", "expected_revenue"]
+    # Offered in the "Send to" picker of mail and phone channels (Automations,
+    # Workflow, Cadences) as "Primary Contact - <field>".
+    RECIPIENT_RELATIONS = {
+        "primary_contact": ("contacts.Contact", _("Primary Contact")),
+    }
     # Reverse relations whose rows must not be merged into the History tab.
     FULL_HISTORY_EXCLUDE = ["converted_from_leads"]
 
@@ -461,6 +466,29 @@ class Opportunity(HorillaCoreModel):
 
     def __str__(self):
         return f"{self.name}"
+
+    @property
+    def primary_contact(self):
+        """
+        The contact of the opportunity's active primary contact role, or
+        ``None``. With several primary roles, the one added first. Read
+        without the active-company filter, as Workflow and Cadences also send
+        from Celery, where no company is active.
+        """
+        if not self.pk:
+            return None
+        role = (
+            OpportunityContactRole.all_objects.filter(
+                opportunity_id=self.pk,
+                is_primary=True,
+                is_active=True,
+                contact__is_active=True,
+            )
+            .select_related("contact")
+            .order_by("pk")
+            .first()
+        )
+        return role.contact if role else None
 
     @classmethod
     def granted_access_filter(cls, user, action):

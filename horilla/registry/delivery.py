@@ -26,6 +26,7 @@ nothing about ``"both"`` or about comma-separated values.
 import abc
 import logging
 
+from django.apps import apps
 from django.db import models
 
 from horilla.auth.models import User
@@ -124,8 +125,11 @@ class DeliveryChannel(abc.ABC):
         The ``address_kind`` fields of the records ``model`` points to.
 
         One forward foreign key or one-to-one away, to any model but a user
-        (its address is reached through the user itself) or a company. None for
-        a ``"user"`` channel: an address field there is not a user.
+        (its address is reached through the user itself) or a company. Then
+        the records the model declares in ``RECIPIENT_RELATIONS`` (see
+        ``get_recipient_relations()``), such as an opportunity's primary
+        contact. None for a ``"user"`` channel: an address field there is not
+        a user.
         """
         if self.address_kind == ADDRESS_USER:
             return []
@@ -134,21 +138,26 @@ class DeliveryChannel(abc.ABC):
             # A one-to-one is a ForeignKey too; reverse relations are not.
             if not isinstance(relation, models.ForeignKey):
                 continue
-            related = relation.related_model
-            if not isinstance(related, type) or issubclass(related, User):
-                continue
-            if related._meta.label_lower in SKIPPED_RELATED_MODELS:
-                continue
-            for field in related._meta.get_fields():
-                if not self.is_address_field(field):
-                    continue
-                choices.append(
-                    (
-                        f"instance.{relation.name}.{field.name}",
-                        f"{_field_label(relation)} - {_field_label(field)}",
-                    )
+            choices.extend(
+                self._address_choices(
+                    relation.name, _field_label(relation), relation.related_model
                 )
+            )
+        for name, related, label in get_recipient_relations(model):
+            choices.extend(self._address_choices(name, label, related))
         return choices
+
+    def _address_choices(self, name, label, related):
+        """``related``'s address fields as ``instance.<name>.<field>`` choices."""
+        if not isinstance(related, type) or issubclass(related, User):
+            return []
+        if related._meta.label_lower in SKIPPED_RELATED_MODELS:
+            return []
+        return [
+            (f"instance.{name}.{field.name}", f"{label} - {_field_label(field)}")
+            for field in related._meta.get_fields()
+            if self.is_address_field(field)
+        ]
 
     def is_address_field(self, field):
         """Whether a (non foreign key) model field holds an ``address_kind`` address."""
@@ -252,6 +261,41 @@ class DeliveryChannel(abc.ABC):
         Must not block: ``execute_automation()`` runs inside ``post_save``.
         Hand slow work (a provider call) to a thread or a task.
         """
+
+
+def get_recipient_relations(model):
+    """
+    The extra records ``model`` offers as recipients, from its
+    ``RECIPIENT_RELATIONS``: ``[(attribute, related model, label)]``.
+
+    ``RECIPIENT_RELATIONS`` maps an attribute of the record (usually a
+    property) that returns one related record, or ``None``, to that record's
+    model (a class or an ``"app_label.ModelName"`` string) and a label::
+
+        RECIPIENT_RELATIONS = {
+            "primary_contact": ("contacts.Contact", _("Primary Contact")),
+        }
+
+    The picker then lists the related model's address fields as
+    ``instance.<attribute>.<field>``, and sending reads them through the
+    attribute. A model that is not installed is left out.
+    """
+    relations = []
+    declared = getattr(model, "RECIPIENT_RELATIONS", None) or {}
+    for name, (related, label) in declared.items():
+        if isinstance(related, str):
+            try:
+                related = apps.get_model(related)
+            except (LookupError, ValueError):
+                logger.warning(
+                    "%s.RECIPIENT_RELATIONS[%r]: model %r is not installed",
+                    model.__name__,
+                    name,
+                    related,
+                )
+                continue
+        relations.append((name, related, label))
+    return relations
 
 
 def _field_label(field):

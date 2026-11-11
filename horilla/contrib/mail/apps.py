@@ -35,6 +35,7 @@ class MailConfig(AppLauncher):
         "registration",
         "signals",
         "menu",
+        "onboarding",
     ]
 
     celery_schedule_module = "celery_schedules"

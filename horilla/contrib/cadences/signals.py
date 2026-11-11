@@ -12,7 +12,6 @@ from datetime import timedelta
 from django.dispatch import receiver
 
 from horilla.contrib.activity.models import Activity
-from horilla.contrib.automations.methods import evaluate_condition
 from horilla.contrib.core.models import HorillaContentType
 from horilla.db import transaction
 from horilla.db.models.signals import post_save, pre_save
@@ -37,25 +36,8 @@ def _is_cadence_supported_instance(instance):
     return instance.__class__ in FEATURE_REGISTRY["cadence_models"]
 
 
-def _evaluate_cadence_conditions(cadence, instance):
-    conditions = getattr(cadence, "_prefetched_objects_cache", {}).get("conditions")
-    if conditions is None:
-        conditions = cadence.conditions.all()
-    conditions = sorted(
-        conditions, key=lambda condition: (condition.order, condition.id)
-    )
-    if not conditions:
-        return True
-    result = None
-    for idx, condition in enumerate(conditions):
-        current = evaluate_condition(condition, instance)
-        if idx == 0 or condition.logical_operator == "and":
-            result = current if result is None else (result and current)
-        elif condition.logical_operator == "or":
-            result = current if result is None else (result or current)
-        else:
-            result = current if result is None else (result and current)
-    return bool(result)
+# Kept for the callers in this module; the rule lives in services.
+_evaluate_cadence_conditions = services.cadence_conditions_met
 
 
 def _dedupe_runtime_activities_for_instance(instance):
@@ -221,9 +203,11 @@ def _trigger_next_followups_from_activity(activity):
     if not enrollment or enrollment.status != "active":
         return
     # Automatic enrollments follow the cadence conditions; manual ones ignore them.
+    # A record that left them stops its run instead of leaving it ongoing.
     if enrollment.source == "auto" and not _evaluate_cadence_conditions(
         cadence, instance
     ):
+        services.stop_enrollment(enrollment, str(services.CONDITIONS_NOT_MET))
         return
     status_key = _activity_status_key(activity)
     source_followup = CadenceFollowUp.objects.filter(

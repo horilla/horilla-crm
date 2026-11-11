@@ -23,7 +23,10 @@ from django.db import IntegrityError
 
 from horilla.auth.models import User
 from horilla.contrib.activity.models import Activity
-from horilla.contrib.automations.methods import resolve_mail_recipients
+from horilla.contrib.automations.methods import (
+    evaluate_condition,
+    resolve_mail_recipients,
+)
 from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.mail.models import (
     HorillaMail,
@@ -56,6 +59,10 @@ logger = logging.getLogger(__name__)
 
 # Activity statuses that finish a follow-up; everything else is still open.
 CLOSED_ACTIVITY_STATUSES = ("completed", "cancelled")
+
+#: Why a delayed follow-up was cancelled instead of created.
+CADENCE_INACTIVE = _("The cadence is inactive.")
+CONDITIONS_NOT_MET = _("The record no longer meets the cadence conditions.")
 # Mail statuses that mean "not sent yet".
 OPEN_MAIL_STATUSES = ("scheduled",)
 FAILED_MAIL_STATUSES = ("failed", "bounced")
@@ -646,6 +653,78 @@ def _queue_at_scheduled_time(scheduled):
     transaction.on_commit(queue)
 
 
+def cadence_conditions_met(cadence, instance):
+    """
+    Whether ``instance`` meets the conditions of ``cadence`` (AND / OR in
+    order). A cadence without conditions is always met. Uses the prefetched
+    ``conditions`` when the cadence has them.
+    """
+    conditions = getattr(cadence, "_prefetched_objects_cache", {}).get("conditions")
+    if conditions is None:
+        conditions = cadence.conditions.all()
+    conditions = sorted(
+        conditions, key=lambda condition: (condition.order, condition.id)
+    )
+    if not conditions:
+        return True
+    result = None
+    for idx, condition in enumerate(conditions):
+        current = evaluate_condition(condition, instance)
+        if idx == 0 or condition.logical_operator == "and":
+            result = current if result is None else (result and current)
+        elif condition.logical_operator == "or":
+            result = current if result is None else (result or current)
+        else:
+            result = current if result is None else (result and current)
+    return bool(result)
+
+
+def followup_stop_reason(enrollment, instance):
+    """
+    Why ``enrollment`` must not create its next follow-up for ``instance`` now,
+    or "".
+
+    A delayed or later follow-up is created some time after the record was
+    enrolled, so the cadence must still be active, and the record of an
+    automatic enrollment must still meet the cadence conditions. A manual
+    enrollment ignores the conditions, as when it was enrolled.
+    """
+    cadence = enrollment.cadence
+    if not cadence.is_active:
+        return str(CADENCE_INACTIVE)
+    if enrollment.source == "auto" and not cadence_conditions_met(cadence, instance):
+        return str(CONDITIONS_NOT_MET)
+    return ""
+
+
+def stop_enrollment(enrollment, reason):
+    """
+    Stop a running automatic enrollment whose record left the cadence
+    conditions.
+
+    It shows as Stopped (``unenrolled``, by nobody), and its pending delayed
+    follow-ups are cancelled with ``reason``. Tasks and calls it already
+    created stay as they are; changing their status no longer advances it. A
+    later save that meets the conditions again does not restart it, as for any
+    finished enrollment.
+    """
+    if enrollment.status != "active":
+        return enrollment
+    now = timezone.now()
+    with transaction.atomic():
+        enrollment.status = "unenrolled"
+        enrollment.ended_at = now
+        enrollment.unenrolled_by = None
+        enrollment.save(
+            update_fields=["status", "ended_at", "unenrolled_by", "updated_at"]
+        )
+        CadenceScheduledFollowUp.all_objects.filter(
+            enrollment=enrollment, status="pending"
+        ).update(status="cancelled", error_message=reason, executed_at=now)
+    logger.info("Cadence enrollment %s stopped: %s", enrollment.pk, reason)
+    return enrollment
+
+
 def run_scheduled_followup(scheduled_id):
     """Create the item of one due scheduled follow-up and record the outcome."""
     with transaction.atomic():
@@ -663,6 +742,17 @@ def run_scheduled_followup(scheduled_id):
             scheduled.status = "cancelled"
             scheduled.executed_at = timezone.now()
             scheduled.save(update_fields=["status", "executed_at", "updated_at"])
+            return scheduled
+        reason = followup_stop_reason(enrollment, instance)
+        if reason:
+            scheduled.status = "cancelled"
+            scheduled.error_message = reason
+            scheduled.executed_at = timezone.now()
+            scheduled.save(
+                update_fields=["status", "error_message", "executed_at", "updated_at"]
+            )
+            if reason == str(CONDITIONS_NOT_MET):
+                stop_enrollment(enrollment, reason)
             return scheduled
         try:
             with transaction.atomic():

@@ -289,6 +289,8 @@ It uses `ProtocolTypeRouter`:
 
 So HTTP traffic uses Django ASGI, and WebSockets are handled by the channels routing for Horilla notifications.
 
+The router is wrapped in `FreshContextMiddleware` (`horilla/utils/asgi.py`), which runs every ASGI call in an empty `contextvars.Context`. uvicorn starts a keep-alive or pipelined request from inside the previous request's task, so without the wrapper a request can inherit the previous request's Django `ThreadSensitiveContext` and deadlock the worker (python/cpython#140947). Keep the wrapper outermost if you add other ASGI middleware.
+
 ---
 
 ## 🏗️ Module: `horilla/wsgi.py`

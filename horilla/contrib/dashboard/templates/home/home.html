@@ -78,12 +78,16 @@
                         {% trans "You currently don't have access to dashboard. Please contact your administrator to request permissions or explore available features." %}
                     </p>
                 {% else %}
-                    <p class="text-gray-600{% if is_default_home %} mb-0{% endif %}">
-                        {% trans "Get started by creating your first dashboard or explore the overview below." %}
-                    </p>
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <p class="text-gray-600{% if is_default_home %} mb-0{% endif %}">
+                            {% trans "Get started by creating your first dashboard or explore the overview below." %}
+                        </p>
+                        {% if is_default_home %}{% include "home/onboarding.html" with part="link" %}{% endif %}
+                    </div>
                 {% endif %}
             </div>
         {% if is_default_home %}
+            {% include "home/onboarding.html" with part="banner" %}
             <!-- KPIs Section -->
             {% if kpi_data %}
                 <div class="mb-4">

@@ -15,6 +15,8 @@ from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import TemplateView, View
 from horilla.web import JsonResponse
 
+from ..get_started import get_onboarding_context
+
 # Local imports
 from ..models import Dashboard, DefaultHomeLayoutOrder
 from ..utils import (
@@ -283,6 +285,7 @@ class HomePageView(LoginRequiredMixin, TemplateView):
                 "user_has_custom_default_home_layout": user_has_custom_default_home_layout,
             }
         )
+        context.update(get_onboarding_context(self.request))
 
         return context
 

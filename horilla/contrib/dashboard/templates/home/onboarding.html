@@ -1,0 +1,110 @@
+{% if part != "link" %}
+<div id="onboarding"{% if onboarding and not onboarding_hidden %} class="mb-4"{% endif %}>
+{% if onboarding %}
+    {% if not onboarding_hidden %}
+        <section class="bg-white rounded-md border border-primary-300 p-6 flex flex-col gap-6" aria-label="{% trans 'Get started' %}">
+
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
+                <div class="w-11 h-11 rounded-lg bg-primary-600 text-white flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-bolt text-lg" aria-hidden="true"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h2 class="m-0 text-xl font-bold text-color-600">{% blocktrans with company=onboarding.company_name %}Get started with {{ company }}{% endblocktrans %}</h2>
+                    <p class="mt-0.5 text-sm text-gray-500">
+                        {% blocktrans with done=onboarding.done_count total=onboarding.total %}{{ done }} of {{ total }} steps done{% endblocktrans %}
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2.5" role="img" aria-label="{{ onboarding.percent }}%">
+                        <div class="w-[120px] h-2 rounded-full bg-primary-300 overflow-hidden">
+                            <div class="h-full rounded-full bg-primary-600" style="width: {{ onboarding.percent }}%"></div>
+                        </div>
+                        <span class="text-sm font-bold text-primary-600">{{ onboarding.percent }}%</span>
+                    </div>
+                    <button
+                        type="button"
+                        class="w-9 h-9 rounded-md border border-dark-50 bg-white text-gray-500 hover:bg-gray-50 transition duration-300 flex items-center justify-center flex-shrink-0 cursor-pointer"
+                        aria-label="{% trans 'Dismiss Setup Guide' %}"
+                        hx-post="{% url 'dashboard:onboarding_hide' %}"
+                        hx-target="#onboarding"
+                        hx-swap="outerHTML"
+                    >
+                        <i class="fa-solid fa-xmark text-sm" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto py-2 -my-2">
+                <ol class="flex list-none m-0 p-0 min-w-[640px]">
+                    {% for step in onboarding.steps %}
+                        <li class="flex-1 relative flex flex-col items-center">
+                            {% if not forloop.last %}
+                                <span class="absolute top-[17px] left-1/2 w-full h-0.5 bg-primary-600" aria-hidden="true"></span>
+                            {% endif %}
+                            <a href="{{ step.url }}" class="relative flex flex-col items-center gap-2.5 px-1 text-center">
+                                {% if step.done %}
+                                    <span class="w-9 h-9 rounded-full bg-primary-600 text-white flex items-center justify-center">
+                                        <i class="fa-solid fa-check text-sm" aria-hidden="true"></i>
+                                    </span>
+                                    <span class="text-[13px] font-semibold text-color-600">{{ step.title }}<span class="sr-only"> ({% trans "done" %})</span></span>
+                                {% elif step.is_next %}
+                                    <span class="w-9 h-9 box-border rounded-full bg-white border-2 border-primary-600 ring-4 ring-primary-300 flex items-center justify-center">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-primary-600"></span>
+                                    </span>
+                                    <span class="text-[13px] font-bold text-primary-600">{{ step.title }}<span class="sr-only"> ({% trans "next step" %})</span></span>
+                                {% else %}
+                                    <span class="w-9 h-9 box-border rounded-full bg-white border-2 border-[#dddddd] text-[13px] font-bold text-gray-500 flex items-center justify-center">{{ step.number }}</span>
+                                    <span class="text-[13px] font-medium text-gray-500">{{ step.title }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
+
+            {% if onboarding.next_step %}
+                {% url 'dashboard:onboarding_skip' onboarding.next_step.key as skip_url %}
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-3 px-5 py-4 rounded-md bg-primary-100 border border-primary-300">
+                <div class="w-12 h-12 rounded-md bg-white text-primary-600 border border-primary-300 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid {{ onboarding.next_step.icon }} text-lg" aria-hidden="true"></i>
+                </div>
+                <div class="flex-1 min-w-[220px]">
+                    <p class="m-0 text-xs font-bold uppercase tracking-wider text-primary-600">
+                        {% blocktrans with number=onboarding.next_step.number total=onboarding.total %}Next step · {{ number }} of {{ total }}{% endblocktrans %}
+                    </p>
+                    <p class="mt-0.5 text-base font-bold text-color-600">{{ onboarding.next_step.headline }}</p>
+                    {% if onboarding.next_step.description %}
+                        <p class="mt-0.5 text-sm text-gray-500">{{ onboarding.next_step.description }}</p>
+                    {% endif %}
+                </div>
+                {% btn _("Skip For Now") variant="outline" extra_class="cursor-pointer" type="button" hx_post=skip_url hx_target="#onboarding" hx_swap="outerHTML" %}
+                {% btn body tag="a" href=onboarding.next_step.url extra_class="inline-flex items-center gap-2 whitespace-nowrap" %}
+                    {% trans "Set Up Now" %}<i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                {% endbtn %}
+            </div>
+            {% else %}
+                <p class="m-0 text-sm text-gray-500">
+                    {% trans "You skipped the remaining steps. Click a step above whenever you are ready to set it up." %}
+                </p>
+            {% endif %}
+        </section>
+
+    {% endif %}
+{% endif %}
+</div>
+{% endif %}
+{% if part != "banner" %}
+<div id="onboarding-link"{% if part == "both" %} hx-swap-oob="true"{% endif %}>
+{% if onboarding and onboarding_hidden %}
+    <button
+        type="button"
+        class="text-sm font-medium text-gray-500 hover:text-primary-600 transition duration-300 cursor-pointer whitespace-nowrap"
+        hx-post="{% url 'dashboard:onboarding_show' %}"
+        hx-target="#onboarding"
+        hx-swap="outerHTML"
+    >
+        {% trans "Show Setup Guide" %}
+    </button>
+{% endif %}
+</div>
+{% endif %}

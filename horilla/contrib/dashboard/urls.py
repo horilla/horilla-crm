@@ -180,6 +180,21 @@ urlpatterns = [
         name="save_default_home_layout_order",
     ),
     path(
+        "onboarding/skip/<slug:key>/",
+        views.OnboardingSkipView.as_view(),
+        name="onboarding_skip",
+    ),
+    path(
+        "onboarding/hide/",
+        views.OnboardingVisibilityView.as_view(hidden=True),
+        name="onboarding_hide",
+    ),
+    path(
+        "onboarding/show/",
+        views.OnboardingVisibilityView.as_view(hidden=False),
+        name="onboarding_show",
+    ),
+    path(
         "reset-default-home-layout-order/",
         views.ResetDefaultHomeLayoutOrderView.as_view(),
         name="reset_default_home_layout_order",

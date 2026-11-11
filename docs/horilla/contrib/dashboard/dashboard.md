@@ -6,6 +6,7 @@
 - **DashboardComponent** rows — KPI, chart, or table tiles; optional FK to a saved **`Report`** from `horilla.contrib.reports`.
 - **ComponentCriteria** — per-component filter rows (operators align with `OPERATOR_CHOICES` from `horilla.utils.choices`).
 - **DefaultHomeLayoutOrder** — lightweight ordering model for the home shell layout.
+- **OnboardingState** — whether the home page **Get started** guide is dismissed, kept per company (see [Get started guide](#get-started-guide-home-page)).
 - **Home** views compose dashboards or fall back to dynamic KPI/chart/table generation (see [default_dashboard_generator.md](default_dashboard_generator.md) for the generator that lives alongside dashboard views in this codebase).
 - **REST API** at `/dashboard/`.
 
@@ -23,6 +24,8 @@
 | API | `/dashboard/` → `horilla.contrib.dashboard.api.urls` |
 
 Apps that contribute **default home** tiles add `"dashboard"` to their own `auto_import_modules` and ship a `dashboard.py` that appends to `DefaultDashboardGenerator.extra_models` (see generator guide).
+
+Apps that contribute **Get started** steps add `"onboarding"` to their own `auto_import_modules` and ship an `onboarding.py` (see [onboarding registry](../../registry/onboarding.md)).
 
 ---
 
@@ -60,6 +63,13 @@ Apps that contribute **default home** tiles add `"dashboard"` to their own `auto
 
 - Plain `models.Model` (not `HorillaCoreModel`) for ordering keys on default home (see model fields).
 
+### `OnboardingState`
+
+- Plain `models.Model`: `company` (`OneToOneField` to `core.Company`, `related_name="onboarding_state"`), `is_hidden` (default `False`), `updated_at`. **One row per company**, created the first time a superuser dismisses the guide; no row means the guide is shown.
+- There is no `user` field: the choice belongs to the company, so one superuser dismissing the guide dismisses it for that company's other superusers, and never for another company.
+- `OnboardingState.is_hidden_for(company)` and `OnboardingState.set_hidden(company, hidden)`.
+- Registered in `registration.py` for the `delete_dependency` feature.
+
 ---
 
 ## Forms (`forms.py`)
@@ -84,6 +94,7 @@ Core audit fields are auto-excluded via **`HORILLA_FORM_EXCLUDE`**; do not dupli
 ## Views and templates
 
 - **Home** — one template, `home/home.html`, serves both the dynamic default home (`is_default_home=True`) and a dashboard used as home; `default_home.html` no longer exists. The date range control is the shared `components/date_range_filter.html`. "Set to Default" only shows for a layout that differs from the template default (KPIs by index, then two charts per table); saving an order equal to the default deletes the stored `DefaultHomeLayoutOrder`, and the save response returns `is_custom`.
+- **Get started guide** — included in the default home only (`home/onboarding.html`); see below.
 - **Dashboard detail** — `dashboard_detail_view.html` uses the generic navbar (`dashboard_detail_nav_actions.html`). Other partials live under `templates/` / `templates/home/`.
 - **Folder detail** — navigates mixed lists of child folders + dashboards (`get_detail_view_url` on folder model points at `dashboard:dashboard_folder_detail_list`).
 
@@ -107,11 +118,58 @@ Five focused views handle state mutations for dashboards.
 
 ---
 
+## Get started guide (home page)
+
+A stepper banner at the top of the default home that walks a new company through its setup. The steps come from [the onboarding registry](../../registry/onboarding.md); this app decides what to show.
+
+### Who sees it
+
+- **Superusers only** (`user.is_superuser`). This includes users added on **Settings → Roles and Permissions → Super Users**, not only the account created at install. Everyone else gets no guide, and the toggle endpoint answers **403** for them.
+- It follows the **active company** (company switcher aware). A user with no company gets no guide.
+- A step the user lacks the `permission` for is hidden and not counted.
+- When every visible step is done the guide is not rendered at all (nothing is stored); it comes back if a step becomes undone, because completion is computed on every render and never saved.
+
+### What it shows
+
+| Part | Content |
+|------|---------|
+| Header | "Get started with `<company name>`", "`N` of `M` steps done", a progress bar with the percentage, and an **X** (dismiss) button |
+| Stepper | One circle per step with a connector line: a red check for done, a ring with a dot for the next step, a number for the rest. Each one links to the step's page. It scrolls sideways on narrow screens |
+| Next-step card | "NEXT STEP · `n` OF `M`", the step's `headline` and `description`, **Skip For Now** and **Set Up Now →** |
+
+### Dismiss, show again and skip
+
+| Action | Effect |
+|--------|--------|
+| **X** | Posts to `dashboard:onboarding_hide`; the banner is removed for the active company |
+| **⚡ Show Setup Guide (6/7)** | A small link at the right end of the "Get started by creating your first dashboard…" intro line, shown only while the guide is dismissed. It posts to `dashboard:onboarding_show` and the banner returns |
+| **Skip For Now** | Posts to `dashboard:onboarding_skip`; that step leaves the next-step card and the next unfinished step is shown. The stepper keeps every step. Kept in the session, per company |
+
+All of them swap in place with HTMX (no page reload). Dismissing in one company never changes another company.
+
+### Code map
+
+| Piece | Where |
+|-------|-------|
+| Builder | `horilla/registry/onboarding.py`: `build_onboarding(user, company, skipped)` returns the view-model (`steps`, `total`, `done_count`, `percent`, `next_step`) or `None`. Each step dict has `number`, `title`, `headline`, `description`, `icon`, `url`, `done`, `is_next` |
+| Context | `dashboard/get_started.py`: `get_active_company(request)`, the session helpers for skipped steps, and `get_onboarding_context(request)`, which adds whether the guide is hidden |
+| Home view | `HomePageView.get_dynamic_default_context` merges `get_onboarding_context` |
+| Hide / show view | `views/onboarding.py` `OnboardingVisibilityView` (`POST onboarding/hide/` and `onboarding/show/`, names `onboarding_hide` and `onboarding_show`): `LoginRequiredMixin`, HTMX only, superuser only; 400 when there is no company |
+| Banner and show link | `templates/home/onboarding.html`, one template with two parts chosen by `part`: `banner` (`#onboarding`) and `link` (`#onboarding-link`, next to the intro line). `home.html` includes it once for each; the views render `part="both"`, so one HTMX response swaps the banner and the link (`hx-swap-oob`) |
+| Skip view | `views/onboarding.py` `OnboardingSkipView` (`POST onboarding/skip/<key>/`, name `onboarding_skip`): remembers the skipped step in the session for the active company; the next unfinished step is shown |
+
+### Tests
+
+`dashboard/tests.py` (per-company hide and show, skip, superuser-only views, builder rules), `core/test_onboarding.py`, `leads/tests/test_onboarding.py`, `opportunities/test_onboarding.py`.
+
+---
+
 ## Typical flows
 
 1. User creates **folder** → adds **dashboards** → sets one as **default** → home loads that layout.
 2. User adds a **chart** or the report's **Detail Table** as a component. Table pages, sorting and exports start from `get_viewable_queryset`, then `apply_report_table_queryset` applies that report's saved filters and column virtual fields. Chart components apply the same report filters. A model registered with `dashboard_component` (including Activity) can be chosen as a component.
 3. Third-party client hits **`/dashboard/`** API → JSON mirrors web serializer shape.
+4. A superuser opens the home page of a new company → the Get started banner shows the next pending step → **Set Up Now** opens that page → once its data exists the step turns done and the next one becomes current.
 
 ---
 
@@ -133,5 +191,6 @@ Rendering reads the same fields from the reports engine's virtual fields (see [r
 ## Related documentation
 
 - Default dashboard generator (fallback when no default dashboard): [default_dashboard_generator.md](default_dashboard_generator.md)
+- Onboarding steps registry (how apps add steps): [../../registry/onboarding.md](../../registry/onboarding.md)
 - Reports model: [../reports/reports.md](../reports/reports.md)
 - Generics chart view: [../generics/views/chart.md](../generics/views/chart.md)

@@ -13,6 +13,11 @@ from horilla.contrib.dashboard.views.home import (
     ResetDefaultHomeLayoutOrderView,
 )
 
+from horilla.contrib.dashboard.views.onboarding import (
+    OnboardingSkipView,
+    OnboardingVisibilityView,
+)
+
 from horilla.contrib.dashboard.views.component import (
     DashboardComponentTableDataView,
     DashboardComponentFormView,

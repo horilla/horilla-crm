@@ -17,7 +17,6 @@ from horilla.apps import apps
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.shortcuts import render
-from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
 from horilla.web import HttpNotFound, JsonResponse
 
@@ -45,6 +44,29 @@ def _is_allowed_import_module_path(module_path):
         if module_path == name or module_path.startswith(name + "."):
             return True
     return False
+
+
+def _has_any_perm(user, model, actions):
+    """Return True if user holds any of the given model permission actions."""
+    opts = model._meta
+    return any(
+        user.has_perm(f"{opts.app_label}.{action}_{opts.model_name}")
+        for action in actions
+    )
+
+
+def _can_view_model(user, model):
+    """User may list records of `model` (view / view_own)."""
+    return _has_any_perm(user, model, ("view", "view_own"))
+
+
+def _can_use_form_for_model(user, form_class):
+    """User may use `form_class` (needs add/change rights on its model)."""
+    meta = getattr(form_class, "_meta", None)
+    parent_model = getattr(meta, "model", None)
+    if parent_model is None:
+        return False
+    return _has_any_perm(user, parent_model, ("add", "add_own", "change", "change_own"))
 
 
 class HorillaSelect2DataView(LoginRequiredMixin, View):
@@ -82,10 +104,23 @@ class HorillaSelect2DataView(LoginRequiredMixin, View):
 
         queryset = None
 
-        # Try to get queryset from filter class first (NEW CODE)
+        # Permission gate: the user must be allowed to view the requested model,
+        # or be using a form they are permitted to use for it.
         filter_class = self._get_filter_class_from_request(
             request, app_label, model_name
         )
+        form_class = self._get_form_class_from_request(request)
+        user = request.user
+        can_view = user.is_superuser or _can_view_model(user, model)
+        if not (
+            can_view
+            or (form_class and field_name and _can_use_form_for_model(user, form_class))
+        ):
+            return JsonResponse({"results": [], "pagination": {"more": False}})
+        if not can_view:
+            # Form-based access: only trust a queryset resolved from the form.
+            filter_class = None
+
         if filter_class and field_name:
             try:
                 # Initialize filter with request to trigger OwnerFiltersetMixin
@@ -103,18 +138,15 @@ class HorillaSelect2DataView(LoginRequiredMixin, View):
             except Exception as e:
                 logger.error("[Select2] Could not resolve queryset from filter: %s", e)
 
-        # Fallback to form class (EXISTING CODE)
-        form_class = self._get_form_class_from_request(request)
+        # Fallback to form class
         if form_class and field_name:
             try:
                 form_kwargs = {"request": request}
                 # Pass instance when object_id is provided (edit mode) so OwnerQuerysetMixin
-                # uses change/change_own instead of add/add_own.
-                # Also temporarily set request.active_company to the instance's company so
-                # the form's FK querysets are scoped to the record's tenant, not the
-                # admin's currently-selected company.
+                # uses change/change_own instead of add/add_own. The instance is only
+                # looked up inside the user's own active company; the company scope
+                # is never derived from the request-supplied object_id.
                 object_id = request.GET.get("object_id")
-                original_active_company = getattr(request, "active_company", None)
                 if (
                     object_id
                     and hasattr(form_class, "_meta")
@@ -122,19 +154,19 @@ class HorillaSelect2DataView(LoginRequiredMixin, View):
                 ):
                     parent_model = form_class._meta.model
                     try:
-                        instance = parent_model.all_objects.get(pk=object_id)
-                        form_kwargs["instance"] = instance
-                        instance_company = getattr(instance, "company", None)
-                        if instance_company is not None:
-                            request.active_company = instance_company
+                        instance_qs = parent_model.all_objects.all()
+                        active_company = getattr(request, "active_company", None)
+                        try:
+                            parent_model._meta.get_field("company")
+                            instance_qs = instance_qs.filter(company=active_company)
+                        except Exception:
+                            pass
+                        form_kwargs["instance"] = instance_qs.get(pk=object_id)
                     except (parent_model.DoesNotExist, ValueError):
                         pass
-                try:
-                    form = form_class(**form_kwargs)
-                    if field_name in form.fields:
-                        queryset = form.fields[field_name].queryset
-                finally:
-                    request.active_company = original_active_company
+                form = form_class(**form_kwargs)
+                if field_name in form.fields:
+                    queryset = form.fields[field_name].queryset
             except Exception as e:
                 logger.error("[Select2] Could not resolve queryset from form: %s", e)
 
@@ -143,31 +175,29 @@ class HorillaSelect2DataView(LoginRequiredMixin, View):
             if form_queryset is not None:
                 queryset = form_queryset
 
-        if queryset is None:
-            queryset = model.objects.all()
+        if queryset is not None:
+            # The URL model must be the model actually being served; otherwise the
+            # model-level permission check above was done against the wrong model.
+            qs_model = queryset.model
+            if not (issubclass(qs_model, model) or issubclass(model, qs_model)):
+                return JsonResponse({"results": [], "pagination": {"more": False}})
 
-        # Apply company filtering if model has company field.
-        # In edit mode, scope to the parent object's company so FK choices stay
-        # within the record's tenant even when the admin's active_company differs.
-        # In create mode, fall back to request.active_company.
-        company = None
-        edit_object_id = request.GET.get("object_id")
-        if (
-            edit_object_id
-            and form_class
-            and hasattr(form_class, "_meta")
-            and hasattr(form_class._meta, "model")
-        ):
-            parent_model_for_company = form_class._meta.model
-            try:
-                parent_instance = parent_model_for_company.all_objects.get(
-                    pk=edit_object_id
-                )
-                company = getattr(parent_instance, "company", None)
-            except Exception:
-                pass
-        if company is None:
-            company = getattr(request, "active_company", None)
+        if queryset is None:
+            # No form/filter scoped queryset: require plain view permission.
+            if not _can_view_model(request.user, model):
+                return JsonResponse({"results": [], "pagination": {"more": False}})
+            queryset = model.objects.all()
+            if not request.user.has_perm(
+                f"{model._meta.app_label}.view_{model._meta.model_name}"
+            ):
+                # view_own only: limit to records the user owns (or their
+                # subordinates own), same rule as global search and the user picker.
+                from .queryset_utils import filter_viewable_queryset
+
+                queryset = filter_viewable_queryset(request.user, model, queryset)
+
+        # Company scope always comes from the logged-in user's active company.
+        company = getattr(request, "active_company", None)
         if company:
             try:
                 model._meta.get_field("company")
@@ -175,9 +205,17 @@ class HorillaSelect2DataView(LoginRequiredMixin, View):
             except Exception:
                 pass
 
+        edit_object_id = request.GET.get("object_id")
         if edit_object_id and field_name and form_class:
             try:
-                owner = form_class._meta.model.all_objects.get(pk=edit_object_id)
+                owner_qs = form_class._meta.model.all_objects.all()
+                if company:
+                    try:
+                        owner_qs._model._meta.get_field("company")
+                        owner_qs = owner_qs.filter(company=company)
+                    except Exception:
+                        pass
+                owner = owner_qs.get(pk=edit_object_id)
                 excluded = getattr(owner, "get_select2_excluded_pks", None)
                 if (
                     excluded

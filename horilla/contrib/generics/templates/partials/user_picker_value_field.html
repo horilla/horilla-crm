@@ -1,7 +1,7 @@
 <div class="flex-1" id="up-value-container-{{ row_id }}">
     {% if operator == 'isnull' or operator == 'isnotnull' or operator == 'today' or operator == 'yesterday' or operator == 'this_week' or operator == 'this_month' or operator == 'this_year' or operator == 'this_fiscal_period' or operator == 'this_fiscal_quarter' or operator == 'this_fiscal_year' %}
         <input type="hidden" name="value" value="">
-        <span class="flex items-center gap-2 w-full h-full min-h-[38px] px-3 text-sm text-dark-400 bg-gray-50 border border-dashed border-dark-50 rounded-md select-none">
+        <span class="no-value-note flex items-center gap-2 w-full h-full min-h-[38px] px-3 text-sm text-dark-400 bg-gray-50 border border-dashed border-dark-50 rounded-md select-none">
                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M8 12h8"/></svg>
                 {% trans "No value needed" %}
             </span>

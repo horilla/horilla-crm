@@ -91,3 +91,36 @@ if (!window.__navbarViewTypeBound) {
         syncViewTypeSelect(sessionStorage.getItem("currentViewType"));
     });
 }
+
+/* ==========================================================================
+   Applied filters slot: shows the first applied filter, then moves through the
+   rest. Pauses while the pointer or keyboard focus is inside the slot, and
+   stays on the first filter when the user prefers reduced motion.
+   ========================================================================== */
+if (!window.__navbarFilterSlotBound) {
+    window.__navbarFilterSlotBound = true;
+
+    const prefersReducedMotion =
+        window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!prefersReducedMotion) {
+        setInterval(function () {
+            document.querySelectorAll("[data-filter-slot]").forEach(function (slot) {
+                const items = slot.querySelectorAll("[data-filter-slot-item]");
+                if (items.length < 2) return;
+                if (slot.matches(":hover") || slot.contains(document.activeElement)) return;
+
+                const current = Number(slot.dataset.current || 0);
+                const next = (current + 1) % items.length;
+                items[current].classList.add("hidden");
+                items[current].classList.remove("filter-slot-item-in");
+                items[next].classList.remove("hidden");
+                items[next].classList.add("filter-slot-item-in");
+                slot.dataset.current = next;
+
+                const counter = slot.querySelector("[data-filter-slot-counter]");
+                if (counter) counter.textContent = next + 1 + "/" + items.length;
+            });
+        }, 3000);
+    }
+}

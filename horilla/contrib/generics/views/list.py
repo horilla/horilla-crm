@@ -8,6 +8,9 @@ import json
 import logging
 from functools import update_wrapper
 
+# First party imports (Horilla)
+from django.template.loader import render_to_string
+
 # Third-party imports (Django)
 from django.utils.dateparse import parse_time
 
@@ -15,14 +18,14 @@ from horilla.contrib.core.models import PinnedView, RecentlyViewed, SavedFilterL
 from horilla.contrib.core.utils import filter_hidden_fields, get_editable_fields
 from horilla.db.models import Case, ForeignKey, OneToOneField, Q, When
 from horilla.db.models.fields import GenericForeignKey
-
-# First party imports (Horilla)
 from horilla.shortcuts import render
 from horilla.utils import translation
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import ListView
 from horilla.web import HttpResponse, QueryDict
 
+from ..applied_filters import build_applied_filter_rows, has_filter_rows
+from ..filters import get_operator_label
 from ..mixins import HorillaListViewMixin
 
 # Local imports
@@ -44,6 +47,41 @@ class HorillaListView(HorillaListViewMixin, ListView):
 
     template_name = "list_view.html"
     context_object_name = "queryset"
+
+    def dispatch(self, request, *args, **kwargs):
+        """Send the navbar's applied-filter tag along with every list response."""
+        response = super().dispatch(request, *args, **kwargs)
+        return self._with_filter_slot(response)
+
+    def _with_filter_slot(self, response):
+        """
+        Append the applied-filter tag to an htmx response that rendered the list.
+
+        The navbar is not reloaded when the filters or the search change, so htmx
+        swaps the tag in place (hx-swap-oob) from this copy. Only responses that
+        rendered the whole view are touched, not partials such as extra rows.
+        """
+        context = getattr(self, "_filter_slot_context", None)
+        if (
+            context is None
+            or self.request.headers.get("HX-Request") != "true"
+            or response.status_code != 200
+            or getattr(response, "streaming", False)
+        ):
+            return response
+        if hasattr(response, "render") and not response.is_rendered:
+            response.render()
+        view_id = context.get("view_id")
+        if not view_id or f'id="{view_id}"'.encode() not in response.content:
+            return response
+        html = render_to_string(
+            "partials/applied_filters_slot.html",
+            {**context, "slot_oob": True},
+            request=self.request,
+        )
+        response.content += html.encode(response.charset)
+        return response
+
     columns = []
     actions = []
     view_id = ""
@@ -845,6 +883,13 @@ class HorillaListView(HorillaListViewMixin, ListView):
         """
 
         self.object_list = self.get_queryset()
+
+        # Suggestions for the search box (htmx): field choices with counts
+        if request.headers.get("HX-Request") == "true" and (
+            "search_suggest" in request.GET
+        ):
+            return self.render_search_suggest(request)
+
         context = self.get_context_data()
 
         # Handle filter row addition
@@ -903,6 +948,101 @@ class HorillaListView(HorillaListViewMixin, ListView):
 
         return self.render_to_response(context)
 
+    search_suggest_max_fields = 8
+
+    def render_search_suggest(self, request):
+        """
+        Render the dropdown of the list's search box.
+
+        With text, it lists "Search <field> for: text" for every search field of the
+        filterset, each with the number of records that would remain. Without text, it
+        lists the ready-made filters (My Records, time periods). Counts start from the
+        current list (view, filters and searches already applied), so they show what
+        adding the choice would leave.
+        """
+        from horilla.contrib.generics.search_support import list_quick_filters
+
+        filterset = getattr(self, "filterset", None)
+        text = request.GET.get("search_suggest", "").strip()
+        base = self.object_list
+
+        field_rows = []
+        filter_rows = []
+        show_fields = False
+        if filterset is not None and text:
+            labels = filterset.get_search_field_labels()
+            if len(labels) == 1:
+                # One search field: "All" would only repeat it, so the single row
+                # names that field (and carries the total like the "All" row does).
+                lookup, label = next(iter(labels.items()))
+                field_rows.append(
+                    {
+                        "field": lookup,
+                        "label": label,
+                        "count": base.filter(
+                            filterset.build_field_q(lookup, text)
+                        ).count(),
+                    }
+                )
+            else:
+                field_rows.append(
+                    {
+                        "field": "all",
+                        "label": _("All"),
+                        "count": base.filter(filterset.build_search_q(text)).count(),
+                    }
+                )
+                show_fields = len(labels) > 1
+                for lookup, label in list(labels.items())[
+                    : self.search_suggest_max_fields
+                ]:
+                    field_rows.append(
+                        {
+                            "field": lookup,
+                            "label": label,
+                            "count": base.filter(
+                                filterset.build_field_q(lookup, text)
+                            ).count(),
+                        }
+                    )
+        elif not text and filterset is not None and request.GET.get("quick_filters"):
+            # Quick filters are ordinary filter rows: count each one with the list's
+            # own filter engine, and hide the ones already applied.
+            filterset_class = self.get_filterset_class()
+            names = {
+                f["name"] for f in self._get_model_fields(include_properties=False)
+            }
+            applied = set(
+                zip(
+                    request.GET.getlist("field"),
+                    request.GET.getlist("operator"),
+                    request.GET.getlist("value"),
+                )
+            )
+            for row in list_quick_filters(self.model, request.user, names):
+                if (row["field"], row["operator"], row["value"]) in applied:
+                    continue
+                data = QueryDict(mutable=True)
+                for key in ("field", "operator", "value", "start_value", "end_value"):
+                    data.setlist(key, [row.get(key, "")])
+                data.setlist("logic", ["AND"])
+                narrowed = filterset_class(
+                    data, queryset=base, request=request
+                ).filter_queryset(base)
+                filter_rows.append({**row, "count": narrowed.count()})
+
+        return render(
+            request,
+            "partials/list_search_suggest.html",
+            {
+                "text": text,
+                "field_rows": field_rows,
+                "filter_rows": filter_rows,
+                "show_fields": show_fields,
+                "has_matches": any(row["count"] for row in field_rows[:1]),
+            },
+        )
+
     def parse_filter_date_value(self, val, user=None):
         """Parse a filter date string via composed DateTimeFormatter."""
         user = user if user is not None else getattr(self.request, "user", None)
@@ -922,34 +1062,6 @@ class HorillaListView(HorillaListViewMixin, ListView):
         field_operators = {}
         field_types = {}
         choices = {}
-
-        operator_display = {
-            "exact": _("Equals"),
-            "iexact": _("Equals (case insensitive)"),
-            "icontains": _("Contains"),
-            "ne": _("Not Equals"),
-            "gt": _("Greater than"),
-            "lt": _("Less than"),
-            "gte": _("Greater than or equal to"),
-            "lte": _("Less than or equal to"),
-            "startswith": _("Starts with"),
-            "istartswith": _("Starts with"),
-            "endswith": _("Ends with"),
-            "iendswith": _("Ends with"),
-            "date_range": _("Between"),
-            "between": _("Between"),
-            "today": _("Today"),
-            "yesterday": _("Yesterday"),
-            "this_week": _("This Week"),
-            "this_month": _("This Month"),
-            "this_year": _("This Year"),
-            "this_fiscal_period": _("This FP"),
-            "this_fiscal_quarter": _("This FQ"),
-            "this_fiscal_year": _("This FY"),
-            "isnull": _("Is Empty"),
-            "isnotnull": _("Is Not Empty"),
-        }
-        context["operator_display"] = operator_display
 
         field_verbose_names = {}
         for field in filter_fields:
@@ -1062,7 +1174,7 @@ class HorillaListView(HorillaListViewMixin, ListView):
                     "model": field_info.get("model", None),
                     "app_label": field_info.get("app_label", None),
                     "verbose_name": field_verbose_names.get(field, field),
-                    "operator_display": operator_display.get(operator, operator),
+                    "operator_display": get_operator_label(field_type, operator),
                     "logic": logic,
                     "field_is_valid": field_is_valid,
                 }
@@ -1094,6 +1206,13 @@ class HorillaListView(HorillaListViewMixin, ListView):
 
         context["filter_rows"] = form_filter_rows
         context["applied_filter_rows"] = filter_rows
+
+        # The navbar is not reloaded when filters change, so the navbar's applied
+        # filter slot is rendered again from every list response (filterpanel.html)
+        slot_rows = build_applied_filter_rows(self.request, self.model)
+        context["applied_filter_slot_rows"] = slot_rows
+        context["applied_filter_slot_has_filters"] = has_filter_rows(slot_rows)
+        self._filter_slot_context = context
         context["last_row_id"] = max(row["row_id"] for row in form_filter_rows)
 
         filterset_class = self.get_filterset_class()

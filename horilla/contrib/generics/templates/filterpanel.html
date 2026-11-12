@@ -1,7 +1,7 @@
 <div class="filter-panel-slot">
     <div
         id="filterpanel"
-        class='filter-panel-floating overflow-hidden rounded-xl bg-white z-[100] transform transition-all duration-300 ease-out shadow-[0px_8px_30px_rgb(0_0_0_/_12%)] {% if "apply_filter" in query_params or request.GET.search %}visible {% else %} hidden {% endif %}'
+        class='filter-panel-floating overflow-hidden rounded-xl bg-white z-[100] transform transition-all duration-300 ease-out shadow-[0px_8px_30px_rgb(0_0_0_/_12%)] {% if "apply_filter" in query_params %}visible {% else %} hidden {% endif %}'
     >
         <div class="filter-panel-inner flex flex-col max-h-[85vh] h-full">
             <div
@@ -68,7 +68,7 @@
                             {% include "partials/filter_row.html" with row_id=0 %}
                         </div>
 
-                        <div class="flex justify-between text-xs mb-3">
+                        <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 text-xs mb-3">
                             <div class="w-fit mt-2">
                                 <button
                                     type="button"
@@ -85,63 +85,12 @@
                                     {% trans "Add more filter" %}
                                 </button>
                             </div>
-                            <div class="flex justify-end text-xs">
-                                {% btn _("Apply") sizing="text-xs px-3 py-1" type="submit" %}
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <div class='border border-[#0000001a] p-2 rounded-md {% if "apply_filter" in query_params or request.GET.search %}visible {% else %} hidden {% endif %}'>
-                    <div class="flex justify-between">
-                        <h5 class="text-xs font-bold mb-2">{% trans "Applied Filters" %}</h5>
-                        <div class="flex gap-1">
-                            <button
-                                class="outline outline-1 outline-offset-[-1px] outline-primary-600 rounded-md hover:bg-primary-300 transition duration-300 text-primary-600 whitespace-nowrap cursor-pointer text-xs px-3 py-1"
-                                hx-get="{{ main_url }}?clear_all_filters=true{% for key, value in request.GET.items %}{% if key not in 'field,operator,value,start_value,end_value,apply_filter,clear_all_filters,page,search,hx_trigger' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-                                hx-target="#{{ main_session_id|default:'mainSession' }}"
-                                hx-select="#{{ main_session_id|default:'mainSession' }}"
-                                hx-select-oob="#navBar"
-                                hx-swap="outerHTML"
-                                hx-preserve="true"
-                                hx-push-url="{{ filter_push_url }}"
-                                hx-trigger="click"
-                                hx-on:click="
-                    $('#searchInput').val('');
-                    try {
-                      const storageKey = 'filterPanelVisible:' + window.location.pathname;
-                      localStorage.removeItem(storageKey);
-                    } catch (e) {}
-                  "
-                            >
-                                {% trans "Clear All" %}
-                            </button>
-                            {% if save_to_list_option %}
-                                <button
-                                    class=" bg-primary-600 rounded-md hover:bg-primary-800 transition duration-300 text-white text-xs px-3 py-1 whitespace-nowrap"
-                                    type="button"
-                                    hx-get="{% url 'generics:save_filter_list' %}?{% for key, values in query_params.items %}{% for value in values %}&{{ key }}={{ value|urlencode }}{% endfor %}{% endfor %}&main_url={{ main_url|urlencode }}&model_name={{ model_name|urlencode }}"
-                                    hx-target="#modalBox"
-                                    hx-swap="innerHTML"
-                                    hx-push-url="false"
-                                    hx-on::after-request="openModal()"
-                                >
-                                    {% trans "Save to List" %}
-                                </button>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <ul class="flex flex-wrap gap-2 text-xs items-center mt-3">
-                        {% if request.GET.search %}
-                            <li>
-                                <div class="bg-[#25c32417] border border-[#25c32429] text-[#21b320] font-medium text-xs px-2 py-1 flex gap-2 items-center justify-center rounded-md">
-                                    <span>
-                                        Search : {{ request.GET.search }}
-                                    </span>
-                                    <!-- Remove filter button -->
+                            <div class="flex items-center justify-end gap-1 text-xs">
+                                {% if "apply_filter" in query_params or request.GET.search %}
                                     <button
-                                        hx-get="{{ main_url }}?remove_filter=search&{% for key, values in query_params.items %}{% if key not in 'search,hx_trigger' %}{% for value in values %}&{{ key }}={{ value|urlencode }}{% endfor %}{% endif %}{% endfor %}{% if request.GET.field != '' %}&apply_filter=true{% endif %}"
+                                        type="button"
+                                        class="outline outline-1 outline-offset-[-1px] outline-primary-600 rounded-md hover:bg-primary-300 transition duration-300 text-primary-600 whitespace-nowrap cursor-pointer text-xs px-3 py-1"
+                                        hx-get="{{ main_url }}?clear_all_filters=true{% for key, value in request.GET.items %}{% if key not in 'field,operator,value,start_value,end_value,apply_filter,clear_all_filters,page,search,hx_trigger' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
                                         hx-target="#{{ main_session_id|default:'mainSession' }}"
                                         hx-select="#{{ main_session_id|default:'mainSession' }}"
                                         hx-select-oob="#navBar"
@@ -149,60 +98,39 @@
                                         hx-preserve="true"
                                         hx-push-url="{{ filter_push_url }}"
                                         hx-trigger="click"
-                                        hx-on:click="$('#searchInput').val('')"
+                                        hx-on:click="
+                                            $('#searchInput').val('');
+                                            try {
+                                              const storageKey = 'filterPanelVisible:' + window.location.pathname;
+                                              localStorage.removeItem(storageKey);
+                                            } catch (e) {}
+                                        "
                                     >
-                                        <img
-                                            src="{% static 'assets/icons/close1.svg' %}"
-                                            alt="{% trans 'Cancel' %}"
-                                            width="8"
-                                        >
+                                        {% trans "Clear All" %}
                                     </button>
-                                </div>
-                            </li>
-                        {% endif %}
-                        {% for row in applied_filter_rows %}
-                            {% if row.field and row.operator %}
-                                {% if row.has_prior_chip %}
-                                    <li>
-                                        <span class="text-[10px] font-bold text-dark-400 px-1">
-                                            {% if row.logic == 'OR' %}{% trans "OR" %}{% else %}{% trans "AND" %}{% endif %}
-                                        </span>
-                                    </li>
-                                {% endif %}
-                                <li>
-                                    <div class="bg-[#25c32417] border border-[#25c32429] text-[#21b320] font-medium text-xs px-2 py-1 flex gap-2 items-center justify-center rounded-md">
-                                        <span>
-                                            {{ row.verbose_name }} {{ row.operator_display }}
-                                            {% if row.start_value and row.end_value %}
-                                                {{ row.start_value_obj|user_datetime_format|default:row.start_value }}
-                                                and {{ row.end_value_obj|user_datetime_format|default:row.end_value }}
-                                            {% elif row.raw_value or row.value_obj %}
-                                                {{ row.value_obj|user_datetime_format|default:row.raw_value }}
-                                            {% endif %}
-                                        </span>
-                                        <!-- Remove filter button -->
+                                    {% if save_to_list_option and applied_filter_slot_has_filters %}
+                                        {# hx-select / hx-select-oob are reset: they would otherwise be inherited from the form #}
                                         <button
-                                            hx-get="{{ main_url }}?remove_filter={{ row.row_id }}{% for key, values in query_params.items %}{% if key != 'remove_filter' and key != 'page' %}{% for value in values %}&{{ key }}={{ value|urlencode }}{% endfor %}{% endif %}{% endfor %}"
-                                            hx-target="#{{ main_session_id|default:'mainSession' }}"
-                                            hx-select="#{{ main_session_id|default:'mainSession' }}"
-                                            hx-select-oob="#navBar"
-                                            hx-swap="outerHTML"
-                                            hx-preserve="true"
-                                            hx-push-url="{{ filter_push_url }}"
-                                            hx-trigger="click"
+                                            class="outline outline-1 outline-offset-[-1px] outline-primary-600 rounded-md hover:bg-primary-300 transition duration-300 text-primary-600 whitespace-nowrap cursor-pointer text-xs px-3 py-1"
+                                            type="button"
+                                            hx-get="{% url 'generics:save_filter_list' %}?{% for key, values in query_params.items %}{% if key != 'search' %}{% for value in values %}&{{ key }}={{ value|urlencode }}{% endfor %}{% endif %}{% endfor %}&main_url={{ main_url|urlencode }}&model_name={{ model_name|urlencode }}"
+                                            hx-target="#modalBox"
+                                            hx-select="unset"
+                                            hx-select-oob="unset"
+                                            hx-swap="innerHTML"
+                                            hx-push-url="false"
+                                            hx-on::after-request="openModal()"
                                         >
-                                            <img
-                                                src="{% static 'assets/icons/close1.svg' %}"
-                                                alt="{% trans 'Cancel' %}"
-                                                width="8"
-                                            >
+                                            {% trans "Save to List" %}
                                         </button>
-                                    </div>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
+                                    {% endif %}
+                                {% endif %}
+                                {% btn _("Apply") sizing="text-xs px-3 py-1" type="submit" %}
+                            </div>
+                        </div>
+                    </form>
                 </div>
+
             </div>
         </div>
         <div

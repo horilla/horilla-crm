@@ -15,6 +15,9 @@ from horilla.urls import resolve, reverse_lazy
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import TemplateView
 
+# Local imports
+from ..applied_filters import build_applied_filter_rows, has_filter_rows, resolve_model
+
 # Third-party imports (Django)
 
 
@@ -66,7 +69,8 @@ class HorillaNavView(TemplateView):
     recently_viewed_option = True
     all_view_types = True
     filter_option = True
-    # None = follow filter_option: show the search clear (X) when there is no filter button
+    # The applied-filter tag next to the search box has its own close, so the search box
+    # shows no clear (X) by default. Set True to bring the inline clear back.
     search_clear_option = None
     one_view_only = False
     reload_option = True
@@ -380,11 +384,7 @@ class HorillaNavView(TemplateView):
         context["recently_viewed_option"] = self.recently_viewed_option
         context["all_view_types"] = self.all_view_types
         context["filter_option"] = self.filter_option
-        context["search_clear_option"] = (
-            self.search_clear_option
-            if self.search_clear_option is not None
-            else not self.filter_option
-        )
+        context["search_clear_option"] = bool(self.search_clear_option)
         applied_filter_count = 0
         if self.filter_option:
             fields = self.request.GET.getlist("field") or []
@@ -392,9 +392,30 @@ class HorillaNavView(TemplateView):
             for i, field in enumerate(fields):
                 if field and (operators[i] if i < len(operators) else None):
                     applied_filter_count += 1
-            if self.request.GET.get("search"):
-                applied_filter_count += 1
+        # A search is not counted: the search box and the navbar tag already show it
         context["applied_filter_count"] = applied_filter_count
+        # Rows for the rotating applied-filter slot in the navbar
+        # Built for every list, with or without a filter button: a search shows as a tag
+        slot_rows = build_applied_filter_rows(
+            self.request,
+            resolve_model(self.model_app_label, self.model_name),
+        )
+        context["applied_filter_slot_rows"] = slot_rows
+        context["applied_filter_slot_has_filters"] = has_filter_rows(slot_rows)
+        # Same names the filter panel uses, so the slot's remove / clear requests match
+        context["query_params"] = {
+            item: self.request.GET.getlist(item) for item in self.request.GET
+        }
+        context["filter_push_url"] = context["search_push_url"]
+        # Field-aware search box: only for lists whose filterset has search fields
+        filterset_class = self.get_filterset_class()
+        field_labels = (
+            filterset_class.get_search_field_labels()
+            if filterset_class and hasattr(filterset_class, "get_search_field_labels")
+            else {}
+        )
+        # The dropdown rebuilds its state from the page URL, so it needs the URL push
+        context["list_search_enabled"] = bool(field_labels) and self.search_push_url
         context["one_view_only"] = self.one_view_only
         context["reload_option"] = self.reload_option
         context["search_option"] = self.search_option

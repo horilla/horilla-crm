@@ -32,7 +32,7 @@
       params.getAll("field").forEach(function (f, i) {
         if (f && operators[i]) count++;
       });
-      if ((params.get("search") || "").trim()) count++;
+      // A search is not counted, matching the server-rendered badge
       let badge = wrapper.querySelector(".filter-count-badge");
       if (!count) {
         if (badge) badge.remove();

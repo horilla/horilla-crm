@@ -13,6 +13,7 @@ import django_filters
 from django.core.exceptions import FieldDoesNotExist
 
 from horilla.contrib.generics.related_fields import resolve_field_path
+from horilla.contrib.generics.search_support import make_name_key
 
 # First party imports (Horilla)
 from horilla.db import models
@@ -134,6 +135,19 @@ OPERATOR_CHOICES = {
         ("isnotnull", _("Is Not Empty")),
     ],
 }
+
+
+def get_operator_label(field_type, operator):
+    """Operator name as the filter panel's dropdown shows it for ``field_type``."""
+    for key, label in OPERATOR_CHOICES.get(field_type, OPERATOR_CHOICES["other"]):
+        if key == operator:
+            return label
+    # Not offered for this type (e.g. an older saved filter): use any list that has it
+    for operator_list in OPERATOR_CHOICES.values():
+        for key, label in operator_list:
+            if key == operator:
+                return label
+    return operator
 
 
 class HorillaFilterSet(django_filters.FilterSet):
@@ -417,24 +431,142 @@ class HorillaFilterSet(django_filters.FilterSet):
         if search_query:
             queryset = self.filter_search(queryset, "search", search_query)
 
+        queryset = self.apply_search_facets(queryset, request)
+
+        return queryset
+
+    @classmethod
+    def get_search_field_labels(cls):
+        """
+        Return ``{lookup: label}`` for ``Meta.search_fields``, in order.
+
+        Labels are the fields' verbose names. Entries that are not fields of the
+        model are left out. When the two name fields are both searched (see
+        ``get_name_search_key``) they are offered as one "Name" choice. The search box
+        of a list uses these as its field choices.
+        """
+        from horilla.contrib.generics.search_support import (
+            build_field_labels,
+            combined_name_label,
+        )
+
+        search_fields = list(getattr(cls.Meta, "search_fields", []) or [])
+        model = getattr(cls.Meta, "model", None)
+        if not search_fields or model is None:
+            return {}
+        labels = build_field_labels(model, search_fields)
+        name_key = cls.get_name_search_key()
+        split = cls.get_name_split_fields() or []
+        choices = {}
+        for name in search_fields:
+            if name not in labels:
+                continue
+            if name_key and name in split:
+                choices.setdefault(name_key, combined_name_label(model, split))
+            else:
+                choices[name] = labels[name]
+        return choices
+
+    @classmethod
+    def get_name_split_fields(cls):
+        """
+        The two fields a full-name search ("John Mathew") is split across, or ``None``.
+
+        Taken from ``Meta.name_split_fields``, or ``first_name`` and ``last_name``
+        when ``Meta.search_fields`` has both.
+        """
+        meta = cls.Meta
+        split = getattr(meta, "name_split_fields", None)
+        if not split:
+            fields = getattr(meta, "search_fields", []) or []
+            if "first_name" in fields and "last_name" in fields:
+                split = ["first_name", "last_name"]
+        return list(split) if split and len(split) == 2 else None
+
+    @classmethod
+    def get_name_search_key(cls):
+        """
+        The search choice that stands for both name fields, e.g. ``first_name+last_name``.
+
+        ``None`` unless both name fields are in ``Meta.search_fields``.
+        """
+        split = cls.get_name_split_fields()
+        fields = getattr(cls.Meta, "search_fields", []) or []
+        if split and all(name in fields for name in split):
+            return make_name_key(split)
+        return None
+
+    def name_search_q(self, value):
+        """``Q`` for a name search: "John Mathew" matches first and last, "John" either."""
+        first, second = self.get_name_split_fields()
+        text = value.strip()
+        if " " in text:
+            first_part, second_part = text.split(None, 1)
+            return Q(
+                **{
+                    f"{first}__icontains": first_part,
+                    f"{second}__icontains": second_part,
+                }
+            )
+        return Q(**{f"{first}__icontains": text}) | Q(**{f"{second}__icontains": text})
+
+    def build_field_q(self, lookup, value):
+        """``Q`` that searches one choice of ``get_search_field_labels`` for ``value``."""
+        if lookup == self.get_name_search_key():
+            return self.name_search_q(value)
+        return Q(**{f"{lookup}__icontains": value})
+
+    def apply_search_facets(self, queryset, request):
+        """
+        Apply the search chips (``sf=<field>:<text>``, repeated) of the search box.
+
+        ``field`` is ``all``, one of ``Meta.search_fields`` or the combined name choice
+        (``get_name_search_key``). Chips on the same field are OR'd; chips on different
+        fields are AND'd, so ``Email: gmail`` plus ``Title: acme`` narrows the list.
+        Unknown fields are ignored.
+        """
+        raw = self.data.getlist("sf", []) or request.GET.getlist("sf", [])
+        if not raw:
+            return queryset
+
+        allowed = set(getattr(self.Meta, "search_fields", []) or [])
+        name_key = self.get_name_search_key()
+        if name_key:
+            allowed.add(name_key)
+        groups = {}
+        for item in raw:
+            field, _sep, text = item.partition(":")
+            text = text.strip()
+            if not text or (field != "all" and field not in allowed):
+                continue
+            groups.setdefault(field, []).append(text)
+
+        for field, texts in groups.items():
+            group_q = Q()
+            for text in texts:
+                if field == "all":
+                    group_q |= self.build_search_q(text)
+                else:
+                    group_q |= self.build_field_q(field, text)
+            queryset = queryset.filter(group_q)
         return queryset
 
     def filter_search(self, queryset, name, value):
         """Handle search across specified fields with smart full name matching"""
+        if not value or not getattr(self.Meta, "search_fields", []):
+            return queryset
+        return queryset.filter(self.build_search_q(value))
+
+    def build_search_q(self, value):
+        """Build the ``Q`` that searches every ``Meta.search_fields`` entry for ``value``."""
         search_fields = getattr(self.Meta, "search_fields", [])
         if not value or not search_fields:
-            return queryset
+            return Q()
 
-        # Resolve name_split_fields from Meta, or infer from search_fields
-        name_split_fields = getattr(self.Meta, "name_split_fields", None)
-        if not name_split_fields:
-            if "first_name" in search_fields and "last_name" in search_fields:
-                name_split_fields = ["first_name", "last_name"]
+        name_split_fields = self.get_name_split_fields()
 
         stripped = value.strip()
-        is_split_search = (
-            name_split_fields and len(name_split_fields) == 2 and " " in stripped
-        )
+        is_split_search = name_split_fields and " " in stripped
 
         queries = Q()
 
@@ -459,4 +591,4 @@ class HorillaFilterSet(django_filters.FilterSet):
             for field in search_fields:
                 queries |= Q(**{f"{field}__icontains": value})
 
-        return queryset.filter(queries)
+        return queries

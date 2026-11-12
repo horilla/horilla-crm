@@ -15,7 +15,11 @@
                  hidden input keeps the logic[] array index-aligned with field[]/operator[]/value[]. -->
             <input type="hidden" name="logic" value="AND">
         {% endif %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1">
+        <!-- The wrapper is a size container (see style.css), so the columns follow the width
+             this row really has, not the screen: a shrunk panel stacks the value under the
+             field and operator instead of squeezing three columns. -->
+        <div class="filter-row-fields-wrap flex-1 min-w-0">
+        <div class="filter-row-fields grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <!-- Field Select -->
             <div class="col">
                 <select
@@ -67,7 +71,7 @@
                         {% if row.operator == 'isnull' or row.operator == 'isnotnull' or row.operator == 'today' or row.operator == 'yesterday' or row.operator == 'this_week' or row.operator == 'this_month' or row.operator == 'this_year' or row.operator == 'this_fiscal_period' or row.operator == 'this_fiscal_quarter' or row.operator == 'this_fiscal_year' %}
                             <!-- For null / relative-date operators, we don't need a value input -->
                             <input type="hidden" name="value" value="{{row.value}}">
-                            <span class="flex items-center gap-2 w-full h-full min-h-[38px] px-3 text-sm text-dark-400 bg-gray-50 border border-dashed border-dark-50 rounded-md select-none">
+                            <span class="no-value-note flex items-center gap-2 w-full h-full min-h-[38px] px-3 text-sm text-dark-400 bg-gray-50 border border-dashed border-dark-50 rounded-md select-none">
                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M8 12h8"/></svg>
                 {% trans "No value needed" %}
             </span>
@@ -371,6 +375,7 @@
                     {% endif %}
                 </div>
             </div>
+        </div>
         </div>
     </div>
 {% endfor %}

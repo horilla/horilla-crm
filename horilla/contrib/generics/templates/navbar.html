@@ -186,17 +186,22 @@
             </div>
         </div>
         <div class="flex items-center {% if nav_width %} h-[70px] {% else %} h-[40px] {% endif %} gap-1 md:gap-2">
+            {% include "partials/applied_filters_slot.html" %}
             {% if search_option %}
-                <div class="relative hidden sm:block">
+                <div
+                    class="relative hidden sm:block"
+                    {% if list_search_enabled %}id="listSearch" data-suggest-url="{{ search_url }}" data-main-url="{{ main_url }}" data-recent-key="horilla_list_recent:{{ main_url }}" data-recent-label="{% trans "Recent Searches" %}" data-clear-label="{% trans "Clear" %}"{% if filter_option %} data-quick-filters="true"{% endif %}{% endif %}
+                >
                     <input
                         type="text"
                         id="searchInput"
                         name="search"
+                        {% if list_search_enabled %}autocomplete="off"{% endif %}
                         placeholder="{% trans 'Search' %}"
                         class="text-color-600 horilla-search-input--toolbar py-1.5 w-full border border-dark-50 rounded-md focus-visible:outline-0 placeholder:text-[#d3d3d3] placeholder:text-xs text-sm [transition:.3s] focus:border-primary-600"
                         value="{{ request.GET.search }}"
-                        hx-get="{{ main_url }}?{% for key, value in request.GET.items %}{% if key != 'apply_filter' and  key != 'remove_filter' and key != 'field' and key != 'operator' and key != 'value' and key != 'search' %}{% if not forloop.first %}&{% endif %}{{ key }}={{ value }}{% endif %}{% endfor %}{% if request.GET.field %}&apply_filter=true{% endif %}"
-                        hx-trigger="keyup changed delay:500ms, search"
+                        hx-get="{{ main_url }}?{% for key, value in request.GET.items %}{% if key != 'apply_filter' and  key != 'remove_filter' and key != 'field' and key != 'operator' and key != 'value' and key != 'search' and key != 'sf' and key != 'search_suggest' %}{% if not forloop.first %}&{% endif %}{{ key }}={{ value }}{% endif %}{% endfor %}{% for item in query_params.sf %}&sf={{ item|urlencode }}{% endfor %}{% if request.GET.field %}&apply_filter=true{% endif %}"
+                        hx-trigger="{% if list_search_enabled %}search{% else %}keyup changed delay:500ms, search{% endif %}"
                         hx-target="#{{ main_session_id }}"
                         hx-select="#{{ main_session_id }}"
                         hx-swap="outerHTML"
@@ -215,6 +220,12 @@
                     <button type="button" id="searchLensBtn" class="{% if search_clear_option and request.GET.search %}hidden {% endif %}horilla-search-btn-end">
                         <img src="{% static 'assets/icons/search.svg' %}" alt="{% trans 'Search' %}" width="20">
                     </button>
+                    {% if list_search_enabled %}
+                        <div
+                            id="listSearchDd"
+                            class="hidden absolute start-0 top-[40px] w-[340px] max-w-[90vw] max-h-[70vh] overflow-y-auto overflow-x-hidden bg-white border border-dark-50 rounded-lg shadow-card py-1 z-[60]"
+                        ></div>
+                    {% endif %}
                 </div>
             {% endif %}
             <div class="flex items-center gap-1">
@@ -351,3 +362,4 @@
 </div>
 
 <script src="{% static 'generics/js/navbar.js' %}"></script>
+<script src="{% static 'generics/js/list_search.js' %}"></script>

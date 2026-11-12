@@ -1,0 +1,196 @@
+{% comment %}
+    Applied filters in the navbar: one rotating slot that shows the first applied
+    filter, then moves through the rest. Hover or focus opens a card with every
+    filter. Rows come from applied_filter_slot_rows (see generics/applied_filters.py);
+    removing and clearing reuse the filter panel's requests.
+
+    The slot lives in a holder (#appliedFiltersSlot) that is always in the navbar.
+    The navbar is not reloaded when filters or the search change, so HorillaListView
+    appends this partial to every htmx list response (slot_oob) and htmx swaps the
+    holder in place. It reads query_params only, never request, so it renders the
+    same in the navbar and in that appended copy.
+
+    No title/aria-label on the slot or its card: the action tooltip script walks up
+    from the hovered element and would show a black label over the card.
+{% endcomment %}
+<div id="appliedFiltersSlot" class="contents"{% if slot_oob %} hx-swap-oob="true"{% endif %}>
+{% if applied_filter_slot_rows %}
+<style>
+    @keyframes filterSlotIn {
+        from { opacity: 0; transform: translateY(100%); }
+        to { opacity: 1; transform: none; }
+    }
+    .filter-slot-item-in { animation: filterSlotIn .3s cubic-bezier(.2, .8, .2, 1); }
+    @media (prefers-reduced-motion: reduce) {
+        .filter-slot-item-in { animation: none; }
+    }
+</style>
+<div
+    class="group relative min-w-0 max-w-[420px] shrink"
+    data-filter-slot
+    data-current="0"
+    role="group"
+>
+    <div
+        class="flex items-center gap-2 h-8 pl-1 {% if applied_filter_slot_has_filters %}pr-3{% else %}pr-1.5{% endif %} rounded-full border border-primary-500 bg-primary-300 text-xs"
+        tabindex="0"
+    >
+        <span class="sr-only">{% trans "Applied Filters" %}</span>
+        <span class="shrink-0 w-6 h-6 rounded-full bg-primary-600 text-white text-[11px] font-semibold flex items-center justify-center">{{ applied_filter_slot_rows|length }}</span>
+        <span class="relative flex-1 min-w-0 h-5 overflow-hidden">
+            {% for row in applied_filter_slot_rows %}
+                <span
+                    data-filter-slot-item
+                    class="{% if not forloop.first %}hidden{% endif %} block truncate leading-5"
+                >
+                    <span class="text-dark-400">{{ row.label|capfirst }} {{ row.operator_display }}</span>
+                    <span class="font-semibold">
+                        {% if row.start_value and row.end_value %}
+                            {{ row.start_obj|user_datetime_format|default:row.start_value }}
+                            {% trans "and" %}
+                            {{ row.end_obj|user_datetime_format|default:row.end_value }}
+                        {% elif row.value_list|length > 1 and not row.value_obj %}
+                            {{ row.value_list.0 }}
+                            <span class="ms-1 px-1.5 rounded-full bg-white text-primary-600 text-[10px] font-semibold align-middle">+{{ row.value_list|length|add:"-1" }}</span>
+                        {% elif row.value %}
+                            {{ row.value_obj|user_datetime_format|default:row.value }}
+                        {% endif %}
+                    </span>
+                </span>
+            {% endfor %}
+        </span>
+        {% if applied_filter_slot_rows|length > 1 %}
+            <span
+                data-filter-slot-counter
+                class="shrink-0 text-[10px] font-semibold text-primary-600 bg-white rounded-full px-1.5 leading-4"
+            >1/{{ applied_filter_slot_rows|length }}</span>
+        {% endif %}
+        {% if not applied_filter_slot_has_filters %}
+            {# Search only: the tag has no card, so it carries its own close, same request as the old search chip #}
+            <button
+                type="button"
+                class="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-primary-600 hover:bg-white cursor-pointer"
+                aria-label="{% trans 'Clear search' %}"
+                data-native-tooltip="true"
+                hx-get="{{ main_url }}?remove_filter=search_all&{% for key, values in query_params.items %}{% if key != 'search' and key != 'hx_trigger' and key != 'sf' %}{% for value in values %}&{{ key }}={{ value|urlencode }}{% endfor %}{% endif %}{% endfor %}"
+                hx-target="#{{ main_session_id|default:'mainSession' }}"
+                hx-select="#{{ main_session_id|default:'mainSession' }}"
+                hx-select-oob="#navBar"
+                hx-swap="outerHTML"
+                hx-preserve="true"
+                hx-push-url="{{ filter_push_url }}"
+                hx-trigger="click"
+                hx-on:click="$('#searchInput').val('')"
+            >
+                <svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7"/></svg>
+            </button>
+        {% endif %}
+    </div>
+
+    {# A search alone only needs the tag; the card lists real filters #}
+    {% if applied_filter_slot_has_filters %}
+    <div class="hidden group-hover:block group-focus-within:block absolute start-0 top-full pt-1.5 z-[110]">
+        <div class="w-[380px] max-w-[88vw] rounded-xl bg-white border border-[#0000001a] shadow-[0px_12px_32px_rgb(20_24_32_/_16%)] overflow-hidden">
+            <div class="flex items-center justify-between px-2.5 pt-2.5 pb-1.5">
+                <h5 class="text-[11px] font-bold uppercase tracking-[.07em] text-dark-400 m-0">{% trans "Applied Filters" %}</h5>
+                <span class="text-[11px] font-semibold text-primary-600">
+                    {% blocktrans count counter=applied_filter_slot_rows|length %}{{ counter }} filter{% plural %}{{ counter }} filters{% endblocktrans %}
+                </span>
+            </div>
+            {# Timeline: a line down the left joins the cards; WHERE / AND / OR sit on it at the start of each filter #}
+            <ul class="relative max-h-72 overflow-y-auto m-0 px-2.5 pb-2 list-none">
+                {% if applied_filter_slot_rows|length > 1 %}<span class="absolute start-[27px] top-5 bottom-5 w-0.5 bg-[#0000001a]" aria-hidden="true"></span>{% endif %}
+                {% for row in applied_filter_slot_rows %}
+                    <li class="relative grid grid-cols-[36px_1fr] gap-1.5 items-start">
+                        <span class="flex justify-center pt-3">
+                            <span class="inline-flex items-center h-4 px-1 rounded border text-[9px] font-bold tracking-wider uppercase bg-white {% if forloop.first %}text-dark-400 opacity-70{% elif row.logic == 'OR' %}!bg-primary-300 text-primary-600 border-primary-500{% else %}text-dark-400 border-[#0000001a]{% endif %}"{% if forloop.first %} style="border-color: transparent"{% endif %}>
+                                {% if forloop.first %}{% trans "where" %}{% elif row.logic == 'OR' %}{% trans "OR" %}{% else %}{% trans "AND" %}{% endif %}
+                            </span>
+                        </span>
+                        <div class="flex items-start gap-2 my-[3px] min-w-0 rounded-lg border border-[#0000001a] hover:border-primary-500 transition-colors py-1.5 ps-2.5 pe-1.5 text-xs">
+                            <div class="flex-1 min-w-0 flex flex-wrap items-center gap-x-1.5 gap-y-1 leading-5">
+                                <span class="font-semibold">{{ row.label|capfirst }}</span>
+                                <span class="text-dark-400">{{ row.operator_display }}</span>
+                                {% if row.start_value and row.end_value %}
+                                    <span class="px-1.5 rounded text-[11px] font-medium" style="background: color-mix(in srgb, {{ row.color }} 15%, transparent)">{{ row.start_obj|user_datetime_format|default:row.start_value }}</span>
+                                    <span class="text-dark-400">{% trans "and" %}</span>
+                                    <span class="px-1.5 rounded text-[11px] font-medium" style="background: color-mix(in srgb, {{ row.color }} 15%, transparent)">{{ row.end_obj|user_datetime_format|default:row.end_value }}</span>
+                                {% elif row.value_obj %}
+                                    <span class="px-1.5 rounded text-[11px] font-medium" style="background: color-mix(in srgb, {{ row.color }} 15%, transparent)">{{ row.value_obj|user_datetime_format|default:row.value }}</span>
+                                {% else %}
+                                    {% for value in row.value_list %}
+                                        <span class="{% if forloop.counter > 3 %}hidden {% endif %}px-1.5 max-w-full truncate rounded text-[11px] font-medium" {% if forloop.counter > 3 %}data-filter-more{% endif %} style="background: color-mix(in srgb, {{ row.color }} 15%, transparent)">{{ value }}</span>
+                                    {% endfor %}
+                                    {% if row.value_list|length > 3 %}
+                                        <button
+                                            type="button"
+                                            class="px-1.5 rounded text-[11px] font-semibold text-primary-600 bg-primary-300 cursor-pointer"
+                                            data-more-count="{{ row.value_list|length|add:'-3' }}"
+                                            onclick="var b=this,c=b.parentElement,o=b.dataset.open!=='1';c.querySelectorAll('[data-filter-more]').forEach(function(e){e.classList.toggle('hidden',!o)});b.dataset.open=o?'1':'0';b.textContent=o?'{% trans 'Show less' %}':'+'+b.dataset.moreCount;"
+                                        >+{{ row.value_list|length|add:"-3" }}</button>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            <button
+                                type="button"
+                                class="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-dark-400 hover:bg-[#f3f4f6] hover:text-primary-600 cursor-pointer"
+                                aria-label="{% trans 'Remove filter' %}"
+                                data-native-tooltip="true"
+                                {% if row.is_search %}hx-get="{{ main_url }}?remove_filter={{ row.row_id }}&{% for key, values in query_params.items %}{% if key != 'remove_filter' and key != 'hx_trigger' and key != 'page' %}{% for value in values %}&{{ key }}={{ value|urlencode }}{% endfor %}{% endif %}{% endfor %}"
+                                    {% if row.row_id == 'search' %}hx-on:click="$('#searchInput').val('')"{% endif %}{% else %}hx-get="{{ main_url }}?remove_filter={{ row.row_id }}{% for key, values in query_params.items %}{% if key != 'remove_filter' and key != 'page' %}{% for value in values %}&{{ key }}={{ value|urlencode }}{% endfor %}{% endif %}{% endfor %}"{% endif %}
+                                hx-target="#{{ main_session_id|default:'mainSession' }}"
+                                hx-select="#{{ main_session_id|default:'mainSession' }}"
+                                hx-select-oob="#navBar"
+                                hx-swap="outerHTML"
+                                hx-preserve="true"
+                                hx-push-url="{{ filter_push_url }}"
+                                hx-trigger="click"
+                            >
+                                <svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7"/></svg>
+                            </button>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="flex items-center justify-end gap-2 border-t border-[#0000001a] px-2.5 py-2">
+                <button
+                    type="button"
+                    class="outline outline-1 outline-offset-[-1px] outline-primary-600 rounded-md hover:bg-primary-300 transition duration-300 text-primary-600 whitespace-nowrap cursor-pointer text-xs px-3 py-1"
+                    hx-get="{{ main_url }}?clear_all_filters=true{% for key, values in query_params.items %}{% if key not in 'field,operator,value,start_value,end_value,apply_filter,clear_all_filters,page,search,hx_trigger' %}{% for value in values %}&{{ key }}={{ value|urlencode }}{% endfor %}{% endif %}{% endfor %}"
+                    hx-target="#{{ main_session_id|default:'mainSession' }}"
+                    hx-select="#{{ main_session_id|default:'mainSession' }}"
+                    hx-select-oob="#navBar"
+                    hx-swap="outerHTML"
+                    hx-preserve="true"
+                    hx-push-url="{{ filter_push_url }}"
+                    hx-trigger="click"
+                    hx-on:click="
+                        $('#searchInput').val('');
+                        try {
+                            const storageKey = 'filterPanelVisible:' + window.location.pathname;
+                            localStorage.removeItem(storageKey);
+                        } catch (e) {}
+                    "
+                >
+                    {% trans "Clear All" %}
+                </button>
+                {% if save_to_list_option and applied_filter_slot_has_filters %}
+                    <button
+                        type="button"
+                        class="bg-primary-600 rounded-md hover:bg-primary-800 transition duration-300 text-white text-xs px-3 py-1 whitespace-nowrap cursor-pointer"
+                        hx-get="{% url 'generics:save_filter_list' %}?{% for key, values in query_params.items %}{% if key != 'search' %}{% for value in values %}&{{ key }}={{ value|urlencode }}{% endfor %}{% endif %}{% endfor %}&main_url={{ main_url|urlencode }}&model_name={{ model_name|urlencode }}"
+                        hx-target="#modalBox"
+                        hx-swap="innerHTML"
+                        hx-push-url="false"
+                        hx-on::after-request="openModal()"
+                    >
+                        {% trans "Save to List" %}
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+</div>

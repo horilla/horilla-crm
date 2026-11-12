@@ -1031,12 +1031,57 @@ def skip_pending_time_triggers(rule, instance, reason):
     )
 
 
+def _pending_repeat_exists(time_trigger, object_id, exclude_pk=None):
+    """Whether a repeating ``time_trigger`` already waits to run on the record."""
+    pending = ScheduledWorkflowExecution.all_objects.filter(
+        time_trigger=time_trigger,
+        object_id=object_id,
+        status=ScheduledWorkflowExecution.STATUS_PENDING,
+    )
+    if exclude_pk:
+        pending = pending.exclude(pk=exclude_pk)
+    return pending.exists()
+
+
+def schedule_next_repeat(execution, now=None):
+    """
+    Schedule the next run of a repeating time trigger after ``execution``.
+
+    The next run is one interval after the run's own ``scheduled_at``, so a
+    slow worker does not shift the times; a run that is late by several
+    intervals goes to the next time still ahead, so missed runs are not sent
+    in a burst. A record keeps one repeat chain per time trigger: nothing is
+    added while another run waits. The chain ends by itself when a run is
+    skipped (the record left the criteria, or the rule or the time trigger is
+    inactive), because a skipped run schedules nothing. Returns the new
+    execution or ``None``.
+    """
+    time_trigger = execution.time_trigger
+    interval = time_trigger.repeat_interval()
+    if not interval:
+        return None
+    now = now or timezone.now()
+    next_at = execution.scheduled_at + interval
+    if next_at <= now:
+        missed = (now - execution.scheduled_at) // interval
+        next_at = execution.scheduled_at + interval * (missed + 1)
+    if _pending_repeat_exists(time_trigger, execution.object_id, execution.pk):
+        return None
+    return ScheduledWorkflowExecution.objects.create(
+        time_trigger=time_trigger,
+        object_id=execution.object_id,
+        scheduled_at=next_at,
+        company=execution.company,
+    )
+
+
 def _schedule_time_triggers(rule, instance):
     """
     For each active time trigger on the rule, calculate the fire datetime and
     create a ScheduledWorkflowExecution row.  Skips if the calculated time
     is in the past (would fire immediately via the next periodic poll instead
-    of being silently dropped).
+    of being silently dropped). A repeating time trigger that already waits
+    to run on the record gets no second chain.
     """
     from datetime import timedelta
 
@@ -1048,6 +1093,8 @@ def _schedule_time_triggers(rule, instance):
 
     for tt in time_triggers:
         try:
+            if tt.repeat_every_value and _pending_repeat_exists(tt, instance.pk):
+                continue
             if tt.trigger_date_field == "rule_trigger_date":
                 base_dt = now
             else:

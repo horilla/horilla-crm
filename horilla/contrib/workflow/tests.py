@@ -50,9 +50,11 @@ from .action_types import (
 from .forms import WorkflowActionForm, WorkflowTimeTriggerActionForm
 from .methods import (
     ChannelActionMessage,
+    _schedule_time_triggers,
     criteria_met_before_save,
     execute_action,
     execute_workflow_rule,
+    schedule_next_repeat,
 )
 from .models import (
     ScheduledWorkflowExecution,
@@ -1187,3 +1189,337 @@ class EditEntersCriteriaTests(WorkflowTestCase):
         self.save(department, description="Open")
         self.assert_runs(1)
         self.assertNotIn(signals._MET_BEFORE_ATTR, department.__dict__)
+
+    def test_leaving_ends_a_repeat_and_reentry_starts_a_new_one(self):
+        WorkflowTimeTriggerAction.objects.filter(rule=self.rule).update(
+            repeat_every_value=1, repeat_every_unit="days"
+        )
+        department = self.department("Closed")
+        self.save(department, description="Open")
+        first = self.pending().get()
+        execute_workflow_time_trigger(first.pk)
+        second = self.pending().get()
+        self.assertEqual(second.scheduled_at, first.scheduled_at + timedelta(days=1))
+        self.save(department, description="Closed")
+        self.assertFalse(self.pending().exists())
+        second.refresh_from_db()
+        self.assertEqual(second.status, ScheduledWorkflowExecution.STATUS_SKIPPED)
+        # Back in: a new repeat, counted from the new entry.
+        self.save(department, description="Open")
+        third = self.pending().get()
+        self.assertNotIn(third.pk, (first.pk, second.pk))
+        self.assertGreater(third.scheduled_at, first.scheduled_at)
+
+    def test_a_rule_without_criteria_keeps_one_repeat_per_record(self):
+        self.rule.conditions.all().delete()
+        WorkflowTimeTriggerAction.objects.filter(rule=self.rule).update(
+            repeat_every_value=1, repeat_every_unit="days"
+        )
+        department = self.department("Closed")
+        self.save(department, department_name="Help desk")
+        self.save(department, department_name="Service desk")
+        # The immediate action runs on each save; the repeat is not doubled.
+        self.assertEqual(self.execute.call_count, 3)
+        self.assertEqual(self.pending().count(), 1)
+
+
+class RepeatTimeTriggerTests(WorkflowTestCase):
+    """
+    A time trigger that repeats every day on a rule with the criteria
+    "status is scheduled": each completed run schedules the next one while
+    the activity still meets the criteria.
+    """
+
+    def setUp(self):
+        super().setUp()
+        WorkflowCondition.objects.create(
+            rule=self.rule,
+            field="status",
+            operator="exact",
+            value="scheduled",
+            **self.common,
+        )
+        self.trigger = self.action(
+            "fake_sms",
+            {"template_id": str(self.notification_template.pk), "to": "self"},
+            model=WorkflowTimeTriggerAction,
+            delay_value=1,
+            delay_unit="days",
+            trigger_date_field="rule_trigger_date",
+            repeat_every_value=1,
+            repeat_every_unit="days",
+        )
+        self.activity = Activity.objects.create(
+            subject="Call", activity_type="task", status="scheduled", **self.common
+        )
+        self.first = self.execution(timezone.now() - timedelta(minutes=1))
+
+    def execution(self, scheduled_at, **fields):
+        return ScheduledWorkflowExecution.objects.create(
+            time_trigger=self.trigger,
+            object_id=self.activity.pk,
+            scheduled_at=scheduled_at,
+            **self.common,
+            **fields,
+        )
+
+    def run_execution(self, execution):
+        execute_workflow_time_trigger(execution.pk)
+        execution.refresh_from_db()
+        return execution
+
+    def pending(self):
+        return ScheduledWorkflowExecution.all_objects.filter(
+            time_trigger=self.trigger,
+            status=ScheduledWorkflowExecution.STATUS_PENDING,
+        )
+
+    def set_trigger(self, **fields):
+        WorkflowTimeTriggerAction.objects.filter(pk=self.trigger.pk).update(**fields)
+
+    def test_a_trigger_without_repeat_runs_once(self):
+        self.set_trigger(repeat_every_value=None)
+        execution = self.run_execution(self.first)
+        self.assertEqual(execution.status, ScheduledWorkflowExecution.STATUS_COMPLETED)
+        self.assertFalse(self.pending().exists())
+
+    def test_a_completed_run_schedules_the_next_one_interval_after_it(self):
+        self.run_execution(self.first)
+        following = self.pending().get()
+        self.assertEqual(
+            following.scheduled_at, self.first.scheduled_at + timedelta(days=1)
+        )
+        self.assertEqual(following.object_id, self.activity.pk)
+        self.assertEqual(following.company, self.company)
+
+    def test_it_keeps_repeating_while_the_record_meets_the_criteria(self):
+        execution = self.first
+        for _ in range(3):
+            self.run_execution(execution)
+            execution = self.pending().get()
+        self.assertEqual(len(self.fake.sent), 3)
+        self.assertEqual(
+            execution.scheduled_at, self.first.scheduled_at + timedelta(days=3)
+        )
+        self.assertEqual(
+            ScheduledWorkflowExecution.all_objects.filter(
+                time_trigger=self.trigger,
+                status=ScheduledWorkflowExecution.STATUS_COMPLETED,
+            ).count(),
+            3,
+        )
+
+    def test_the_repeat_ends_when_the_record_leaves_the_criteria(self):
+        self.run_execution(self.first)
+        Activity.objects.filter(pk=self.activity.pk).update(status="completed")
+        skipped = self.run_execution(self.pending().get())
+        self.assertEqual(skipped.status, ScheduledWorkflowExecution.STATUS_SKIPPED)
+        self.assertFalse(self.pending().exists())
+        self.assertEqual(len(self.fake.sent), 1)
+
+    def test_the_repeat_ends_when_the_rule_or_the_trigger_is_inactive(self):
+        for model, pk in (
+            (WorkflowRule, self.rule.pk),
+            (WorkflowTimeTriggerAction, self.trigger.pk),
+        ):
+            with self.subTest(model=model.__name__):
+                ScheduledWorkflowExecution.all_objects.filter(
+                    time_trigger=self.trigger
+                ).delete()
+                model.objects.filter(pk=pk).update(is_active=False)
+                execution = self.run_execution(self.execution(timezone.now()))
+                self.assertEqual(
+                    execution.status, ScheduledWorkflowExecution.STATUS_SKIPPED
+                )
+                self.assertFalse(self.pending().exists())
+                model.objects.filter(pk=pk).update(is_active=True)
+        self.assertEqual(self.fake.sent, [])
+
+    def test_a_late_run_goes_to_the_next_time_still_ahead(self):
+        start = self.first.scheduled_at
+        late = schedule_next_repeat(self.first, now=start + timedelta(days=3, hours=12))
+        self.assertEqual(late.scheduled_at, start + timedelta(days=4))
+        late.delete()
+        # Exactly on a slot: the next one is still ahead.
+        on_slot = schedule_next_repeat(self.first, now=start + timedelta(days=2))
+        self.assertEqual(on_slot.scheduled_at, start + timedelta(days=3))
+
+    def test_minutes_and_hours(self):
+        self.trigger.repeat_every_unit = "minutes"
+        self.trigger.repeat_every_value = 30
+        self.assertEqual(self.trigger.repeat_interval(), timedelta(minutes=30))
+        self.trigger.repeat_every_unit = "hours"
+        self.assertEqual(self.trigger.repeat_interval(), timedelta(hours=30))
+        self.assertEqual(
+            str(self.trigger.get_repeat_display()), "Repeats every 30 Hours"
+        )
+        self.trigger.repeat_every_value = None
+        self.assertIsNone(self.trigger.repeat_interval())
+        self.assertEqual(self.trigger.get_repeat_display(), "")
+
+    def test_a_failed_send_still_schedules_the_next_run(self):
+        with mock.patch.object(
+            methods, "execute_action", side_effect=RuntimeError("provider down")
+        ), self.assertLogs("horilla.contrib.workflow.tasks", "ERROR"):
+            with self.assertRaises(RuntimeError):
+                execute_workflow_time_trigger(self.first.pk)
+        self.first.refresh_from_db()
+        self.assertEqual(self.first.status, ScheduledWorkflowExecution.STATUS_FAILED)
+        self.assertEqual(self.pending().count(), 1)
+
+    def test_an_action_type_that_is_gone_ends_the_repeat(self):
+        self.set_trigger(action_type="gone")
+        with self.assertLogs("horilla.contrib.workflow.methods", "ERROR"):
+            execution = self.run_execution(self.first)
+        self.assertEqual(execution.status, ScheduledWorkflowExecution.STATUS_FAILED)
+        self.assertFalse(self.pending().exists())
+
+    def test_a_deleted_record_ends_the_repeat(self):
+        Activity.all_objects.filter(pk=self.activity.pk).delete()
+        execution = self.run_execution(self.first)
+        self.assertEqual(execution.status, ScheduledWorkflowExecution.STATUS_FAILED)
+        self.assertFalse(self.pending().exists())
+
+    def test_clearing_the_repeat_lets_the_pending_run_happen_and_stops(self):
+        self.run_execution(self.first)
+        self.set_trigger(repeat_every_value=None)
+        execution = self.run_execution(self.pending().get())
+        self.assertEqual(execution.status, ScheduledWorkflowExecution.STATUS_COMPLETED)
+        self.assertFalse(self.pending().exists())
+        self.assertEqual(len(self.fake.sent), 2)
+
+    def test_one_repeat_per_record(self):
+        # The rule fires again while a run waits: no second chain.
+        _schedule_time_triggers(self.rule, self.activity)
+        self.assertEqual(self.pending().count(), 1)
+        # Another run waits when this one completes: nothing is added.
+        other = self.execution(timezone.now() + timedelta(hours=5))
+        self.run_execution(self.first)
+        self.assertEqual(list(self.pending()), [other])
+
+    def test_other_records_have_their_own_repeat(self):
+        other = Activity.objects.create(
+            subject="Other", activity_type="task", status="scheduled", **self.common
+        )
+        _schedule_time_triggers(self.rule, other)
+        self.assertEqual(
+            sorted(self.pending().values_list("object_id", flat=True)),
+            sorted([self.activity.pk, other.pk]),
+        )
+
+    def test_a_trigger_that_runs_once_is_scheduled_on_every_match(self):
+        """Unchanged: only repeating triggers keep one chain per record."""
+        self.set_trigger(repeat_every_value=None)
+        _schedule_time_triggers(self.rule, self.activity)
+        self.assertEqual(self.pending().count(), 2)
+
+    def test_a_trigger_that_runs_once_adds_no_queries(self):
+        self.trigger.repeat_every_value = None
+        self.first.time_trigger = self.trigger
+        with self.assertNumQueries(0):
+            self.assertIsNone(schedule_next_repeat(self.first))
+
+    def test_an_error_while_scheduling_the_next_run_is_logged(self):
+        with mock.patch.object(
+            methods, "schedule_next_repeat", side_effect=RuntimeError("db")
+        ), self.assertLogs("horilla.contrib.workflow.tasks", "ERROR"):
+            execution = self.run_execution(self.first)
+        self.assertEqual(execution.status, ScheduledWorkflowExecution.STATUS_COMPLETED)
+        self.assertEqual(len(self.fake.sent), 1)
+
+
+class RepeatFormAndPageTests(WorkflowTestCase):
+    """The time-trigger modal sets the repeat and the rule page shows it."""
+
+    def setUp(self):
+        super().setUp()
+        user_logged_in.disconnect(post_login)
+        self.addCleanup(user_logged_in.connect, post_login)
+        self.admin = User.objects.create_superuser(
+            username="workflow-admin",
+            email="admin@example.com",
+            password="x",
+            company=self.company,
+        )
+        self.client.force_login(self.admin)
+        self.add_url = reverse(
+            "workflow:workflow_time_trigger_add_view", args=[self.rule.pk]
+        )
+
+    def post(self, **data):
+        values = {
+            "rule": self.rule.pk,
+            "order": 1,
+            "delay_value": 1,
+            "delay_unit": "days",
+            "delay_direction": "after",
+            "trigger_date_field": "rule_trigger_date",
+            "action_type": "fake_sms",
+            "channel_template_id": self.notification_template.pk,
+            "channel_to": "self",
+            "channel_also_send_to": "",
+        }
+        values.update(data)
+        return self.client.post(self.add_url, values, HTTP_HX_REQUEST="true")
+
+    def test_the_modal_has_the_repeat_row(self):
+        response = self.client.get(self.add_url, HTTP_HX_REQUEST="true")
+        self.assertContains(response, 'name="repeat_every_value"')
+        self.assertContains(response, 'name="repeat_every_unit"')
+        self.assertContains(response, "Leave empty to run once.")
+
+    def test_saving_a_repeat(self):
+        self.post(repeat_every_value=2, repeat_every_unit="hours")
+        trigger = WorkflowTimeTriggerAction.all_objects.get(rule=self.rule)
+        self.assertEqual(trigger.repeat_interval(), timedelta(hours=2))
+
+    def test_empty_runs_once(self):
+        self.post(repeat_every_value="", repeat_every_unit="days")
+        trigger = WorkflowTimeTriggerAction.all_objects.get(rule=self.rule)
+        self.assertIsNone(trigger.repeat_every_value)
+
+    def test_zero_or_negative_is_refused(self):
+        for value in (0, -1):
+            with self.subTest(value=value):
+                response = self.post(repeat_every_value=value)
+                self.assertContains(response, "Repeat Every:")
+                self.assertFalse(
+                    WorkflowTimeTriggerAction.all_objects.filter(
+                        rule=self.rule
+                    ).exists()
+                )
+
+    def test_the_edit_modal_shows_the_saved_repeat(self):
+        trigger = self.action(
+            "fake_sms",
+            model=WorkflowTimeTriggerAction,
+            delay_value=1,
+            delay_unit="days",
+            trigger_date_field="rule_trigger_date",
+            repeat_every_value=3,
+            repeat_every_unit="hours",
+        )
+        response = self.client.get(
+            reverse("workflow:workflow_time_trigger_edit_view", args=[trigger.pk]),
+            HTTP_HX_REQUEST="true",
+        )
+        content = response.content.decode()
+        self.assertRegex(content, r'name="repeat_every_value"[^>]*value="3"')
+        self.assertRegex(content, r'<option value="hours" selected>')
+
+    def test_the_rule_page_shows_the_repeat(self):
+        self.action(
+            "fake_sms",
+            model=WorkflowTimeTriggerAction,
+            delay_value=1,
+            delay_unit="days",
+            trigger_date_field="rule_trigger_date",
+            repeat_every_value=1,
+            repeat_every_unit="days",
+        )
+        response = self.client.get(
+            reverse("workflow:workflow_rule_detail_view", args=[self.rule.pk]),
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Repeats every 1 Days")

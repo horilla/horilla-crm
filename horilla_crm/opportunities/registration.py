@@ -20,7 +20,7 @@ from horilla.utils.translation import gettext_lazy as _
 register_model_for_feature(
     app_label="opportunities",
     model_name="OpportunityStage",
-    features=["import_data", "export_data", "global_search"],
+    features=["import_data", "export_data"],
 )
 
 register_model_for_feature(
@@ -40,12 +40,34 @@ register_model_for_feature(
         "mobile",
         "cadences_models",
     ],
+    options={
+        "global_search": {
+            "search_fields": [
+                "name",
+                "email",
+                "description",
+                "next_step",
+                "opportunity_type",
+                "order_number",
+                "account__name",
+                "owner__first_name",
+                "owner__last_name",
+            ],
+            "columns": [
+                "name",
+                ("Account", "account"),
+                "email",
+                ("Owner", "owner"),
+                "opportunity_type",
+            ],
+        }
+    },
 )
 
 register_model_for_feature(
     app_label="opportunities",
     model_name="OpportunityTeam",
-    features=["global_search", "report_choices"],
+    features=["report_choices"],
 )
 
 register_model_for_feature(

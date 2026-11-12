@@ -16,7 +16,32 @@ def register_callable_model(app_label: str, model_name: str, phone_field: str) -
 register_model_for_feature(
     app_label="calls",
     model_name="CallProvider",
-    features=["global_search", "export_data"],
+    features=["export_data"],
+)
+
+register_model_for_feature(
+    app_label="calls",
+    model_name="CallLog",
+    features=["global_search"],
+    options={
+        "global_search": {
+            "search_fields": [
+                "from_number",
+                "to_number",
+                "direction",
+                "status",
+                "provider__name",
+            ],
+            "columns": [
+                ("From", "from_number"),
+                ("To", "to_number"),
+                "direction",
+                "status",
+                ("Provider", "provider"),
+                ("Started", "started_at"),
+            ],
+        }
+    },
 )
 
 register_model_for_feature(

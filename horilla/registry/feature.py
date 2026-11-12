@@ -14,6 +14,20 @@ Usage :
      register_model_for_feature(app_label="my_app", model_name="MyModel", features=["import_data"])
      register_models_for_feature(models=[("my_app", "A"), ("my_app", "B")], features=["global_search"])
 
+  3. Give a feature per-model settings (optional; each feature documents its own options):
+     register_model_for_feature(
+         app_label="my_app", model_name="MyModel", features=["global_search"],
+         options={"global_search": {
+             "search_fields": ["name", ("Owner", "owner__first_name")],  # fields to search
+             "columns": ["name", ("Owner", "owner")],           # columns shown in results
+         }},
+     )
+     Other ways to set the same thing: set_feature_options("global_search", {...},
+     app_label=..., model_name=...), or on the model class:
+     FEATURE_OPTIONS = {"global_search": {...}}.
+     A feature can also give every model defaults: register_feature("x", default_options={...}).
+     Features read them with get_feature_options("global_search", model_class).
+
 Consumers get the list of models for a feature via FEATURE_CONFIG[feature_name] -> registry key,
 then FEATURE_REGISTRY[registry_key] -> list of model classes.
 """
@@ -60,6 +74,17 @@ FEATURE_PENDING_MODELS = defaultdict(list)
 # Reverse lookup: registry_key -> feature_name
 FEATURE_REGISTRY_KEY_TO_NAME = {}
 
+# Feature options: extra settings a feature reads per model (which fields to search,
+# which columns to export, ...). Each feature decides its own option names.
+# Defaults for every model of a feature, set via register_feature(default_options=...).
+# Format: {feature_name: {option: value}}
+FEATURE_DEFAULT_OPTIONS = {}
+
+# Options set for one model, via set_feature_options() or
+# register_model_for_feature(options=...).
+# Format: {feature_name: {model_class: {option: value}}}
+FEATURE_MODEL_OPTIONS = defaultdict(dict)
+
 # Feature configuration: feature_name -> registry_key.
 # Core features: import_data, export_data, global_search. Apps add more via register_feature().
 FEATURE_CONFIG = {
@@ -76,6 +101,7 @@ def register_feature(
     auto_register_all=None,  # None means auto-detect based on include_models
     include_models=None,
     exclude_models=None,
+    default_options=None,
 ):
     """
     Register a new feature dynamically from any app.
@@ -102,6 +128,9 @@ def register_feature(
                        - List of strings: ["app_label.model_name", ...]
                        - Single tuple, model class, or string (will be converted to list)
                        Only works when auto_register_all=True.
+        default_options: Dict of options every model of this feature starts with, e.g.
+                       {"batch_size": 500}. A model can override them (see
+                       set_feature_options). Read them with get_feature_options().
 
     Example:
         # Basic registration (auto-registers all all=True models)
@@ -135,6 +164,9 @@ def register_feature(
 
     if registry_key is None:
         registry_key = f"{feature_name}_models"
+
+    if default_options:
+        FEATURE_DEFAULT_OPTIONS[feature_name] = dict(default_options)
 
     # Auto-determine auto_register_all if not explicitly set
     if auto_register_all is None:
@@ -520,6 +552,85 @@ def register_feature(
     return True
 
 
+def _resolve_feature_name(feature_name):
+    """Accept either a feature name or its registry key (e.g. "global_search_models")."""
+    if feature_name in FEATURE_CONFIG:
+        return feature_name
+    if feature_name in FEATURE_REGISTRY_KEY_TO_NAME:
+        return FEATURE_REGISTRY_KEY_TO_NAME[feature_name]
+    for name, key in FEATURE_CONFIG.items():
+        if key == feature_name:
+            return name
+    return feature_name
+
+
+def set_feature_options(
+    feature_name,
+    options,
+    model_class=None,
+    app_label=None,
+    model_name=None,
+):
+    """
+    Set options for one model under one feature.
+
+    Options are plain settings that the feature reads for that model, for example
+    the fields global search should look in. Each feature defines its own names.
+    Calling this again for the same model and feature updates the given options and
+    keeps the others.
+
+    Example:
+        set_feature_options(
+            "global_search",
+            {"search_fields": ["name", "module__model"], "columns": ["name"]},
+            app_label="reports",
+            model_name="Report",
+        )
+
+    Returns:
+        bool: True if stored, False if the model could not be found.
+    """
+    if model_class is None:
+        try:
+            model_class = apps.get_model(app_label, model_name)
+        except (LookupError, ValueError, TypeError) as e:
+            logger.error(
+                "set_feature_options: Model '%s.%s' not found: %s",
+                app_label,
+                model_name,
+                e,
+            )
+            return False
+
+    feature_name = _resolve_feature_name(feature_name)
+    FEATURE_MODEL_OPTIONS[feature_name].setdefault(model_class, {}).update(
+        options or {}
+    )
+    return True
+
+
+def get_feature_options(feature_name, model_class):
+    """
+    Return the options of a feature for a model as a dict (empty if none).
+
+    Later sources override earlier ones, option by option:
+      1. defaults from register_feature(default_options=...)
+      2. the model class's ``FEATURE_OPTIONS = {"<feature>": {...}}`` attribute
+      3. options set with set_feature_options() / register_model_for_feature(options=...)
+
+    Example:
+        options = get_feature_options("global_search", Report)
+        search_fields = options.get("search_fields")  # None means "choose automatically"
+    """
+    feature_name = _resolve_feature_name(feature_name)
+    merged = dict(FEATURE_DEFAULT_OPTIONS.get(feature_name, {}))
+    merged.update(
+        (getattr(model_class, "FEATURE_OPTIONS", None) or {}).get(feature_name, {})
+    )
+    merged.update(FEATURE_MODEL_OPTIONS.get(feature_name, {}).get(model_class, {}))
+    return merged
+
+
 def register_model_for_feature(
     model_class=None,
     app_label=None,
@@ -527,6 +638,7 @@ def register_model_for_feature(
     features=None,
     all=False,
     exclude=None,
+    options=None,
     **kwargs,
 ):
     """
@@ -539,13 +651,16 @@ def register_model_for_feature(
         features: Feature name(s) as list or string
         all: Enable all features if True
         exclude: Features to exclude when all=True
+        options: Per-feature settings for this model, keyed by feature name, e.g.
+            {"global_search": {"search_fields": ["name"]}}. See set_feature_options.
         **kwargs: Legacy boolean flags (global_search=True, etc.)
 
     Example:
         register_model_for_feature(
             app_label="core",
             model_name="User",
-            features=["global_search"]
+            features=["global_search"],
+            options={"global_search": {"search_fields": ["first_name", "last_name"]}},
         )
         register_model_for_feature(
             app_label="calendar",
@@ -579,6 +694,9 @@ def register_model_for_feature(
         # Use model class directly
         app_label = model_class._meta.app_label
         model_name = model_class.__name__
+
+    for option_feature, feature_options in (options or {}).items():
+        set_feature_options(option_feature, feature_options, model_class=model_class)
 
     # Determine which features to enable
     enabled_features = set()

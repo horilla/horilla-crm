@@ -19,7 +19,7 @@ from .utils import create_lead_from_email, lead_warning_for_mail
 register_model_for_feature(
     app_label="leads",
     model_name="LeadStatus",
-    features=["import_data", "export_data", "global_search"],
+    features=["import_data", "export_data"],
 )
 
 register_model_for_feature(
@@ -40,6 +40,30 @@ register_model_for_feature(
         "mobile",
         "cadences_models",
     ],
+    options={
+        "global_search": {
+            "search_fields": [
+                "title",
+                "first_name",
+                "last_name",
+                "email",
+                "contact_number",
+                "lead_company",
+                "industry",
+                "city",
+                "lead_owner__first_name",
+                "lead_owner__last_name",
+            ],
+            "columns": [
+                "title",
+                "first_name",
+                "last_name",
+                "email",
+                "contact_number",
+                "lead_company",
+            ],
+        }
+    },
 )
 
 register_cadence_tab(

@@ -22,4 +22,25 @@ register_model_for_feature(
         "report_choices",
         "dashboard_component",
     ],
+    options={
+        "global_search": {
+            "search_fields": [
+                "subject",
+                "title",
+                "description",
+                "activity_type",
+                "status",
+                "location",
+                "owner__first_name",
+                "owner__last_name",
+            ],
+            "columns": [
+                "subject",
+                "title",
+                "activity_type",
+                "status",
+                ("Owner", "owner"),
+            ],
+        }
+    },
 )

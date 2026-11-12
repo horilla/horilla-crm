@@ -27,6 +27,30 @@ register_model_for_feature(
         "mobile",
         "cadences_models",
     ],
+    options={
+        "global_search": {
+            "search_fields": [
+                "name",
+                "account_number",
+                "account_type",
+                "site",
+                "industry",
+                "website",
+                "contact_number",
+                "billing_city",
+                "account_owner__first_name",
+                "account_owner__last_name",
+            ],
+            "columns": [
+                "name",
+                "account_number",
+                "account_type",
+                "industry",
+                "website",
+                "contact_number",
+            ],
+        }
+    },
 )
 
 register_cadence_tab(

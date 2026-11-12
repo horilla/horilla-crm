@@ -24,6 +24,24 @@ register_model_for_feature(
         "custom_calendar_models",
         "cadences_models",
     ],
+    options={
+        "global_search": {
+            "search_fields": [
+                "campaign_name",
+                "status",
+                "campaign_type",
+                "description",
+                "campaign_owner__first_name",
+                "campaign_owner__last_name",
+            ],
+            "columns": [
+                "campaign_name",
+                "status",
+                "campaign_type",
+                ("Owner", "campaign_owner"),
+            ],
+        }
+    },
 )
 
 register_cadence_tab(

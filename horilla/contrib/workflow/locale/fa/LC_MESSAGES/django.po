@@ -495,3 +495,33 @@ msgstr "رد شده"
 
 msgid "Details"
 msgstr "جزئیات"
+
+msgid "Repeat Every"
+msgstr "تکرار هر"
+
+msgid "Repeat Unit"
+msgstr "واحد تکرار"
+
+msgid ""
+"Leave empty to run once. Otherwise the action runs again at this interval "
+"while the record still meets the rule's criteria."
+msgstr ""
+"برای یک بار اجرا خالی بگذارید. در غیر این صورت، اقدام تا وقتی رکورد با "
+"معیارهای قانون مطابقت دارد، با همین فاصله دوباره اجرا می‌شود."
+
+#, python-format
+msgid "Repeats every %(value)s %(unit)s"
+msgstr "تکرار هر %(value)s %(unit)s"
+
+msgid "Repeat (optional)"
+msgstr "تکرار (اختیاری)"
+
+msgid "Every"
+msgstr "هر"
+
+msgid ""
+"Leave empty to run once. A repeat runs while the record still meets the "
+"rule's criteria and stops when it leaves them."
+msgstr ""
+"برای یک بار اجرا خالی بگذارید. تکرار تا وقتی رکورد با معیارهای قانون مطابقت "
+"دارد ادامه دارد و با خارج شدن رکورد از آن‌ها متوقف می‌شود."

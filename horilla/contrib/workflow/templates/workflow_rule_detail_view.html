@@ -204,9 +204,14 @@
                                                     />
                                                 </svg>
                                             </div>
-                                            <p class="text-sm font-semibold text-gray-800">
-                                                <span>{{ action.get_action_type_display }}</span>
-                                            </p>
+                                            <div>
+                                                <p class="text-sm font-semibold text-gray-800">
+                                                    <span>{{ action.get_action_type_display }}</span>
+                                                </p>
+                                                {% if action.repeat_every_value %}
+                                                    <p class="text-xs text-dark-200">{{ action.get_repeat_display }}</p>
+                                                {% endif %}
+                                            </div>
                                         </div>
                                         {% if can_change %}
                                             <div class="flex tablebtn">

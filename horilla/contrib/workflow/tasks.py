@@ -98,6 +98,7 @@ def execute_workflow_time_trigger(self, execution_id):
         execution.status = ScheduledWorkflowExecution.STATUS_COMPLETED
         execution.executed_at = timezone.now()
         execution.save(update_fields=["status", "executed_at"])
+        _schedule_next_repeat(execution)
 
         logger.info(
             "Workflow execution %s completed (%s on %s pk=%s)",
@@ -115,4 +116,19 @@ def execute_workflow_time_trigger(self, execution_id):
         execution.error_message = str(exc)
         execution.executed_at = timezone.now()
         execution.save(update_fields=["status", "error_message", "executed_at"])
+        # One failed send (a provider error) does not end a repeat.
+        _schedule_next_repeat(execution)
         raise self.retry(exc=exc, countdown=300)
+
+
+def _schedule_next_repeat(execution):
+    """Schedule the next run of a repeating trigger; an error is logged only."""
+    from .methods import schedule_next_repeat
+
+    try:
+        schedule_next_repeat(execution)
+    except Exception:
+        logger.exception(
+            "Could not schedule the next repeat of workflow execution %s",
+            execution.pk,
+        )

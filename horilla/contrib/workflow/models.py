@@ -2,6 +2,10 @@
 Models for the workflow app
 """
 
+from datetime import timedelta
+
+from django.core.validators import MinValueValidator
+
 from horilla.contrib.core.models import HorillaContentType, HorillaCoreModel
 from horilla.contrib.utils.methods import render_template
 
@@ -218,6 +222,9 @@ class WorkflowTimeTriggerAction(HorillaCoreModel):
 
     Fires `delay_value` `delay_unit` (after/before) a `trigger_date_field`
     on the target record (or 'rule_trigger_date' for the moment the rule fired).
+    With ``repeat_every_value`` set, it runs again every ``repeat_every_value``
+    ``repeat_every_unit`` while the record still meets the rule's criteria
+    (see ``methods.schedule_next_repeat``).
 
     action_type and action_config follow the same schema as WorkflowAction.
     """
@@ -263,6 +270,22 @@ class WorkflowTimeTriggerAction(HorillaCoreModel):
             "or enter a date field name from the target model."
         ),
     )
+    repeat_every_value = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1)],
+        verbose_name=_("Repeat Every"),
+        help_text=_(
+            "Leave empty to run once. Otherwise the action runs again at this "
+            "interval while the record still meets the rule's criteria."
+        ),
+    )
+    repeat_every_unit = models.CharField(
+        max_length=10,
+        choices=DELAY_UNIT_CHOICES,
+        default="days",
+        verbose_name=_("Repeat Unit"),
+    )
     action_type = models.CharField(
         max_length=ACTION_TYPE_MAX_LENGTH,
         verbose_name=_("Action Type"),
@@ -287,6 +310,21 @@ class WorkflowTimeTriggerAction(HorillaCoreModel):
     def get_action_type_display(self):
         """The built-in's or the delivery channel's label (the key if its app is gone)."""
         return get_action_type_label(self.action_type)
+
+    def repeat_interval(self):
+        """The time between two runs, or ``None`` when the trigger runs once."""
+        if not self.repeat_every_value:
+            return None
+        return timedelta(**{self.repeat_every_unit: self.repeat_every_value})
+
+    def get_repeat_display(self):
+        """The repeat shown on the rule page, or "" when the trigger runs once."""
+        if not self.repeat_every_value:
+            return ""
+        return _("Repeats every %(value)s %(unit)s") % {
+            "value": self.repeat_every_value,
+            "unit": self.get_repeat_every_unit_display(),
+        }
 
     def __str__(self):
         return (

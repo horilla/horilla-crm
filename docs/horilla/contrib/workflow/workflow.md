@@ -4,7 +4,7 @@
 
 - **`WorkflowRule`** — module (`HorillaContentType`), name, description, triggers on create/edit (an edit runs the rule only when the record enters its criteria, see [Edits run a rule when the record enters its criteria](#edits-run-a-rule-when-the-record-enters-its-criteria)), active flag.
 - **`WorkflowCondition`** — criteria rows (field / operator / value / logical operator).
-- **`WorkflowAction`** / **`WorkflowTimeTriggerAction`** — actions on match (update field, task, email, notification, or a registered delivery channel such as SMS) with JSON **`action_config`** built from hidden compose fields. See [Actions and delivery channels](#actions-and-delivery-channels).
+- **`WorkflowAction`** / **`WorkflowTimeTriggerAction`** — actions on match (update field, task, email, notification, or a registered delivery channel such as SMS) with JSON **`action_config`** built from hidden compose fields. See [Actions and delivery channels](#actions-and-delivery-channels). A time trigger can repeat, see [Repeating time triggers](#repeating-time-triggers).
 - Runs on record create/edit for models registered under the workflow feature registry (core models such as users, departments, and holidays, plus any app that calls `register_model_for_feature` with workflow enabled).
 
 **Owner resolution for `assign_task` actions** tries common owner FK names in order: `owner`, `assigned_to`, `created_by`, then `lead_owner` for legacy CRM models.
@@ -50,6 +50,21 @@ An `action_type` that is neither a built-in nor registered (the channel's app wa
 **Forms and views.** `ActionConfigMixin` adds the hidden fields `channel_template_id`, `channel_to` and `channel_also_send_to` and stores them as `{template_id, to, also_send_to}` for a channel action. `clean()` refuses a key that is not a built-in or not available to the rule's company (`is_available(company)`), and a channel action without its template. The action and time-trigger modals list `action_type_choices` from the registry; `WorkflowActionFieldsView` returns the channel block for an offered channel (template list by template kind, **To** from `channel.get_recipient_choices(model)`, **Also send to** users) and nothing for any other key. Editing an action whose channel is no longer offered keeps its key in the picker so it is not changed silently.
 
 **Adding a channel** is the same as for Automations: a `DeliveryChannel` registered from another app's `registration.py`. It appears in Workflow's action list with no change here and no migration.
+
+---
+
+## Repeating time triggers
+
+A time trigger can repeat: **Repeat (optional)** in the time-trigger modal sets **Every** `repeat_every_value` `repeat_every_unit` (minutes, hours or days, migration `0007`). Empty, the default and the value of every time trigger saved before, runs once. For example, "1 day after the rule trigger date, create a task for the owner, repeat every 1 day" on a rule with the criteria "Stage is Proposal" creates the task each day while the opportunity stays in that stage.
+
+- **Next run.** When a run of a repeating time trigger completes, `execute_workflow_time_trigger()` calls `methods.schedule_next_repeat(execution)`, which adds the next `ScheduledWorkflowExecution` (status **pending**) one interval after the run's own `scheduled_at`. A worker that runs late does not shift the times. A run that is late by more than one interval (the worker was down) goes to the next time still ahead, so the missed runs are not sent in a burst. The rule page shows "Repeats every …" under the time trigger, and each run is a row of the time-trigger history.
+- **A run that fails** (the action raised, for example a provider error) still schedules the next one, so one error does not end the repeat. A run whose action type is no longer a built-in or a registered channel, or whose record no longer exists, schedules nothing.
+- **The repeat ends by itself** when a run is skipped (see [Time triggers at fire time](#actions-and-delivery-channels)): the record no longer meets the rule's criteria, or the rule or the time trigger is inactive. A skipped run schedules nothing. With **When Record Is Edited**, an edit that takes the record out of the criteria marks the pending run **skipped** at once (see below), and an edit back into them starts a new repeat from the new entry. Turning the rule or the time trigger back on does not restart a repeat that was skipped; the record must enter the criteria again.
+- **One repeat per record.** A record has at most one pending run of a repeating time trigger: when the rule fires again while one is waiting (for example a rule without criteria, run on every edit), `_schedule_time_triggers()` adds no second chain, and `schedule_next_repeat()` adds nothing either.
+- **A rule without criteria** repeats while the rule and the time trigger are active.
+- Clearing **Every** on a time trigger with a pending run lets that run happen and schedules no more.
+
+**Query cost.** A repeating run adds one `exists()` and one `INSERT` after it completes. Scheduling a repeating time trigger when the rule fires adds one `exists()`. Time triggers that do not repeat add nothing.
 
 ---
 

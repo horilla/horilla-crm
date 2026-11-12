@@ -274,6 +274,8 @@ class WorkflowTimeTriggerActionForm(ActionConfigMixin, forms.ModelForm):
             "delay_unit",
             "delay_direction",
             "trigger_date_field",
+            "repeat_every_value",
+            "repeat_every_unit",
             "action_type",
             "order",
         ]
@@ -310,6 +312,24 @@ class WorkflowTimeTriggerActionForm(ActionConfigMixin, forms.ModelForm):
                     "style": "width: auto;",
                 }
             ),
+            "repeat_every_value": forms.NumberInput(
+                attrs={
+                    "class": _INPUT_CLASS,
+                    "id": "tt-repeat-value",
+                    "min": "1",
+                }
+            ),
+            "repeat_every_unit": forms.Select(
+                attrs={
+                    "class": (
+                        "js-example-basic-single headselect text-color-600 px-2 py-1 "
+                        "border border-dark-50 rounded-md focus-visible:outline-0 "
+                        "text-xs [transition:.3s] focus:border-primary-600"
+                    ),
+                    "id": "tt-repeat-unit",
+                    "style": "width: auto;",
+                }
+            ),
             "trigger_date_field": forms.Select(
                 attrs={
                     "class": "w-full text-sm border border-dark-50 rounded-md p-2 focus-visible:outline-0 focus:border-primary-600 text-color-600",
@@ -325,4 +345,10 @@ class WorkflowTimeTriggerActionForm(ActionConfigMixin, forms.ModelForm):
         if date_field_choices:
             choices += date_field_choices
         self.fields["trigger_date_field"].widget.choices = choices
+        # The unit only matters with a repeat value; empty means days.
+        self.fields["repeat_every_unit"].required = False
         self._seed_action_config_initials()
+
+    def clean_repeat_every_unit(self):
+        """The repeat unit, ``days`` when none is posted."""
+        return self.cleaned_data.get("repeat_every_unit") or "days"

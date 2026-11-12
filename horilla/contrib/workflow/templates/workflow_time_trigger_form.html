@@ -46,6 +46,27 @@
                     </p>{% endif %}
             </div>
 
+            {# ── Repeat row (optional) ─────────────────────────────────────── #}
+            <div class="mb-4">
+                <label class="text-xs font-medium text-color-600 block mb-2" for="tt-repeat-value">{% trans "Repeat (optional)" %}</label>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-color-600">{% trans "Every" %}</span>
+                    <input
+                        type="number"
+                        name="repeat_every_value"
+                        id="tt-repeat-value"
+                        min="1"
+                        value="{{ form.repeat_every_value.value|default_if_none:'' }}"
+                        class="w-20 text-sm border border-dark-50 rounded-md p-2 focus-visible:outline-0 focus:border-primary-600 text-color-600"
+                    >
+                    {{ form.repeat_every_unit }}
+                </div>
+                <p class="text-xs text-dark-200 mt-1">{% trans "Leave empty to run once. A repeat runs while the record still meets the rule's criteria and stops when it leaves them." %}</p>
+                {% if form.repeat_every_value.errors %}<p class="text-xs text-red-600 mt-1">
+                        {{ form.repeat_every_value.label }}: {{ form.repeat_every_value.errors|join:", " }}
+                    </p>{% endif %}
+            </div>
+
             {# ── Action type ───────────────────────────────────────────────── #}
             <div class="flex flex-col gap-1 mb-4">
                 <label class="text-xs font-medium text-color-600">{% trans "Action Type" %}</label>
@@ -94,6 +115,7 @@
             $("#tt-trigger-date-field").select2({ width: "100%", minimumResultsForSearch: Infinity });
             $("#tt-delay-unit").select2({ width: "auto", minimumResultsForSearch: Infinity });
             $("#tt-delay-direction").select2({ width: "auto", minimumResultsForSearch: Infinity });
+            $("#tt-repeat-unit").select2({ width: "auto", minimumResultsForSearch: Infinity });
         }
     })();
 </script>

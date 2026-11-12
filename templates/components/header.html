@@ -5,18 +5,188 @@
             id="header-search"
             type="text"
             name="q"
+            autocomplete="off"
+            {% if request.resolver_match.url_name == 'global_search' %}value="{{ request.GET.q }}"{% endif %}
             placeholder="{% trans 'Search Anything...' %}"
             class="w-full h-9 ps-9 pe-3 rounded-lg border border-dark-50 bg-slate-50 text-[13px] text-slate-800 placeholder:text-slate-400 outline-none focus:bg-white focus:ring-2 focus:ring-primary-100 transition"
-            hx-get="{% url 'generics:global_search' %}?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.filter %}filter={{ request.GET.filter }}&{% endif %}{% if request.GET.section %}section={{ request.GET.section }}&{% endif %}prev_url={{ request.get_full_path|remove_query_param:"section" }}"
-            hx-target="#mainContent"
-            hx-select="#mainContent"
-            hx-trigger="keyup changed delay:500ms"
-            hx-push-url="true"
-            hx-swap="outerHTML"
+            hx-get="{% url 'generics:global_search_suggest' %}?prev_url={{ request.get_full_path|remove_query_param:"section"|urlencode }}"
+            hx-target="#global-search-dd"
+            hx-swap="innerHTML"
+            hx-trigger="keyup[key!='Enter' && key!='Escape'] changed delay:250ms"
+            data-results-url="{% url 'generics:global_search' %}"
+            data-prev-url="{{ request.get_full_path|remove_query_param:"section" }}"
         >
         <i
             class="fas fa-search absolute start-[10px] top-[9px] text-dark-400"
         ></i>
+        <div
+            id="global-search-dd"
+            class="hidden absolute start-0 top-[42px] w-[340px] max-w-[90vw] max-h-[70vh] overflow-y-auto overflow-x-hidden bg-white border border-dark-50 rounded-lg shadow-card py-1 z-[60]"
+        ></div>
+        <template id="global-search-empty">
+            <div>
+                <div class="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-dark-400">
+                    {% trans "Quick Filters" %}
+                </div>
+                <a
+                    href="{% url 'generics:global_search' %}?qf=mine"
+                    class="flex items-center gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] text-slate-800 hover:bg-slate-100"
+                    hx-get="{% url 'generics:global_search' %}?qf=mine&prev_url={{ request.get_full_path|remove_query_param:"section"|urlencode }}"
+                    hx-target="#mainContent"
+                    hx-select="#mainContent"
+                    hx-swap="outerHTML"
+                    hx-push-url="true"
+                >
+                    <i class="fas fa-user w-4 text-center text-xs text-primary-600"></i>{% trans "My Records" %}
+                </a>
+                <a
+                    href="{% url 'generics:global_search' %}?qf=today"
+                    class="flex items-center gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] text-slate-800 hover:bg-slate-100"
+                    hx-get="{% url 'generics:global_search' %}?qf=today&prev_url={{ request.get_full_path|remove_query_param:"section"|urlencode }}"
+                    hx-target="#mainContent"
+                    hx-select="#mainContent"
+                    hx-swap="outerHTML"
+                    hx-push-url="true"
+                >
+                    <i class="fas fa-calendar-day w-4 text-center text-xs text-primary-600"></i>{% trans "Created Today" %}
+                </a>
+                <a
+                    href="{% url 'generics:global_search' %}?qf=yesterday"
+                    class="flex items-center gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] text-slate-800 hover:bg-slate-100"
+                    hx-get="{% url 'generics:global_search' %}?qf=yesterday&prev_url={{ request.get_full_path|remove_query_param:"section"|urlencode }}"
+                    hx-target="#mainContent"
+                    hx-select="#mainContent"
+                    hx-swap="outerHTML"
+                    hx-push-url="true"
+                >
+                    <i class="fas fa-calendar-minus w-4 text-center text-xs text-primary-600"></i>{% trans "Created Yesterday" %}
+                </a>
+                <a
+                    href="{% url 'generics:global_search' %}?qf=week"
+                    class="flex items-center gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] text-slate-800 hover:bg-slate-100"
+                    hx-get="{% url 'generics:global_search' %}?qf=week&prev_url={{ request.get_full_path|remove_query_param:"section"|urlencode }}"
+                    hx-target="#mainContent"
+                    hx-select="#mainContent"
+                    hx-swap="outerHTML"
+                    hx-push-url="true"
+                >
+                    <i class="fas fa-calendar-week w-4 text-center text-xs text-primary-600"></i>{% trans "Created This Week" %}
+                </a>
+                <a
+                    href="{% url 'generics:global_search' %}?qf=month"
+                    class="flex items-center gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] text-slate-800 hover:bg-slate-100"
+                    hx-get="{% url 'generics:global_search' %}?qf=month&prev_url={{ request.get_full_path|remove_query_param:"section"|urlencode }}"
+                    hx-target="#mainContent"
+                    hx-select="#mainContent"
+                    hx-swap="outerHTML"
+                    hx-push-url="true"
+                >
+                    <i class="fas fa-calendar-alt w-4 text-center text-xs text-primary-600"></i>{% trans "Created This Month" %}
+                </a>
+            </div>
+        </template>
+        <script>
+            (function () {
+              var input = document.getElementById("header-search");
+              var dd = document.getElementById("global-search-dd");
+              var tpl = document.getElementById("global-search-empty");
+              if (!input || !dd || input.dataset.ready) return;
+              input.dataset.ready = "1";
+              var KEY = "horilla_recent_searches";
+              var LABELS = {recent: "{% trans 'Recent Searches' %}", clear: "{% trans 'Clear' %}"};
+
+              function getRecent() {
+                try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; }
+              }
+              function saveRecent(q) {
+                q = (q || "").trim();
+                if (q.length < 2) return;
+                var list = getRecent().filter(function (x) { return x.toLowerCase() !== q.toLowerCase(); });
+                list.unshift(q);
+                try { localStorage.setItem(KEY, JSON.stringify(list.slice(0, 5))); } catch (e) {}
+              }
+              function sync() {
+                dd.classList.toggle("hidden", !dd.innerHTML.trim());
+              }
+              function renderEmpty() {
+                dd.innerHTML = "";
+                var recent = getRecent();
+                if (recent.length) {
+                  var head = document.createElement("div");
+                  head.className = "flex justify-between px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-dark-400";
+                  var t = document.createElement("span");
+                  t.textContent = LABELS.recent;
+                  var clear = document.createElement("button");
+                  clear.type = "button";
+                  clear.dataset.clearRecent = "1";
+                  clear.className = "normal-case tracking-normal font-medium text-primary-600";
+                  clear.textContent = LABELS.clear;
+                  head.appendChild(t);
+                  head.appendChild(clear);
+                  dd.appendChild(head);
+                  recent.forEach(function (q) {
+                    var row = document.createElement("button");
+                    row.type = "button";
+                    row.dataset.recent = q;
+                    row.className = "flex w-[calc(100%-0.5rem)] items-center gap-2 px-3 py-1.5 mx-1 rounded-md text-start text-[13px] text-slate-800 hover:bg-slate-100";
+                    var ic = document.createElement("i");
+                    ic.className = "fas fa-history text-xs text-dark-400";
+                    var tx = document.createElement("span");
+                    tx.className = "truncate";
+                    tx.textContent = q;
+                    row.appendChild(ic);
+                    row.appendChild(tx);
+                    dd.appendChild(row);
+                  });
+                }
+                dd.appendChild(tpl.content.cloneNode(true));
+                if (window.htmx) window.htmx.process(dd);
+                sync();
+              }
+
+              dd.addEventListener("htmx:afterSwap", sync);
+              input.addEventListener("input", function () {
+                if (input.value.trim().length < 2) renderEmpty();
+              });
+              input.addEventListener("focus", function () {
+                if (input.value.trim().length < 2) renderEmpty(); else sync();
+              });
+              input.addEventListener("keydown", function (e) {
+                var q = input.value.trim();
+                if (e.key === "Escape") {
+                  dd.classList.add("hidden");
+                } else if (e.key === "Enter" && q) {
+                  e.preventDefault();
+                  saveRecent(q);
+                  var url = input.dataset.resultsUrl + "?q=" + encodeURIComponent(q) +
+                    "&prev_url=" + encodeURIComponent(input.dataset.prevUrl);
+                  dd.classList.add("hidden");
+                  window.location.href = url;
+                }
+              });
+              dd.addEventListener("click", function (e) {
+                var rec = e.target.closest("[data-recent]");
+                if (rec) {
+                  input.value = rec.dataset.recent;
+                  input.focus();
+                  if (window.htmx) window.htmx.trigger(input, "keyup");
+                  return;
+                }
+                if (e.target.closest("[data-clear-recent]")) {
+                  try { localStorage.removeItem(KEY); } catch (err) {}
+                  renderEmpty();
+                  return;
+                }
+                if (e.target.closest("a")) {
+                  saveRecent(input.value);
+                  dd.classList.add("hidden");
+                }
+              });
+              document.addEventListener("click", function (e) {
+                if (!input.parentElement.contains(e.target)) dd.classList.add("hidden");
+              });
+            })();
+        </script>
     </div>
 
     <div class="flex items-center gap-4">

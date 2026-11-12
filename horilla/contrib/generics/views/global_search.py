@@ -6,30 +6,36 @@ search results and model-specific tabs for the generic global search UI.
 """
 
 # Standard library imports
-import re
-from functools import reduce
-from operator import or_
+import logging
 from urllib.parse import parse_qs, unquote, urlencode, urlparse, urlunparse
 
 # Third-party imports (Django)
 from django.template.loader import render_to_string
-from django.utils.safestring import mark_safe
 
 from horilla.apps import apps
 
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
+
+# Local imports
+from horilla.contrib.generics.search_support import (
+    PRESET_FILTER_LABELS,
+    apply_preset_filter,
+    build_field_labels,
+    resolve_lookup_label,
+)
 from horilla.contrib.utils.methods import get_section_info_for_model
-from horilla.db.models import CharField, ForeignKey, ManyToManyField, Q, TextField
-from horilla.registry.feature import FEATURE_REGISTRY
+from horilla.db.models import CharField, Q, TextField
+from horilla.registry.feature import FEATURE_REGISTRY, get_feature_options
 from horilla.shortcuts import redirect, render
 from horilla.urls import reverse_lazy
-from horilla.utils.html import escape
 from horilla.views.generic import View
 from horilla.web import HttpResponse, safe_url
 
-# Local imports
+from .helpers.queryset_utils import filter_viewable_queryset
 from .list import HorillaListView
+
+logger = logging.getLogger(__name__)
 
 
 class GlobalSearchView(LoginRequiredMixin, View):
@@ -62,16 +68,10 @@ class GlobalSearchView(LoginRequiredMixin, View):
         "password",
     ]
 
-    default_max_results = 3
     default_icons = {
         "bg_color": "bg-blue-100",
         "text_color": "text-blue-600",
         "icon": "fas fa-table",
-    }
-    default_status_colors = {
-        "active": "green",
-        "inactive": "red",
-        "pending": "yellow",
     }
 
     def get_first_5_text_columns(self, model):
@@ -96,6 +96,99 @@ class GlobalSearchView(LoginRequiredMixin, View):
                     break
 
         return columns
+
+    quick_filter_labels = PRESET_FILTER_LABELS
+
+    def apply_quick_filter(self, model, queryset, request):
+        """
+        Narrow a queryset by the ``qf`` quick filter (see ``PRESET_FILTER_LABELS``).
+
+        Models that cannot satisfy a filter return nothing so they drop out of the
+        results.
+        """
+        return apply_preset_filter(model, queryset, request.user, request.GET.get("qf"))
+
+    @staticmethod
+    def build_search_q(config, query, field=None):
+        """
+        Build the OR query for a model's search fields.
+
+        When ``field`` is one of the model's search fields, only that field is
+        searched; otherwise every search field is used.
+        """
+        fields = (
+            [field] if field in config["search_fields"] else config["search_fields"]
+        )
+        q_objects = Q()
+        for name in fields:
+            q_objects |= Q(**{f"{name}__icontains": query})
+        return q_objects
+
+    def get_configured_fields(self, model):
+        """
+        Search fields, result columns and field labels for a model.
+
+        Uses the model's global_search feature options (``search_fields`` and
+        ``columns``, see horilla.registry.feature) and falls back to the first 5 text fields for
+        anything not configured. Invalid names are logged and skipped.
+        """
+        settings = get_feature_options("global_search", model)
+
+        search_fields = []
+        custom_labels = {}
+        for entry in settings.get("search_fields") or []:
+            # An entry is "lookup" or ("Label", "lookup").
+            custom_label, lookup = (
+                entry if isinstance(entry, (list, tuple)) else (None, entry)
+            )
+            if resolve_lookup_label(model, lookup) is None:
+                logger.warning(
+                    "Global search: '%s' is not a field of %s; ignored.",
+                    lookup,
+                    model.__name__,
+                )
+                continue
+            search_fields.append(lookup)
+            if custom_label:
+                custom_labels[lookup] = str(custom_label)
+
+        labels = build_field_labels(model, search_fields)
+        labels.update(custom_labels)
+
+        if not search_fields:
+            for field in model._meta.fields:
+                if (
+                    isinstance(field, (CharField, TextField))
+                    and field.name not in self.exclude_standard_fields
+                    and not field.auto_created
+                    and not field.is_relation
+                ):
+                    search_fields.append(field.name)
+                    labels[field.name] = str(field.verbose_name)
+                    if len(search_fields) >= 5:
+                        break
+
+        columns = []
+        for entry in settings.get("columns") or []:
+            label, name = entry if isinstance(entry, (list, tuple)) else (None, entry)
+            try:
+                field = model._meta.get_field(name)
+            except Exception:
+                logger.warning(
+                    "Global search: column '%s' is not a field of %s; ignored.",
+                    name,
+                    model.__name__,
+                )
+                continue
+            columns.append([label or str(field.verbose_name), name])
+
+        if not columns:
+            direct = [
+                [labels[name], name] for name in search_fields if "__" not in name
+            ]
+            columns = direct[:5] or self.get_first_5_text_columns(model)
+
+        return search_fields, columns, labels
 
     def get_dynamic_model_config(self):
         """
@@ -123,160 +216,23 @@ class GlobalSearchView(LoginRequiredMixin, View):
             if model_name.lower() not in include_models_lower:
                 continue
 
-            # Get FIRST 5 searchable fields (CharField and TextField only)
-            search_fields = []
-            for field in model._meta.fields:
-                if (
-                    isinstance(field, (CharField, TextField))
-                    and field.name not in self.exclude_standard_fields
-                    and not field.auto_created
-                    and not field.is_relation
-                ):
-                    search_fields.append(field.name)
+            search_fields, display_columns, field_labels = self.get_configured_fields(
+                model
+            )
 
-                    if len(search_fields) >= 5:
-                        break
-
-            if not search_fields:
+            if not search_fields or not display_columns:
                 continue
-
-            display_columns = self.get_first_5_text_columns(model)
-
-            if not display_columns:
-                continue
-
-            display_field_name = search_fields[0] if search_fields else "id"
-
-            def display_field(x, field=display_field_name):
-                return getattr(x, field, str(x))
-
-            summary_fields = search_fields[:3]
 
             model_config[model_name] = {
                 "app_name": app_label,
                 "search_fields": search_fields,
-                "display_field": display_field,
-                "summary_fields": summary_fields,
                 "icons": self.default_icons,
-                "max_results": self.default_max_results,
-                "model": model,
                 "columns": display_columns,
+                "field_labels": field_labels,
                 "verbose_name": model_verbose_name,
             }
 
         return model_config
-
-    def get_filtered_queryset(self, model, base_queryset, request):
-        """
-        Filter queryset based on user permissions.
-        If user has full view permission, return all records.
-        If user only has view_own permission, return records owned by user or subordinates.
-        """
-        from horilla.contrib.core.utils import get_allowed_user_ids
-
-        user = request.user
-        app_label = model._meta.app_label
-        model_name = model._meta.model_name
-
-        full_view_perm = f"{app_label}.view_{model_name}"
-        view_own_perm = f"{app_label}.view_own_{model_name}"
-
-        if user.has_perm(full_view_perm):
-            return base_queryset
-
-        if user.has_perm(view_own_perm):
-            allowed_ids = get_allowed_user_ids(user)
-            owner_fields = getattr(model, "OWNER_FIELDS", None)
-
-            if owner_fields:
-                queries = []
-                for field_name in owner_fields:
-                    try:
-                        field = model._meta.get_field(field_name)
-
-                        if isinstance(field, ForeignKey):
-                            related_model = field.related_model
-                            if (
-                                related_model._meta.model_name.lower()
-                                in ["user", "employee"]
-                                or related_model == user.__class__
-                                or related_model._meta.label_lower == "auth.user"
-                            ):
-                                queries.append(Q(**{f"{field_name}__in": allowed_ids}))
-                        elif isinstance(field, ManyToManyField):
-                            related_model = field.related_model
-                            # Only add if it points to User model
-                            if (
-                                related_model._meta.model_name.lower()
-                                in ["user", "employee"]
-                                or related_model == user.__class__
-                                or related_model._meta.label_lower == "auth.user"
-                            ):
-                                queries.append(Q(**{f"{field_name}__in": allowed_ids}))
-                        # Handle direct fields (non-relational)
-                        elif not field.is_relation:
-                            queries.append(Q(**{f"{field_name}__in": allowed_ids}))
-                    except Exception:
-                        # Skip fields that cause errors
-                        continue
-
-                from .helpers.queryset_utils import get_granted_access_filter
-
-                granted_query = get_granted_access_filter(model, user, "view")
-                if granted_query is not None:
-                    queries.append(granted_query)
-
-                if queries:
-                    # Use reduce with OR to combine multiple ownership fields
-                    combined_query = reduce(or_, queries)
-                    return base_queryset.filter(combined_query).distinct()
-
-                # If no valid ownership fields, return empty queryset
-                return base_queryset.none()
-
-            # else:
-            # Fallback to common ownership field patterns
-            ownership_fields = ["created_by", "user", "owner", "employee_id"]
-
-            queries = []
-            for field_name in ownership_fields:
-                try:
-                    field = model._meta.get_field(field_name)
-
-                    # Handle ForeignKey fields
-                    if isinstance(field, ForeignKey):
-                        related_model = field.related_model
-                        if (
-                            related_model._meta.model_name.lower()
-                            in ["user", "employee"]
-                            or related_model == user.__class__
-                            or related_model._meta.label_lower == "auth.user"
-                        ):
-                            queries.append(Q(**{f"{field_name}__in": allowed_ids}))
-                    # Handle ManyToManyField
-                    elif isinstance(field, ManyToManyField):
-                        related_model = field.related_model
-                        if (
-                            related_model._meta.model_name.lower()
-                            in ["user", "employee"]
-                            or related_model == user.__class__
-                            or related_model._meta.label_lower == "auth.user"
-                        ):
-                            queries.append(Q(**{f"{field_name}__in": allowed_ids}))
-                    # Handle direct fields
-                    elif not field.is_relation:
-                        queries.append(Q(**{f"{field_name}__in": allowed_ids}))
-                except Exception:
-                    continue
-
-            if queries:
-                # Combine all queries with OR
-                combined_query = reduce(or_, queries)
-                return base_queryset.filter(combined_query).distinct()
-
-            return base_queryset.none()
-
-        return base_queryset.none()
 
     def get_tab_content(self, request, model_name, query):
         """Generate tab content for a specific model"""
@@ -288,48 +244,12 @@ class GlobalSearchView(LoginRequiredMixin, View):
         config = model_config[model_name]
         model = apps.get_model(config["app_name"], model_name)
 
-        q_objects = Q()
-        for field in config["search_fields"]:
-            q_objects |= Q(**{f"{field}__icontains": query})
+        q_objects = self.build_search_q(config, query, request.GET.get("field"))
 
         results = model.objects.filter(q_objects)
 
-        results = self.get_filtered_queryset(model, results, request)
-
-        def highlight_text(text):
-            if not text:
-                return text
-            escaped_text = escape(str(text))
-            escaped_query = escape(query)
-            return mark_safe(
-                re.sub(
-                    f"({re.escape(escaped_query)})",
-                    r'<span class="bg-yellow-200">\1</span>',
-                    str(escaped_text),
-                    flags=re.IGNORECASE,
-                )
-            )
-
-        for item in results:
-            item.display_name = highlight_text(config["display_field"](item))
-            summary_parts = []
-
-            for field in config["summary_fields"]:
-                value = getattr(item, field, None)
-                if value is not None and str(value).strip():
-                    if field == "amount":
-                        value = f"${value:,.0f}"
-                    elif field == "close_date":
-                        value = (
-                            value.strftime("%b %Y")
-                            if hasattr(value, "strftime")
-                            else value
-                        )
-                    elif field == "open_rate":
-                        value = f"{value}%"
-                    summary_parts.append(highlight_text(value))
-
-            item.summary = " • ".join(str(part) for part in summary_parts if part)
+        results = filter_viewable_queryset(request.user, model, results)
+        results = self.apply_quick_filter(model, results, request)
 
         list_view = HorillaListView()
         list_view.request = request
@@ -344,9 +264,18 @@ class GlobalSearchView(LoginRequiredMixin, View):
         list_view.list_column_visibility = False
         list_view.columns = config["columns"]
 
-        if config["columns"] and hasattr(model, "get_detail_url"):
+        # Models expose their detail page as get_detail_url or get_detail_view_url.
+        detail_attr = next(
+            (
+                name
+                for name in ("get_detail_url", "get_detail_view_url")
+                if hasattr(model, name)
+            ),
+            None,
+        )
+        if config["columns"] and detail_attr:
             first_column_field = config["columns"][0][1]
-            htmx_attrs = self.get_col_attrs_for_model(model_name, request)
+            htmx_attrs = self.get_col_attrs_for_model(model_name, request, detail_attr)
             list_view.col_attrs = [
                 {
                     first_column_field: {
@@ -420,7 +349,11 @@ class GlobalSearchView(LoginRequiredMixin, View):
             except Exception:
                 previous_url = request.session.get("pre_search_url", "/")
 
-        if not query:
+        quick_filter = request.GET.get("qf")
+        if quick_filter not in self.quick_filter_labels:
+            quick_filter = ""
+
+        if not query and not quick_filter:
             section = request.GET.get("section")
             if section:
                 # Add section back to previous_url
@@ -436,25 +369,25 @@ class GlobalSearchView(LoginRequiredMixin, View):
 
         if request.headers.get("HX-Request"):
             tab_model = request.GET.get("tab_model")
-            if tab_model and query:
+            if tab_model and (query or quick_filter):
                 return HttpResponse(self.get_tab_content(request, tab_model, query))
 
         model_config = self.get_dynamic_model_config()
 
         context = {
             "query": query,
-            "filter": filter_type,
+            "quick_filter": quick_filter,
+            "quick_filter_label": self.quick_filter_labels.get(quick_filter, ""),
             "total_results": 0,
             "model_config": model_config,
             "search_results": {},
-            "search_results_with_data": {},
             "first_tab_content": "",
             "previous_url": previous_url,
         }
 
-        if query:
-            search_results = {}
-            search_results_with_data = {}
+        if query or quick_filter:
+            result_counts = {}
+            results_by_model = {}
             total_results = 0
             first_tab_content = ""
             first_model_name = None
@@ -462,24 +395,23 @@ class GlobalSearchView(LoginRequiredMixin, View):
             for model_name, config in model_config.items():
                 model = apps.get_model(config["app_name"], model_name)
 
-                q_objects = Q()
-                for field in config["search_fields"]:
-                    q_objects |= Q(**{f"{field}__icontains": query})
+                q_objects = self.build_search_q(config, query, request.GET.get("field"))
 
                 results = model.objects.filter(q_objects)
 
-                results = self.get_filtered_queryset(model, results, request)
+                results = filter_viewable_queryset(request.user, model, results)
+                results = self.apply_quick_filter(model, results, request)
 
-                search_results[model_name] = results
-
-                if results.count() > 0:
-                    search_results_with_data[model_name] = results
-                    total_results += results.count()
+                count = results.count()
+                if count > 0:
+                    results_by_model[model_name] = results
+                    result_counts[model_name] = count
+                    total_results += count
 
             sorted_search_results_with_data = dict(
                 sorted(
-                    search_results_with_data.items(),
-                    key=lambda x: x[1].count(),
+                    results_by_model.items(),
+                    key=lambda item: result_counts[item[0]],
                     reverse=True,
                 )
             )
@@ -492,10 +424,7 @@ class GlobalSearchView(LoginRequiredMixin, View):
 
             if filter_type != "all":
                 model_name_filtered = filter_type.capitalize()
-                if (
-                    model_name_filtered in sorted_search_results_with_data
-                    and sorted_search_results_with_data[model_name_filtered].count() > 0
-                ):
+                if model_name_filtered in sorted_search_results_with_data:
                     sorted_search_results_with_data = {
                         model_name_filtered: sorted_search_results_with_data[
                             model_name_filtered
@@ -513,16 +442,16 @@ class GlobalSearchView(LoginRequiredMixin, View):
             context.update(
                 {
                     "search_results": sorted_search_results_with_data,
-                    "search_results_with_data": sorted_search_results_with_data,
                     "total_results": total_results,
                     "first_tab_content": first_tab_content,
-                    "first_model_name": first_model_name,
                 }
             )
 
         return render(request, self.template_name, context)
 
-    def get_col_attrs_for_model(self, model_name, request):
+    def get_col_attrs_for_model(
+        self, model_name, request, detail_attr="get_detail_url"
+    ):
         """Generate col_attrs for the first column of each model"""
         query_params = request.GET.dict()
         filtered_params = {}
@@ -530,13 +459,15 @@ class GlobalSearchView(LoginRequiredMixin, View):
             filtered_params["q"] = query_params["q"]
         if "filter" in query_params:
             filtered_params["filter"] = query_params["filter"]
-        if "section" in query_params:
-            section = get_section_info_for_model(model_name)
+        # Always open the detail page inside its own section so the section's
+        # side menu loads, even when the search was started without a section.
+        section = get_section_info_for_model(model_name)
+        if section.get("section"):
             filtered_params["section"] = section["section"]
         query_string = urlencode(filtered_params)
 
         htmx_attrs = {
-            "hx-get": f"{{get_detail_url}}?{query_string}",
+            "hx-get": f"{{{detail_attr}}}?{query_string}",
             "hx-target": "#mainContent",
             "hx-swap": "outerHTML",
             "hx-push-url": "true",
@@ -545,3 +476,74 @@ class GlobalSearchView(LoginRequiredMixin, View):
             "hx-on:click": "$('#header-search').val('')",
         }
         return htmx_attrs
+
+
+class GlobalSearchSuggestView(GlobalSearchView):
+    """
+    Live suggestions for the header search box.
+
+    Returns an HTML fragment with one row per model that has matches (with a
+    count). A model can be expanded to search a
+    single field of that model. Visibility follows ``filter_viewable_queryset`` so
+    users only see counts and records they are allowed to open.
+    """
+
+    template_name = "global_search_suggest.html"
+    min_query_length = 2
+
+    def get(self, request):
+        """Render the suggestion dropdown for the current query."""
+        query = request.GET.get("q", "").strip()
+        if len(query) < self.min_query_length:
+            return HttpResponse("")
+
+        expand = request.GET.get("expand", "")
+        model_config = self.get_dynamic_model_config()
+
+        rows = []
+        for model_name, config in model_config.items():
+            model = apps.get_model(config["app_name"], model_name)
+            queryset = filter_viewable_queryset(
+                request.user,
+                model,
+                model.objects.filter(self.build_search_q(config, query)),
+            )
+            count = queryset.count()
+            if not count:
+                continue
+
+            row = {
+                "name": model_name,
+                "filter": model_name.lower(),
+                "verbose_name": config["verbose_name"],
+                "count": count,
+                "expanded": model_name == expand,
+            }
+
+            if row["expanded"]:
+                row["fields"] = []
+                for field_name in config["search_fields"]:
+                    field_count = filter_viewable_queryset(
+                        request.user,
+                        model,
+                        model.objects.filter(
+                            self.build_search_q(config, query, field_name)
+                        ),
+                    ).count()
+                    row["fields"].append(
+                        {
+                            "name": field_name,
+                            "label": config["field_labels"].get(field_name, field_name),
+                            "count": field_count,
+                        }
+                    )
+            rows.append(row)
+
+        rows.sort(key=lambda r: r["count"], reverse=True)
+        context = {
+            "query": query,
+            "rows": rows,
+            "total": sum(r["count"] for r in rows),
+            "prev_url": request.GET.get("prev_url", "/"),
+        }
+        return render(request, self.template_name, context)

@@ -39,7 +39,10 @@ from horilla.contrib.generics.views.attachments import (
     HorillaNotesAttachmentCreateView,
     HorillaNotesAttachmentDeleteView,
 )
-from horilla.contrib.generics.views.global_search import GlobalSearchView
+from horilla.contrib.generics.views.global_search import (
+    GlobalSearchSuggestView,
+    GlobalSearchView,
+)
 from horilla.contrib.generics.views.related_list import (
     HorillaRelatedListSectionView,
     HorillaRelatedListContentView,
@@ -90,6 +93,7 @@ __all__ = [
     "HorillaNotesAttachmentDeleteView",
     # Global Search
     "GlobalSearchView",
+    "GlobalSearchSuggestView",
     # Related List
     "HorillaRelatedListSectionView",
     "HorillaRelatedListContentView",

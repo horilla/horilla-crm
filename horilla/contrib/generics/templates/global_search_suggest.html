@@ -1,0 +1,87 @@
+{% load i18n %}
+{% if rows %}
+    <div class="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-dark-400">
+        {% trans "Search" %}
+    </div>
+    <a
+        href="{% url 'generics:global_search' %}?q={{ query|urlencode }}"
+        class="flex items-center justify-between gap-2 px-3 py-2 mx-1 rounded-md text-[13px] text-slate-800 hover:bg-slate-100"
+        hx-get="{% url 'generics:global_search' %}?q={{ query|urlencode }}&prev_url={{ prev_url|urlencode }}"
+        hx-target="#mainContent"
+        hx-select="#mainContent"
+        hx-swap="outerHTML"
+        hx-push-url="true"
+    >
+        <span class="truncate">
+            {% trans "Search" %} <b>{% trans "All" %}</b> {% trans "for" %}: <i class="text-primary-600">{{ query }}</i>
+        </span>
+        <span class="shrink-0 text-xs bg-primary-600 text-white rounded-full px-2">{{ total }}</span>
+    </a>
+    <div class="border-t border-dark-50 my-1"></div>
+    <ul class="m-0 p-0 list-none">
+        {% for row in rows %}
+            <li>
+                <div class="flex items-center gap-1 px-2 py-1.5 hover:bg-slate-100 rounded-md mx-1">
+                    <button
+                        type="button"
+                        class="w-5 h-5 text-[10px] text-dark-400 hover:bg-slate-200 rounded"
+                        aria-label="{% trans 'Expand' %}"
+                        hx-get="{% url 'generics:global_search_suggest' %}?q={{ query|urlencode }}&prev_url={{ prev_url|urlencode }}{% if not row.expanded %}&expand={{ row.name }}{% endif %}"
+                        hx-target="#global-search-dd"
+                        hx-swap="innerHTML"
+                    >
+                        {% if row.expanded %}
+                            &#9660;
+                        {% else %}
+                            &#9654;
+                        {% endif %}
+                    </button>
+                    <a
+                        href="{% url 'generics:global_search' %}?q={{ query|urlencode }}&filter={{ row.filter }}"
+                        class="flex flex-1 items-center justify-between gap-2 text-[13px] text-slate-800 min-w-0"
+                        hx-get="{% url 'generics:global_search' %}?q={{ query|urlencode }}&filter={{ row.filter }}&prev_url={{ prev_url|urlencode }}"
+                        hx-target="#mainContent"
+                        hx-select="#mainContent"
+                        hx-swap="outerHTML"
+                        hx-push-url="true"
+                    >
+                        <span class="truncate">
+                            {% trans "Search" %} <b>{{ row.verbose_name|capfirst }}</b> {% trans "for" %}: <i class="text-primary-600">{{ query }}</i>
+                        </span>
+                        <span class="shrink-0 text-xs bg-slate-100 text-dark-400 rounded-full px-2">{{ row.count }}</span>
+                    </a>
+                </div>
+
+                {% if row.expanded %}
+                    <div class="ps-9 pe-3 pb-2">
+                        <div class="pt-0.5">
+                            {% for f in row.fields %}
+                                {% if f.count %}
+                                    <a
+                                        href="{% url 'generics:global_search' %}?q={{ query|urlencode }}&filter={{ row.filter }}&field={{ f.name }}"
+                                        class="flex justify-between gap-2 px-2 py-1 rounded-md text-[13px] text-slate-700 hover:bg-slate-100"
+                                        hx-get="{% url 'generics:global_search' %}?q={{ query|urlencode }}&filter={{ row.filter }}&field={{ f.name }}&prev_url={{ prev_url|urlencode }}"
+                                        hx-target="#mainContent"
+                                        hx-select="#mainContent"
+                                        hx-swap="outerHTML"
+                                        hx-push-url="true"
+                                    >
+                                        <span class="truncate">{% trans "Search" %} <b>{{ f.label|capfirst }}</b> {% trans "for" %}: <i class="text-primary-600">{{ query }}</i></span>
+                                        <span class="shrink-0 text-xs bg-slate-100 text-dark-400 rounded-full px-2">{{ f.count }}</span>
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="px-3 py-1.5 mt-1 border-t border-dark-50 text-xs text-dark-400">
+        {% trans "Press Enter to see all results" %}
+    </div>
+{% else %}
+    <div class="px-3 py-4 text-sm text-center text-dark-400">
+        {% trans "No results for" %} "{{ query }}"
+    </div>
+{% endif %}

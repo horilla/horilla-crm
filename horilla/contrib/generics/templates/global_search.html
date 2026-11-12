@@ -14,13 +14,13 @@
             <div class="p-5 flex-1 min-h-0 flex flex-col">
                 {% if total_results > 0 %}
                     <div class="flex gap-3 flex-1 min-h-0">
-                        <div class="flex-1 min-w-0 min-h-0 flex flex-col">
-                            <p class="mb-5 text-sm font-medium flex-shrink-0">
-                                {% trans "We searched for" %} "{{ query }}"
+                        <div class="relative flex-1 min-w-0 min-h-0 flex flex-col">
+                            <p class="mb-3 text-sm font-medium flex-shrink-0">
+                                {% if query %}{% trans "We searched for" %} "{{ query }}"{% endif %}{% if quick_filter_label %} {% if query %}&middot;{% endif %} {% trans quick_filter_label %}{% endif %}
                             </p>
 
                             <!-- Loading spinner -->
-                            <div id="loading-spinner" class="htmx-indicator flex justify-center py-4 flex-shrink-0">
+                            <div id="loading-spinner" class="htmx-indicator absolute inset-x-0 top-12 z-10 flex justify-center pointer-events-none">
                                 {% spinner %}
                             </div>
 
@@ -34,22 +34,18 @@
                         <div class="w-[250px] overflow-hidden overflow-x-auto flex-shrink-0 h-full overflow-y-auto">
                             <div class="bg-[#25c32417] border border-[#25c32429] text-[#21b320] font-medium text-sm px-3 py-1.5 flex gap-4 items-center justify-center rounded-md mb-2">
                                 <span>
-                                    Search : {{ query }}
+                                    {% if query %}Search : {{ query }}{% else %}{{ quick_filter_label }}{% endif %}
                                 </span>
-                                <button
-                                    hx-get="{{ previous_url|default:'/' }}?section={{ request.GET.section }}"
-                                    hx-target="#mainContent"
-                                    hx-select="#mainContent"
-                                    hx-push-url="true"
-                                    hx-on:click="$('#header-search').val('')"
-                                    hx-swap="outerHTML"
-                                >
+                                <a
+                                    href="{{ previous_url|default:'/' }}"
+                                    title="{% trans 'Clear search' %}"
+                                    >
                                     <img
                                         src="{% static 'assets/icons/close1.svg' %}"
                                         alt="{% trans 'Cancel' %}"
                                         width="10"
                                     >
-                                </button>
+                                </a>
                             </div>
                             <ul
                                 id="custom-tabs"
@@ -59,7 +55,7 @@
                                     <li class="mb-0">
                                         <button
                                             type="button"
-                                            hx-get="{% url 'generics:global_search' %}?q={{ query|urlencode }}&tab_model={{ model_name }}{% if request.GET.section %}&section={{ request.GET.section }}{% endif %}"
+                                            hx-get="{% url 'generics:global_search' %}?q={{ query|urlencode }}&tab_model={{ model_name }}{% if quick_filter %}&qf={{ quick_filter }}{% endif %}{% if request.GET.section %}&section={{ request.GET.section }}{% endif %}"
                                             hx-target="#tab-content"
                                             hx-indicator="#loading-spinner"
                                             class="tab-btn items-center p-2 rounded-md {% if forloop.first %}text-white bg-primary-600{% else %}bg-transparent text-[#3d3d3d]{% endif %} w-full flex gap-3"
@@ -86,25 +82,23 @@
                     </div>
                 {% else %}
                     <div class="flex justify-between">
-                        <p class="mb-5 text-sm font-medium">{% trans "We searched for" %} "{{ query }}"</p>
+                        <p class="mb-5 text-sm font-medium">
+                            {% if query %}{% trans "We searched for" %} "{{ query }}"{% endif %}{% if quick_filter_label %} {% if query %}&middot;{% endif %} {% trans quick_filter_label %}{% endif %}
+                        </p>
                         <div class="bg-[#25c32417] border border-[#25c32429] text-[#21b320] font-medium text-sm px-3 py-1.5 flex gap-4 items-center justify-center rounded-md mb-2">
                             <span>
-                                Search : {{ query }}
+                                {% if query %}Search : {{ query }}{% else %}{% trans quick_filter_label %}{% endif %}
                             </span>
-                            <button
-                                hx-get="{{ previous_url|default:'/' }}"
-                                hx-target="#mainContent"
-                                hx-select="#mainContent"
-                                hx-push-url="true"
-                                hx-swap="outerHTML"
-                                hx-on:click="$('#header-search').val('')"
+                            <a
+                                href="{{ previous_url|default:'/' }}"
+                                title="{% trans 'Clear search' %}"
                             >
                                 <img
                                     src="{% static 'assets/icons/close1.svg' %}"
                                     alt="{% trans 'Cancel' %}"
                                     width="10"
                                 >
-                            </button>
+                            </a>
                         </div>
                     </div>
                     <img
@@ -113,7 +107,7 @@
                         class="w-60 m-auto mb-4 mt-5"
                     >
                     <p class="text-sm text-center mb-3">
-                        {% trans "No search results found" %}.
+                        {% if quick_filter_label and not query %}{% trans "No records match this filter" %}{% else %}{% trans "No search results found" %}{% endif %}.
                     </p>
                 {% endif %}
             </div>

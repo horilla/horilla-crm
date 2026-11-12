@@ -126,6 +126,11 @@ urlpatterns = [
     ),
     path("search/", views.GlobalSearchView.as_view(), name="global_search"),
     path(
+        "search/suggest/",
+        views.GlobalSearchSuggestView.as_view(),
+        name="global_search_suggest",
+    ),
+    path(
         "user-picker-modal/<str:app_label>/<str:model_name>/",
         views.helpers.UserPickerModalView.as_view(),
         name="user_picker_modal",

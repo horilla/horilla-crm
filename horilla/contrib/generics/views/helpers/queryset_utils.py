@@ -5,11 +5,12 @@ import logging
 from functools import reduce
 from operator import or_
 
+# Third-party imports (Django)
+from django.contrib.auth import get_user_model
+
 from horilla.contrib.generics.forms.condition_fields import get_extension_condition_q
 from horilla.contrib.generics.related_fields import resolve_field_path
-
-# Third-party imports (Django)
-from horilla.db.models import Q
+from horilla.db.models import ForeignKey, ManyToManyField, Q
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ __all__ = [
     "apply_conditions",
     "get_queryset_for_module",
     "get_viewable_queryset",
+    "filter_viewable_queryset",
     "get_granted_access_filter",
     "user_has_granted_access",
 ]
@@ -121,6 +123,85 @@ def get_viewable_queryset(user, model):
     # outer queryset: report code calls .values(*fields) on the result, and an
     # outer DISTINCT would merge different records with equal column values.
     return model.objects.filter(pk__in=model.objects.filter(query).values("pk"))
+
+
+def _owner_queries(model, field_names, user, allowed_ids):
+    """
+    Q objects matching records whose owner fields hold one of ``allowed_ids``.
+
+    A relation counts as an owner field only if it points to a user (or employee);
+    a plain field is matched by value. Names that are not fields are skipped.
+    """
+    queries = []
+    for field_name in field_names:
+        try:
+            field = model._meta.get_field(field_name)
+            if field.is_relation:
+                related_model = field.related_model
+                if isinstance(field, (ForeignKey, ManyToManyField)) and (
+                    related_model._meta.model_name.lower() in ["user", "employee"]
+                    or related_model == user.__class__
+                    or related_model._meta.label_lower == "auth.user"
+                ):
+                    queries.append(Q(**{f"{field_name}__in": allowed_ids}))
+            else:
+                queries.append(Q(**{f"{field_name}__in": allowed_ids}))
+        except Exception:  # pylint: disable=broad-exception-caught
+            # Not a field of this model: skip it
+            continue
+    return queries
+
+
+def filter_viewable_queryset(user, model, base_queryset):
+    """
+    Narrow ``base_queryset`` to the records of ``model`` that ``user`` may view.
+
+    ``view_<model>`` sees everything. ``view_own_<model>`` sees records owned by the
+    user or the users under them: by ``OWNER_FIELDS`` (plus ``granted_access_filter``),
+    or, for a model without them, by the common owner fields (``created_by``,
+    ``user``, ``owner``, ``employee_id``). For the user model itself, "owned" means
+    the user's own record and the users under them. Anyone else sees nothing.
+
+    Used where records are listed outside a list view (global search, the Select2
+    endpoint and the User Picker), so all three apply the same rule.
+    """
+    from horilla.contrib.core.utils import get_allowed_user_ids
+
+    app_label = model._meta.app_label
+    model_name = model._meta.model_name
+
+    if user.has_perm(f"{app_label}.view_{model_name}"):
+        return base_queryset
+
+    if not user.has_perm(f"{app_label}.view_own_{model_name}"):
+        return base_queryset.none()
+
+    allowed_ids = get_allowed_user_ids(user)
+
+    # A user record is owned by that user, not by whoever created it, so with
+    # view_own a user sees themselves and the users under them (the same set
+    # get_allowed_user_ids gives every other owner check).
+    if issubclass(model, get_user_model()):
+        return base_queryset.filter(pk__in=allowed_ids)
+
+    owner_fields = getattr(model, "OWNER_FIELDS", None)
+    if owner_fields:
+        queries = _owner_queries(model, owner_fields, user, allowed_ids)
+        granted_query = get_granted_access_filter(model, user, "view")
+        if granted_query is not None:
+            queries.append(granted_query)
+        if queries:
+            return base_queryset.filter(reduce(or_, queries)).distinct()
+        # No valid ownership fields
+        return base_queryset.none()
+
+    # No OWNER_FIELDS: fall back to common ownership field names
+    queries = _owner_queries(
+        model, ["created_by", "user", "owner", "employee_id"], user, allowed_ids
+    )
+    if queries:
+        return base_queryset.filter(reduce(or_, queries)).distinct()
+    return base_queryset.none()
 
 
 def apply_conditions(queryset, conditions):

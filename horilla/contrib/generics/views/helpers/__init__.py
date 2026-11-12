@@ -50,6 +50,7 @@ from horilla.contrib.generics.views.helpers.select2 import (
 )
 from horilla.contrib.generics.views.helpers.queryset_utils import (
     get_queryset_for_module,
+    filter_viewable_queryset,
     apply_conditions,
 )
 from horilla.contrib.generics.views.helpers.user_picker import (
@@ -100,6 +101,7 @@ __all__ = [
     "HorillaSelect2DataView",
     # Queryset Utils
     "get_queryset_for_module",
+    "filter_viewable_queryset",
     "apply_conditions",
     # User Picker
     "_get_model_fields",

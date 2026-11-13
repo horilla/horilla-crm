@@ -6,6 +6,7 @@
         foster-parents out of normal table layout, collapsing column widths
         to near-zero), instead of as siblings of it at the table level.
     {% endcomment %}
+    {% if not skip_divider %}
     <tbody {% if group.needs_fetch %}id="tbody-{{ group.group_id }}"{% endif %}>
         <tr
             id="{{ group.group_id }}"
@@ -86,6 +87,7 @@
             </td>
         </tr>
     </tbody>
+    {% endif %}
 
     {% if group.needs_fetch %}
         {% comment %}
@@ -96,7 +98,7 @@
             once that content exists.
         {% endcomment %}
     {% elif not group.is_leaf %}
-        {% include "partials/group_by_node.html" with group_tree=group.sub_groups level=level|add:1 columns=columns header_attrs=header_attrs bulk_select_option=bulk_select_option table_class=table_class visible_actions=visible_actions dropdown_actions=dropdown_actions use_dropdown=use_dropdown action_method=action_method view_id=view_id colspan=colspan parent_row_id=group.group_id %}
+        {% include "partials/group_by_node.html" with group_tree=group.sub_groups level=level|add:1 columns=columns header_attrs=header_attrs bulk_select_option=bulk_select_option table_class=table_class visible_actions=visible_actions dropdown_actions=dropdown_actions use_dropdown=use_dropdown action_method=action_method view_id=view_id colspan=colspan parent_row_id=group.group_id skip_divider=False %}
     {% elif group.items %}
         <tbody
             id="data-container-{{ group.data_container_id }}"

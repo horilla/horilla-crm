@@ -1,0 +1,56 @@
+{% load i18n %}
+{# Dropdown of the list search box. Rows carry data-* attributes read by list_search.js #}
+{% if field_rows %}
+    <div class="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-dark-400">
+        {% trans "Search" %}
+    </div>
+    {% for row in field_rows %}
+        {% if forloop.first %}
+            {# First row: "All" (every field) or the list's only search field; the count is the total, in a primary round badge #}
+            <div
+                class="list-search-row flex items-center justify-between gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] text-slate-800 cursor-pointer hover:bg-slate-100"
+                data-type="field"
+                data-field="{{ row.field }}"
+                data-text="{{ text }}"
+            >
+                <span class="truncate">{% trans "Search" %} <b>{{ row.label }}</b> {% trans "for" %}: <i class="text-primary-600">{{ text }}</i></span>
+                <span class="shrink-0 text-xs rounded-full px-2 bg-primary-600 text-white">{{ row.count }}</span>
+            </div>
+            {% if show_fields %}<div class="border-t border-dark-50 my-1"></div>{% endif %}
+        {% elif show_fields %}
+            <div
+                class="list-search-row flex items-center justify-between gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] text-slate-800 cursor-pointer hover:bg-slate-100"
+                data-type="field"
+                data-field="{{ row.field }}"
+                data-text="{{ text }}"
+            >
+                <span class="truncate">{% trans "Search" %} <b>{{ row.label }}</b> {% trans "for" %}: <i class="text-primary-600">{{ text }}</i></span>
+                <span class="shrink-0 text-xs rounded-full px-2 {% if row.count %}bg-slate-100 text-dark-400{% else %}bg-slate-50 text-dark-300 opacity-60{% endif %}">{{ row.count }}</span>
+            </div>
+        {% endif %}
+    {% endfor %}
+    {% if not has_matches %}
+        <div class="px-3 py-2 border-t border-dark-50 mt-1 text-xs text-dark-400">
+            {% trans "No matches in this list." %}
+            <a href="{% url 'generics:global_search' %}?q={{ text|urlencode }}" class="text-primary-600 font-medium">{% trans "Search all modules" %}</a>
+        </div>
+    {% endif %}
+{% elif filter_rows %}
+    <div class="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-dark-400">
+        {% trans "Quick Filters" %}
+    </div>
+    {% for row in filter_rows %}
+        <div
+            class="list-search-row flex items-center justify-between gap-2 px-3 py-1.5 mx-1 rounded-md text-[13px] text-slate-800 cursor-pointer hover:bg-slate-100"
+            data-type="filter"
+            data-field="{{ row.field }}"
+            data-operator="{{ row.operator }}"
+            data-value="{{ row.value }}"
+        >
+            <span class="flex items-center gap-2 truncate">
+                <i class="fas fa-filter text-xs text-primary-600"></i>{% trans row.label %}
+            </span>
+            <span class="shrink-0 text-xs rounded-full px-2 bg-slate-100 text-dark-400">{{ row.count }}</span>
+        </div>
+    {% endfor %}
+{% endif %}

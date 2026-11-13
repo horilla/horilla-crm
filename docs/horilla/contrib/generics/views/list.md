@@ -334,8 +334,9 @@ If `order_by` raises, returns original queryset and logs warning.
 3. handles HTMX widget updates:
    - field-change (operator/value widget refresh)
    - operator-change (value-input shape refresh)
-4. for HTMX full refresh: renders `list_view.html`
-5. non-HTMX: falls through `render_to_response`
+4. with `search_suggest` in the query (HTMX): returns the search box dropdown (`render_search_suggest`, see [list search](list_search.md)),
+5. for HTMX full refresh: renders `list_view.html`
+6. non-HTMX: falls through `render_to_response`
 
 ---
 

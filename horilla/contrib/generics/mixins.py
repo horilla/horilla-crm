@@ -46,8 +46,12 @@ class HorillaListColumnMixin:
     self.list_column_visibility, self.exclude_columns.
     """
 
-    def _add_company_column_if_needed(self, columns):
-        """Add or remove company column based on show_all_companies setting."""
+    def _add_company_column_if_needed(self, columns, company_removed=None):
+        """Add or remove company column based on show_all_companies setting.
+
+        ``company_removed`` is True when the user explicitly removed the company
+        column from the visible fields; it is then not auto-added again.
+        """
         show_all_companies = self.request.session.get("show_all_companies", False)
         if not show_all_companies:
             columns = [
@@ -55,7 +59,7 @@ class HorillaListColumnMixin:
             ]
             return columns
 
-        if show_all_companies and self.model:
+        if show_all_companies and self.model and not company_removed:
             try:
                 company_field = self.model._meta.get_field("company")
                 if not any(
@@ -68,6 +72,16 @@ class HorillaListColumnMixin:
             except FieldDoesNotExist:
                 pass
         return columns
+
+    @staticmethod
+    def _is_company_removed(visibility):
+        """True if the saved visibility record marks the company column as removed."""
+        if not visibility:
+            return False
+        return any(
+            isinstance(f, (list, tuple)) and len(f) >= 2 and f[1] == "company__name"
+            for f in (visibility.removed_custom_fields or [])
+        )
 
     def _get_columns(self):
         """Get columns configuration based on model fields and methods."""
@@ -116,7 +130,20 @@ class HorillaListColumnMixin:
                 and len(col) >= 2
                 and col[1] in visible_field_names
             ]
-            cached_columns = self._add_company_column_if_needed(cached_columns)
+            company_removed = False
+            if self.request.session.get("show_all_companies", False):
+                company_removed = self._is_company_removed(
+                    ListColumnVisibility.all_objects.filter(
+                        user=self.request.user,
+                        model_name=model_name,
+                        app_label=app_label,
+                        context=context,
+                        url_name=current_path,
+                    ).first()
+                )
+            cached_columns = self._add_company_column_if_needed(
+                cached_columns, company_removed
+            )
             return cached_columns
 
         visibility = ListColumnVisibility.all_objects.filter(
@@ -171,7 +198,9 @@ class HorillaListColumnMixin:
                     self.request.user, self.model, field_names
                 )
                 columns = [col for col in columns if col[1] in visible_field_names]
-            columns = self._add_company_column_if_needed(columns)
+            columns = self._add_company_column_if_needed(
+                columns, self._is_company_removed(visibility)
+            )
             cache.set(cache_key, columns)
             return columns
 
@@ -576,7 +605,18 @@ class HorillaListFilterHandlersMixin:
         new_logics = []
         search_value = query_params.get("search", "")
 
-        if remove_filter == "search":
+        # Field searches from the list's search box: sf=<field>:<text>.
+        # "search" removes only the plain search; "search_all" removes it and every
+        # field search; "sf:<position>" removes one field search.
+        sf_values = list(query_params.getlist("sf"))
+        if remove_filter == "search_all":
+            sf_values = []
+        elif remove_filter.startswith("sf:"):
+            position = remove_filter[3:]
+            if position.isdigit() and int(position) < len(sf_values):
+                del sf_values[int(position)]
+
+        if remove_filter in ("search", "search_all"):
             fields = [f for f in query_params.getlist("field") if f.strip()]
             operators = [o for o in query_params.getlist("operator") if o.strip()]
             values = [v for v in query_params.getlist("value") if v.strip()]
@@ -637,10 +677,14 @@ class HorillaListFilterHandlersMixin:
                 "apply_filter",
                 "hx_trigger",
                 "search",
+                "sf",
             ]:
                 for value in values_list:
                     if value.strip():
                         new_query_params.appendlist(key, value)
+        for value in sf_values:
+            if value.strip():
+                new_query_params.appendlist("sf", value)
         for field in new_fields:
             new_query_params.appendlist("field", field)
         for operator in new_operators:
@@ -680,6 +724,7 @@ class HorillaListFilterHandlersMixin:
             "clear_all_filters",
             "page",
             "search",
+            "sf",
         ]
         new_query_params = QueryDict(mutable=True)
         for key, values in query_params.lists():

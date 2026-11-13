@@ -137,7 +137,16 @@ When search text contains space and split fields are valid:
 When no split scenario:
 - apply OR `icontains` across all search fields using full value.
 Finally:
-- `queryset.filter(queries)`
+- `queryset.filter(queries)` (the `Q` itself comes from `build_search_q(value)`, which `apply_search_facets` reuses for `all`)
+---
+## Field searches (list search box)
+After the legacy `search` is applied, `filter_queryset` also applies the repeatable `sf=<field>:<text>` parameter set by the list's search box (see [list search](views/list_search.md)). `field` is `all` (every `Meta.search_fields` entry, with the split-name logic above) or one entry of `Meta.search_fields`; unknown fields and empty text are ignored. `sf` entries on the same field are OR'd and entries on different fields are AND'd.
+
+When `first_name` and `last_name` (or `Meta.name_split_fields`) are both searched, `get_search_field_labels()` offers them as one **Name** choice, `first_name+last_name` (`get_name_search_key()`), applied with `name_search_q()`; `build_field_q(lookup, text)` gives the `Q` for any choice. `get_name_split_fields()` resolves the two name fields for `build_search_q` and these methods alike. The key format is defined once, in `search_support.py` (`make_name_key` builds it, `split_name_key` reads it back, `combined_name_label` names it), so the filterset, the dropdown and the applied-filter tag always agree on it.
+
+The search box's quick filters (My Records, Created Today, ...) need no code here: they are added as ordinary `field` / `operator` / `value` filter rows.
+
+`get_search_field_labels()` (classmethod) returns `{lookup: label}` for `Meta.search_fields`, using the fields' verbose names; entries that are not model fields are left out. The search box uses it for its field choices.
 ---
 ## Child class usage examples
 ## Example 1: minimal filterset

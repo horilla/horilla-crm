@@ -152,6 +152,7 @@ Built-in layouts are appended in this fixed order, each only if its URL is non-e
 | `view_type` | selects dropdown view mode | `view_type=recently_viewed` |
 | `layout` | selects effective layout icon/menu + action branching | `layout=kanban` |
 | `search` | increments `applied_filter_count` and controls search field value | `search=Acme` |
+| `sf` (multi) | field searches chosen in the search box dropdown, shown in the applied-filter tag | `sf=email:gmail` |
 | `field` (multi) | increments `applied_filter_count` for applied filters | `field=title&field=status` |
 | `operator` (multi) | paired with `field` entries | `operator=contains&operator=equals` |
 | `section` | not used directly in navbar.py, but often kept in URL patterns in layouts/actions | `section=sales` |

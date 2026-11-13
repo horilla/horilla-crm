@@ -3,6 +3,9 @@
     <div id="google-integration-settings-view">
         {% include "messages.html" %}
 
+        {% if not integration_setting %}
+            {% include "components/empty_states/activate_company.html" %}
+        {% else %}
         <h3 class="text-md font-semibold">{% trans "Google Integration" %}</h3>
         <p class="text-xs text-gray-500 mb-4">
             {% trans "Sync your calendar and meetings with your Google account." %}
@@ -334,6 +337,7 @@
                     </div>
                 </div>
             </div>
+        {% endif %}
         {% endif %}
     </div>
 {% endblock settings %}

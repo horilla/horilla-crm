@@ -41,7 +41,7 @@ from horilla.utils.decorators import (
 )
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
-from horilla.web import HttpResponse, RefreshResponse
+from horilla.web import HttpResponse, RedirectResponse, RefreshResponse
 
 # Local imports
 from ..forms import (
@@ -990,6 +990,14 @@ class GoogleAccessRolesView(_GoogleAccessFormView):
     form_url = reverse_lazy("calendar:google_access_roles")
     full_width_fields = ["allowed_roles"]
 
+    def dispatch(self, request, *args, **kwargs):
+        """Go back to the settings page when no company is active."""
+        if request.user.is_authenticated and not _get_active_company(request):
+            return RedirectResponse(
+                request, redirect_to=reverse("calendar:google_integration_settings")
+            )
+        return super().dispatch(request, *args, **kwargs)
+
     def _get_m2m_picker_info(self):
         return {}
 
@@ -1031,6 +1039,14 @@ class GoogleAccessUsersView(_GoogleAccessFormView):
     form_title = _("Select Users")
     form_url = reverse_lazy("calendar:google_access_users")
     full_width_fields = ["allowed_users"]
+
+    def dispatch(self, request, *args, **kwargs):
+        """Go back to the settings page when no company is active."""
+        if request.user.is_authenticated and not _get_active_company(request):
+            return RedirectResponse(
+                request, redirect_to=reverse("calendar:google_integration_settings")
+            )
+        return super().dispatch(request, *args, **kwargs)
 
     def get_form(self, form_class=None):
         """Scope allowed_users queryset and initial values to the active company."""

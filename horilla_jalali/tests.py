@@ -12,7 +12,6 @@ from unittest.mock import patch
 
 # Third-party imports (Django)
 from django.contrib.staticfiles import finders
-from django.template.loader import get_template
 from django.test import SimpleTestCase
 from django.utils import formats, timezone
 
@@ -216,11 +215,18 @@ class JalaliTimelineCalendarTests(SimpleTestCase):
     def test_every_timeline_calendar_key_is_shamsi(self):
         """The script sets the hook the timeline reads and overrides every key
         of its Gregorian default, so no Gregorian column or label is left."""
-        timeline = Path(get_template("timeline_view.html").origin.name).read_text(
+        # The timeline template loads its behaviour from this script.
+        timeline = Path(finders.find("generics/assets/js/timeline_view.js")).read_text(
             encoding="utf-8"
         )
-        script = Path(
-            finders.find("horilla_jalali/js/horilla_calendar_jalali.js")
+        # Read this app's own file: the static finders only search installed
+        # apps, and horilla_jalali is not in INSTALLED_APPS by default.
+        script = (
+            Path(__file__).resolve().parent
+            / "static"
+            / "horilla_jalali"
+            / "js"
+            / "horilla_calendar_jalali.js"
         ).read_text(encoding="utf-8")
         self.assertIn("window.horillaTimelineCalendar", timeline)
         self.assertIn(

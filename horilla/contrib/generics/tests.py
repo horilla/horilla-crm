@@ -20,6 +20,7 @@ from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.contrib.contenttypes.models import ContentType
 from django.template import Context, Template
 from django.template.loader import render_to_string
+from django.templatetags.static import static
 from django.test import RequestFactory, SimpleTestCase, TestCase
 from login_history.models import post_login, post_logout
 
@@ -1143,25 +1144,33 @@ class EditDetailsFieldErrorTests(TestCase):
         )
 
 
+# The timeline template loads its behaviour from timeline_view.js.
+TIMELINE_TEMPLATE_PATH = Path(__file__).parent / "templates" / "timeline_view.html"
+TIMELINE_SCRIPT_PATH = (
+    Path(__file__).parent / "static" / "generics" / "assets" / "js" / "timeline_view.js"
+)
+
+
 class TimelineRtlTests(SimpleTestCase):
     """On RTL pages the timeline axis row runs right to left, so bars and grid
     lines must be offset from the same (right) edge."""
 
-    template_path = Path(__file__).parent / "templates" / "timeline_view.html"
-
     def test_bars_and_grid_lines_use_the_start_edge(self):
         """No bar or grid line is pinned to the left edge."""
-        source = self.template_path.read_text(encoding="utf-8")
+        source = TIMELINE_SCRIPT_PATH.read_text(encoding="utf-8")
         self.assertIn(
             'var isRtl = getComputedStyle(track).direction === "rtl";', source
         )
         self.assertIn('var startEdge = isRtl ? "right" : "left";', source)
-        self.assertNotIn("bar.style.left", source)
-        self.assertNotIn('style="left:', source)
+        for path in (TIMELINE_TEMPLATE_PATH, TIMELINE_SCRIPT_PATH):
+            with self.subTest(path.name):
+                source = path.read_text(encoding="utf-8")
+                self.assertNotIn("bar.style.left", source)
+                self.assertNotIn('style="left:', source)
 
     def test_initial_scroll_is_mirrored(self):
         """RTL scrollLeft counts negative from the right edge."""
-        source = self.template_path.read_text(encoding="utf-8")
+        source = TIMELINE_SCRIPT_PATH.read_text(encoding="utf-8")
         self.assertIn("var scrollSign = isRtl ? -1 : 1;", source)
         self.assertIn("scrollSign * Math.max(earliestLeftPx - 40, 0)", source)
         self.assertNotIn("scrollEl.scrollLeft = Math.max(", source)
@@ -1176,8 +1185,6 @@ class TimelineRtlTests(SimpleTestCase):
 class TimelineCalendarHookTests(SimpleTestCase):
     """The timeline axis takes its calendar from ``window.horillaTimelineCalendar``,
     so another calendar system plugs in without the template naming it."""
-
-    template_path = Path(__file__).parent / "templates" / "timeline_view.html"
 
     def render(self):
         """Render the timeline with one bar from 2026-09-23 to 2026-10-22."""
@@ -1216,11 +1223,15 @@ class TimelineCalendarHookTests(SimpleTestCase):
     def test_axis_reads_the_calendar_hook(self):
         """Columns and labels go through the hook, with Gregorian as default."""
         html = self.render()
-        self.assertIn("var GREGORIAN_CALENDAR = {", html)
-        self.assertIn("window.horillaTimelineCalendar", html)
+        self.assertIn(f'src="{static("generics/assets/js/timeline_view.js")}"', html)
+        script = TIMELINE_SCRIPT_PATH.read_text(encoding="utf-8")
+        self.assertIn("var GREGORIAN_CALENDAR = {", script)
+        self.assertIn("window.horillaTimelineCalendar", script)
 
     def test_template_names_no_calendar_extension(self):
-        """Calendar systems plug in through the hook, not template code."""
-        source = self.template_path.read_text(encoding="utf-8").lower()
-        for name in ("jalali", "shamsi", "jdatetime"):
-            self.assertNotIn(name, source)
+        """Calendar systems plug in through the hook, not template or script code."""
+        for path in (TIMELINE_TEMPLATE_PATH, TIMELINE_SCRIPT_PATH):
+            source = path.read_text(encoding="utf-8").lower()
+            for name in ("jalali", "shamsi", "jdatetime"):
+                with self.subTest(path.name, name=name):
+                    self.assertNotIn(name, source)

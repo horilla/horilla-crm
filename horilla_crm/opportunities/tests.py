@@ -94,13 +94,14 @@ class OpportunityFieldRequirementFormExtensionTests(TestCase):
         form = resolve_form_class(OpportunitySingleForm)()
         self.assertTrue(form.fields["description"].required)
 
-    def test_opportunity_email_override_does_not_appear_on_create_form(self):
-        """Opportunity create/edit forms exclude email, so the override is a no-op there."""
-        self._override("email", False)
+    def test_opportunity_email_override_applies_on_create_form(self):
+        """Opportunity create/edit forms show email, so a required override applies there."""
+        self._override("email", True)
         from horilla_crm.opportunities.forms import OpportunitySingleForm
 
         form = resolve_form_class(OpportunitySingleForm)()
-        self.assertNotIn("email", form.fields)
+        self.assertIn("email", form.fields)
+        self.assertTrue(form.fields["email"].required)
 
 
 @skipUnless(

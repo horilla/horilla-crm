@@ -105,10 +105,6 @@ class AccountDetailsTab(LoginRequiredMixin, HorillaDetailSectionView):
 
     model = Account
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.excluded_fields.append("account_owner")
-
 
 @method_decorator(
     permission_required_or_denied(

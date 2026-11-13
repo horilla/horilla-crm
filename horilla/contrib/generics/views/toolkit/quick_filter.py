@@ -36,7 +36,9 @@ def get_available_quick_filter_fields(view):
     if not _quick_filters_enabled(view):
         return []
 
-    exclude = getattr(view, "exclude_quick_filter_fields", [])
+    exclude = list(getattr(view, "exclude_quick_filter_fields", []) or [])
+    if not view.request.session.get("show_all_companies", False):
+        exclude.append("company")
     available_fields = []
 
     for field in view.model._meta.fields:
@@ -82,11 +84,14 @@ def get_quick_filters(view):
     if not _quick_filters_enabled(view):
         return []
 
-    return QuickFilter.objects.filter(
+    quick_filters = QuickFilter.objects.filter(
         user=view.request.user,
         app_label=view.model._meta.app_label,
         model_name=view.model.__name__,
     )
+    if not view.request.session.get("show_all_companies", False):
+        quick_filters = quick_filters.exclude(field_name="company")
+    return quick_filters
 
 
 def get_quick_filter_choices(view, field_name):

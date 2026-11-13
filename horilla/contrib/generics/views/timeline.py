@@ -192,6 +192,8 @@ class HorillaTimelineView(HorillaListView):
             return []
         exclude_fields, include_fields = self._get_timeline_exclude_include_fields()
         exclude_fields = list(exclude_fields) + ["country"]
+        if not self.request.session.get("show_all_companies", False):
+            exclude_fields.append("company")
         choices = []
         for field in model._meta.get_fields():
             if field.name in exclude_fields:

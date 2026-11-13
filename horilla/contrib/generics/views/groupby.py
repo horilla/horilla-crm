@@ -27,6 +27,7 @@ from horilla.utils.translation import gettext_lazy as _
 from horilla.web import HttpResponse
 
 # Local imports
+from ..methods import group_label_with_company, group_order_by
 from .list import HorillaListView
 
 logger = logging.getLogger(__name__)
@@ -142,6 +143,13 @@ class HorillaGroupByView(HorillaListView):
         if requested_raw:
             requested = _clean(requested_raw.split(","))
             if requested:
+                # With "all companies" on, group by company first so each
+                # company's own records (e.g. its lead stages) nest under it.
+                if "company" in requested and self.request.session.get(
+                    "show_all_companies", False
+                ):
+                    requested.remove("company")
+                    requested.insert(0, "company")
                 return requested
 
         model_name = self.model.__name__
@@ -202,7 +210,15 @@ class HorillaGroupByView(HorillaListView):
             return str(_("None"))
         related_model = field.related_model
         related_item = related_model.objects.filter(pk=key).first()
-        return str(related_item) if related_item is not None else f"Unknown ({key})"
+        return (
+            group_label_with_company(
+                self.request,
+                related_item,
+                show_company="company" not in self.get_group_by_fields(),
+            )
+            if related_item is not None
+            else f"Unknown ({key})"
+        )
 
     def _ordered_group_values(self, field, field_name, queryset):
         """Return an ordered list of (key, label, sub_queryset) for one grouping level."""
@@ -230,14 +246,16 @@ class HorillaGroupByView(HorillaListView):
             and any(f.name == "company" for f in related_model._meta.fields)
         ):
             related_qs = related_qs.filter(company=active_company)
-        if "order" in [f.name for f in related_model._meta.fields]:
-            related_items = related_qs.order_by("order")
-        else:
-            related_items = related_qs.order_by("pk")
+        related_items = related_qs.order_by(
+            *group_order_by(self.request, related_model)
+        )
 
+        show_company = "company" not in self.get_group_by_fields()
         for related_item in related_items:
             groups[related_item.pk] = (
-                str(related_item),
+                group_label_with_company(
+                    self.request, related_item, show_company=show_company
+                ),
                 queryset.filter(**{f"{field_name}__pk": related_item.pk}),
             )
 
@@ -297,6 +315,27 @@ class HorillaGroupByView(HorillaListView):
         """JSON list of record ids in a group, used by the group-level select checkbox."""
         return json.dumps(list(qs.values_list("id", flat=True)))
 
+    def _company_scoped_group_pks(self, field, path):
+        """For a foreign-key group level nested under a Company group, return the
+        pks of the related records that belong to that company (so a company only
+        lists its own stages); None when no restriction applies."""
+        related_model = getattr(field, "related_model", None)
+        if (
+            related_model is None
+            or not self.request.session.get("show_all_companies", False)
+            or not any(f.name == "company" for f in related_model._meta.fields)
+        ):
+            return None
+        full_fields = self.get_group_by_fields()
+        for fname, pkey in zip(full_fields[: len(path)], path):
+            if fname == "company" and pkey is not None:
+                return set(
+                    related_model._default_manager.filter(company_id=pkey).values_list(
+                        "pk", flat=True
+                    )
+                )
+        return None
+
     def _build_group_tree(self, queryset, fields, path=(), max_depth=None):
         """Recursively group `queryset` by `fields` (in order), returning an
         ordered dict of key -> node. A node is a leaf (paginated `items`) when
@@ -317,10 +356,17 @@ class HorillaGroupByView(HorillaListView):
         paginate_by = getattr(self, "paginate_by", 20)
         nodes = {}
         counts = self._group_counts(field, field_name, queryset)
+        scoped_pks = (
+            self._company_scoped_group_pks(field, path)
+            if field_name != "company"
+            else None
+        )
 
         for key, label, sub_qs in self._ordered_group_values(
             field, field_name, queryset
         ):
+            if scoped_pks is not None and key is not None and key not in scoped_pks:
+                continue
             total_count = counts.get(key, 0)
             group_path = path + (key,)
             group_id = f"{self.view_id}-{slugify('-'.join(str(k) for k in group_path))}"
@@ -635,6 +681,9 @@ class HorillaGroupByView(HorillaListView):
             context["group_tree"] = group_tree
             context["level"] = level
             context["colspan"] = 99
+            # The leaf group's header row is already on the page (it is the
+            # row that was clicked); only its rows must be rendered.
+            context["skip_divider"] = not remaining_fields
             context["parent_row_id"] = (
                 f"{self.view_id}-" f"{slugify('-'.join(str(k) for k in parent_path))}"
             )

@@ -103,7 +103,6 @@ class ContactDetailTab(LoginRequiredMixin, HorillaDetailSectionView):
 
     model = Contact
     excluded_fields = [
-        "company",
         "id",
         "is_active",
         "additional_info",

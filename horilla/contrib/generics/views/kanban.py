@@ -26,6 +26,7 @@ from horilla.utils.translation import gettext_lazy as _
 from horilla.web import HttpNotFound, HttpResponse, QueryDict, ScriptResponse
 
 # Local imports
+from ..methods import group_label_with_company, group_order_by
 from .list import HorillaListView
 
 logger = logging.getLogger(__name__)
@@ -213,6 +214,21 @@ class HorillaKanbanView(HorillaListView):
                         related_model = field.related_model
                         try:
                             related_obj = related_model.objects.get(pk=new_column)
+                            item_company_id = getattr(item, "company_id", None)
+                            related_company_id = getattr(
+                                related_obj, "company_id", None
+                            )
+                            if (
+                                item_company_id
+                                and related_company_id
+                                and item_company_id != related_company_id
+                            ):
+                                messages.error(
+                                    request,
+                                    "This item belongs to a different company than "
+                                    "the selected column, so it cannot be moved there.",
+                                )
+                                return ScriptResponse(reload=True)
                             setattr(item, group_by, related_obj)
                         except related_model.DoesNotExist:
                             return HttpResponse(
@@ -576,10 +592,11 @@ class HorillaKanbanView(HorillaListView):
 
             elif isinstance(field, ForeignKey):
                 related_model = field.related_model
-                if "order" in [f.name for f in related_model._meta.fields]:
-                    related_items = list(related_model.objects.all().order_by("order"))
-                else:
-                    related_items = list(related_model.objects.all().order_by("pk"))
+                related_items = list(
+                    related_model.objects.all().order_by(
+                        *group_order_by(self.request, related_model)
+                    )
+                )
 
                 # Fetch all counts in one query. Use a subquery-based count to avoid
                 # the DISTINCT from get_queryset() collapsing GROUP BY counts to 1.
@@ -608,7 +625,7 @@ class HorillaKanbanView(HorillaListView):
                     if raw_color in (None, "", _default_hex_use_primary):
                         raw_color = "primary-600"
                     grouped_items[related_item.pk] = {
-                        "label": str(related_item),
+                        "label": group_label_with_company(self.request, related_item),
                         "items": queryset.filter(
                             **{f"{group_by}__pk": related_item.pk}
                         ),

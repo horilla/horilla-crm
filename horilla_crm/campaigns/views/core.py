@@ -533,8 +533,6 @@ class CampaignDetailsTab(LoginRequiredMixin, HorillaDetailSectionView):
         "is_active",
         "created_by",
         "updated_by",
-        "company",
-        "campaign_owner",
     ]
 
 

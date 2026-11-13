@@ -20,7 +20,6 @@ from horilla.contrib.core.utils import filter_hidden_fields
 from horilla.shortcuts import render
 from horilla.urls import resolve, reverse
 from horilla.utils.decorators import htmx_required, method_decorator
-from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
 from horilla.web import HttpResponse, ScriptResponse
 
@@ -68,6 +67,8 @@ def _get_detail_field_defaults(model, request):
                     "additional_info",
                 }
             )
+        if request is not None and request.session.get("show_all_companies", False):
+            excluded = set(excluded) - {"company"}
         # Automatically exclude pipeline_field from header and details
         pf = getattr(detail_view_class, "pipeline_field", None)
         if pf:
@@ -177,6 +178,9 @@ class DetailFieldSelectorView(LoginRequiredMixin, View):
             "created_by",
             "updated_by",
         }
+        # The company field is only offered when "all companies" is enabled.
+        if not request.session.get("show_all_companies", False):
+            base_excluded.add("company")
         header_excluded = set(base_excluded)
         details_excluded = set(base_excluded)
 
@@ -226,6 +230,10 @@ class DetailFieldSelectorView(LoginRequiredMixin, View):
                 details_excluded.update(
                     getattr(detail_view_class, "excluded_fields", [])
                 )
+
+        if request.session.get("show_all_companies", False):
+            header_excluded.discard("company")
+            details_excluded.discard("company")
 
         all_model_fields = [
             [force_str(f.verbose_name or f.name.title()), f.name]
@@ -448,6 +456,8 @@ class SplitColumnSelectorView(LoginRequiredMixin, View):
             "created_by",
             "updated_by",
         }
+        if not request.session.get("show_all_companies", False):
+            excluded.add("company")
         view_class = HorillaDetailView._view_registry.get(model)
         if view_class:
             for attr in (
@@ -459,6 +469,8 @@ class SplitColumnSelectorView(LoginRequiredMixin, View):
             pipeline_field = getattr(view_class, "pipeline_field", None)
             if pipeline_field:
                 excluded.add(str(pipeline_field))
+        if request.session.get("show_all_companies", False):
+            excluded.discard("company")
         fields = [
             [force_str(f.verbose_name or f.name.title()), f.name]
             for f in model._meta.get_fields()

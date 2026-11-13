@@ -71,6 +71,11 @@ class KanbanGroupBy(models.Model):
             exclude_fields = []
         # Always exclude country from kanban/group_by choices across all models
         exclude_fields = list(exclude_fields) + ["country"]
+        # The company field is only offered when "all companies" is enabled.
+        request = getattr(_thread_local, "request", None)
+        session = getattr(request, "session", None)
+        if session is not None and not session.get("show_all_companies", False):
+            exclude_fields.append("company")
 
         try:
             model = apps.get_model(app_label=self.app_label, model_name=self.model_name)

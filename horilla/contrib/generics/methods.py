@@ -58,3 +58,41 @@ def get_condition_value_display(model_cls, field_name, value):
         if str(key) == str(value):
             return str(label)
     return value
+
+
+def group_label_with_company(request, related_item, show_company=True):
+    """Label for a Kanban/group-by column built from a related record.
+
+    With "all companies" enabled, company-scoped records (e.g. lead stages) of
+    different companies can share a name, so the company name is appended to tell
+    the columns apart.
+    """
+    label = str(related_item)
+    session = getattr(request, "session", None)
+    if (
+        not show_company
+        or session is None
+        or not session.get("show_all_companies", False)
+    ):
+        return label
+    if getattr(related_item, "company_id", None):
+        return f"{label} ({related_item.company})"
+    return label
+
+
+def group_order_by(request, related_model):
+    """Ordering for the columns of a Kanban/group-by built from a related model.
+
+    With "all companies" enabled, columns are grouped by company first so one
+    company's columns stay together instead of interleaving by ``order``.
+    """
+    field_names = [f.name for f in related_model._meta.fields]
+    ordering = ["order"] if "order" in field_names else ["pk"]
+    session = getattr(request, "session", None)
+    if (
+        session is not None
+        and session.get("show_all_companies", False)
+        and "company" in field_names
+    ):
+        ordering = ["company__name", "company_id"] + ordering
+    return ordering

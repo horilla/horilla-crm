@@ -67,6 +67,7 @@ class WorkflowRuleNavbar(LoginRequiredMixin, HorillaNavView):
     nav_title = _("Workflow Rules")
     nav_description = _("Automate actions when records meet the conditions you set.")
     search_url = reverse_lazy("workflow:workflow_rule_list_view")
+    filterset_class = WorkflowRuleFilter
     main_url = reverse_lazy("workflow:workflow_rule_view")
     model_name = "WorkflowRule"
     model_app_label = "workflow"

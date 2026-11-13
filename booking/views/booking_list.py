@@ -197,6 +197,7 @@ class MyBookingsNavView(LoginRequiredMixin, HorillaNavView):
 
     _nav_title = _("My Bookings")
     search_url = reverse_lazy("booking:my_bookings_list")
+    filterset_class = BookingFilter
     main_url = reverse_lazy("booking:my_bookings")
     model_name = "booking"
     model_app_label = "booking"

@@ -59,6 +59,7 @@ class IncomingMailServerNavbar(LoginRequiredMixin, HorillaNavView):
     nav_title = _("Incoming Mail Configurations")
     nav_description = _("Configure the IMAP server used to receive incoming emails.")
     search_url = reverse_lazy("mail:incoming_mail_server_list_view")
+    filterset_class = HorillaMailServerFilter
     main_url = reverse_lazy("mail:incoming_mail_server_view")
     nav_width = False
     all_view_types = False

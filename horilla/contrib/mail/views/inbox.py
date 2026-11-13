@@ -149,6 +149,7 @@ class InboxNavbar(LoginRequiredMixin, HorillaNavView):
     nav_title = _("Inbox")
     nav_description = _("Review emails fetched from your incoming mailboxes.")
     search_url = reverse_lazy("mail:inbox_list_view")
+    filterset_class = IncomingMailFilter
     main_url = reverse_lazy("mail:inbox_view")
     nav_width = False
     all_view_types = False

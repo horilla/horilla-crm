@@ -71,6 +71,7 @@ class MailServerNavbar(LoginRequiredMixin, HorillaNavView):
     nav_title = _("Outgoing Mail Configurations")
     nav_description = _("Configure the SMTP server used to send outgoing emails.")
     search_url = reverse_lazy("mail:mail_server_list_view")
+    filterset_class = HorillaMailServerFilter
     main_url = reverse_lazy("mail:mail_server_view")
     nav_width = False
     all_view_types = False

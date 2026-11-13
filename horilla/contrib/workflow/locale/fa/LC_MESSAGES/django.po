@@ -513,8 +513,8 @@ msgstr ""
 msgid "Repeats every %(value)s %(unit)s"
 msgstr "تکرار هر %(value)s %(unit)s"
 
-msgid "Repeat (optional)"
-msgstr "تکرار (اختیاری)"
+msgid "Repeat"
+msgstr "تکرار"
 
 msgid "Every"
 msgstr "هر"

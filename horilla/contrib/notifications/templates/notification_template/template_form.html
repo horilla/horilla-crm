@@ -17,7 +17,7 @@
         {% csrf_token %}
 
         <div class="overflow-hidden overflow-y-auto h-[600px]">
-            <label for="title" class="text-xs text-color-600">{{ form.title.label }}</label>
+            <label for="title" class="text-xs font-semibold text-color-600">{{ form.title.label }}</label>
             <input
                 type="text"
                 id="title"
@@ -33,7 +33,7 @@
 
             <!-- Content Type Field -->
             <div class="mb-4">
-                <label for="content_type" class="text-xs text-color-600"> {{ form.content_type.label }}</label>
+                <label for="content_type" class="text-xs font-semibold text-color-600"> {{ form.content_type.label }}</label>
                 <select
                     name="content_type"
                     id="content_type"
@@ -55,7 +55,7 @@
 
             <!-- Template Body -->
             <div class="flex justify-between items-center mb-1">
-                <label for="message" class="text-xs text-color-600">{{ form.message.label }}
+                <label for="message" class="text-xs font-semibold text-color-600">{{ form.message.label }}
                 </label>
 
                 <div class="flex gap-1">

@@ -22,7 +22,7 @@
     </div>
     <div class="p-5">
         <div class="overflow-hidden overflow-y-auto h-[600px] pe-2">
-            <label for="" class="text-xs text-color-600">{% trans "From" %}</label>
+            <label for="" class="text-xs font-semibold text-color-600">{% trans "From" %}</label>
             <div>
                 <select name="from_mail" class="js-example-basic-single">
                     {% for mail_config in all_mail_configs %}
@@ -41,7 +41,7 @@
                 </div>
             {% endif %}
 
-            <label for="" class="text-xs text-color-600">{% trans "To" %}</label>
+            <label for="" class="text-xs font-semibold text-color-600">{% trans "To" %}</label>
             <div class="relative">
                 {% include 'email_pills_field.html' with field_type='to' email_list=to_pills.email_list email_string=to_pills.email_string current_search=to_pills.current_search %}
                 <div id="email-suggestions-to" class="relative"></div>
@@ -52,19 +52,19 @@
                 </div>
             {% endif %}
 
-            <label for="" class="text-xs text-color-600">{% trans "Cc" %}</label>
+            <label for="" class="text-xs font-semibold text-color-600">{% trans "Cc" %}</label>
             <div class="relative">
                 {% include 'email_pills_field.html' with field_type='cc' email_list=cc_pills.email_list email_string=cc_pills.email_string current_search=cc_pills.current_search %}
                 <div id="email-suggestions-cc" class="relative"></div>
             </div>
 
-            <label for="" class="text-xs text-color-600">{% trans "Bcc" %}</label>
+            <label for="" class="text-xs font-semibold text-color-600">{% trans "Bcc" %}</label>
             <div class="relative">
                 {% include 'email_pills_field.html' with field_type='bcc' email_list=bcc_pills.email_list email_string=bcc_pills.email_string current_search=bcc_pills.current_search %}
                 <div id="email-suggestions-bcc" class="relative"></div>
             </div>
 
-            <label for="" class="text-xs text-color-600">{% trans "Subject" %}</label>
+            <label for="" class="text-xs font-semibold text-color-600">{% trans "Subject" %}</label>
             <input
                 type="text"
                 name="subject"
@@ -86,7 +86,7 @@
             {% endif %}
 
             <div class="flex justify-between items-center mb-1">
-                <label for="" class="text-xs text-color-600">{% trans "Message" %}</label>
+                <label for="" class="text-xs font-semibold text-color-600">{% trans "Message" %}</label>
 
                 <div class="flex gap-1">
                     <input type="file" name="attachments" id="fileInput" multiple value="" hidden>

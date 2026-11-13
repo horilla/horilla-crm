@@ -20,7 +20,7 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-start">
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-color-600">{% trans "Order" %}</label>
+                        <label class="text-xs font-semibold text-color-600">{% trans "Order" %}</label>
                         <input
                             type="number"
                             min="1"
@@ -30,7 +30,7 @@
                         >
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-color-600">{% trans "Approver type" %}</label>
+                        <label class="text-xs font-semibold text-color-600">{% trans "Approver type" %}</label>
                         <select
                             name="steps-{{ forloop.counter0 }}-approver_type"
                             class="{{ sel_class }}"
@@ -59,7 +59,7 @@
                     </div>
                     <div class="flex flex-col gap-1">
                         {% if row.approver_type == "role" %}
-                            <label class="text-xs text-color-600">{% trans "Role" %}</label>
+                            <label class="text-xs font-semibold text-color-600">{% trans "Role" %}</label>
                             <select name="steps-{{ forloop.counter0 }}-role_identifier" class="{{ sel_class }}">
                                 <option value="">{% trans "Select role" %}</option>
                                 {% for role in roles %}
@@ -75,14 +75,14 @@
                             </select>
                             <input type="hidden" name="steps-{{ forloop.counter0 }}-approver_user" value="">
                         {% elif row.approver_type == "owner_manager" %}
-                            <label class="text-xs text-color-600">{% trans "Record owner" %}</label>
+                            <label class="text-xs font-semibold text-color-600">{% trans "Record owner" %}</label>
                             <div class="text-xs text-gray-500 p-2 border border-dark-50 rounded-md bg-gray-50">
                                 {% trans "Approver will be resolved from the record owner at runtime." %}
                             </div>
                             <input type="hidden" name="steps-{{ forloop.counter0 }}-approver_user" value="">
                             <input type="hidden" name="steps-{{ forloop.counter0 }}-role_identifier" value="">
                         {% else %}
-                            <label class="text-xs text-color-600">{% trans "User" %}</label>
+                            <label class="text-xs font-semibold text-color-600">{% trans "User" %}</label>
                             <select
                                 name="steps-{{ forloop.counter0 }}-approver_user"
                                 class="select2-pagination w-full"
@@ -113,7 +113,7 @@
         {% if has_multiple_approvers %}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4 mt-3">
                 <div class="flex flex-col gap-1">
-                    <label class="text-xs text-color-600">{% trans "Set overall approval method" %}</label>
+                    <label class="text-xs font-semibold text-color-600">{% trans "Set overall approval method" %}</label>
                     <select
                         name="who_overall_method"
                         class="{{ sel_class }}"
@@ -134,7 +134,7 @@
                 </div>
                 {% if who_overall_method == "everyone" %}
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-color-600">{% trans "Specify the order" %}</label>
+                        <label class="text-xs font-semibold text-color-600">{% trans "Specify the order" %}</label>
                         <select
                             name="who_approval_order"
                             class="{{ sel_class }}"
@@ -205,7 +205,7 @@
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
                                 <div class="flex flex-col gap-1 md:col-span-2">
-                                    <label class="text-xs text-color-600">{% trans "Field access" %}</label>
+                                    <label class="text-xs font-semibold text-color-600">{% trans "Field access" %}</label>
                                     <select
                                         name="record_waiting_scope_{{ row.stage_key }}"
                                         class="{{ sel_class }}"
@@ -253,7 +253,7 @@
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
                                 <div class="flex flex-col gap-1 md:col-span-2">
-                                    <label class="text-xs text-color-600">{% trans "Field access" %}</label>
+                                    <label class="text-xs font-semibold text-color-600">{% trans "Field access" %}</label>
                                     <select
                                         name="record_rejected_scope_{{ row.stage_key }}"
                                         class="{{ sel_class }}"
@@ -299,7 +299,7 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                         <div class="flex flex-col gap-1 md:col-span-2">
-                            <label class="text-xs text-color-600">{% trans "Field access" %}</label>
+                            <label class="text-xs font-semibold text-color-600">{% trans "Field access" %}</label>
                             <select
                                 name="record_waiting_scope"
                                 class="{{ sel_class }}"
@@ -335,7 +335,7 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div class="flex flex-col gap-1 md:col-span-2">
-                            <label class="text-xs text-color-600">{% trans "Field access" %}</label>
+                            <label class="text-xs font-semibold text-color-600">{% trans "Field access" %}</label>
                             <select
                                 name="record_rejected_scope"
                                 class="{{ sel_class }}"

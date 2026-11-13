@@ -10,7 +10,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                    <label class="text-xs text-color-600" for="decision">{% trans "Decision" %}</label>
+                    <label class="text-xs font-semibold text-color-600" for="decision">{% trans "Decision" %}</label>
                     <select
                         name="decision"
                         id="decision"
@@ -23,7 +23,7 @@
                     </select>
                 </div>
                 <div id="delegate-user-wrap" style="display: none">
-                    <label class="text-xs text-color-600" for="delegate_user">{% trans "Delegate To" %}</label>
+                    <label class="text-xs font-semibold text-color-600" for="delegate_user">{% trans "Delegate To" %}</label>
                     <select name="delegate_user" id="delegate_user" class="w-full js-example-basic-single headselect">
                         <option value="">{% trans "Select user" %}</option>
                         {% for user in delegate_users %}
@@ -34,7 +34,7 @@
             </div>
 
             <label
-                class="text-xs text-color-600 mt-3 block"
+                class="text-xs font-semibold text-color-600 mt-3 block"
                 for="review_note"
             >{% trans "Response Note (Optional)" %}</label>
             <textarea

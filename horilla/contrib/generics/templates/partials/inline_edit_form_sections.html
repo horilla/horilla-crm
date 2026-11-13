@@ -18,7 +18,7 @@
             {% for field in fieldset.fields %}
                 <div data-field-name="{{ field.name }}">
                     {% if field.field.widget.input_type == 'file' and field.field|is_image_field %}
-                        <label class="text-xs text-color-600 mb-1 block">{{ field.label }}</label>
+                        <label class="text-xs font-semibold text-color-600 mb-1 block">{{ field.label }}</label>
                         <div class="flex items-center gap-3">
                             <div
                                 id="{{ field.id_for_label }}-dropzone"
@@ -94,7 +94,7 @@
                             })();
                         </script>
                     {% else %}
-                        <label class="text-xs text-color-600" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <label class="text-xs font-semibold text-color-600" for="{{ field.id_for_label }}">{{ field.label }}</label>
                         {{ field }}
                     {% endif %}
                     {% if field.errors %}

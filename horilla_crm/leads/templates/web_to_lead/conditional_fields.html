@@ -1,6 +1,6 @@
 {% if return_url_enabled %}
     <!-- Return URL Field -->
-    <label for="return_url" class="text-xs text-color-600 flex gap-1">
+    <label for="return_url" class="text-xs font-semibold text-color-600 flex gap-1">
         {% trans "Return URL" %}<span class="text-red-500">*</span>
     </label>
     <input
@@ -18,7 +18,7 @@
     {% endif %}
 {% else %}
     <!-- Success Message Field -->
-    <label for="success_message" class="text-xs text-color-600 flex gap-1">
+    <label for="success_message" class="text-xs font-semibold text-color-600 flex gap-1">
         {% trans "Success Message" %}<span class="text-red-500">*</span>
     </label>
     <input
@@ -35,7 +35,7 @@
     {% endif %}
 
     <!-- Success Description Field -->
-    <label for="success_description" class="text-xs text-color-600 flex gap-1">
+    <label for="success_description" class="text-xs font-semibold text-color-600 flex gap-1">
         {% trans "Success Description" %}<span class="text-red-500">*</span>
     </label>
     <textarea

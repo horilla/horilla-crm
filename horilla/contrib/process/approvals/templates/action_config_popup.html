@@ -16,7 +16,7 @@
     {% if action == "update_field" %}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div class="flex flex-col gap-1">
-                <label class="text-xs text-color-600">{% trans "Field" %}</label>
+                <label class="text-xs font-semibold text-color-600">{% trans "Field" %}</label>
                 <select
                     id="action-popup-field"
                     name="field_name"
@@ -34,7 +34,7 @@
                 </select>
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-xs text-color-600">{% trans "Value" %}</label>
+                <label class="text-xs font-semibold text-color-600">{% trans "Value" %}</label>
                 <div id="action-popup-value-wrap">
                     <input id="action-popup-value" type="text" class="oh-input w-full">
                 </div>
@@ -43,7 +43,7 @@
     {% elif action == "assign_task" %}
         <div class="grid grid-cols-1 gap-3">
             <div class="flex flex-col gap-1">
-                <label class="text-xs text-color-600">{% trans "Task title" %}</label>
+                <label class="text-xs font-semibold text-color-600">{% trans "Task title" %}</label>
                 <input
                     id="action-popup-task-title"
                     type="text"
@@ -52,7 +52,7 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1">
-                    <label class="text-xs text-color-600">{% trans "Due basis" %}</label>
+                    <label class="text-xs font-semibold text-color-600">{% trans "Due basis" %}</label>
                     <select
                         id="action-popup-task-due-basis"
                         class="js-example-basic-single headselect text-color-600 p-2 placeholder:text-xs pe-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600"
@@ -63,7 +63,7 @@
                     </select>
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-xs text-color-600">{% trans "Due in days" %}</label>
+                    <label class="text-xs font-semibold text-color-600">{% trans "Due in days" %}</label>
                     <input
                         id="action-popup-task-due-days"
                         type="number"
@@ -75,7 +75,7 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1">
-                    <label class="text-xs text-color-600">{% trans "Status" %}</label>
+                    <label class="text-xs font-semibold text-color-600">{% trans "Status" %}</label>
                     <select
                         id="action-popup-task-status"
                         class="js-example-basic-single headselect text-color-600 p-2 placeholder:text-xs pe-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600"
@@ -86,7 +86,7 @@
                     </select>
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-xs text-color-600">{% trans "Priority" %}</label>
+                    <label class="text-xs font-semibold text-color-600">{% trans "Priority" %}</label>
                     <select
                         id="action-popup-task-priority"
                         class="js-example-basic-single headselect text-color-600 p-2 placeholder:text-xs pe-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600"
@@ -98,7 +98,7 @@
                 </div>
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-xs text-color-600">{% trans "Task description" %}</label>
+                <label class="text-xs font-semibold text-color-600">{% trans "Task description" %}</label>
                 <textarea
                     id="action-popup-task-description"
                     class="text-color-600 p-2 placeholder:text-xs pe-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600"
@@ -109,7 +109,7 @@
     {% elif action == "mail" %}
         <div class="grid grid-cols-1 gap-3">
             <div class="flex flex-col gap-1">
-                <label class="text-xs text-color-600">{% trans "Mail template" %}</label>
+                <label class="text-xs font-semibold text-color-600">{% trans "Mail template" %}</label>
                 <select
                     id="action-popup-email-template"
                     class="js-example-basic-single headselect text-color-600 p-2 placeholder:text-xs pe-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600"
@@ -121,7 +121,7 @@
                 </select>
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-xs text-color-600">{% trans "To (email field / email / self)" %}</label>
+                <label class="text-xs font-semibold text-color-600">{% trans "To (email field / email / self)" %}</label>
                 <select
                     id="action-popup-email-to"
                     multiple
@@ -133,7 +133,7 @@
                 </select>
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-xs text-color-600">{% trans "Also send to" %}</label>
+                <label class="text-xs font-semibold text-color-600">{% trans "Also send to" %}</label>
                 <select
                     id="action-popup-email-also-sent-to"
                     multiple
@@ -148,7 +148,7 @@
     {% elif action == "notification" %}
         <div class="grid grid-cols-1 gap-3">
             <div class="flex flex-col gap-1">
-                <label class="text-xs text-color-600">{% trans "Notification template" %}</label>
+                <label class="text-xs font-semibold text-color-600">{% trans "Notification template" %}</label>
                 <select
                     id="action-popup-notification-template"
                     class="js-example-basic-single headselect text-color-600 p-2 placeholder:text-xs pe-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600"
@@ -160,7 +160,7 @@
                 </select>
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-xs text-color-600">{% trans "To (record field / self)" %}</label>
+                <label class="text-xs font-semibold text-color-600">{% trans "To (record field / self)" %}</label>
                 <select
                     id="action-popup-notification-to"
                     multiple
@@ -172,7 +172,7 @@
                 </select>
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-xs text-color-600">{% trans "Also notify to" %}</label>
+                <label class="text-xs font-semibold text-color-600">{% trans "Also notify to" %}</label>
                 <select
                     id="action-popup-notification-also-sent-to"
                     multiple
@@ -185,7 +185,7 @@
             </div>
             <div class="flex flex-col gap-1">
                 <label
-                    class="text-xs text-color-600"
+                    class="text-xs font-semibold text-color-600"
                 >{% trans "Custom message (optional, overrides template)" %}</label>
                 <textarea
                     id="action-popup-notification-message"

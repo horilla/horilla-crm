@@ -1,7 +1,7 @@
 {% if action == "update_field" %}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
         <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-color-600">{% trans "Field" %}</label>
+            <label class="text-xs font-semibold font-medium text-color-600">{% trans "Field" %}</label>
             <select
                 id="wf-field-update-field"
                 name="update_field"
@@ -21,7 +21,7 @@
             </select>
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-color-600">{% trans "Value" %}</label>
+            <label class="text-xs font-semibold font-medium text-color-600">{% trans "Value" %}</label>
             <div id="wf-field-value-wrap">
                 <input
                     id="wf-field-update-value"
@@ -36,7 +36,7 @@
 {% elif action == "assign_task" %}
     <div class="grid grid-cols-1 gap-3 mt-3">
         <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-color-600">{% trans "Task title" %}</label>
+            <label class="text-xs font-semibold font-medium text-color-600">{% trans "Task title" %}</label>
             <input
                 name="task_title"
                 type="text"
@@ -46,7 +46,7 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-color-600">{% trans "Due basis" %}</label>
+                <label class="text-xs font-semibold font-medium text-color-600">{% trans "Due basis" %}</label>
                 <select
                     name="task_due_basis"
                     class="js-example-basic-single headselect w-full border border-dark-50 rounded-md text-sm text-color-600 p-2 focus-visible:outline-0 focus:border-primary-600"
@@ -70,7 +70,7 @@
                 </select>
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-color-600">{% trans "Due in days" %}</label>
+                <label class="text-xs font-semibold font-medium text-color-600">{% trans "Due in days" %}</label>
                 <input
                     name="task_due_in_days"
                     type="number"
@@ -82,7 +82,7 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-color-600">{% trans "Status" %}</label>
+                <label class="text-xs font-semibold font-medium text-color-600">{% trans "Status" %}</label>
                 <select
                     name="task_status"
                     class="js-example-basic-single headselect w-full border border-dark-50 rounded-md text-sm text-color-600 p-2 focus-visible:outline-0 focus:border-primary-600"
@@ -104,7 +104,7 @@
                 </select>
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-color-600">{% trans "Priority" %}</label>
+                <label class="text-xs font-semibold font-medium text-color-600">{% trans "Priority" %}</label>
                 <select
                     name="task_priority"
                     class="js-example-basic-single headselect w-full border border-dark-50 rounded-md text-sm text-color-600 p-2 focus-visible:outline-0 focus:border-primary-600"
@@ -127,7 +127,7 @@
             </div>
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-color-600">{% trans "Task description" %}</label>
+            <label class="text-xs font-semibold font-medium text-color-600">{% trans "Task description" %}</label>
             <textarea
                 name="task_description"
                 rows="3"
@@ -138,7 +138,7 @@
 {% elif action == "email" %}
     <div class="grid grid-cols-1 gap-3 mt-3">
         <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-color-600">{% trans "Mail template" %}</label>
+            <label class="text-xs font-semibold font-medium text-color-600">{% trans "Mail template" %}</label>
             <select
                 id="wf-email-template-sel"
                 name="email_template_id"
@@ -158,7 +158,7 @@
             </select>
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-color-600">{% trans "To (email field / email / self)" %}</label>
+            <label class="text-xs font-semibold font-medium text-color-600">{% trans "To (email field / email / self)" %}</label>
             <input type="hidden" name="email_to" id="wf-email-to-val" value="{{ current_values.email_to|default:'' }}">
             <select
                 id="wf-email-to-sel"
@@ -171,7 +171,7 @@
             </select>
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-color-600">{% trans "Also send to" %}</label>
+            <label class="text-xs font-semibold font-medium text-color-600">{% trans "Also send to" %}</label>
             <input
                 type="hidden"
                 name="email_also_send_to"
@@ -216,7 +216,7 @@
 {% elif action == "notification" %}
     <div class="grid grid-cols-1 gap-3 mt-3">
         <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-color-600">{% trans "Notification template" %}</label>
+            <label class="text-xs font-semibold font-medium text-color-600">{% trans "Notification template" %}</label>
             <select
                 name="notification_template_id"
                 class="js-example-basic-single headselect w-full border border-dark-50 rounded-md text-sm text-color-600 p-2 focus-visible:outline-0 focus:border-primary-600"
@@ -235,7 +235,7 @@
             </select>
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-color-600">{% trans "To (record field / self)" %}</label>
+            <label class="text-xs font-semibold font-medium text-color-600">{% trans "To (record field / self)" %}</label>
             <input
                 type="hidden"
                 name="notification_to"
@@ -253,7 +253,7 @@
             </select>
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-color-600">{% trans "Also notify to" %}</label>
+            <label class="text-xs font-semibold font-medium text-color-600">{% trans "Also notify to" %}</label>
             <input
                 type="hidden"
                 name="notification_also_notify_to"
@@ -272,7 +272,7 @@
         </div>
         <div class="flex flex-col gap-1">
             <label
-                class="text-xs font-medium text-color-600"
+                class="text-xs font-semibold font-medium text-color-600"
             >{% trans "Custom message (optional, overrides template)" %}</label>
             <textarea
                 name="notification_custom_message"
@@ -310,7 +310,7 @@
     <div class="grid grid-cols-1 gap-3 mt-3">
         {% if channel_template_kind %}
             <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-color-600">
+                <label class="text-xs font-semibold font-medium text-color-600">
                     {% if channel_template_kind == "mail" %}
                         {% trans "Mail template" %}
                     {% else %}
@@ -350,7 +350,7 @@
             </div>
         {% endif %}
         <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-color-600">{% trans "To" %}</label>
+            <label class="text-xs font-semibold font-medium text-color-600">{% trans "To" %}</label>
             <input
                 type="hidden"
                 name="channel_to"
@@ -368,7 +368,7 @@
             </select>
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-color-600">{% trans "Also send to" %}</label>
+            <label class="text-xs font-semibold font-medium text-color-600">{% trans "Also send to" %}</label>
             <input
                 type="hidden"
                 name="channel_also_send_to"

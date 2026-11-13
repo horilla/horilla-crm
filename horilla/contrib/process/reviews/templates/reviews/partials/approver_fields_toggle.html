@@ -8,7 +8,7 @@
 >
     <div class="flex justify-between items-center mb-2">
         <div class="flex justify-between mb-1 w-full">
-            <label for="{{ form.approver_users.id_for_label }}" class="text-xs text-color-600">
+            <label for="{{ form.approver_users.id_for_label }}" class="text-xs font-semibold text-color-600">
                 {{ form.approver_users.label }}
                 {% if show_users %}<span class="text-red-500">*</span>{% endif %}
             </label>
@@ -29,7 +29,7 @@
 >
     <div class="flex justify-between items-center mb-2">
         <div class="flex justify-between mb-1 w-full">
-            <label for="{{ form.approver_roles.id_for_label }}" class="text-xs text-color-600">
+            <label for="{{ form.approver_roles.id_for_label }}" class="text-xs font-semibold text-color-600">
                 {{ form.approver_roles.label }}
                 {% if show_roles %}<span class="text-red-500">*</span>{% endif %}
             </label>

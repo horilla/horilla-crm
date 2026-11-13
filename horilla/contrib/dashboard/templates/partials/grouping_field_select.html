@@ -1,4 +1,4 @@
-<label for="id_grouping_field" class="text-xs text-color-600">{% trans "Grouping Field" %}</label>
+<label for="id_grouping_field" class="text-xs font-semibold text-color-600">{% trans "Grouping Field" %}</label>
 <select name="grouping_field" id="id_grouping_field" class="js-example-basic-single headselect">
     {% for value, label in field_choices %}
         <option value="{{ value }}" {% if current_grouping and value == current_grouping %}selected{% endif %}>

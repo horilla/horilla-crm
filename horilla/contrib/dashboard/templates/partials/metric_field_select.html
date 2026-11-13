@@ -1,6 +1,6 @@
 <div class="flex flex-col h-[20px] mb-10">
     <div class="flex justify-between items-center mb-1">
-        <label for="id_metric_type" class="text-xs text-color-600">{% trans "Metric type" %}</label>
+        <label for="id_metric_type" class="text-xs font-semibold text-color-600">{% trans "Metric type" %}</label>
     </div>
     <select name="metric_type" id="id_metric_type" class="js-example-basic-single headselect">
         {% for value, label in field_choices %}

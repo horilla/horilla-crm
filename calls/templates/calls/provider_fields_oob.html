@@ -1,6 +1,6 @@
 {% if 'account_sid' in visible_fields %}
     <div id="account_sid_container" class="flex flex-col" hx-swap-oob="outerHTML">
-        <label for="id_account_sid" class="text-xs text-color-600">{{ form.account_sid.label }}</label>
+        <label for="id_account_sid" class="text-xs font-semibold text-color-600">{{ form.account_sid.label }}</label>
         <div class="relative">{{ form.account_sid }}</div>
         {% for error in form.account_sid.errors %}<p class="text-xs text-red-500 mt-1">{{ error }}</p>{% endfor %}
     </div>
@@ -11,11 +11,11 @@
 {% if 'api_key' in visible_fields %}
     <div id="api_key_container" class="flex flex-col" hx-swap-oob="outerHTML">
         {% if provider_type == 'telnyx' %}
-            <label for="id_api_key" class="text-xs text-color-600">{% trans "Connection ID" %}</label>
+            <label for="id_api_key" class="text-xs font-semibold text-color-600">{% trans "Connection ID" %}</label>
         {% elif provider_type == 'exotel' %}
-            <label for="id_api_key" class="text-xs text-color-600">{% trans "API Key" %}</label>
+            <label for="id_api_key" class="text-xs font-semibold text-color-600">{% trans "API Key" %}</label>
         {% else %}
-            <label for="id_api_key" class="text-xs text-color-600">{{ form.api_key.label }}</label>
+            <label for="id_api_key" class="text-xs font-semibold text-color-600">{{ form.api_key.label }}</label>
         {% endif %}
         <div class="relative">{{ form.api_key }}</div>
         {% for error in form.api_key.errors %}<p class="text-xs text-red-500 mt-1">{{ error }}</p>{% endfor %}
@@ -26,7 +26,7 @@
 
 {% if 'api_base_url' in visible_fields %}
     <div id="api_base_url_container" class="flex flex-col" hx-swap-oob="outerHTML">
-        <label for="id_api_base_url" class="text-xs text-color-600">{{ form.api_base_url.label }}</label>
+        <label for="id_api_base_url" class="text-xs font-semibold text-color-600">{{ form.api_base_url.label }}</label>
         <div class="relative">{{ form.api_base_url }}</div>
         {% for error in form.api_base_url.errors %}<p class="text-xs text-red-500 mt-1">{{ error }}</p>{% endfor %}
     </div>
@@ -36,7 +36,7 @@
 
 {% if 'webhook_secret' in visible_fields %}
     <div id="webhook_secret_container" class="flex flex-col" hx-swap-oob="outerHTML">
-        <label for="id_webhook_secret" class="text-xs text-color-600">{{ form.webhook_secret.label }}</label>
+        <label for="id_webhook_secret" class="text-xs font-semibold text-color-600">{{ form.webhook_secret.label }}</label>
         {{ form.webhook_secret }}
         {% for error in form.webhook_secret.errors %}<p class="text-xs text-red-500 mt-1">{{ error }}</p>{% endfor %}
     </div>

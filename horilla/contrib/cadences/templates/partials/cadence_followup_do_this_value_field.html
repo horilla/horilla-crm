@@ -7,7 +7,7 @@
 >
     {% if show_field %}
         <div class="flex justify-between mb-1 w-full">
-            <label for="{{ form.do_this_value.id_for_label }}" class="text-xs text-color-600">
+            <label for="{{ form.do_this_value.id_for_label }}" class="text-xs font-semibold text-color-600">
                 {{ form.do_this_value.label }}
                 {% if form.do_this_value.field.required %}<span class="text-red-500">*</span>{% endif %}
             </label>

@@ -1,7 +1,7 @@
 {% if show_location %}
     <div id="location_container" class="flex flex-col">
         <div class="flex justify-between items-center mb-1">
-            <label for="id_location" class="text-xs text-color-600 flex-1 min-w-0">
+            <label for="id_location" class="text-xs font-semibold text-color-600 flex-1 min-w-0">
                 {% trans "Location" %}
             </label>
         </div>
@@ -24,7 +24,7 @@
 {% if show_meeting_provider %}
     <div id="meeting_provider_container" class="flex flex-col" hx-swap-oob="outerHTML">
         <div class="flex justify-between items-center mb-1">
-            <label for="id_meeting_provider" class="text-xs text-color-600 flex-1 min-w-0">
+            <label for="id_meeting_provider" class="text-xs font-semibold text-color-600 flex-1 min-w-0">
                 {% trans "Meeting Provider" %} <span class="text-red-500">*</span>
             </label>
         </div>

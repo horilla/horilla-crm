@@ -57,7 +57,7 @@
                         {% if field.name == 'company' and not field.is_hidden %}
                             <div id="{{ field.name }}_container" class="flex flex-col">
                                 <div class="flex justify-between items-center mb-1">
-                                    <label for="{{ field.id_for_label }}" class="text-xs text-color-600">
+                                    <label for="{{ field.id_for_label }}" class="text-xs font-semibold text-color-600">
                                         {{ field.label }}
                                         {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
                                     </label>
@@ -81,7 +81,7 @@
                         {% for field in form %}
                             {% if field.name == 'role' and not field.is_hidden %}
                                 <div class="flex justify-between items-center mb-1">
-                                    <label for="{{ field.id_for_label }}" class="text-xs text-color-600">
+                                    <label for="{{ field.id_for_label }}" class="text-xs font-semibold text-color-600">
                                         {{ field.label }}
                                         {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
                                     </label>
@@ -107,7 +107,7 @@
                                 {% if not field.is_hidden %}
                                     <div id="{{ field.name }}_container" class="flex flex-col">
                                         <div class="flex justify-between items-center mb-1">
-                                            <label for="{{ field.id_for_label }}" class="text-xs text-color-600">
+                                            <label for="{{ field.id_for_label }}" class="text-xs font-semibold text-color-600">
                                                 {{ field.label }}
                                                 {% if field.field.required %}<span class="text-red-500"
                                                     >*</span>{% endif %}

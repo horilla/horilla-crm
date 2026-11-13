@@ -15,7 +15,7 @@
 
             {# ── Timing row ────────────────────────────────────────────────── #}
             <div class="mb-4">
-                <label class="text-xs font-medium text-color-600 block mb-2">{% trans "Trigger Timing" %}</label>
+                <label class="text-xs font-semibold font-medium text-color-600 block mb-2">{% trans "Trigger Timing" %}</label>
                 <div class="flex items-center gap-2">
                     {# Delay value #}
                     <input
@@ -46,9 +46,21 @@
                     </p>{% endif %}
             </div>
 
-            {# ── Repeat row (optional) ─────────────────────────────────────── #}
+            {# ── Repeat row ────────────────────────────────────────────────── #}
             <div class="mb-4">
-                <label class="text-xs font-medium text-color-600 block mb-2" for="tt-repeat-value">{% trans "Repeat (optional)" %}</label>
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-xs font-semibold font-medium text-color-600" for="tt-repeat-value">{% trans "Repeat" %}</label>
+                    {% trans "Leave empty to run once. A repeat runs while the record still meets the rule's criteria and stops when it leaves them." as repeat_help %}
+                    <span
+                        class="inline-flex cursor-pointer text-[#a19e9e] flex-shrink-0"
+                        title="{{ repeat_help }}"
+                        aria-label="{{ repeat_help }}"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 20 20">
+                            <path fill="currentColor" d="M2.93 17.07A10 10 0 1 1 17.07 2.93A10 10 0 0 1 2.93 17.07m12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32M9 11V9h2v6H9zm0-6h2v2H9z" />
+                        </svg>
+                    </span>
+                </div>
                 <div class="flex items-center gap-2">
                     <span class="text-sm text-color-600">{% trans "Every" %}</span>
                     <input
@@ -61,7 +73,6 @@
                     >
                     {{ form.repeat_every_unit }}
                 </div>
-                <p class="text-xs text-dark-200 mt-1">{% trans "Leave empty to run once. A repeat runs while the record still meets the rule's criteria and stops when it leaves them." %}</p>
                 {% if form.repeat_every_value.errors %}<p class="text-xs text-red-600 mt-1">
                         {{ form.repeat_every_value.label }}: {{ form.repeat_every_value.errors|join:", " }}
                     </p>{% endif %}
@@ -69,7 +80,7 @@
 
             {# ── Action type ───────────────────────────────────────────────── #}
             <div class="flex flex-col gap-1 mb-4">
-                <label class="text-xs font-medium text-color-600">{% trans "Action Type" %}</label>
+                <label class="text-xs font-semibold font-medium text-color-600">{% trans "Action Type" %}</label>
                 <select
                     id="wf-tt-action-type-select"
                     name="action_type"

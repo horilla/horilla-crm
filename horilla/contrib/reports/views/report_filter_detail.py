@@ -15,11 +15,7 @@ from horilla.db.models import ForeignKey, Q
 from horilla.shortcuts import render
 from horilla.urls import reverse_lazy
 from horilla.utils.choices import TABLE_FALLBACK_FIELD_TYPES
-from horilla.utils.decorators import (
-    htmx_required,
-    method_decorator,
-    permission_required_or_denied,
-)
+from horilla.utils.decorators import method_decorator, permission_required_or_denied
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
 
@@ -39,7 +35,7 @@ from .toolkit.report_helper import (
 logger = logging.getLogger(__name__)
 
 
-@method_decorator(htmx_required, name="dispatch")
+# @method_decorator(htmx_required, name="dispatch")
 @method_decorator(
     permission_required_or_denied(["reports.view_report", "reports.view_own_report"]),
     name="dispatch",
@@ -85,7 +81,7 @@ class ReportDetailFilteredView(LoginRequiredMixin, View):
         try:
             report = Report.objects.get(pk=pk)
         except Report.DoesNotExist:
-            return render(request, "list_view.html")
+            return render(request, "404.html", status=404)
         if not user_can_access_report(request.user, report):
             return render(request, "403.html", status=403)
 

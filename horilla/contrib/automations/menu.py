@@ -21,7 +21,7 @@ class AutomationSettings:
     order = 4
     items = [
         {
-            "label": _("Mail & Notifications"),
+            "label": _("Message Automations"),
             "url": reverse_lazy("automations:automation_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",

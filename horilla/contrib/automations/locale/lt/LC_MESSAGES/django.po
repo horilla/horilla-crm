@@ -84,7 +84,7 @@ msgstr ""
 msgid "No automations were processed."
 msgstr ""
 
-msgid "Mail & Notifications"
+msgid "Message Automations"
 msgstr ""
 
 msgid "Equal (==)"
@@ -211,10 +211,7 @@ msgstr ""
 msgid "Optional. Leave empty to run whenever the scheduler runs."
 msgstr ""
 
-msgid "Mail and Notification"
-msgstr ""
-
-msgid "Mail and Notifications"
+msgid "Message Automation"
 msgstr ""
 
 msgid "This field is required when Trigger is 'Scheduled'."
@@ -328,7 +325,7 @@ msgstr ""
 msgid "Select user fields"
 msgstr ""
 
-msgid "Automate mail and notifications based on events in your workflow."
+msgid "Automate messages across your delivery channels based on events in your workflow."
 msgstr ""
 
 msgid "Template"

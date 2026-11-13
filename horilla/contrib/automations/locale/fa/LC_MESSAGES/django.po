@@ -100,8 +100,8 @@ msgstr "همه اتوماسیون‌های انتخاب شده از قبل وج�
 msgid "No automations were processed."
 msgstr "هیچ اتوماسیونی پردازش نشد."
 
-msgid "Mail & Notifications"
-msgstr "ایمیل و اعلان‌ها"
+msgid "Message Automations"
+msgstr ""
 
 msgid "Equal (==)"
 msgstr "برابر (==)"
@@ -246,11 +246,8 @@ msgstr "زمان اجرا"
 msgid "Optional. Leave empty to run whenever the scheduler runs."
 msgstr "اختیاری. برای اجرا در هر زمان که زمان‌بند اجرا می‌شود، خالی بگذارید."
 
-msgid "Mail and Notification"
-msgstr "ایمیل و اعلان"
-
-msgid "Mail and Notifications"
-msgstr "ایمیل و اعلان‌ها"
+msgid "Message Automation"
+msgstr ""
 
 msgid "This field is required when Trigger is 'Scheduled'."
 msgstr "این فیلد زمانی که محرک 'زمان‌بندی شده' است الزامی است."
@@ -370,8 +367,8 @@ msgstr "برای بارگذاری اتوماسیون‌ها، یک سرور ای
 msgid "Select user fields"
 msgstr "انتخاب فیلدهای کاربر"
 
-msgid "Automate mail and notifications based on events in your workflow."
-msgstr "ارسال خودکار ایمیل و اعلان‌ها بر اساس رویدادهای گردش کار شما."
+msgid "Automate messages across your delivery channels based on events in your workflow."
+msgstr ""
 
 msgid "Template"
 msgstr "قالب"
@@ -395,8 +392,8 @@ msgstr "یک کانال تحویل معتبر انتخاب کنید: %(value)s."
 msgid "Select delivery channels"
 msgstr "انتخاب کانال‌های تحویل"
 
-msgid "Mail to/Notify To"
-msgstr "ارسال ایمیل / اعلان به"
+msgid "Send To"
+msgstr ""
 
 msgid "Also Send To"
 msgstr "همچنین ارسال به"

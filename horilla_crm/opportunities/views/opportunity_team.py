@@ -47,6 +47,7 @@ from horilla.web import (
     HttpNotFound,
     HttpResponse,
     HxTriggerResponse,
+    RedirectResponse,
     RefreshResponse,
     ScriptResponse,
 )
@@ -1149,6 +1150,14 @@ def _team_selling_disabled_refresh(request):
 class TeamSellingAccessAllView(LoginRequiredMixin, View):
     """Set team selling access to all users."""
 
+    def dispatch(self, request, *args, **kwargs):
+        """Go back to the setup page when no company is active."""
+        if request.user.is_authenticated and not request.active_company:
+            return RedirectResponse(
+                request, redirect_to=reverse("opportunities:team_selling_setup")
+            )
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
         """Switch the access type to all users and reload the setup page."""
         settings = OpportunitySettings.get_settings(request.active_company)
@@ -1310,6 +1319,14 @@ class TeamSellingAccessRolesView(_TeamSellingAccessFormView):
     field_name = "allowed_roles"
     success_message = _("Allowed roles updated.")
 
+    def dispatch(self, request, *args, **kwargs):
+        """Go back to the settings page when no company is active."""
+        if request.user.is_authenticated and not request.active_company:
+            return RedirectResponse(
+                request, redirect_to=reverse("opportunities:team_selling_setup")
+            )
+        return super().dispatch(request, *args, **kwargs)
+
     def _get_m2m_picker_info(self):
         return {}
 
@@ -1331,6 +1348,14 @@ class TeamSellingAccessUsersView(_TeamSellingAccessFormView):
     access_type = "users"
     field_name = "allowed_users"
     success_message = _("Allowed users updated.")
+
+    def dispatch(self, request, *args, **kwargs):
+        """Go back to the settings page when no company is active."""
+        if request.user.is_authenticated and not request.active_company:
+            return RedirectResponse(
+                request, redirect_to=reverse("opportunities:team_selling_setup")
+            )
+        return super().dispatch(request, *args, **kwargs)
 
     def get_queryset_for_company(self, company):
         """Active users of the active company."""

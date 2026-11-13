@@ -5,7 +5,10 @@
         {% include "messages.html" %}
         {% reload_button "#opportunity-team-settings" %}
 
-        <h3 class="text-md font-semibold">{% trans "Team Selling Setup" %}</h3>
+        {% if not settings %}
+            {% include "components/empty_states/activate_company.html" %}
+        {% else %}
+            <h3 class="text-md font-semibold">{% trans "Team Selling Setup" %}</h3>
         <p class="text-xs text-gray-500 mb-4">
             {% trans "Configure opportunity team settings to enable collaboration among sales team members" %}
         </p>
@@ -305,6 +308,7 @@
                     </div>
                 </div>
             </div>
+        {% endif %}
         {% endif %}
     </div>
 {% endblock %}

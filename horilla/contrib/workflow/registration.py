@@ -7,7 +7,7 @@ from horilla.registry.feature import register_feature, register_models_for_featu
 register_feature(
     "workflow",
     "workflow_models",
-    auto_register_all=True,
+    auto_register_all=False,
 )
 
 # Personal preferences/logs: ignored in the delete dependency dialog.

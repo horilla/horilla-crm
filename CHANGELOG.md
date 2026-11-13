@@ -37,6 +37,133 @@ date and open a fresh Unreleased above it.
 ### Security      — vulnerabilities fixed; link the advisory and credit the reporter
 -->
 
+## [1.18.0] — 2026-11-13
+
+### Added
+
+- WhatsApp: a company connects its own WhatsApp Business account in
+  **Settings → WhatsApp** and tests the connection before anyone sends. Horilla
+  does not ship a provider. The record's Activity tab shows the live
+  conversation, and a reply is sent in the background. Templates and flows are
+  managed in Settings, and bot rules decide the automatic replies.
+- Message Automations: an automation can **Send as WhatsApp Message** through a
+  connected account and an approved template. The number comes from the record
+  or from a related contact.
+- Get started: the home page opens with a setup guide named for the company.
+  Each app adds its own steps (company, roles and users, mail server, lead and
+  opportunity stages, import leads). It can be skipped, dismissed and brought
+  back.
+- Search: global search suggests matches as you type and offers quick filters.
+  List search filters by field, and the applied filters stay in the navbar.
+  Dashboards, reports, mail, calls, booking, approvals and reviews use the
+  same search.
+- Workflow: a time trigger can repeat while the record still meets the rule,
+  and an edit rule can run only when the record enters its criteria (#105,
+  #111).
+- Cadences: task and call follow-ups can be assigned to the record owner
+  (#106).
+- Leads: **Round Robin** assignment, and **Allow Owner Reassignment** to lock
+  the owner a rule just set.
+- Opportunities: a message can go to the primary contact (#109).
+- Activity: other apps can add their own tabs on the Activity tab.
+
+### Changed
+
+- The automations settings entry is **Message Automations**. The recipient
+  picker follows the selected channels, and each channel keeps its own
+  recipients.
+- A cadence's automatic run stops when the record no longer meets the
+  conditions, and what is still pending is cancelled (#110).
+- Boolean fields use a labelled two-segment control, and form labels are
+  semi-bold.
+- View-own includes the user and their team. Delete-own lets a manager delete a
+  subordinate's records, and a delete stays in the active company.
+- The company column shows only when all companies is on. Company, call,
+  calendar and meeting settings ask for an active company instead of failing.
+- A record's History shows a mail's outcome and hides notifications. Merge
+  compare hides additional info and company.
+- A logged call is labelled **Call**, and the task list loads once so the
+  Completed sub-tab stays selected.
+
+### Fixed
+
+- Each ASGI call runs in a fresh context, so a worker no longer keeps the
+  previous request's context and deadlocks (#108).
+- Converting a lead checks permission, and Select Existing stays in scope.
+- Charts show the donut total, and chart values are escaped. User Picker and
+  Select2 stay inside the user's permissions and company.
+- The selected Select2 option uses the same highlight as the hovered one.
+- Timeline and opportunity form tests follow the current code (#112).
+
+### Upgrading
+
+Run the migrations. WhatsApp adds its own tables for accounts, templates,
+conversations and bot rules. Existing automations are unchanged until a
+WhatsApp channel is selected.
+
+## [1.17.2] — 2026-11-06
+
+### Breaking
+
+- Converting a lead needs **Can Convert Lead** or **Can Convert Own Lead**.
+  Grant them to the roles that convert leads.
+- Telnyx and SignalWire call providers need a webhook secret. An active
+  provider saved without one refuses every callback until the key is added.
+  Twilio signs with the Auth Token.
+- A blank or placeholder `SECRET_KEY` is replaced by a key stored for the
+  install. Set `SECRET_KEY` yourself when more than one server must share it.
+
+### Added
+
+- Edit on the page: company, branch, user and My Profile details show
+  read-only sections and switch to the form in place. The user page has
+  **Details** and **Login History** tabs.
+- Reports and dashboards: a report's **Detail Table** can be added to a
+  dashboard with that report's filters, and chart components made from a
+  report use its filters. Activities can be report fields and dashboard
+  components.
+- Google Calendar, Google Meet and Team Selling access can be limited to all
+  users, specific roles or specific users. Existing companies stay on **All
+  Users**.
+- Workflow actions, cadence follow-ups and automations can send through a
+  channel another app registers (#97, #98).
+- Conditions: rows can join with a logical operator and hold several values.
+  Pickers offer a user's department, role and company, and the audit fields.
+
+### Changed
+
+- Rows, exports and dashboard tables in reports follow the list's rule: view
+  sees every record, view-own sees owned records and records granted another
+  way.
+- Only one lead assignment rule stays active per company. The web-to-lead
+  builder lists fields when the company has no saved form (#99, #100).
+- Opportunities: the email field is on the create and edit forms, and the
+  closed-stage popup defaults to Closed Won.
+- Fiscal years rebuild only when their structure changes, and the preview
+  opens in the full-page calendar.
+- Changing language keeps the current page. Mail history, the phone sign-in
+  link and the password-reset subject use the product name from branding.
+- Short keys search matches the page title, path, key and command.
+- Jalali timeline uses Shamsi months and seasons. Form layouts have Cancel in
+  the navbar and ask before discarding.
+
+### Fixed
+
+- Call provider webhooks with no verification key, or a signature that does
+  not match, are refused. Click-to-call is limited to users who may use calls.
+- HTMX sends the CSRF token from the live cookie, so a sign-in in another tab
+  does not make every later save fail.
+
+### Security
+
+- Uploaded files require a login. A known media URL is not served to a
+  signed-out visitor.
+- Failed sign-ins are limited on the page, the admin login and the token API.
+  A correct password clears the counters for that username. If the counter
+  store cannot be read, the sign-in is refused.
+- The user API lists and writes users in the requester's company. A superuser
+  still sees every company.
+
 ## [1.17.1] — 2026-10-30
 
 ### Added

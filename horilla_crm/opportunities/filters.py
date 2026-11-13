@@ -28,7 +28,14 @@ class OpportunityFilter(OwnerFiltersetMixin, HorillaFilterSet):
         model = Opportunity
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["name"]
+        search_fields = [
+            "name",
+            "account__name",
+            "email",
+            "order_number",
+            "next_step",
+            "description",
+        ]
 
 
 class OpportunityStageFilter(HorillaFilterSet):
@@ -52,7 +59,7 @@ class OpportunityTeamFilter(HorillaFilterSet):
         model = OpportunityTeam
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["team_name"]
+        search_fields = ["team_name", "description"]
 
 
 class OpportunityTeamMembersFilter(HorillaFilterSet):
@@ -64,4 +71,9 @@ class OpportunityTeamMembersFilter(HorillaFilterSet):
         model = DefaultOpportunityMember
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["user__first_name", "user__last_name"]
+        search_fields = [
+            "user__first_name",
+            "user__last_name",
+            "team__team_name",
+        ]
+        name_split_fields = ["user__first_name", "user__last_name"]

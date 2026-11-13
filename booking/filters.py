@@ -21,7 +21,9 @@ class BookingPageFilter(HorillaFilterSet):
             "host__username",
             "host__first_name",
             "host__last_name",
+            "location",
         ]
+        name_split_fields = ["host__first_name", "host__last_name"]
 
 
 class BookingFilter(HorillaFilterSet):
@@ -38,4 +40,4 @@ class BookingFilter(HorillaFilterSet):
             "cancellation_token",
             "cancellation_reason",
         ]
-        search_fields = ["booker_name", "booker_email"]
+        search_fields = ["booker_name", "booker_email", "booking_page__title"]

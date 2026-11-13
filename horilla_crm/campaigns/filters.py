@@ -23,4 +23,4 @@ class CampaignFilter(OwnerFiltersetMixin, HorillaFilterSet):
         model = Campaign
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["campaign_name"]
+        search_fields = ["campaign_name", "description"]

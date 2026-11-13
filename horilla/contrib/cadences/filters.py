@@ -23,4 +23,4 @@ class CadenceFilter(OwnerFiltersetMixin, HorillaFilterSet):
         model = Cadence
         fields = "__all__"
         exclude = ["additional_info", "id", "review_fields"]
-        search_fields = ["name", "module__model", "module__app_label"]
+        search_fields = ["name", "description", "module__model"]

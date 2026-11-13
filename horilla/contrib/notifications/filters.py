@@ -18,4 +18,4 @@ class NotificationTemplateFilter(HorillaFilterSet):
         model = NotificationTemplate
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["title"]
+        search_fields = ["title", "message", "content_type__model"]

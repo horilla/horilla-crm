@@ -23,7 +23,7 @@ class HorillaMailServerFilter(HorillaFilterSet):
         model = HorillaMailConfiguration
         fields = "__all__"
         exclude = ["additional_info", "token"]
-        search_fields = ["host", "username"]
+        search_fields = ["host", "username", "from_email", "display_name"]
 
 
 class HorillaMailTemplateFilter(HorillaFilterSet):
@@ -35,7 +35,7 @@ class HorillaMailTemplateFilter(HorillaFilterSet):
         model = HorillaMailTemplate
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["title"]
+        search_fields = ["title", "subject"]
 
 
 class HorillaMailHistoryFilter(HorillaFilterSet):
@@ -56,7 +56,7 @@ class HorillaMailHistoryFilter(HorillaFilterSet):
             "object_id",
             "additional_info",
         ]
-        search_fields = ["subject", "to"]
+        search_fields = ["subject", "to", "cc"]
 
 
 class IncomingMailFilter(HorillaFilterSet):

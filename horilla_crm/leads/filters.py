@@ -24,7 +24,15 @@ class LeadFilter(OwnerFiltersetMixin, HorillaFilterSet):
             "converted_opportunity",
             "converted_at",
         ]
-        search_fields = ["first_name", "email", "title"]
+        search_fields = [
+            "title",
+            "first_name",
+            "last_name",
+            "email",
+            "contact_number",
+            "lead_company",
+            "city",
+        ]
 
 
 class LeadStatusFilter(HorillaFilterSet):
@@ -48,4 +56,4 @@ class LeadAssignmentFilter(HorillaFilterSet):
         model = LeadAssignmentRule
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["name"]
+        search_fields = ["name", "description"]

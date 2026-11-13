@@ -18,7 +18,7 @@ class WorkflowRuleFilter(HorillaFilterSet):
         model = WorkflowRule
         fields = "__all__"
         exclude = ["additional_info", "process_config"]
-        search_fields = ["name"]
+        search_fields = ["name", "description"]
 
 
 class ScheduledWorkflowExecutionFilter(HorillaFilterSet):
@@ -30,4 +30,4 @@ class ScheduledWorkflowExecutionFilter(HorillaFilterSet):
         model = ScheduledWorkflowExecution
         fields = "__all__"
         exclude = ["additional_info", "time_trigger", "error_message"]
-        search_fields = ["object_id"]
+        search_fields = ["object_id", "error_message"]

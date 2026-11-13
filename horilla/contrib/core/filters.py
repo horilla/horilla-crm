@@ -37,7 +37,14 @@ class UserFilter(HorillaFilterSet):
             "username",
             "is_staff",
         ]
-        search_fields = ["first_name", "email", "last_name"]
+        search_fields = [
+            "first_name",
+            "last_name",
+            "email",
+            "contact_number",
+            "department__department_name",
+            "role__role_name",
+        ]
 
 
 class CompanyFilter(HorillaFilterSet):
@@ -49,7 +56,7 @@ class CompanyFilter(HorillaFilterSet):
         model = Company
         fields = "__all__"
         exclude = ["icon"]
-        search_fields = ["name"]
+        search_fields = ["name", "email", "website", "contact_number", "city"]
 
 
 class DepartmentFilter(HorillaFilterSet):
@@ -61,7 +68,7 @@ class DepartmentFilter(HorillaFilterSet):
         model = Department
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["department_name"]
+        search_fields = ["department_name", "description"]
 
 
 class TeamRoleFilter(HorillaFilterSet):
@@ -73,7 +80,7 @@ class TeamRoleFilter(HorillaFilterSet):
         model = TeamRole
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["team_role_name"]
+        search_fields = ["team_role_name", "description"]
 
 
 class RoleFilter(HorillaFilterSet):
@@ -85,7 +92,7 @@ class RoleFilter(HorillaFilterSet):
         model = Role
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["role_name"]
+        search_fields = ["role_name", "parent_role__role_name", "description"]
 
 
 class CustomerRoleFilter(HorillaFilterSet):
@@ -97,7 +104,7 @@ class CustomerRoleFilter(HorillaFilterSet):
         model = CustomerRole
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["customer_role_name"]
+        search_fields = ["customer_role_name", "description"]
 
 
 class PartnerRoleFilter(HorillaFilterSet):
@@ -109,7 +116,7 @@ class PartnerRoleFilter(HorillaFilterSet):
         model = PartnerRole
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["partner_role_name"]
+        search_fields = ["partner_role_name", "description"]
 
 
 class HolidayFilter(HorillaFilterSet):

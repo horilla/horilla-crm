@@ -4,7 +4,7 @@
 from horilla.contrib.generics.filters import HorillaFilterSet
 
 # Local imports
-from .models import Report  # Ensure your Report model is imported
+from .models import Report, ReportFolder  # Ensure your Report model is imported
 
 
 class ReportFilter(HorillaFilterSet):
@@ -16,4 +16,15 @@ class ReportFilter(HorillaFilterSet):
         model = Report
         fields = "__all__"
         exclude = ["additional_info"]
+        search_fields = ["name", "folder__name"]
+
+
+class ReportFolderFilter(HorillaFilterSet):
+    """Filter set for searching report folders."""
+
+    class Meta:
+        """Meta options for ReportFolderFilter."""
+
+        model = ReportFolder
+        fields = ["name"]
         search_fields = ["name"]

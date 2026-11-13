@@ -4,7 +4,7 @@
 from horilla.contrib.generics.filters import HorillaFilterSet
 
 # Local imports
-from .models import Dashboard
+from .models import Dashboard, DashboardFolder
 
 
 class DashboardFilter(HorillaFilterSet):
@@ -16,4 +16,15 @@ class DashboardFilter(HorillaFilterSet):
         model = Dashboard
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["name"]
+        search_fields = ["name", "description", "folder__name"]
+
+
+class DashboardFolderFilter(HorillaFilterSet):
+    """Filter set for searching dashboard folders."""
+
+    class Meta:
+        """Meta class for DashboardFolderFilter"""
+
+        model = DashboardFolder
+        fields = ["name", "description"]
+        search_fields = ["name", "description"]

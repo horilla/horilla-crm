@@ -11,4 +11,4 @@ class ScoringRuleFilter(HorillaFilterSet):
         model = ScoringRule
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["name"]
+        search_fields = ["name", "description"]

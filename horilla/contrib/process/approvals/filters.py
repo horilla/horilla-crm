@@ -24,6 +24,7 @@ class ApprovalInstanceFilter(HorillaFilterSet):
             "requested_by__first_name",
             "requested_by__last_name",
         ]
+        name_split_fields = ["requested_by__first_name", "requested_by__last_name"]
 
 
 class ApprovalRuleFilter(HorillaFilterSet):
@@ -35,4 +36,4 @@ class ApprovalRuleFilter(HorillaFilterSet):
         model = ApprovalRule
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["name"]
+        search_fields = ["name", "description"]

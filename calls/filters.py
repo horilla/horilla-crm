@@ -22,7 +22,7 @@ class CallProviderFilter(HorillaFilterSet):
             "webhook_secret",
             "extra_config",
         ]
-        search_fields = ["name", "account_sid", "caller_id"]
+        search_fields = ["name", "caller_id"]
 
 
 class AgentMappingFilter(HorillaFilterSet):
@@ -34,7 +34,14 @@ class AgentMappingFilter(HorillaFilterSet):
         model = AgentMapping
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["extension", "agent_id"]
+        search_fields = [
+            "extension",
+            "agent_id",
+            "user__first_name",
+            "user__last_name",
+            "provider__name",
+        ]
+        name_split_fields = ["user__first_name", "user__last_name"]
 
 
 class CallLogFilter(HorillaFilterSet):
@@ -52,4 +59,4 @@ class CallLogFilter(HorillaFilterSet):
             "related_model_name",
             "related_object_id",
         ]
-        search_fields = ["from_number", "to_number"]
+        search_fields = ["from_number", "to_number", "provider__name"]

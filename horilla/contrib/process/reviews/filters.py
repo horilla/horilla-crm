@@ -26,7 +26,7 @@ class ReviewProcessFilter(OwnerFiltersetMixin, HorillaFilterSet):
         model = ReviewProcess
         fields = "__all__"
         exclude = ["additional_info", "id", "review_fields"]
-        search_fields = ["title", "model__model", "model__app_label"]
+        search_fields = ["title", "method_title", "model__model"]
 
 
 class ReviewJobFilter(OwnerFiltersetMixin, HorillaFilterSet):
@@ -88,4 +88,10 @@ class ReviewJobFilter(OwnerFiltersetMixin, HorillaFilterSet):
         model = ReviewJob
         fields = "__all__"
         exclude = ["id", "additional_info", "review_fields_snapshot"]
-        search_fields = ["reviews__title"]
+        search_fields = [
+            "reviews__title",
+            "assigned_to__first_name",
+            "assigned_to__last_name",
+            "review_note",
+        ]
+        name_split_fields = ["assigned_to__first_name", "assigned_to__last_name"]

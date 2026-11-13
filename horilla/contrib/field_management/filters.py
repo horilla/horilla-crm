@@ -39,7 +39,7 @@ class FieldRequirementFilter(HorillaFilterSet):
         model = FieldRequirement
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["field_name"]
+        search_fields = ["field_name", "content_type__model"]
 
 
 class CustomFieldDefinitionFilter(HorillaFilterSet):
@@ -50,7 +50,7 @@ class CustomFieldDefinitionFilter(HorillaFilterSet):
 
         model = CustomFieldDefinition
         fields = ["content_type", "field_type", "is_required"]
-        search_fields = ["name"]
+        search_fields = ["name", "content_type__model"]
 
 
 class FormLayoutFilter(HorillaFilterSet):
@@ -61,4 +61,4 @@ class FormLayoutFilter(HorillaFilterSet):
 
         model = FormLayoutField
         fields = ["content_type"]
-        search_fields = ["content_type__model"]
+        search_fields = ["content_type__model", "field_name"]

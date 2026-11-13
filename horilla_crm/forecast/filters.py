@@ -22,7 +22,13 @@ class ForecastTargetFilter(HorillaFilterSet):
         model = ForecastTarget
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["target_amount"]
+        search_fields = [
+            "target_amount",
+            "assigned_to__first_name",
+            "assigned_to__last_name",
+            "role__role_name",
+        ]
+        name_split_fields = ["assigned_to__first_name", "assigned_to__last_name"]
 
 
 class ForecastTypeFilter(HorillaFilterSet):
@@ -36,4 +42,4 @@ class ForecastTypeFilter(HorillaFilterSet):
         model = ForecastType
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["name"]
+        search_fields = ["name", "description"]

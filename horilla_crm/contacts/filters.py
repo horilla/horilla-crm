@@ -23,4 +23,11 @@ class ContactFilter(OwnerFiltersetMixin, HorillaFilterSet):
         model = Contact
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["first_name", "last_name", "email"]
+        search_fields = [
+            "title",
+            "first_name",
+            "last_name",
+            "email",
+            "contact_number",
+            "address_city",
+        ]

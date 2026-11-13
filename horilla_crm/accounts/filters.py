@@ -25,4 +25,11 @@ class AccountFilter(OwnerFiltersetMixin, HorillaFilterSet):
         model = Account
         fields = "__all__"
         exclude = ["additional_info"]
-        search_fields = ["name"]
+        search_fields = [
+            "name",
+            "account_number",
+            "site",
+            "website",
+            "contact_number",
+            "billing_city",
+        ]

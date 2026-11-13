@@ -25,7 +25,12 @@ from horilla.utils.decorators import (
 )
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
-from horilla.web import HttpResponse, HttpResponseRedirect, RefreshResponse
+from horilla.web import (
+    HttpResponse,
+    HttpResponseRedirect,
+    RedirectResponse,
+    RefreshResponse,
+)
 
 # Local imports
 from .forms import (
@@ -300,6 +305,10 @@ class MeetingAccessRolesView(LoginRequiredMixin, HorillaSingleFormView):
     def dispatch(self, request, *args, **kwargs):
         """Require meeting integration settings change permission before dispatch."""
         if request.user.is_authenticated:
+            if not _get_active_company(request):
+                return RedirectResponse(
+                    request, redirect_to=reverse("meeting:meeting_integration_settings")
+                )
             setting = MeetingIntegrationSetting.get_for_company(
                 _get_active_company(request)
             )
@@ -373,6 +382,10 @@ class MeetingAccessUsersView(LoginRequiredMixin, HorillaSingleFormView):
     def dispatch(self, request, *args, **kwargs):
         """Require meeting integration settings change permission before dispatch."""
         if request.user.is_authenticated:
+            if not _get_active_company(request):
+                return RedirectResponse(
+                    request, redirect_to=reverse("meeting:meeting_integration_settings")
+                )
             setting = MeetingIntegrationSetting.get_for_company(
                 _get_active_company(request)
             )

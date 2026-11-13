@@ -26,11 +26,7 @@ from horilla.core.exceptions import ValidationError
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse_lazy
 from horilla.utils import timezone
-from horilla.utils.decorators import (
-    htmx_required,
-    method_decorator,
-    permission_required_or_denied,
-)
+from horilla.utils.decorators import htmx_required, method_decorator
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import FormView, View
 from horilla.web import HxTriggerResponse, ScriptResponse
@@ -48,10 +44,6 @@ logger = logging.getLogger(__name__)
 
 
 @method_decorator(htmx_required, name="dispatch")
-@method_decorator(
-    permission_required_or_denied("campaigns.delete_campaign", modal=True),
-    name="dispatch",
-)
 class CampaignDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
     """
     Campaign delete view

@@ -33,6 +33,7 @@ from horilla.web import (
 )
 
 # Local imports
+from ..filters import DashboardFilter, DashboardFolderFilter
 from ..models import Dashboard, DashboardFolder
 
 logger = logging.getLogger(__name__)
@@ -116,6 +117,7 @@ class DashboardFolderListView(LoginRequiredMixin, HorillaListView):
     template_name = "dashboard_folder_detail.html"
     model = DashboardFolder
     view_id = "dashboard-folder-list-view"
+    filterset_class = DashboardFolderFilter
     search_url = reverse_lazy("dashboard:dashboard_folder_list_view")
     main_url = reverse_lazy("dashboard:dashboard_folder_list_view")
     bulk_select_option = False
@@ -193,6 +195,7 @@ class FolderDetailListView(LoginRequiredMixin, HorillaListView):
     template_name = "dashboard_folder_detail.html"
     model = DashboardFolder
     view_id = "dashboard-folder-detail-view"
+    filterset_class = DashboardFolderFilter
     bulk_select_option = False
     sorting_target = f"#tableview-{view_id}"
 
@@ -231,14 +234,58 @@ class FolderDetailListView(LoginRequiredMixin, HorillaListView):
 
     def get_queryset(self):
         folder_id = self.kwargs.get("pk")
-        return DashboardFolder.objects.filter(parent_folder__id=folder_id)
+        self.filterset = DashboardFolderFilter(
+            self.request.GET,
+            queryset=DashboardFolder.objects.filter(parent_folder__id=folder_id),
+            request=self.request,
+        )
+        return self.filterset.qs
+
+    def render_search_suggest(self, request):
+        """Search dropdown whose counts cover both sub-folders and dashboards."""
+        text = request.GET.get("search_suggest", "").strip()
+        folder_id = self.kwargs.get("pk")
+        folder_set = self.filterset
+        dashboard_set = DashboardFilter(
+            request.GET,
+            queryset=Dashboard.objects.filter(folder__id=folder_id),
+            request=request,
+        )
+        folders = DashboardFolder.objects.filter(parent_folder__id=folder_id)
+        dashboards = Dashboard.objects.filter(folder__id=folder_id)
+        rows = []
+        if text:
+            labels = folder_set.get_search_field_labels()
+            for lookup, label in labels.items():
+                count = (
+                    folders.filter(folder_set.build_field_q(lookup, text)).count()
+                    + dashboards.filter(
+                        dashboard_set.build_field_q(lookup, text)
+                    ).count()
+                )
+                rows.append({"field": lookup, "label": label, "count": count})
+        return render(
+            request,
+            "partials/list_search_suggest.html",
+            {
+                "text": text,
+                "field_rows": rows,
+                "filter_rows": [],
+                "show_fields": False,
+                "has_matches": any(r["count"] for r in rows[:1]),
+            },
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         folder_id = self.kwargs.get("pk")
 
-        folders = DashboardFolder.objects.filter(parent_folder__id=folder_id)
-        dashboard = Dashboard.objects.filter(folder__id=folder_id)
+        folders = self.filterset.qs
+        dashboard = DashboardFilter(
+            self.request.GET,
+            queryset=Dashboard.objects.filter(folder__id=folder_id),
+            request=self.request,
+        ).qs
 
         folders_list = list(folders)
         dashboards_list = list(dashboard)
@@ -327,10 +374,6 @@ class FolderDetailListView(LoginRequiredMixin, HorillaListView):
 
 
 @method_decorator(htmx_required, name="dispatch")
-@method_decorator(
-    permission_required_or_denied("dashboard.delete_dashboardfolder", modal=True),
-    name="dispatch",
-)
 class FolderDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
     """View to delete a dashboard folder."""
 

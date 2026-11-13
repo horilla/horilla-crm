@@ -24,11 +24,7 @@ from horilla.core.exceptions import ValidationError
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse_lazy
 from horilla.utils import timezone
-from horilla.utils.decorators import (
-    htmx_required,
-    method_decorator,
-    permission_required_or_denied,
-)
+from horilla.utils.decorators import htmx_required, method_decorator
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import FormView, View
 from horilla.web import Http404, HxTriggerResponse, ScriptResponse
@@ -497,10 +493,6 @@ class PartnerAccountDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
 
 
 @method_decorator(htmx_required, name="dispatch")
-@method_decorator(
-    permission_required_or_denied("accounts.delete_account", modal=True),
-    name="dispatch",
-)
 class AccountDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
     """
     Delete view for account

@@ -218,12 +218,6 @@ class ShortKeyFormView(LoginRequiredMixin, HorillaSingleFormView):
 
 
 @method_decorator(htmx_required, name="dispatch")
-@method_decorator(
-    permission_required_or_denied(
-        ["keys.delete_shortcutkey", "keys.delete_own_shortcutkey"], modal=True
-    ),
-    name="dispatch",
-)
 class ShortcutKeyDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
     """View to handle deletion of shortcut keys."""
 

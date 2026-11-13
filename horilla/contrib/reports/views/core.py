@@ -44,7 +44,7 @@ from horilla.web import (
 )
 
 # Local imports
-from ..filters import ReportFilter
+from ..filters import ReportFilter, ReportFolderFilter
 from ..models import Report, ReportFolder
 from ..utils import detail_virtual_fields
 from ..views.toolkit.report_helper import (
@@ -71,7 +71,7 @@ class ReportNavbar(LoginRequiredMixin, HorillaNavView):
     reload_option = False
     model_name = "Report"
     model_app_label = "reports"
-    search_option = False
+    search_option = True
     all_view_types = False
     enable_actions = True
 
@@ -80,6 +80,23 @@ class ReportNavbar(LoginRequiredMixin, HorillaNavView):
         request = getattr(_thread_local, "request", None)
         title = request.GET.get("title")
         self.all_view_types = title == "Reports"
+        # One navbar serves every reports page: search the list of the current page
+        pk = request.GET.get("pk")
+        if pk and pk.isdigit():
+            url = reverse("reports:report_folder_detail", kwargs={"pk": int(pk)})
+            self.filterset_class = ReportFolderFilter
+        elif title == "Favourite Reports":
+            url = reverse("reports:favourite_reports_list_view")
+        elif title == "Folders":
+            url = reverse("reports:report_folder_list")
+            self.filterset_class = ReportFolderFilter
+        elif title == "Favourite Folders":
+            url = reverse("reports:favourite_folder_list_view")
+            self.filterset_class = ReportFolderFilter
+        else:
+            url = reverse("reports:reports_list_view")
+        self.search_url = url
+        self.main_url = url
 
     def get_context_data(self, **kwargs):
         """Add navigation title from query params into the context."""
@@ -334,6 +351,9 @@ class ReportFolderListView(LoginRequiredMixin, HorillaListView):
     template_name = "report_folder_detail.html"
     model = ReportFolder
     view_id = "folder-list-view"
+    filterset_class = ReportFolderFilter
+    search_url = reverse_lazy("reports:report_folder_list")
+    main_url = reverse_lazy("reports:report_folder_list")
     sorting_target = f"#tableview-{view_id}"
 
     columns = ["name"]
@@ -397,6 +417,9 @@ class FavouriteReportFolderListView(LoginRequiredMixin, HorillaListView):
     template_name = "favourite_folder_list.html"
     model = ReportFolder
     view_id = "favourite-folder-list-view"
+    filterset_class = ReportFolderFilter
+    search_url = reverse_lazy("reports:favourite_folder_list_view")
+    main_url = reverse_lazy("reports:favourite_folder_list_view")
     sorting_target = f"#tableview-{view_id}"
 
     def action_method(self):
@@ -459,6 +482,7 @@ class ReportFolderDetailView(LoginRequiredMixin, HorillaListView):
     template_name = "report_folder_detail.html"
     model = ReportFolder
     view_id = "report-folder-detail-view"
+    filterset_class = ReportFolderFilter
     bulk_select_option = False
     sorting_target = f"#tableview-{view_id}"
 
@@ -482,10 +506,45 @@ class ReportFolderDetailView(LoginRequiredMixin, HorillaListView):
         folders = ReportFolder.objects.filter(parent__id=folder_id).annotate(
             content_type=models.Value("folder", output_field=models.CharField())
         )
-        _reports = Report.objects.filter(folder__id=folder_id).annotate(
-            content_type=models.Value("report", output_field=models.CharField())
+        self.filterset = ReportFolderFilter(
+            self.request.GET, queryset=folders, request=self.request
         )
-        return folders
+        return self.filterset.qs
+
+    def render_search_suggest(self, request):
+        """Search dropdown whose counts cover both sub-folders and reports."""
+        text = request.GET.get("search_suggest", "").strip()
+        folder_id = self.kwargs.get("pk")
+        folder_set = self.filterset
+        report_set = ReportFilter(
+            request.GET,
+            queryset=Report.objects.filter(folder__id=folder_id),
+            request=request,
+        )
+        folders = ReportFolder.objects.filter(parent__id=folder_id)
+        reports = limit_reports_to_viewable_modules(
+            Report.objects.filter(folder__id=folder_id), request.user
+        )
+        rows = []
+        if text:
+            labels = folder_set.get_search_field_labels()
+            for lookup, label in labels.items():
+                count = (
+                    folders.filter(folder_set.build_field_q(lookup, text)).count()
+                    + reports.filter(report_set.build_field_q(lookup, text)).count()
+                )
+                rows.append({"field": lookup, "label": label, "count": count})
+        return render(
+            request,
+            "partials/list_search_suggest.html",
+            {
+                "text": text,
+                "field_rows": rows,
+                "filter_rows": [],
+                "show_fields": False,
+                "has_matches": any(r["count"] for r in rows[:1]),
+            },
+        )
 
     def get(self, request, *args, **kwargs):
         folder_id = self.kwargs.get("pk")
@@ -507,7 +566,12 @@ class ReportFolderDetailView(LoginRequiredMixin, HorillaListView):
         context = super().get_context_data(**kwargs)
         folder_id = self.kwargs.get("pk")
         reports = limit_reports_to_viewable_modules(
-            Report.objects.filter(folder__id=folder_id), self.request.user
+            ReportFilter(
+                self.request.GET,
+                queryset=Report.objects.filter(folder__id=folder_id),
+                request=self.request,
+            ).qs,
+            self.request.user,
         )
         folders = list(context["object_list"])
         reports_list = list(reports)
@@ -659,10 +723,6 @@ class MarkReportAsFavouriteView(LoginRequiredMixin, View):
 
 
 @method_decorator(htmx_required, name="dispatch")
-@method_decorator(
-    permission_required_or_denied("reports.delete_report", modal=True),
-    name="dispatch",
-)
 class ReportDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
     """View for deleting reports."""
 
@@ -673,10 +733,6 @@ class ReportDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
 
 
 @method_decorator(htmx_required, name="dispatch")
-@method_decorator(
-    permission_required_or_denied("reports.delete_reportfolder", modal=True),
-    name="dispatch",
-)
 class FolderDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
     """View for deleting report folders."""
 

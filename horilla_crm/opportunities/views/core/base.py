@@ -232,13 +232,6 @@ class OpportunityListView(LoginRequiredMixin, HorillaListView):
 
 
 @method_decorator(htmx_required, name="dispatch")
-@method_decorator(
-    permission_required_or_denied(
-        ["opportunities.delete_opportunity", "opportunities.delete_own_opportunity"],
-        modal=True,
-    ),
-    name="dispatch",
-)
 class OpportunityDeleteView(LoginRequiredMixin, HorillaSingleDeleteView):
     """View for deleting opportunities."""
 

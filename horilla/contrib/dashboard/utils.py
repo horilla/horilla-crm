@@ -784,8 +784,6 @@ def annotate_component_virtual_fields(queryset, model, component):
     virtual field (e.g. a custom field); its value has to be on the queryset
     before the component groups, aggregates or lists it.
     """
-    # Third-party imports
-    import json
 
     # First party imports (Horilla)
     from horilla.contrib.reports.utils import annotate_virtual_fields

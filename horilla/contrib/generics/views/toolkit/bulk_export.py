@@ -110,10 +110,7 @@ class HorillaBulkExportMixin:
         Returns ``(data, column_headers)`` on success, or an ``HttpResponse``
         when the request should be rejected (no permission / no columns).
         """
-        from horilla.contrib.core.views.export_data import (
-            get_export_queryset,
-            is_exportable_field,
-        )
+        from horilla.contrib.core.views.export_data import get_export_queryset
 
         user = getattr(self.request, "user", None)
         allowed_queryset = get_export_queryset(user, self.model) if user else None

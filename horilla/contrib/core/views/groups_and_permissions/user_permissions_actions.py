@@ -11,7 +11,6 @@ from horilla.apps import apps
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.auth.models import User
-from horilla.registry.permission_registry import is_permission_exempt
 from horilla.shortcuts import get_object_or_404
 from horilla.utils.decorators import (
     htmx_required,

@@ -17,7 +17,6 @@ from horilla.apps import apps
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.auth.models import User
 from horilla.contrib.generics.views import HorillaListView, HorillaTabView
-from horilla.registry.permission_registry import is_permission_exempt
 from horilla.shortcuts import get_object_or_404, redirect, render
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (

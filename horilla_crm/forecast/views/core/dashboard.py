@@ -19,7 +19,6 @@ from horilla.utils.decorators import (
     method_decorator,
     permission_required_or_denied,
 )
-from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import TemplateView
 
 # Local imports

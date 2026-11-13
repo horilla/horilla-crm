@@ -25,7 +25,7 @@ from horilla.utils.decorators import (
     permission_required_or_denied,
 )
 from horilla.utils.translation import gettext_lazy as _
-from horilla.views.generic import DetailView, FormView, TemplateView
+from horilla.views.generic import DetailView, FormView
 from horilla.web import HttpNotFound, RefreshResponse, ScriptResponse
 
 from ..filters import NotificationTemplateFilter
@@ -68,6 +68,7 @@ class NotificationTemplateNavbar(LoginRequiredMixin, HorillaNavView):
     main_url = reverse_lazy("notifications:notification_template_view")
     model_name = "NotificationTemplate"
     model_app_label = "notifications"
+    filterset_class = NotificationTemplateFilter
     nav_width = False
     all_view_types = False
     recently_viewed_option = False

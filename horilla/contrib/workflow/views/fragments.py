@@ -45,43 +45,6 @@ from ..models import WorkflowAction, WorkflowRule, WorkflowTimeTriggerAction
 logger = logging.getLogger(__name__)
 
 
-def _get_model_fields(rule):
-    """Return list of (name, label) tuples for editable fields on the rule's model."""
-    if not rule or not rule.model_id:
-        return []
-    model_cls = None
-    try:
-        model_cls = rule.model.model_class()
-    except Exception:
-        pass
-    if model_cls is None:
-        try:
-            model_cls = apps.get_model(rule.model.app_label, rule.model.model)
-        except Exception:
-            pass
-    if model_cls is None:
-        return []
-    skip = {
-        "id",
-        "pk",
-        "created_at",
-        "updated_at",
-        "created_by",
-        "updated_by",
-        "company",
-        "additional_info",
-    }
-    fields = []
-    for f in list(model_cls._meta.fields) + list(model_cls._meta.many_to_many):
-        if f.name in skip or not getattr(f, "editable", True):
-            continue
-        label = str(
-            getattr(f, "verbose_name", None) or f.name.replace("_", " ").title()
-        )
-        fields.append((f.name, label))
-    return fields
-
-
 def _build_field_meta(rule):
     """Return list of field metadata dicts for the action config popup."""
     if not rule or not rule.model_id:

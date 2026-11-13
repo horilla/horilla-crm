@@ -22,7 +22,6 @@ from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.generics.views.helpers.queryset_utils import get_viewable_queryset
 from horilla.shortcuts import get_object_or_404, render
 from horilla.utils.decorators import method_decorator, permission_required_or_denied
-from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
 from horilla.web import HttpNotFound, HttpResponse, RefreshResponse
 

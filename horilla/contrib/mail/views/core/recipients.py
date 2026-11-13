@@ -13,7 +13,6 @@ from horilla.utils.decorators import (
     method_decorator,
     permission_required_or_denied,
 )
-from horilla.utils.translation import gettext as _
 from horilla.views.generic import View
 
 # Local imports

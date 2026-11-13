@@ -20,7 +20,6 @@ from horilla.contrib.workflow.views.actions import (
 )
 
 from horilla.contrib.workflow.views.fragments import (
-    _get_model_fields,
     _build_field_meta,
     _action_form_context,
     _get_date_field_choices,
@@ -45,7 +44,6 @@ __all__ = [
     "WorkflowActionDeleteView",
     "WorkflowTimeTriggerDeleteView",
     # Fragment views
-    "_get_model_fields",
     "_build_field_meta",
     "_get_date_field_choices",
     "_action_form_context",

@@ -2,7 +2,6 @@
 
 # Standard library imports
 import logging
-import re
 from functools import cached_property
 
 # Third-party imports

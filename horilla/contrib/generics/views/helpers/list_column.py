@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 # Third-party imports (Django)
 from django.contrib import messages
 from django.core.cache import cache
+from django.core.exceptions import FieldDoesNotExist
 from django.db.models.fields import Field
 from django.template import Context, Template
 from django.utils import translation
@@ -346,6 +347,7 @@ class ListColumnSelectFormView(LoginRequiredMixin, FormView):
         removed_custom_field_lists = []
         visibility = None
         model = None
+        view_exclude_columns = set()
 
         if app_label and model_name:
             try:
@@ -520,6 +522,71 @@ class ListColumnSelectFormView(LoginRequiredMixin, FormView):
                 self.request.session.modified = True
             except LookupError:
                 context["error"] = "Invalid model specified."
+
+        # Keep the selector in sync with the list view's company-column handling
+        # (see HorillaListColumnMixin._add_company_column_if_needed): the company
+        # column is only shown when "all companies" is enabled.
+        company_names = ("company", "company__name")
+        if model:
+            if self.request.session.get("show_all_companies", False):
+                try:
+                    company_field = model._meta.get_field("company")
+                except FieldDoesNotExist:
+                    company_field = None
+                if company_field is not None and url_name:
+                    has_company = any(
+                        isinstance(f, (list, tuple))
+                        and len(f) >= 2
+                        and f[1] in company_names
+                        for f in visible_fields
+                    )
+                    company_removed = any(
+                        isinstance(f, (list, tuple))
+                        and len(f) >= 2
+                        and f[1] == "company__name"
+                        for f in removed_custom_field_lists
+                    )
+                    if (
+                        not has_company
+                        and not company_removed
+                        and "company" not in view_exclude_columns
+                    ):
+                        visible_fields = list(visible_fields) + [
+                            [
+                                force_str(
+                                    getattr(company_field, "verbose_name", "Company")
+                                ),
+                                "company__name",
+                            ]
+                        ]
+            else:
+                visible_fields = [
+                    f
+                    for f in visible_fields
+                    if not (
+                        isinstance(f, (list, tuple))
+                        and len(f) >= 2
+                        and f[1] in company_names
+                    )
+                ]
+                all_fields = [
+                    f
+                    for f in all_fields
+                    if not (
+                        isinstance(f, (list, tuple))
+                        and len(f) >= 2
+                        and f[1] in company_names
+                    )
+                ]
+                removed_custom_field_lists = [
+                    f
+                    for f in removed_custom_field_lists
+                    if not (
+                        isinstance(f, (list, tuple))
+                        and len(f) >= 2
+                        and f[1] in company_names
+                    )
+                ]
 
         context["visible_fields"] = visible_fields
 
@@ -853,6 +920,17 @@ class ListColumnSelectFormView(LoginRequiredMixin, FormView):
                         existing[1] == removed_field[1] for existing in existing_removed
                     ):
                         existing_removed.append(removed_field)
+
+                # The company column is auto-added when "all companies" is on;
+                # remember an explicit removal so it is not added back.
+                if (
+                    self.request.session.get("show_all_companies", False)
+                    and "company" not in field_names
+                    and "company__name" not in field_names
+                    and "company" in model_field_names
+                    and not any(e[1] == "company__name" for e in existing_removed)
+                ):
+                    existing_removed.append(["Company", "company__name"])
 
                 # Remove fields from removed_custom_fields if they're being added back
                 updated_removed_custom_fields = [

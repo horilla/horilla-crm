@@ -618,6 +618,8 @@ class HorillaMultiStepForm(HorillaFormMixin, forms.ModelForm):
             if not hasattr(field.widget, "_pagination_configured"):
                 field.widget.attrs.update(widget_attrs)
 
+        self._apply_boolean_labels()
+
     def _configure_many_to_many_field(self, field, field_name, model_field):
         """Configure ManyToManyField with pagination support (initial value from instance/form_data)."""
         related_model = model_field.related_model

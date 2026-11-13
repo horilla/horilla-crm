@@ -386,6 +386,8 @@ class HorillaModelForm(HorillaFormMixin, forms.ModelForm):
                     }
                 )
 
+        self._apply_boolean_labels()
+
         skip_for_permission = tuple(
             set((self.condition_fields or []) + (self.hidden_fields or []))
         )

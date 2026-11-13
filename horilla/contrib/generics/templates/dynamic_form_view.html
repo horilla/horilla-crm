@@ -27,27 +27,14 @@
                             {% if not field.is_hidden and field_perm != "hidden" %}
                                 <div class="{% if field.field.widget.input_type == 'checkbox' %}{% if field.name in full_width_fields %}col-span-2 {% endif %}text-sm flex items-center gap-2 relative{% elif field.name in full_width_fields %}col-span-2 flex flex-col{% else %}flex flex-col{% endif %}">
                                     {% if field.field.widget.input_type == 'checkbox' %}
-                                        <label class="flex items-center justify-between w-full cursor-pointer">
-                                            <span class="me-3 text-xs text-color-600">
-                                                {{ field.label }}
-                                                {% if field.field.required %}<span class="text-red-500"
-                                                    >*</span>{% endif %}
-                                                {% if field.field.widget.attrs.readonly or field.field.widget.attrs.data_readonly or field.field.widget.attrs.disabled or field.field.widget.attrs.data_disabled %}
-                                                    <span class="ms-2 text-xs text-gray-500 italic"
-                                                    >({% trans "Read Only" %})</span>
-                                                {% endif %}
-                                            </span>
-                                            {{ field }}
-                                            <div class="relative w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5">
-                                            </div>
-                                        </label>
+                                        {% include "partials/boolean_segmented.html" with field=field %}
                                     {% else %}
                                         <div class="flex justify-between items-center mb-1">
-                                        <label for="{{ field.id_for_label }}" class="text-xs text-color-600">
+                                        <label for="{{ field.id_for_label }}" class="text-xs font-semibold text-color-600">
                                             {{ field.label }}
                                             {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
                                             {% if field.field.widget.attrs.readonly or field.field.widget.attrs.data_readonly or field.field.widget.attrs.disabled or field.field.widget.attrs.data_disabled %}
-                                                <span class="ms-2 text-xs text-gray-500 italic"
+                                                <span class="ms-2 text-xs font-normal text-gray-500 italic"
                                                 >({% trans "Read Only" %})</span>
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"

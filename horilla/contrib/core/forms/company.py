@@ -26,6 +26,10 @@ logger = logging.getLogger(__name__)
 class CompanyMultistepFormClass(OwnerQuerysetMixin, HorillaMultiStepForm):
     """Form class for company model"""
 
+    boolean_labels = {
+        "activate_multiple_currencies": (_("Enable"), _("Disable")),
+    }
+
     class Meta:
         """Meta options for CompanyMultistepFormClass."""
 
@@ -98,6 +102,10 @@ class CompanyMultistepFormClass(OwnerQuerysetMixin, HorillaMultiStepForm):
 class CompanyFormClass(HorillaModelForm):
     """Form class for Company model."""
 
+    boolean_labels = {
+        "activate_multiple_currencies": (_("Enable"), _("Disable")),
+    }
+
     class Meta:
         """Meta options for CompanyFormClass."""
 
@@ -117,6 +125,10 @@ class CompanyFormClass(HorillaModelForm):
 
 class CompanyFormClassSingle(HorillaModelForm):
     """Form class for Company model with all fields."""
+
+    boolean_labels = {
+        "activate_multiple_currencies": (_("Enable"), _("Disable")),
+    }
 
     field_order = [
         "icon",

@@ -22,4 +22,4 @@ class GenericsConfig(AppLauncher):
     url_module = "horilla.contrib.generics.urls"
     url_namespace = "generics"
 
-    auto_import_modules = ["signals"]
+    auto_import_modules = ["signals", "checks"]

@@ -8,7 +8,7 @@ widget/initial configuration used by both HorillaModelForm and HorillaMultiStepF
 # Third-party imports (Django)
 from django import forms
 
-from horilla.core.exceptions import ValidationError
+from horilla.core.exceptions import ImproperlyConfigured, ValidationError
 
 # First party imports (Horilla)
 from horilla.db import models
@@ -67,7 +67,60 @@ class HorillaFormMixin:
     * ``keep_on_form`` — fields to remove from the base exclude list (shown on form).
     * ``exclude`` — extra fields added to the merged list; core fields still excluded
       unless listed in ``keep_on_form``.
+
+    Boolean fields render as a two-segment control. Set the segment labels per
+    field on the form class as ``{field_name: (true_label, false_label)}``;
+    fields not listed use Yes / No. An entry for a field that is not on the form, is not a
+    boolean, or is not a (true_label, false_label) pair raises ImproperlyConfigured::
+
+        boolean_labels = {"is_final": (_("Closed"), _("Open"))}
     """
+
+    boolean_labels = {}
+
+    @classmethod
+    def _boolean_label_errors(cls):
+        """Return a list of problems in the ``boolean_labels`` this class declares.
+
+        Only entries written on the class itself are checked. Entries inherited
+        from a parent form may name fields the subclass does not show, which is
+        fine and is skipped when the labels are applied.
+        """
+        errors = []
+        base_fields = getattr(cls, "base_fields", None)
+        if base_fields is None:
+            return errors
+        for name, labels in (cls.__dict__.get("boolean_labels") or {}).items():
+            base_field = base_fields.get(name)
+            if base_field is None:
+                errors.append(
+                    f"{cls.__name__}.boolean_labels: '{name}' is not a field of this form."
+                )
+            elif not isinstance(base_field.widget, forms.CheckboxInput):
+                errors.append(
+                    f"{cls.__name__}.boolean_labels: '{name}' is not a boolean field."
+                )
+            elif not isinstance(labels, (list, tuple)) or len(labels) != 2:
+                errors.append(
+                    f"{cls.__name__}.boolean_labels: '{name}' needs exactly two "
+                    "labels (true_label, false_label)."
+                )
+        return errors
+
+    def _apply_boolean_labels(self):
+        """Validate ``boolean_labels`` and copy it onto each boolean widget.
+
+        Mistakes are also reported at startup by the system check in
+        ``horilla.contrib.generics.checks``; this guards forms built at runtime.
+        """
+        errors = self._boolean_label_errors()
+        if errors:
+            raise ImproperlyConfigured(" ".join(errors))
+        for name, labels in (self.boolean_labels or {}).items():
+            field = self.fields.get(name)
+            if field is not None and isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs["data_true_label"] = labels[0]
+                field.widget.attrs["data_false_label"] = labels[1]
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)

@@ -13,7 +13,7 @@ from horilla.utils.functional import cached_property
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
-from ..filters import DashboardFilter
+from ..filters import DashboardFilter, DashboardFolderFilter
 from ..models import Dashboard, DashboardFolder
 
 logger = logging.getLogger(__name__)
@@ -102,6 +102,9 @@ class FavouriteFolderListView(HorillaListView):
     template_name = "favourite_folder.html"
     model = DashboardFolder
     view_id = "favourite-folder-list-view"
+    filterset_class = DashboardFolderFilter
+    search_url = reverse_lazy("dashboard:folder_favourite_list_view")
+    main_url = reverse_lazy("dashboard:folder_favourite_list_view")
     bulk_select_option = False
     sorting_target = f"#tableview-{view_id}"
 

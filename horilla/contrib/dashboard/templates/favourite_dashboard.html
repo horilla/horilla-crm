@@ -12,11 +12,11 @@
 
 {% block main %}
     <div class="p-5 pt-24 h-full flex flex-col min-h-0">
-        <div class="grid grid-cols-6 xl:grid-cols-12 gap-4 flex-1 min-h-0">
-            <div class="col-span-6 xl:col-span-10 flex flex-col min-h-0">
+        <div class="grid grid-cols-12 gap-4 flex-1 min-h-0">
+            <div class="col-span-9 xl:col-span-10 flex flex-col min-h-0">
                 <div id="mainSession" class="flex-1 min-h-0 flex flex-col">{% include "list_view.html" %}</div>
             </div>
-            <div class="col-span-6 xl:col-span-2">
+            <div class="col-span-3 xl:col-span-2 min-w-0">
                 <div class="[box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] bg-white rounded-lg ps-0 p-3 h-[calc(100vh_-_190px)]">
                     <h3 class="text-sm mb-1 font-semibold ps-3">{% trans "Dashboards" %}</h3>
                     <ul>

@@ -18,7 +18,7 @@ from horilla.contrib.generics.templatetags.horilla_tags.display_tags import (
 from horilla.contrib.generics.views import HorillaSingleFormView
 from horilla.contrib.generics.views.core import HorillaTabView
 from horilla.shortcuts import render
-from horilla.urls import reverse_lazy
+from horilla.urls import reverse, reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
     method_decorator,
@@ -26,7 +26,7 @@ from horilla.utils.decorators import (
 )
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
-from horilla.web import HttpResponse, RefreshResponse
+from horilla.web import HttpResponse, RedirectResponse, RefreshResponse
 
 # Local imports
 from ..forms import CallAccessRolesForm, CallAccessUsersForm, CallIntegrationSettingForm
@@ -86,7 +86,7 @@ class CallIntegrationSettingsView(LoginRequiredMixin, View):
             # Pre-check before an access change confirmation on a stale page.
             company = request.active_company
             setting = CallIntegrationSetting.get_for_company(company)
-            if setting.is_enabled:
+            if setting and setting.is_enabled:
                 return HttpResponse(status=204)
             messages.warning(
                 request,
@@ -98,6 +98,8 @@ class CallIntegrationSettingsView(LoginRequiredMixin, View):
         """Handle form submission to update the main Call Integration settings (enabled + access type)."""
         company = request.active_company
         setting = CallIntegrationSetting.get_for_company(company)
+        if setting is None:
+            return self._render(request)
         is_enabled = request.POST.get("is_enabled") == "true"
         is_toggle = bool(request.POST.get("toggle"))
         if is_toggle and setting.is_enabled == is_enabled:
@@ -198,7 +200,7 @@ class CallProvidersTabContent(LoginRequiredMixin, View):
 # ── Access Control Modals ────────────────────────────────────────────────────
 
 
-@method_decorator(htmx_required, name="dispatch")
+# @method_decorator(htmx_required, name="dispatch")
 class CallAccessRolesView(LoginRequiredMixin, HorillaSingleFormView):
     """Modal: select which roles can access call integration."""
 
@@ -209,6 +211,15 @@ class CallAccessRolesView(LoginRequiredMixin, HorillaSingleFormView):
     full_width_fields = ["allowed_roles"]
     modal_height = False
     save_and_new = False
+
+    def dispatch(self, request, *args, **kwargs):
+        """Go back to the settings page when no company is active."""
+        if request.user.is_authenticated:
+            if not request.active_company:
+                return RedirectResponse(
+                    request, redirect_to=reverse("calls:integration_settings")
+                )
+        return super().dispatch(request, *args, **kwargs)
 
     def get_form(self, form_class=None):
         """Override to limit the allowed_roles queryset to roles from this company and set initial values."""
@@ -240,6 +251,15 @@ class CallAccessUsersView(LoginRequiredMixin, HorillaSingleFormView):
     full_width_fields = ["allowed_users"]
     modal_height = False
     save_and_new = False
+
+    def dispatch(self, request, *args, **kwargs):
+        """Go back to the settings page when no company is active."""
+        if request.user.is_authenticated:
+            if not request.active_company:
+                return RedirectResponse(
+                    request, redirect_to=reverse("calls:integration_settings")
+                )
+        return super().dispatch(request, *args, **kwargs)
 
     def get_form(self, form_class=None):
         """Override to limit the allowed_users queryset to active users from this company and set initial values."""

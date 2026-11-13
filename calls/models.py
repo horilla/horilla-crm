@@ -157,7 +157,9 @@ class CallIntegrationSetting(HorillaCoreModel):
             invalidate_company_setting,
         )
 
-        setting, created = cls.objects.get_or_create(company=company)
+        if not company:
+            return None
+        setting, created = cls.all_objects.get_or_create(company=company)
         if created:
             invalidate_company_setting(cls.CACHE_NAMESPACE, company.pk)
         return setting

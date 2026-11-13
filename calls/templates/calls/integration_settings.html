@@ -4,7 +4,10 @@
     <div id="call-integration-settings-view" class="h-full flex flex-col">
         {% include "messages.html" %}
 
-        <h3 class="text-md font-semibold">{% trans "Call Integration" %}</h3>
+        {% if not setting %}
+            {% include "components/empty_states/activate_company.html" %}
+        {% else %}
+            <h3 class="text-md font-semibold">{% trans "Call Integration" %}</h3>
         <p class="text-xs text-gray-500 mb-4">
             {% trans "Connect a calling provider to make and log calls." %}
         </p>
@@ -107,6 +110,7 @@
                 hx-trigger="load"
             >
             </div>
+        {% endif %}
         {% endif %}
     </div>
 {% endblock settings %}

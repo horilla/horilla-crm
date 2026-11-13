@@ -34,7 +34,7 @@ from horilla.contrib.generics.views import HorillaInlineEditMixin
 from horilla.contrib.mail.models import HorillaMailConfiguration
 from horilla.menu.settings_menu import get_settings_menu
 from horilla.shortcuts import redirect, render
-from horilla.urls import resolve, reverse_lazy
+from horilla.urls import resolve, reverse, reverse_lazy
 from horilla.utils.branding import load_branding
 from horilla.utils.choices import BLOCKED_EXTENSIONS
 from horilla.utils.decorators import (
@@ -52,7 +52,6 @@ from horilla.web import (
     HttpResponse,
     JsonResponse,
     RedirectResponse,
-    ScriptResponse,
     safe_url,
 )
 
@@ -720,6 +719,14 @@ class CompanyDetailsTab(LoginRequiredMixin, HorillaInlineEditMixin, TemplateView
     model = Company
     form_class = CompanyDetailsInlineForm
     success_message = _("Company details updated successfully.")
+
+    def dispatch(self, request, *args, **kwargs):
+        """Go back to the company information page when no company is active."""
+        if request.user.is_authenticated and not self.get_object():
+            return RedirectResponse(
+                request, redirect_to=reverse("core:company_information")
+            )
+        return super().dispatch(request, *args, **kwargs)
 
     def get_object(self):
         """Return the active company, falling back to the user's company."""

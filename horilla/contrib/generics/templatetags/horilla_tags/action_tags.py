@@ -399,24 +399,40 @@ def _any_row_allows(action, user, queryset, request):
     return result
 
 
+def _action_shown_on_any_row(action, user, queryset, request):
+    """True if ``action`` would render on at least one row of ``queryset``.
+
+    Mirrors what the row cells do: a row hides the action when ``hidden_if``
+    is true for it, and otherwise shows it when the user is authorized for
+    that row (see ``_any_row_allows`` for the page-wide, cached check).
+    """
+    hidden_if = action.get("hidden_if")
+    if callable(hidden_if) and queryset is not None:
+        if all(hidden_if(obj) for obj in queryset):
+            return False
+    return _any_row_allows(action, user, queryset, request)
+
+
 @register.simple_tag(takes_context=True)
 def has_any_actions_for_queryset(context, actions, queryset):
     """
-    Check if the user has at least one allowed action, to decide whether the
-    Actions column should be shown in the table header.
+    Decide whether the Actions column header should be shown: True only when
+    at least one row in ``queryset`` would actually render one of ``actions``
+    for the current user.
 
-    Non-object-specific actions (plain `permission`, or `own_permission` +
-    `owner_field`) are resolved without looking at any row. `owner_method`
-    actions (e.g. per-record team access levels) depend on each row's data,
-    so every object in `queryset` is checked against that action.
+    Holding a permission is not enough on its own. A user with only an
+    ``own_permission`` (e.g. ``delete_own``) sees no action on records they
+    don't own, so every row cell would be empty; the header must be hidden in
+    that case too, otherwise an empty "Actions" column is left behind.
 
     Args:
         context: template context with request
         actions: list of action dicts
-        queryset: queryset of objects to check owner_method actions against
+        queryset: the page's objects, checked per row for ownership,
+            ``owner_method`` and ``hidden_if``
 
     Returns:
-        bool: True if at least one action is allowed for this user
+        bool: True if at least one action is shown on at least one row
     """
     request = context.get("request")
     user = request.user if request else None
@@ -424,40 +440,9 @@ def has_any_actions_for_queryset(context, actions, queryset):
     if not user or not actions:
         return False
 
-    if user.is_superuser:
-        return True
-
-    owner_method_actions = []
-    for action in actions:
-        if action.get("permission") and user.has_perm(action["permission"]):
-            return True
-
-        if action.get("owner_method"):
-            owner_method_actions.append(action)
-            continue
-
-        own_perm = action.get("own_permission")
-        if own_perm and action.get("owner_field"):
-            # Literal-ownership actions depend on a specific row's data and
-            # can't be fully evaluated here, but the user must at least hold
-            # the own_permission for any row to ever show it; row-level
-            # checks (filter_actions_by_permission) decide per object.
-            if user.has_perm(own_perm):
-                return True
-            continue
-
-        action_context = {"user": user, "object": None}
-        if has_action_permission(action, action_context):
-            return True
-
-    if owner_method_actions and queryset is not None:
-        for obj in queryset:
-            action_context = {"user": user, "object": obj}
-            for action in owner_method_actions:
-                if has_action_permission(action, action_context):
-                    return True
-
-    return False
+    return any(
+        _action_shown_on_any_row(action, user, queryset, request) for action in actions
+    )
 
 
 @register.simple_tag(takes_context=True)

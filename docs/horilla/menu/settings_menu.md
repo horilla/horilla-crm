@@ -175,7 +175,7 @@ groups = get_settings_menu(request=request)
 #       "title": "Automations",
 #       "icon": "/assets/icons/automation.svg",
 #       "items": [
-#           {"label": "Mail & Notifications", "url": "/automations/", "perm": "...", ...},
+#           {"label": "Message Automations", "url": "/automations/", "perm": "...", ...},
 #       ]
 #     },
 #     ...
@@ -292,7 +292,7 @@ class AutomationSettings:
     order = 4
     items = [
         {
-            "label": _("Mail & Notifications"),
+            "label": _("Message Automations"),
             "url": reverse_lazy("horilla_automations:automation_view"),
             "hx-target": "#settings-content",
             "hx-push-url": "true",

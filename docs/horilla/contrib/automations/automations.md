@@ -40,7 +40,7 @@ Apps register models into **`automation_models`**. The universal **`post_save`**
 `AutomationSettings` (`@settings_menu.register`):
 
 - Section title **Automations**, icon `/assets/icons/automation.svg`, `order = 4`.
-- First item: **Mail & Notifications** → `automations:automation_view` with HTMX targeting `#settings-content`, OOB `#settings-sidebar`, fragment `#automation-view`.
+- First item: **Message Automations** → `automations:automation_view` with HTMX targeting `#settings-content`, OOB `#settings-sidebar`, fragment `#automation-view`.
 - Permission gate: `automation.view_horillaautomation`.
 
 ---

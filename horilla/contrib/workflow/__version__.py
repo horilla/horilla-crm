@@ -2,7 +2,7 @@
 
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.10"
+__version__ = "1.11.11"
 __module_name__ = _("Workflow")
 __release_date__ = ""
 __description__ = _(
@@ -11,6 +11,14 @@ __description__ = _(
     "scheduled relative to record or rule dates."
 )
 __icon__ = "assets/icons/automation.svg"
+
+__1_11_11__ = _(
+    "A time trigger can repeat while the record still meets the rule, and "
+    "it stops when the record leaves. An edit rule runs when the record "
+    "enters the criteria, and a due time trigger is skipped once the record "
+    "no longer matches. Only models that opt in are offered. List search "
+    "covers workflow fields."
+)
 
 __1_11_10__ = _(
     "Workflow actions send through registered delivery channels, including "

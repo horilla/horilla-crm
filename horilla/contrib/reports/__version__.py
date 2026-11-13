@@ -3,13 +3,19 @@
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.15"
+__version__ = "1.11.16"
 __module_name__ = "Reports"
 __release_date__ = ""
 __description__ = _(
     "Module for creating and customizing reports across all system modules."
 )
 __icon__ = "reports/assets/icons/icon5.svg"
+
+__1_11_16__ = _(
+    "Search reports and report folders. A missing filtered report returns "
+    "404. Delete follows the shared delete and delete-own rules. Reports "
+    "are included in global search, and list search covers report fields."
+)
 
 __1_11_15__ = _(
     "Redesign the report page, filter panel and related-field filters, and "

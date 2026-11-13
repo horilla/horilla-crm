@@ -2,13 +2,37 @@
 
 from django.utils.translation import gettext_lazy as _
 
-__version__ = "1.17.2"
+__version__ = "1.18.0"
 __module_name__ = _("Core System")
 __release_date__ = ""
 __description__ = _(
     "Core system providing authentication, configuration, utilities, and platform-level services."
 )
 __icon__ = "assets/icons/logo.png"
+
+__1_18_0__ = _(
+    "Get started: a home-page setup guide with steps from each app. Skip "
+    "For Now moves to the next step, and the guide names the company. "
+    "Search: global search suggests matches and quick filters, and each "
+    "app sets its fields; list search adds field search and quick filters, "
+    "and applied filters stay in the navbar. WhatsApp adds live chat, an "
+    "Activity tab, a connection test and an automation channel. Generics: "
+    "boolean fields use a labelled two-segment control; form labels are "
+    "semi-bold; view-own includes the user and their team; delete-own lets "
+    "a manager delete a subordinate's records, and delete stays in the "
+    "active company; the company column shows only when all companies is "
+    "on; group-by does not repeat a leaf header; an empty Actions column "
+    "stays hidden. Charts show the donut total, and chart values are "
+    "escaped. User Picker and Select2 stay inside the user's permissions "
+    "and company. History shows a mail's outcome and hides notifications. "
+    "Other apps can add Activity tabs. Core: company details return to the "
+    "company page when no company is active; business hours, fiscal year "
+    "and currency settings fill the panel; each ASGI call runs in a fresh "
+    "context. Also: workflow time triggers can repeat while a record "
+    "matches; cadences assign follow-ups to the owner and stop when the "
+    "record leaves the conditions; lead assignment adds Round Robin and "
+    "can lock the owner."
+)
 
 __1_17_2__ = _(
     "Security: uploaded files require a login; failed sign-ins are limited "

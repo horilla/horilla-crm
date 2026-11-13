@@ -2,11 +2,21 @@
 
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.23"
+__version__ = "1.11.24"
 __module_name__ = "CRM"
 __release_date__ = ""
 __description__ = _("CRM module for managing leads, contacts, and opportunities.")
 __icon__ = "assets/icons/icon2.svg"
+
+__1_11_24__ = _(
+    "Leads: Round Robin assignment; Allow Owner Reassignment locks the owner "
+    "of a rule-assigned lead; conversion checks permission and Select "
+    "Existing stays in scope; Get started adds Lead Stages and Import Leads. "
+    "Opportunities: Team Selling Setup asks for an active company; a message "
+    "can go to the primary contact; Get started adds Opportunity Stages. "
+    "Delete follows the shared delete and delete-own rules. CRM records are "
+    "included in global search, and list search covers their fields."
+)
 
 __1_11_23__ = _(
     "Leads: only one assignment rule stays active per company; default "

@@ -2,6 +2,23 @@
 
 This tree mirrors **`horilla/contrib/`** Django apps. Each subfolder holds documentation for that app.
 
+## Recent updates (7–13 Nov 2026, v1.18.0)
+
+Platform version is **1.18.0** ([core/horilla.md](core/horilla.md)). Module versions stay on their own lines.
+
+| Topic | Doc |
+|-------|-----|
+| Get started guide on the home page | [dashboard/dashboard.md](dashboard/dashboard.md#get-started-guide-home-page) · [../../registry/onboarding.md](../../registry/onboarding.md) |
+| Global search suggestions and quick filters | [generics/views/global_search.md](generics/views/global_search.md#live-suggestions--globalsearchsuggestview) |
+| List search: field search, quick filters, applied filters | [generics/views/list_search.md](generics/views/list_search.md) · [generics/filters.md](generics/filters.md#field-searches-list-search-box) |
+| Repeating workflow time triggers | [workflow/workflow.md](workflow/workflow.md#repeating-time-triggers) · [workflow/workflow.md](workflow/workflow.md#edits-run-a-rule-when-the-record-enters-its-criteria) |
+| Cadence owner and stop when conditions fail | [cadences/cadences.md](cadences/cadences.md#task-and-call-owner) · [cadences/cadences.md](cadences/cadences.md#conditions-after-enrollment) |
+| Round Robin and owner lock on lead assignment | [../../horilla_crm/leads/assignment_rule.md](../../horilla_crm/leads/assignment_rule.md) |
+| Other apps can add Activity tabs | [activity/activity.md](activity/activity.md#adding-a-tab-to-the-activity-tab-from-another-app) |
+| Settings entry is Message Automations | [automations/automations.md](automations/automations.md#menu-menupy) |
+
+Also in this release: boolean fields use a labelled two-segment control, and form labels are semi-bold. View-own includes the user and their team. Delete-own lets a manager delete a subordinate's records, and delete stays in the active company. The company column shows only when all companies is on. Charts show the donut total, and chart values are escaped. User Picker and Select2 stay inside the user's permissions and company. History shows a mail's outcome and hides notifications. Each ASGI call runs in a fresh context. An opportunity message can go to the primary contact. WhatsApp adds live chat, an Activity tab, a connection test and an automation channel. Search on dashboards, reports, and the field-aware list search. Call, calendar and meeting settings ask for an active company. Merge compare hides additional info and company.
+
 ## Recent updates (31 Oct–6 Nov 2026, v1.17.2)
 
 Platform version is **1.17.2** ([core/horilla.md](core/horilla.md)). Module versions stay on their own lines.

@@ -8,11 +8,20 @@ application registry and UI.
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.12"
+__version__ = "1.11.13"
 __module_name__ = "Dashboards"
 __release_date__ = ""
 __description__ = _("Module for building and customizing interactive dashboards.")
 __icon__ = "dashboard/assets/icons/icon6.svg"
+
+__1_11_13__ = _(
+    "Add a Get started guide on the home page, with steps contributed by "
+    "each app. Skip For Now moves to the next step, the guide names the "
+    "company, and its buttons use the default size. Search dashboard and "
+    "folder pages. Enforce own-dashboard and own-component permissions. "
+    "Delete follows the shared delete and delete-own rules. Dashboards are "
+    "included in global search."
+)
 
 __1_11_12__ = _(
     "Build table pages, sorting and exports from one queryset that respects "

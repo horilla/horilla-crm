@@ -3,13 +3,19 @@
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.17"
+__version__ = "1.11.18"
 __module_name__ = "Mail"
 __release_date__ = ""
 __description__ = _(
     "Module for managing incoming and outgoing emails through mail servers and Outlook."
 )
 __icon__ = "assets/icons/icon1.svg"
+
+__1_11_18__ = _(
+    "Add the Mail Server step to Get started. A mail's outcome shows on the "
+    "parent record's History. List pages use the field-aware search, and "
+    "list search covers mail fields."
+)
 
 __1_11_17__ = _(
     "Automation mail is sent through the shared mail delivery channel, so "

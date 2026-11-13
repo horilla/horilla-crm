@@ -8,11 +8,17 @@ application registry and UI.
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.11"
+__version__ = "1.11.12"
 __module_name__ = "Calendar"
 __release_date__ = ""
 __description__ = _("Module for managing calendar events and schedules.")
 __icon__ = "assets/icons/calendar-red.svg"
+
+__1_11_12__ = _(
+    "Google integration settings ask for an active company and send the "
+    "access modals back. The calendar side panel uses the width of its "
+    "column."
+)
 
 __1_11_11__ = _(
     "Choose who can use Google Calendar: all users, specific roles or "

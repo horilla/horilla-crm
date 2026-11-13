@@ -2,13 +2,20 @@
 
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.20"
+__version__ = "1.11.21"
 __module_name__ = "Activity"
 __release_date__ = ""
 __description__ = _(
     "Module for tracking and managing activities such as tasks,calls, events, and emails."
 )
 __icon__ = "activity/assets/icons/activity-red.svg"
+
+__1_11_21__ = _(
+    "Other apps can add tabs on the Activity tab. The task list loads once, "
+    "so the saved Completed sub-tab stays selected. The log-call type is "
+    "labelled Call. Activities are included in global search, and list "
+    "search covers activity fields."
+)
 
 __1_11_20__ = _(
     "Offer activities as report fields and dashboard components. "

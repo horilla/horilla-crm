@@ -3,13 +3,20 @@
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.10"
+__version__ = "1.11.11"
 __module_name__ = "Automations"
 __release_date__ = ""
 __description__ = _(
     "Module for automating mail and notifications based on model events and conditions."
 )
 __icon__ = "assets/icons/automation.svg"
+
+__1_11_11__ = _(
+    "Rename the settings entry to Message Automations. The recipient picker "
+    "and template fields follow the selected delivery channels, and each "
+    "channel keeps its own related recipients. Model errors show on their "
+    "field. The list has a column selector."
+)
 
 __1_11_10__ = _(
     "Send through one or more registered delivery channels, including "

@@ -919,6 +919,11 @@ class EditEntersCriteriaTests(WorkflowTestCase):
 
     def setUp(self):
         super().setUp()
+        # Workflow models opt in, and Department is not one of them.
+        workflow_models = FEATURE_REGISTRY["workflow_models"]
+        if Department not in workflow_models:
+            workflow_models.append(Department)
+            self.addCleanup(workflow_models.remove, Department)
         self.rule = self.department_rule("Department opened", description="Open")
         patcher = mock.patch.object(methods, "execute_action")
         self.execute = patcher.start()

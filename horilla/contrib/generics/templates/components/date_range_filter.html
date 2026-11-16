@@ -1,15 +1,4 @@
-{% comment %}
-    Date-range dropdown: Reset Range, Last N Days and a Custom Range.
 
-    Context:
-      date_range, date_from, date_to   current selection
-      date_range_choices               the "Last N Days" presets
-    Include arguments:
-      base_url     page URL the options are applied to (may already hold a query string)
-      hx_target    optional CSS selector; when set the options are applied over HTMX,
-                   replacing that element, otherwise they are plain links that reload the page
-      popup_side   "left" opens the Custom Range popup to the left, anything else to the right
-{% endcomment %}
 <div class="relative dropdown-wrapper z-20">
     <button
         type="button"
@@ -24,7 +13,7 @@
                         {{ date_from|history_datetime }}{% elif date_to %}{% trans "Until" %}
                         {{ date_to|history_datetime }}{% else %}{% trans "Custom" %}{% endif %}
                 {% elif date_range %}
-                    {% trans "Last" %} {{ date_range }} {% trans "Days" %}
+                    {% for value, label in date_range_choices %}{% if date_range|stringformat:"s" == value %}{{ label }}{% endif %}{% endfor %}
                 {% else %}
                     {% trans "All Time" %}
                 {% endif %}
@@ -45,26 +34,26 @@
                     {% endif %}
                     class="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-gray-100 {% if not date_range %}bg-primary-100 text-gray-900{% endif %}"
                 >
-                    <span>{% trans "Reset Range" %}</span>
+                    <span>{% trans "All Time" %}</span>
                     {% if not date_range %}
                         <i class="fa-solid fa-check text-primary-600 text-xs ms-3"></i>
                     {% endif %}
                 </a>
             </li>
-            {% for days in date_range_choices %}
+            {% for value, label in date_range_choices %}
                 <li>
                     <a
-                        href="{{ base_url }}{% if '?' in base_url %}&{% else %}?{% endif %}date_range={{ days }}"
+                        href="{{ base_url }}{% if '?' in base_url %}&{% else %}?{% endif %}date_range={{ value }}"
                         {% if hx_target %}
-                            hx-get="{{ base_url }}{% if '?' in base_url %}&{% else %}?{% endif %}date_range={{ days }}"
+                            hx-get="{{ base_url }}{% if '?' in base_url %}&{% else %}?{% endif %}date_range={{ value }}"
                             hx-target="{{ hx_target }}"
                             hx-select="{{ hx_target }}"
                             hx-swap="outerHTML"
                         {% endif %}
-                        class="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-gray-100 {% if date_range|stringformat:'s' == days|stringformat:'s' %}bg-primary-100 text-gray-900{% endif %}"
+                        class="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-gray-100 {% if date_range|stringformat:'s' == value %}bg-primary-100 text-gray-900{% endif %}"
                     >
-                        <span>{% trans "Last" %} {{ days }} {% trans "Days" %}</span>
-                        {% if date_range|stringformat:'s' == days|stringformat:'s' %}
+                        <span>{{ label }}</span>
+                        {% if date_range|stringformat:'s' == value %}
                             <i class="fa-solid fa-check text-primary-600 text-xs ms-3"></i>
                         {% endif %}
                     </a>

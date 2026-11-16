@@ -7,7 +7,6 @@ Contains form classes and helpers used across the horilla.contrib.generics app.
 # Standard library imports
 import logging
 import re
-from datetime import timedelta
 
 # Django imports
 # Third-party imports (Django)
@@ -27,6 +26,7 @@ from horilla.contrib.utils.middlewares import _thread_local
 
 # Horilla application imports
 # First party imports (Horilla)
+from horilla.utils.date_ranges import get_date_range_choices, get_preset_date_bounds
 from horilla.utils.html import format_html
 from horilla.utils.text import enter_placeholder
 from horilla.utils.translation import gettext_lazy as _
@@ -364,17 +364,17 @@ class PasswordInputWithEye(forms.PasswordInput):
 class HorillaHistoryForm(forms.Form):
     """Base form for filtering history by a date range (same options as the dashboard)."""
 
-    # "Last N days" presets offered in the history date-range dropdown.
-    DATE_RANGE_CHOICES = [7, 30, 60, 90]
+    # Named presets (today, this_week, ...) offered in the date-range dropdown.
+    DATE_RANGE_CHOICES = get_date_range_choices()
 
     date_range = forms.CharField(required=False)
     date_from = forms.DateField(required=False)
     date_to = forms.DateField(required=False)
 
     def clean_date_range(self):
-        """Accept only 'all', 'custom' or one of DATE_RANGE_CHOICES."""
+        """Accept only 'all', 'custom' or one of the DATE_RANGE_CHOICES keys."""
         value = (self.cleaned_data.get("date_range") or "").strip()
-        valid = ["", "all", "custom"] + [str(days) for days in self.DATE_RANGE_CHOICES]
+        valid = ["", "all", "custom"] + [key for key, _label in self.DATE_RANGE_CHOICES]
         if value not in valid:
             raise forms.ValidationError(_("Invalid date range"))
         return value
@@ -405,8 +405,7 @@ class HorillaHistoryForm(forms.Form):
             start = self.cleaned_data.get("date_from")
             end = self.cleaned_data.get("date_to")
         else:
-            start = today - timedelta(days=int(date_range))
-            end = None
+            start, end = get_preset_date_bounds(date_range, today)
         return [
             (date, entries)
             for date, entries in history_by_date

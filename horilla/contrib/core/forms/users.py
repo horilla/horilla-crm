@@ -20,7 +20,11 @@ from horilla.contrib.generics.forms import (
 # First-party imports (Horilla)
 from horilla.core.exceptions import ValidationError
 from horilla.urls import reverse_lazy
-from horilla.utils.choices import get_subdivision_choices, resolve_subdivision_choice
+from horilla.utils.choices import (
+    get_subdivision_choices,
+    limit_language_choices_to_company,
+    resolve_subdivision_choice,
+)
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
@@ -119,6 +123,8 @@ class UserFormClass(HorillaMultiStepForm):
                 self.fields["state"].choices, self.instance.state
             )
 
+        limit_language_choices_to_company(self)
+
 
 class UserFormSingle(HorillaModelForm):
     """Form class for User model."""
@@ -162,12 +168,31 @@ class UserFormSingle(HorillaModelForm):
         ]
         keep_on_form = ["is_active"]
 
+    def _company_currencies(self):
+        """Active currencies of the edited user's company (or the current user's)."""
+        company = getattr(self.instance, "company", None) if self.instance.pk else None
+        if company is None:
+            request = getattr(self, "request", None)
+            company = getattr(getattr(request, "user", None), "company", None)
+        if company is None:
+            return MultipleCurrency.all_objects.none()
+        return MultipleCurrency.all_objects.filter(company=company, is_active=True)
+
+    def _get_fresh_queryset(self, field_name, related_model):
+        """Currencies are limited by company, not by record permissions."""
+        if field_name == "currency":
+            return self._company_currencies()
+        return super()._get_fresh_queryset(field_name, related_model)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         for field in ["first_name", "last_name", "email", "contact_number"]:
             if field in self.fields:
                 self.fields[field].required = True
+
+        if "currency" in self.fields:
+            self.fields["currency"].queryset = self._company_currencies()
 
         self.fields["country"].widget.attrs.update(
             {
@@ -197,6 +222,8 @@ class UserFormSingle(HorillaModelForm):
             self.fields["state"].initial = resolve_subdivision_choice(
                 self.fields["state"].choices, self.instance.state
             )
+
+        limit_language_choices_to_company(self)
 
 
 class UserDetailsInlineForm(UserFormSingle):

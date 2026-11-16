@@ -1,4 +1,5 @@
-<div id="import-container" class="{% if single_import %}p-5{% endif %}">
+{% comment %}A step posts into #import-container and swaps its inner HTML, so re-rendering this page (e.g. on a validation error) must not add a second wrapper, which would double the padding.{% endcomment %}
+{% if request.META.HTTP_HX_TARGET != "import-container" %}<div id="import-container" class="{% if single_import %}p-5{% endif %}">{% endif %}
     {% include "messages.html" %}
     {% if single_import %}
         <div class="flex justify-between items-center mb-2">
@@ -160,36 +161,33 @@
     </div>
 
     <script>
-        const _uploadFile = "{% trans 'Upload File' %}";
-        const _uploadFileHint = "{% trans 'CSV, XLS, XLSX ( Max 10MB )' %}";
-        function attachFileInputListener() {
-            const fileInput = document.getElementById("profileImageUpload");
-            const uploadBoxContent = document.getElementById("uploadBoxContent");
-
-            if (fileInput) {
-                fileInput.addEventListener("change", function () {
-                    const file = this.files[0];
-                    if (file) {
-                        uploadBoxContent.innerHTML = `
-                            <p class="text-sm font-semibold text-gray-700 truncate max-w-full">${file.name}</p>
-                        `;
-                    } else {
-                        uploadBoxContent.innerHTML = `
-                            <i class="fa-solid fa-arrow-up-from-bracket text-xl mb-2 text-gray-500"></i>
-                            <p class="text-sm font-semibold text-gray-700">${_uploadFile}</p>
-                            <p class="text-xs text-[#9e9e9e]">${_uploadFileHint}</p>
-                        `;
-                    }
-                });
-            }
+        // Plain assignments and one delegated listener: this page is loaded through HTMX
+        // more than once, and a repeated `const` or a lost listener would stop the
+        // chosen file name from showing in the upload box.
+        window._uploadFile = "{% trans 'Upload File' %}";
+        window._uploadFileHint = "{% trans 'CSV, XLS, XLSX ( Max 10MB )' %}";
+        if (!window._importFileListenerBound) {
+            window._importFileListenerBound = true;
+            document.addEventListener("change", function (event) {
+                const fileInput = event.target;
+                if (!fileInput || fileInput.id !== "profileImageUpload") return;
+                const uploadBoxContent = document.getElementById("uploadBoxContent");
+                if (!uploadBoxContent) return;
+                const file = fileInput.files[0];
+                uploadBoxContent.replaceChildren();
+                if (file) {
+                    const name = document.createElement("p");
+                    name.className = "text-sm font-semibold text-gray-700 truncate max-w-full";
+                    name.textContent = file.name;
+                    uploadBoxContent.appendChild(name);
+                } else {
+                    uploadBoxContent.innerHTML = `
+                        <i class="fa-solid fa-arrow-up-from-bracket text-xl mb-2 text-gray-500"></i>
+                        <p class="text-sm font-semibold text-gray-700">${window._uploadFile}</p>
+                        <p class="text-xs text-[#9e9e9e]">${window._uploadFileHint}</p>
+                    `;
+                }
+            });
         }
-
-        attachFileInputListener();
-
-        document.addEventListener("htmx:afterSwap", function (event) {
-            if (event.detail.target.id === "import-container") {
-                attachFileInputListener();
-            }
-        });
     </script>
-</div>
+{% if request.META.HTTP_HX_TARGET != "import-container" %}</div>{% endif %}

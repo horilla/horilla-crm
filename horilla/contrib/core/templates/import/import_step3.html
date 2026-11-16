@@ -21,10 +21,10 @@
 
     <form hx-post="{% url 'core:import_step3' %}" hx-target="#import-container" hx-swap="innerHTML">
         {% csrf_token %}
-        <div class="flex items-center gap-4 mb-5">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-5">
             <label for="" class="text-sm text-color-600">{% trans "Import Option:" %}</label>
-            <div class="radio-group flex gap-6">
-                <label class="flex items-center gap-2">
+            <div class="radio-group flex flex-wrap gap-x-6 gap-y-2">
+                <label class="flex items-center gap-2 whitespace-nowrap">
                     <input
                         hidden
                         type="radio"
@@ -37,7 +37,7 @@
                     <span class="custom-radio"></span>
                     <span>{% trans "Create new record" %}</span>
                 </label>
-                <label class="flex items-center gap-2">
+                <label class="flex items-center gap-2 whitespace-nowrap">
                     <input
                         hidden
                         type="radio"
@@ -50,7 +50,7 @@
                     <span class="custom-radio"></span>
                     <span>{% trans "Update existing" %}</span>
                 </label>
-                <label class="flex items-center gap-2">
+                <label class="flex items-center gap-2 whitespace-nowrap">
                     <input
                         hidden
                         type="radio"

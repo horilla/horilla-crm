@@ -12,7 +12,7 @@ from horilla.apps import apps
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.generics.views import HorillaNavView, HorillaTabView
-from horilla.registry.feature import FEATURE_REGISTRY
+from horilla.registry.feature import FEATURE_REGISTRY, get_feature_options
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
@@ -36,6 +36,16 @@ IMPORT_EXCLUDED_FIELDS = [
     "updated_by",
     "history",
 ]
+
+
+def get_import_excluded_fields(model):
+    """
+    Fields left out of import mapping: the shared list above plus the model's own
+    ``exclude_fields`` option for the "import_data" feature, set when the model is
+    registered (see ``register_model_for_feature(..., options=...)``).
+    """
+    options = get_feature_options("import_data", model)
+    return IMPORT_EXCLUDED_FIELDS + list(options.get("exclude_fields", []))
 
 
 def get_model_verbose_name(module_name, app_label):

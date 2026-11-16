@@ -13,15 +13,15 @@
     {% endif %}
     {% include "import/_stepper.html" with current_step=4 %}
 
-    <div class="grid grid-cols-2 gap-4 mb-8">
+    <div class="grid {% if single_import %}grid-cols-1{% else %}grid-cols-2{% endif %} gap-4 mb-8">
         <div class="text-sm flex">
             <span class="text-dark-200 w-40">{% trans "Module" %}</span>
-            <span class="flex-1 text-dark-200"><span class="pe-2"
+            <span class="flex-1 min-w-0 break-words text-dark-200"><span class="pe-2"
                 >:</span>{{ module_verbose_name|default:import_data.module }}</span>
         </div>
         <div class="text-sm flex">
             <span class="text-dark-200 w-40">{% trans "Import Action" %}</span>
-            <span class="flex-1 text-dark-200">
+            <span class="flex-1 min-w-0 break-words text-dark-200">
                 <span class="pe-2">:</span>
                 {% if import_data.import_option == '1' %}{% trans "Create New" %}
                 {% elif import_data.import_option == '2' %}{% trans "Update Existing" %}
@@ -31,15 +31,15 @@
         </div>
         <div class="text-sm flex">
             <span class="text-dark-200 w-40">{% trans "File" %}</span>
-            <span class="flex-1 text-dark-200"><span class="pe-2">:</span>{{ import_data.original_filename }}</span>
+            <span class="flex-1 min-w-0 break-words text-dark-200"><span class="pe-2">:</span>{{ import_data.original_filename }}</span>
         </div>
         <div class="text-sm flex">
             <span class="text-dark-200 w-40">{% trans "Mapped" %}</span>
-            <span class="flex-1 text-dark-200"><span class="pe-2">:</span>{{ mapped_count }} {% trans "Fields" %}</span>
+            <span class="flex-1 min-w-0 break-words text-dark-200"><span class="pe-2">:</span>{{ mapped_count }} {% trans "Fields" %}</span>
         </div>
         <div class="text-sm flex">
             <span class="text-dark-200 w-40">{% trans "Unmapped" %}</span>
-            <span class="flex-1 text-dark-200"><span class="pe-2">:</span>{{ unmapped_count }}
+            <span class="flex-1 min-w-0 break-words text-dark-200"><span class="pe-2">:</span>{{ unmapped_count }}
                 {% trans "Fields" %}</span>
         </div>
     </div>

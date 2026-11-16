@@ -13,7 +13,11 @@ from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import View
 
 # Local imports
-from .base import IMPORT_EXCLUDED_FIELDS, get_model_verbose_name
+from .base import (
+    IMPORT_EXCLUDED_FIELDS,
+    get_import_excluded_fields,
+    get_model_verbose_name,
+)
 
 # Third-party imports (Django)
 
@@ -161,7 +165,7 @@ class ImportStep3View(View):
             model = apps.get_model(app_label, module_name)
             fields = []
             for field in model._meta.fields:
-                if field.name in IMPORT_EXCLUDED_FIELDS:
+                if field.name in get_import_excluded_fields(model):
                     continue
                 if not getattr(field, "editable", True):
                     continue

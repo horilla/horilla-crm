@@ -35,7 +35,7 @@ from horilla.web import HttpNotFound, HttpResponse
 from ...models import ImportHistory
 
 # Local imports
-from .base import IMPORT_EXCLUDED_FIELDS
+from .base import IMPORT_EXCLUDED_FIELDS, get_import_excluded_fields
 
 logger = logging.getLogger(__name__)
 
@@ -528,7 +528,7 @@ class DownloadTemplateModalView(LoginRequiredMixin, TemplateView):
             model = apps.get_model(app_label, module_name)
             fields = []
             for field in model._meta.fields:
-                if field.name in IMPORT_EXCLUDED_FIELDS:
+                if field.name in get_import_excluded_fields(model):
                     continue
                 if not getattr(field, "editable", True):
                     continue

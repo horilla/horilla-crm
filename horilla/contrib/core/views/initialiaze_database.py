@@ -151,6 +151,9 @@ class SignUpFormView(HorillaSingleFormView, ProgressStepsMixin):
     html = """{% load i18n static %}
         <div class="flex justify-end pt-5">
             <button class="border-[1px] border-[solid] border-[#e54f38] hover:border-[#9b210f] hover:bg-secondary-600 rounded-[5px] px-[15px] py-[8px] text-[#e54f38] flex gap-3 btn-with-icon border-[#e54f38] [transition:.3s] hover:text-white">
+                <span id="single-form-save-spinner" class="htmx-indicator htmx-indicator-inline">
+                    <img src="{% static '/assets/icons/spinner.svg' %}" alt="{% trans 'Loading...' %}" width="25" />
+                </span>
                 {% trans "Next" %}
                 <img src="{% static 'assets/icons/ar3.svg' %}" alt="{% trans 'Next' %}" />
             </button>
@@ -211,6 +214,9 @@ class InitializeCompanyFormView(
     html = """{% load i18n static %}
         <div class="flex justify-end pt-5">
             <button class="border-[1px] border-[solid] border-[#e54f38] hover:border-[#9b210f] hover:bg-secondary-600 rounded-[5px] px-[15px] py-[8px] text-[#e54f38] flex gap-3 btn-with-icon border-[#e54f38] [transition:.3s] hover:text-white">
+                <span id="single-form-save-spinner" class="htmx-indicator htmx-indicator-inline">
+                    <img src="{% static '/assets/icons/spinner.svg' %}" alt="{% trans 'Loading...' %}" width="25" />
+                </span>
                 {% trans "Next" %}
                 <img src="{% static 'assets/icons/ar3.svg' %}" alt="{% trans 'Next' %}" />
             </button>

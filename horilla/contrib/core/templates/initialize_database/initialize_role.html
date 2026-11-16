@@ -169,8 +169,12 @@
                         hx-vals='{"next_step": "true"}'
                         hx-push-url="{{push_url}}"
                         hx-select="#{{select_id}}"
+                        hx-indicator="#next-step-spinner"
                         class="border-[1px] border-[#e54f38] hover:border-[#9b210f] hover:bg-secondary-600 rounded-[5px] px-[15px] py-[8px] text-[#e54f38] inline-flex items-center gap-3 whitespace-nowrap btn-with-icon [transition:.3s] hover:text-white"
                     >
+                        <span id="next-step-spinner" class="htmx-indicator htmx-indicator-inline">
+                            <img src="{% static '/assets/icons/spinner.svg' %}" alt="{% trans 'Loading...' %}" width="25">
+                        </span>
                         {% if is_last %}
                             {% trans "Sign In" %}
                         {% else %}

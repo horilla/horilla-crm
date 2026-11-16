@@ -11,6 +11,7 @@ from django.contrib import messages
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.shortcuts import redirect
+from horilla.utils.date_ranges import get_date_range_choices
 from horilla.utils.translation import gettext_lazy as _
 from horilla.views.generic import TemplateView, View
 from horilla.web import JsonResponse
@@ -20,9 +21,8 @@ from ..get_started import get_onboarding_context
 # Local imports
 from ..models import Dashboard, DefaultHomeLayoutOrder
 from ..utils import (
-    DATE_RANGE_CHOICES,
     DefaultDashboardGenerator,
-    validate_custom_date_params,
+    get_date_range_context,
     validate_date_range_request,
 )
 from ..views import DashboardDetailView
@@ -134,17 +134,9 @@ class HomePageView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data()
 
         user_company = getattr(self.request.user, "company", None)
-        date_range = self.request.GET.get("date_range")
-        if date_range == "all":
-            date_range = None
-        date_from = self.request.GET.get("date_from")
-        date_to = self.request.GET.get("date_to")
-        date_range, date_from, date_to = validate_custom_date_params(
-            date_range, date_from, date_to
+        date_range, date_from, date_to, date_range_base_url = get_date_range_context(
+            self.request
         )
-        if date_range is None:
-            date_from = None
-            date_to = None
 
         generator = DefaultDashboardGenerator(
             self.request.user,
@@ -169,14 +161,6 @@ class HomePageView(LoginRequiredMixin, TemplateView):
             ).order_by("-created_at")[:5]
         except ImportError:
             pass
-
-        base_url = self.request.build_absolute_uri(self.request.path).split("?")[0]
-        query_params = self.request.GET.copy()
-        query_params.pop("date_range", None)
-        query_params.pop("date_from", None)
-        query_params.pop("date_to", None)
-        base_query = query_params.urlencode()
-        date_range_base_url = f"{base_url}?{base_query}" if base_query else base_url
 
         default_home_order = {}
         user_has_custom_default_home_layout = False
@@ -277,7 +261,7 @@ class HomePageView(LoginRequiredMixin, TemplateView):
                 "show_create_dashboard_prompt": True,
                 "available_models_count": len(generator.models),
                 "date_range": date_range,
-                "date_range_choices": DATE_RANGE_CHOICES,
+                "date_range_choices": get_date_range_choices(created=True),
                 "date_range_base_url": date_range_base_url,
                 "date_from": date_from,
                 "date_to": date_to,

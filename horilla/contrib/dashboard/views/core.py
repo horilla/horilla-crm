@@ -15,6 +15,7 @@ from horilla.contrib.utils.middlewares import _thread_local
 from horilla.db.models import Case, When
 from horilla.shortcuts import get_object_or_404, redirect, render
 from horilla.urls import reverse, reverse_lazy
+from horilla.utils.date_ranges import get_date_range_choices
 from horilla.utils.decorators import (
     htmx_required,
     method_decorator,
@@ -29,11 +30,7 @@ from horilla.web import HttpNotFound, HttpResponse, RefreshResponse
 # Local imports
 from ..filters import DashboardFilter, DashboardFolderFilter
 from ..models import Dashboard, DashboardComponent, DefaultHomeLayoutOrder
-from ..utils import (
-    DATE_RANGE_CHOICES,
-    validate_custom_date_params,
-    validate_date_range_request,
-)
+from ..utils import get_date_range_context, validate_date_range_request
 from .dashboard_helper import get_chart_data, get_kpi_data, get_table_data
 
 logger = logging.getLogger(__name__)
@@ -470,25 +467,9 @@ class DashboardDetailView(RecentlyViewedMixin, TemplateView):
 
         context["previous_url"] = previous_url
 
-        date_range = self.request.GET.get("date_range")
-        if date_range == "all":
-            date_range = None
-        date_from = self.request.GET.get("date_from")
-        date_to = self.request.GET.get("date_to")
-        date_range, date_from, date_to = validate_custom_date_params(
-            date_range, date_from, date_to
+        date_range, date_from, date_to, date_range_base_url = get_date_range_context(
+            self.request
         )
-        if date_range is None:
-            date_from = None
-            date_to = None
-
-        base_url = self.request.build_absolute_uri(self.request.path).split("?")[0]
-        query_params = self.request.GET.copy()
-        query_params.pop("date_range", None)
-        query_params.pop("date_from", None)
-        query_params.pop("date_to", None)
-        base_query = query_params.urlencode()
-        date_range_base_url = f"{base_url}?{base_query}" if base_query else base_url
 
         context.update(
             {
@@ -505,7 +486,7 @@ class DashboardDetailView(RecentlyViewedMixin, TemplateView):
                 "section": section,
                 "is_home": is_home,
                 "date_range": date_range,
-                "date_range_choices": DATE_RANGE_CHOICES,
+                "date_range_choices": get_date_range_choices(created=True),
                 "date_range_base_url": date_range_base_url,
                 "date_from": date_from,
                 "date_to": date_to,

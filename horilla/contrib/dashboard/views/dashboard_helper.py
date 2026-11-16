@@ -8,8 +8,6 @@ from urllib.parse import urlencode
 # Third-party imports (Django)
 from django.core.paginator import Paginator
 
-# First party imports (Horilla)
-from horilla.apps import apps
 from horilla.contrib.generics.views import HorillaListView
 from horilla.contrib.generics.views.helpers.queryset_utils import (
     apply_conditions,
@@ -25,15 +23,14 @@ from horilla.contrib.reports.utils import (
 )
 from horilla.contrib.utils.methods import get_section_info_for_model
 from horilla.db.models import Avg, Count, Max, Min, Sum
+
+# First party imports (Horilla)
 from horilla.urls import reverse_lazy
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
-from ..utils import (
-    DATE_RANGE_CHOICES,
-    annotate_component_virtual_fields,
-    apply_date_range_to_queryset,
-)
+from ..model_lookup import get_model_by_name
+from ..utils import annotate_component_virtual_fields, apply_request_date_range
 
 logger = logging.getLogger(__name__)
 
@@ -48,14 +45,7 @@ def get_kpi_data(component, request):
     """
     model = None
     module_name = component.module.model if component.module else None
-    for app_config in apps.get_app_configs():
-        try:
-            model = apps.get_model(
-                app_label=app_config.label, model_name=module_name.lower()
-            )
-            break
-        except LookupError:
-            continue
+    model = get_model_by_name(module_name)
 
     if not model:
         return None
@@ -66,6 +56,8 @@ def get_kpi_data(component, request):
         conditions = component.conditions.all().order_by("sequence")
         queryset = apply_conditions(queryset, conditions)
         queryset = annotate_component_virtual_fields(queryset, model, component)
+
+        queryset = apply_request_date_range(queryset, model, request)
 
         metric_type = (component.metric_type or "").strip()
 
@@ -110,9 +102,30 @@ def get_kpi_data(component, request):
 
         section_info = get_section_info_for_model(model)
 
+        base_url = section_info["url"]
+        if conditions.exists():
+            query_params = [
+                ("section", section_info["section"]),
+                ("apply_filter", "true"),
+            ]
+
+            for condition in conditions:
+                operator = (
+                    "exact" if condition.operator == "equals" else condition.operator
+                )
+
+                query_params.append(("field", condition.field))
+                query_params.append(("operator", operator))
+                query_params.append(("value", condition.value))
+
+            query = urlencode(query_params, doseq=True)
+            filtered_url = f"{base_url}?{query}"
+        else:
+            filtered_url = f"{base_url}?section={section_info['section']}"
+
         return {
             "value": float(value),
-            "url": section_info["url"],
+            "url": filtered_url,
             "section": section_info["section"],
             "label": f"{metric_label} of {field_label_str}",
         }
@@ -172,14 +185,7 @@ def get_report_chart_data(component, request):
 
         module_name = component.module.model if component.module else None
 
-        for app_config in apps.get_app_configs():
-            try:
-                model = apps.get_model(
-                    app_label=app_config.label, model_name=module_name.lower()
-                )
-                break
-            except LookupError:
-                continue
+        model = get_model_by_name(module_name)
 
         if not model:
             return None
@@ -296,14 +302,7 @@ def get_chart_data(component, request):
             return get_report_chart_data(component, request)
         model = None
         module_name = component.module.model if component.module else None
-        for app_config in apps.get_app_configs():
-            try:
-                model = apps.get_model(
-                    app_label=app_config.label, model_name=module_name.lower()
-                )
-                break
-            except LookupError:
-                continue
+        model = get_model_by_name(module_name)
 
         if not model:
             return None
@@ -409,14 +408,7 @@ def get_table_data(component, request):
     model = None
 
     module_name = component.module.model if component.module else None
-    for app_config in apps.get_app_configs():
-        try:
-            model = apps.get_model(
-                app_label=app_config.label, model_name=module_name.lower()
-            )
-            break
-        except LookupError:
-            continue
+    model = get_model_by_name(module_name)
 
     if not model:
         return None, {}
@@ -428,16 +420,7 @@ def get_table_data(component, request):
     queryset = apply_conditions(queryset, conditions)
     queryset = annotate_component_virtual_fields(queryset, model, component)
 
-    date_range = request.GET.get("date_range")
-    if date_range and (
-        str(date_range) in [str(d) for d in DATE_RANGE_CHOICES]
-        or date_range == "custom"
-    ):
-        date_from = request.GET.get("date_from") if date_range == "custom" else None
-        date_to = request.GET.get("date_to") if date_range == "custom" else None
-        queryset = apply_date_range_to_queryset(
-            queryset, model, date_range, date_from=date_from, date_to=date_to
-        )
+    queryset = apply_request_date_range(queryset, model, request)
 
     # Sorting uses the list view's own rules (sort_keys, e.g. "name:asc,date:desc").
     sorter = HorillaListView(model=model, request=request)

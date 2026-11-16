@@ -8,8 +8,6 @@ from urllib.parse import urlencode
 from django.contrib import messages
 from django.utils.encoding import force_str
 
-# First party imports (Horilla)
-from horilla.apps import apps
 from horilla.contrib.generics.views.helpers.queryset_utils import (
     apply_conditions,
     get_queryset_for_module,
@@ -24,16 +22,16 @@ from horilla.utils.decorators import (
     permission_required_or_denied,
 )
 from horilla.utils.html import js_json
+
+# First party imports (Horilla)
 from horilla.views.generic import View
+
+from ..model_lookup import get_model_by_name
 
 # Local imports
 from ..models import DashboardComponent
-from ..utils import (
-    DATE_RANGE_CHOICES,
-    annotate_component_virtual_fields,
-    apply_date_range_to_queryset,
-)
-from .dashboard_helper import apply_report_filters
+from ..utils import annotate_component_virtual_fields, apply_request_date_range
+from .dashboard_helper import apply_report_filters, get_kpi_data
 
 logger = logging.getLogger(__name__)
 
@@ -123,127 +121,6 @@ class DashboardComponentChartView(View):
     Handles chart components with ECharts and KPIs with custom HTML.
     """
 
-    def get_kpi_data(self, component):
-        """
-        Calculate KPI data.
-        Supports:
-        - "count" → total record count
-        - "<agg>__<field_name>" for numeric fields, where <agg> is one of:
-          sum, average, min, max
-        """
-        model = None
-        module_name = component.module.model if component.module else None
-        for app_config in apps.get_app_configs():
-            try:
-                model = apps.get_model(
-                    app_label=app_config.label, model_name=module_name.lower()
-                )
-                break
-            except LookupError:
-                continue
-
-        if not model:
-            return None
-
-        try:
-            queryset = get_queryset_for_module(self.request.user, model)
-
-            conditions = component.conditions.all().order_by("sequence")
-            queryset = apply_conditions(queryset, conditions)
-            queryset = annotate_component_virtual_fields(queryset, model, component)
-
-            date_range = self.request.GET.get("date_range")
-            if date_range and (
-                str(date_range) in [str(d) for d in DATE_RANGE_CHOICES]
-                or date_range == "custom"
-            ):
-                date_from = (
-                    self.request.GET.get("date_from")
-                    if date_range == "custom"
-                    else None
-                )
-                date_to = (
-                    self.request.GET.get("date_to") if date_range == "custom" else None
-                )
-                queryset = apply_date_range_to_queryset(
-                    queryset, model, date_range, date_from=date_from, date_to=date_to
-                )
-
-            metric_type = (component.metric_type or "").strip()
-
-            # Default: simple record count
-            value = queryset.count()
-            metric_label = "Count"
-            field_label_str = module_name.title() if module_name else "Records"
-
-            if metric_type and metric_type != "count":
-                try:
-                    agg_key, field_name = metric_type.split("__", 1)
-                except ValueError:
-                    agg_key, field_name = "", ""
-
-                agg_map = {
-                    "sum": Sum,
-                    "average": Avg,
-                    "min": Min,
-                    "max": Max,
-                }
-
-                if agg_key in agg_map and field_name:
-                    try:
-                        field = model._meta.get_field(field_name)
-                        field_label_str = str(
-                            getattr(field, "verbose_name", field_name) or field_name
-                        )
-                    except Exception:
-                        field_label_str = field_name.replace("_", " ").title()
-
-                    agg_func = agg_map[agg_key]
-                    agg_result = queryset.aggregate(result=agg_func(field_name)).get(
-                        "result"
-                    )
-                    value = agg_result or 0
-
-                    metric_label = (
-                        "Average"
-                        if agg_key == "average"
-                        else agg_key.replace("_", " ").title()
-                    )
-
-            section_info = get_section_info_for_model(model)
-
-            base_url = section_info["url"]
-            if conditions.exists():
-                query_params = [
-                    ("section", section_info["section"]),
-                    ("apply_filter", "true"),
-                ]
-
-                for condition in conditions:
-                    operator = (
-                        "exact"
-                        if condition.operator == "equals"
-                        else condition.operator
-                    )
-
-                    query_params.append(("field", condition.field))
-                    query_params.append(("operator", operator))
-                    query_params.append(("value", condition.value))
-
-                query = urlencode(query_params, doseq=True)
-                filtered_url = f"{base_url}?{query}"
-            else:
-                filtered_url = f"{base_url}?section={section_info['section']}"
-
-            return {
-                "value": float(value),
-                "url": filtered_url,
-                "section": section_info["section"],
-                "label": f"{metric_label} of {field_label_str}",
-            }
-        except Exception:
-            return None
-
     def get_chart_data(self, component):
         """
         Retrieve chart data based on component configuration.
@@ -252,14 +129,7 @@ class DashboardComponentChartView(View):
         """
         model = None
         module_name = component.module.model if component.module else None
-        for app_config in apps.get_app_configs():
-            try:
-                model = apps.get_model(
-                    app_label=app_config.label, model_name=module_name.lower()
-                )
-                break
-            except LookupError:
-                continue
+        model = get_model_by_name(module_name)
 
         if not model or component.component_type != "chart":
             return None
@@ -268,22 +138,7 @@ class DashboardComponentChartView(View):
             queryset = get_queryset_for_module(self.request.user, model)
             conditions = component.conditions.all()
 
-            date_range = self.request.GET.get("date_range")
-            if date_range and (
-                str(date_range) in [str(d) for d in DATE_RANGE_CHOICES]
-                or date_range == "custom"
-            ):
-                date_from = (
-                    self.request.GET.get("date_from")
-                    if date_range == "custom"
-                    else None
-                )
-                date_to = (
-                    self.request.GET.get("date_to") if date_range == "custom" else None
-                )
-                queryset = apply_date_range_to_queryset(
-                    queryset, model, date_range, date_from=date_from, date_to=date_to
-                )
+            queryset = apply_request_date_range(queryset, model, self.request)
 
             # Chart types that need primary + secondary grouping → stackedData
             two_group_chart_types = [
@@ -648,14 +503,7 @@ class DashboardComponentChartView(View):
 
             module_name = component.module.model if component.module else None
 
-            for app_config in apps.get_app_configs():
-                try:
-                    model = apps.get_model(
-                        app_label=app_config.label, model_name=module_name.lower()
-                    )
-                    break
-                except LookupError:
-                    continue
+            model = get_model_by_name(module_name)
 
             if not model:
                 logger.warning(
@@ -792,7 +640,7 @@ class DashboardComponentChartView(View):
         try:
             component = DashboardComponent.objects.get(id=component_id)
             if component.component_type == "kpi":
-                kpi_data = self.get_kpi_data(component)
+                kpi_data = get_kpi_data(component, request)
                 if not kpi_data:
                     return render(
                         request,

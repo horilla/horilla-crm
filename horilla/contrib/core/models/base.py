@@ -306,17 +306,23 @@ class CompanyFilteredManager(models.Manager):
                 return queryset
 
             company = getattr(request, "active_company", None)
+            user = getattr(request, "user", None)
             if not company:
                 # ActiveCompanyMiddleware runs before DRF resolves request.user
                 # for non-session auth (JWT/Basic), so active_company can still
                 # be unset here even though the request is now authenticated.
-                user = getattr(request, "user", None)
                 if user is not None and user.is_authenticated:
                     company = getattr(user, "company", None)
             if company:
-                queryset = queryset.filter(company=company)
+                return queryset.filter(company=company)
+            # Authenticated request but no company could be resolved: fail
+            # closed instead of exposing every tenant's data.
+            if user is not None and user.is_authenticated:
+                return queryset.none()
         except Exception as e:
             logger.error("Error in CompanyFilteredManager.get_queryset: %s", e)
+            # Fail closed on unexpected errors.
+            return queryset.none()
         return queryset
 
 

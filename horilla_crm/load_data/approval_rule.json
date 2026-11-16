@@ -1,0 +1,500 @@
+[
+    {
+        "model": "approvals.approvalrule",
+        "pk": 1,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Discount Approval",
+            "model": {"app_label": "opportunities", "model": "opportunity"},
+            "description": "Require manager approval for deals with a large discount.",
+            "trigger_on_create": true,
+            "trigger_on_edit": true
+        }
+    },
+    {
+        "model": "approvals.approvalprocessrule",
+        "pk": 1,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule_config": {},
+            "approval_process": 1,
+            "order": 1
+        }
+    },
+    {
+        "model": "approvals.approvalcondition",
+        "pk": 1,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 1,
+            "field": "amount",
+            "operator": "gte",
+            "value": "50000",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "approvals.approvalstep",
+        "pk": 1,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 1,
+            "order": 1,
+            "approver_type": "owner_manager",
+            "approver_user": null,
+            "role_identifier": ""
+        }
+    },
+    {
+        "model": "approvals.approvalrule",
+        "pk": 2,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Contract Term Approval",
+            "model": {"app_label": "opportunities", "model": "opportunity"},
+            "description": "Require manager approval for deals with non-standard contract terms.",
+            "trigger_on_create": true,
+            "trigger_on_edit": true
+        }
+    },
+    {
+        "model": "approvals.approvalprocessrule",
+        "pk": 2,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule_config": {},
+            "approval_process": 2,
+            "order": 1
+        }
+    },
+    {
+        "model": "approvals.approvalcondition",
+        "pk": 2,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 2,
+            "field": "amount",
+            "operator": "gte",
+            "value": "75000",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "approvals.approvalstep",
+        "pk": 2,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 2,
+            "order": 1,
+            "approver_type": "owner_manager",
+            "approver_user": null,
+            "role_identifier": ""
+        }
+    },
+    {
+        "model": "approvals.approvalrule",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Lead Conversion Approval",
+            "model": {"app_label": "leads", "model": "lead"},
+            "description": "Require approval before a lead is moved to Convert.",
+            "trigger_on_create": false,
+            "trigger_on_edit": true
+        }
+    },
+    {
+        "model": "approvals.approvalprocessrule",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule_config": {},
+            "approval_process": 3,
+            "order": 1
+        }
+    },
+    {
+        "model": "approvals.approvalcondition",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 3,
+            "field": "lead_status",
+            "operator": "exact",
+            "value": "6",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "approvals.approvalstep",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 3,
+            "order": 1,
+            "approver_type": "owner_manager",
+            "approver_user": null,
+            "role_identifier": ""
+        }
+    },
+    {
+        "model": "approvals.approvalstep",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 3,
+            "order": 2,
+            "approver_type": "user",
+            "approver_user": 1,
+            "role_identifier": ""
+        }
+    },
+    {
+        "model": "approvals.approvalrule",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Lead Qualification Approval",
+            "model": {"app_label": "leads", "model": "lead"},
+            "description": "Require approval before a lead is marked as Converted.",
+            "trigger_on_create": false,
+            "trigger_on_edit": true
+        }
+    },
+    {
+        "model": "approvals.approvalprocessrule",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule_config": {},
+            "approval_process": 4,
+            "order": 1
+        }
+    },
+    {
+        "model": "approvals.approvalcondition",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 4,
+            "field": "lead_status",
+            "operator": "exact",
+            "value": "12",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "approvals.approvalstep",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 4,
+            "order": 1,
+            "approver_type": "owner_manager",
+            "approver_user": null,
+            "role_identifier": ""
+        }
+    },
+    {
+        "model": "approvals.approvalstep",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 4,
+            "order": 2,
+            "approver_type": "user",
+            "approver_user": 322,
+            "role_identifier": ""
+        }
+    },
+    {
+        "model": "approvals.approvalrule",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Account Credit Approval",
+            "model": {"app_label": "accounts", "model": "account"},
+            "description": "Require approval for accounts with a very large annual revenue.",
+            "trigger_on_create": true,
+            "trigger_on_edit": true
+        }
+    },
+    {
+        "model": "approvals.approvalprocessrule",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule_config": {},
+            "approval_process": 5,
+            "order": 1
+        }
+    },
+    {
+        "model": "approvals.approvalcondition",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 5,
+            "field": "annual_revenue",
+            "operator": "gte",
+            "value": "5000000",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "approvals.approvalstep",
+        "pk": 7,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 5,
+            "order": 1,
+            "approver_type": "owner_manager",
+            "approver_user": null,
+            "role_identifier": ""
+        }
+    },
+    {
+        "model": "approvals.approvalstep",
+        "pk": 8,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 5,
+            "order": 2,
+            "approver_type": "role",
+            "approver_user": null,
+            "role_identifier": "CEO"
+        }
+    },
+    {
+        "model": "approvals.approvalrule",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Primary Contact Approval",
+            "model": {"app_label": "contacts", "model": "contact"},
+            "description": "Require approval when a primary contact is added or changed.",
+            "trigger_on_create": true,
+            "trigger_on_edit": true
+        }
+    },
+    {
+        "model": "approvals.approvalprocessrule",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule_config": {},
+            "approval_process": 6,
+            "order": 1
+        }
+    },
+    {
+        "model": "approvals.approvalcondition",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 6,
+            "field": "is_primary",
+            "operator": "exact",
+            "value": "True",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "approvals.approvalstep",
+        "pk": 9,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 6,
+            "order": 1,
+            "approver_type": "owner_manager",
+            "approver_user": null,
+            "role_identifier": ""
+        }
+    },
+    {
+        "model": "approvals.approvalstep",
+        "pk": 10,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "approval_process_rule": 6,
+            "order": 2,
+            "approver_type": "role",
+            "approver_user": null,
+            "role_identifier": "Managing Director"
+        }
+    }
+]

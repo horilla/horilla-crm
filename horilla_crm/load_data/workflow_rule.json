@@ -1,0 +1,377 @@
+[
+    {
+        "model": "workflow.workflowrule",
+        "pk": 1,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Notify on Stalled Opportunity",
+            "model": {"app_label": "opportunities", "model": "opportunity"},
+            "description": "Notify the deal owner when a high-value opportunity is created.",
+            "trigger_on_create": true,
+            "trigger_on_edit": false
+        }
+    },
+    {
+        "model": "workflow.workflowcondition",
+        "pk": 1,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 1,
+            "field": "amount",
+            "operator": "gte",
+            "value": "100000",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "workflow.workflowaction",
+        "pk": 1,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 1,
+            "action_type": "notification",
+            "action_config": {"custom_message": "A high-value opportunity was created.", "to": "instance.owner"},
+            "order": 0
+        }
+    },
+    {
+        "model": "workflow.workflowrule",
+        "pk": 2,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Notify on Overdue Follow-up",
+            "model": {"app_label": "opportunities", "model": "opportunity"},
+            "description": "Notify the deal owner when an opportunity's next step is overdue.",
+            "trigger_on_create": false,
+            "trigger_on_edit": true
+        }
+    },
+    {
+        "model": "workflow.workflowcondition",
+        "pk": 2,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 2,
+            "field": "close_date",
+            "operator": "lte",
+            "value": "today",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "workflow.workflowaction",
+        "pk": 2,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 2,
+            "action_type": "notification",
+            "action_config": {"custom_message": "An opportunity's close date has passed.", "to": "instance.owner"},
+            "order": 0
+        }
+    },
+    {
+        "model": "workflow.workflowrule",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "New Website Lead Task",
+            "model": {"app_label": "leads", "model": "lead"},
+            "description": "Create a follow-up task and notify the lead owner when a website lead is created.",
+            "trigger_on_create": true,
+            "trigger_on_edit": false
+        }
+    },
+    {
+        "model": "workflow.workflowcondition",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 3,
+            "field": "lead_source",
+            "operator": "exact",
+            "value": "website",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "workflow.workflowaction",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 3,
+            "action_type": "assign_task",
+            "action_config": {"title": "Contact the new website lead", "due_basis": "rule_trigger_date", "due_in_days": 1, "status": "not_started", "priority": "high", "description": "Reach out to the lead within one day."},
+            "order": 0
+        }
+    },
+    {
+        "model": "workflow.workflowaction",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 3,
+            "action_type": "notification",
+            "action_config": {"template_id": 1, "to": "instance.lead_owner"},
+            "order": 1
+        }
+    },
+    {
+        "model": "workflow.workflowrule",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "New Partner Lead Task",
+            "model": {"app_label": "leads", "model": "lead"},
+            "description": "Create a follow-up task and notify the lead owner when a partner-sourced lead is created.",
+            "trigger_on_create": true,
+            "trigger_on_edit": false
+        }
+    },
+    {
+        "model": "workflow.workflowcondition",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 4,
+            "field": "lead_source",
+            "operator": "exact",
+            "value": "partner",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "workflow.workflowaction",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 4,
+            "action_type": "assign_task",
+            "action_config": {"title": "Contact the new partner lead", "due_basis": "rule_trigger_date", "due_in_days": 1, "status": "not_started", "priority": "high", "description": "Reach out to the lead within one day."},
+            "order": 0
+        }
+    },
+    {
+        "model": "workflow.workflowaction",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 4,
+            "action_type": "notification",
+            "action_config": {"template_id": 3, "to": "instance.lead_owner"},
+            "order": 1
+        }
+    },
+    {
+        "model": "workflow.workflowrule",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "High Priority Account Task",
+            "model": {"app_label": "accounts", "model": "account"},
+            "description": "Create a review task and notify the account owner when a high priority account is created.",
+            "trigger_on_create": true,
+            "trigger_on_edit": false
+        }
+    },
+    {
+        "model": "workflow.workflowcondition",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 5,
+            "field": "customer_priority",
+            "operator": "exact",
+            "value": "High",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "workflow.workflowaction",
+        "pk": 7,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 5,
+            "action_type": "assign_task",
+            "action_config": {"title": "Plan onboarding for the high priority account", "due_basis": "rule_trigger_date", "due_in_days": 2, "status": "not_started", "priority": "high", "description": "Schedule a kick-off with the customer."},
+            "order": 0
+        }
+    },
+    {
+        "model": "workflow.workflowaction",
+        "pk": 8,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 5,
+            "action_type": "notification",
+            "action_config": {"template_id": 6, "to": "instance.account_owner"},
+            "order": 1
+        }
+    },
+    {
+        "model": "workflow.workflowrule",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Set Probability on Won Deal",
+            "model": {"app_label": "opportunities", "model": "opportunity"},
+            "description": "Set the probability to 100% when an opportunity moves to Deal Won.",
+            "trigger_on_create": false,
+            "trigger_on_edit": true
+        }
+    },
+    {
+        "model": "workflow.workflowcondition",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 6,
+            "field": "stage",
+            "operator": "exact",
+            "value": "23",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "workflow.workflowaction",
+        "pk": 9,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 6,
+            "action_type": "update_field",
+            "action_config": {"field": "probability", "value": "100"},
+            "order": 0
+        }
+    }
+]

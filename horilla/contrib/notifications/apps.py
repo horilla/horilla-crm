@@ -38,14 +38,6 @@ class NotificationsConfig(AppLauncher):
         "menu",
     ]
 
-    demo_data = {
-        "files": [
-            (18, "load_data/notification_template.json"),
-        ],
-        "order": 7,
-        "configurable": False,
-    }
-
     def get_api_paths(self):
         """
         Return API path configurations for this app.

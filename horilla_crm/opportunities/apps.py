@@ -36,9 +36,6 @@ class OpportunitiesConfig(AppLauncher):
         },
         {
             "files": [
-                (21, "load_data/workflow_rule.json"),
-                (24, "load_data/approval_rule.json"),
-                (25, "load_data/review_process.json"),
                 (27, "load_data/big_deal_alert.json"),
             ],
             "order": 7,

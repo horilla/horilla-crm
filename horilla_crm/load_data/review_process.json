@@ -1,0 +1,460 @@
+[
+    {
+        "model": "reviews.reviewprocess",
+        "pk": 1,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "title": "Opportunity Field Review",
+            "method_title": "opportunity_field_review",
+            "model": {"app_label": "opportunities", "model": "opportunity"},
+            "review_fields": ["amount", "close_date", "stage"],
+            "notify_on_submission": true,
+            "notify_on_approval": true,
+            "notify_on_rejection": true
+        }
+    },
+    {
+        "model": "reviews.reviewrule",
+        "pk": 1,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "reviews": 1,
+            "approver_type": "role",
+            "approver_users": [],
+            "approver_roles": [7]
+        }
+    },
+    {
+        "model": "reviews.reviewcondition",
+        "pk": 1,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "reviews": 1,
+            "field": "amount",
+            "operator": "gte",
+            "value": "50000",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "reviews.reviewrulecondition",
+        "pk": 1,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "review_rule": 1,
+            "field": "stage",
+            "operator": "exact",
+            "value": "11",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "reviews.reviewprocess",
+        "pk": 2,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "title": "Deal Terms Review",
+            "method_title": "deal_terms_review",
+            "model": {"app_label": "opportunities", "model": "opportunity"},
+            "review_fields": ["amount", "close_date", "stage"],
+            "notify_on_submission": true,
+            "notify_on_approval": true,
+            "notify_on_rejection": true
+        }
+    },
+    {
+        "model": "reviews.reviewrule",
+        "pk": 2,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "reviews": 2,
+            "approver_type": "role",
+            "approver_users": [],
+            "approver_roles": [13]
+        }
+    },
+    {
+        "model": "reviews.reviewcondition",
+        "pk": 2,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "reviews": 2,
+            "field": "amount",
+            "operator": "gte",
+            "value": "75000",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "reviews.reviewrulecondition",
+        "pk": 2,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "review_rule": 2,
+            "field": "stage",
+            "operator": "exact",
+            "value": "21",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "reviews.reviewprocess",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "title": "Lead Qualification Review",
+            "method_title": "lead_qualification_review",
+            "model": {"app_label": "leads", "model": "lead"},
+            "review_fields": ["lead_status", "lead_source", "annual_revenue"],
+            "trigger_on_create": true,
+            "trigger_on_edit": true,
+            "notify_on_submission": true,
+            "notify_on_approval": true,
+            "notify_on_rejection": true
+        }
+    },
+    {
+        "model": "reviews.reviewrule",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "reviews": 3,
+            "approver_type": "role",
+            "approver_users": [],
+            "approver_roles": [7]
+        }
+    },
+    {
+        "model": "reviews.reviewcondition",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "reviews": 3,
+            "field": "industry",
+            "operator": "exact",
+            "value": "banking",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "reviews.reviewrulecondition",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "review_rule": 3,
+            "field": "lead_status",
+            "operator": "exact",
+            "value": "3",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "reviews.reviewprocess",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "title": "Prospect Quality Review",
+            "method_title": "prospect_quality_review",
+            "model": {"app_label": "leads", "model": "lead"},
+            "review_fields": ["lead_status", "lead_source", "annual_revenue"],
+            "trigger_on_create": true,
+            "trigger_on_edit": true,
+            "notify_on_submission": true,
+            "notify_on_approval": true,
+            "notify_on_rejection": true
+        }
+    },
+    {
+        "model": "reviews.reviewrule",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "reviews": 4,
+            "approver_type": "role",
+            "approver_users": [],
+            "approver_roles": [13]
+        }
+    },
+    {
+        "model": "reviews.reviewcondition",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "reviews": 4,
+            "field": "lead_source",
+            "operator": "exact",
+            "value": "partner",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "reviews.reviewrulecondition",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "review_rule": 4,
+            "field": "lead_status",
+            "operator": "exact",
+            "value": "9",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "reviews.reviewprocess",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "title": "Account Details Review",
+            "method_title": "account_details_review",
+            "model": {"app_label": "accounts", "model": "account"},
+            "review_fields": ["name", "annual_revenue", "industry"],
+            "trigger_on_create": true,
+            "trigger_on_edit": false,
+            "notify_on_submission": true,
+            "notify_on_approval": true,
+            "notify_on_rejection": true
+        }
+    },
+    {
+        "model": "reviews.reviewrule",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "reviews": 5,
+            "approver_type": "role",
+            "approver_users": [],
+            "approver_roles": [7]
+        }
+    },
+    {
+        "model": "reviews.reviewcondition",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "reviews": 5,
+            "field": "annual_revenue",
+            "operator": "gte",
+            "value": "5000000",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "reviews.reviewrulecondition",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "review_rule": 5,
+            "field": "customer_priority",
+            "operator": "exact",
+            "value": "High",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "reviews.reviewprocess",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "title": "Contact Verification Review",
+            "method_title": "contact_verification_review",
+            "model": {"app_label": "contacts", "model": "contact"},
+            "review_fields": ["email", "contact_number", "title"],
+            "trigger_on_create": true,
+            "trigger_on_edit": true,
+            "notify_on_submission": true,
+            "notify_on_approval": true,
+            "notify_on_rejection": true
+        }
+    },
+    {
+        "model": "reviews.reviewrule",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "reviews": 6,
+            "approver_type": "role",
+            "approver_users": [],
+            "approver_roles": [13]
+        }
+    },
+    {
+        "model": "reviews.reviewcondition",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "reviews": 6,
+            "field": "is_primary",
+            "operator": "exact",
+            "value": "True",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "reviews.reviewrulecondition",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "review_rule": 6,
+            "field": "contact_source",
+            "operator": "exact",
+            "value": "web",
+            "logical_operator": "and",
+            "order": 0
+        }
+    }
+]

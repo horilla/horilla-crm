@@ -1,0 +1,172 @@
+[
+    {
+        "model": "mail.horillamailtemplate",
+        "pk": 1,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": 1,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": 1,
+            "title": "Lead Welcome Email",
+            "subject": "Thanks for reaching out, {{ instance.first_name }}!",
+            "body": "<p>Hi {{ instance.first_name }},</p><p>Thanks for your interest. Our team will be in touch shortly.</p>",
+            "content_type": {"app_label": "leads", "model": "lead"}
+        }
+    },
+    {
+        "model": "mail.horillamailtemplate",
+        "pk": 2,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:20.251Z",
+            "created_by": 1,
+            "updated_at": "2025-09-18T03:04:20.251Z",
+            "updated_by": 1,
+            "title": "Deal Won Congratulations",
+            "subject": "Congratulations on winning {{ instance.name }}!",
+            "body": "<p>Great news, {{ instance.name }} has been marked as won. Great work!</p>",
+            "content_type": {"app_label": "opportunities", "model": "opportunity"}
+        }
+    },
+    {
+        "model": "mail.horillamailtemplate",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": 322,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": 322,
+            "title": "New Inquiry Acknowledgement",
+            "subject": "We've received your inquiry, {{ instance.first_name }}!",
+            "body": "<p>Hi {{ instance.first_name }},</p><p>Thanks for getting in touch. A representative will follow up soon.</p>",
+            "content_type": {"app_label": "leads", "model": "lead"}
+        }
+    },
+    {
+        "model": "mail.horillamailtemplate",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:20.251Z",
+            "created_by": 322,
+            "updated_at": "2025-09-18T03:04:20.251Z",
+            "updated_by": 322,
+            "title": "Deal Closed Celebration",
+            "subject": "{{ instance.name }} just closed - congratulations!",
+            "body": "<p>Fantastic work, {{ instance.name }} has been closed successfully!</p>",
+            "content_type": {"app_label": "opportunities", "model": "opportunity"}
+        }
+    },
+    {
+        "model": "mail.horillamailtemplate",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:30.000Z",
+            "created_by": 1,
+            "updated_at": "2025-09-18T03:04:30.000Z",
+            "updated_by": 1,
+            "title": "Campaign Launch Announcement",
+            "subject": "{{ instance.campaign_name }} is now live!",
+            "body": "<p>Hello,</p><p>We are excited to announce that <strong>{{ instance.campaign_name }}</strong> has started. It runs from {{ instance.start_date }} to {{ instance.end_date }}.</p><p>We would love for you to take part.</p>",
+            "content_type": {"app_label": "campaigns", "model": "campaign"}
+        }
+    },
+    {
+        "model": "mail.horillamailtemplate",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:35.000Z",
+            "created_by": 1,
+            "updated_at": "2025-09-18T03:04:35.000Z",
+            "updated_by": 1,
+            "title": "Account Onboarding Welcome",
+            "subject": "Welcome aboard, {{ instance.name }}!",
+            "body": "<p>Hi {{ instance.name }} team,</p><p>Welcome! We are delighted to have you with us. Your account is set up and our team is ready to help you get started.</p>",
+            "content_type": {"app_label": "accounts", "model": "account"}
+        }
+    },
+    {
+        "model": "mail.horillamailtemplate",
+        "pk": 7,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:40.000Z",
+            "created_by": 1,
+            "updated_at": "2025-09-18T03:04:40.000Z",
+            "updated_by": 1,
+            "title": "Contact Follow-up",
+            "subject": "Great connecting with you, {{ instance.first_name }}!",
+            "body": "<p>Hi {{ instance.first_name }} {{ instance.last_name }},</p><p>It was great connecting with you. Let us know a good time to continue the conversation.</p>",
+            "content_type": {"app_label": "contacts", "model": "contact"}
+        }
+    },
+    {
+        "model": "mail.horillamailtemplate",
+        "pk": 8,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:45.000Z",
+            "created_by": 322,
+            "updated_at": "2025-09-18T03:04:45.000Z",
+            "updated_by": 322,
+            "title": "Campaign Wrap-up Summary",
+            "subject": "{{ instance.campaign_name }} - campaign wrap-up",
+            "body": "<p>Hello,</p><p>The campaign <strong>{{ instance.campaign_name }}</strong> has ended. Its current status is {{ instance.status }}. Thank you to everyone who contributed.</p>",
+            "content_type": {"app_label": "campaigns", "model": "campaign"}
+        }
+    },
+    {
+        "model": "mail.horillamailtemplate",
+        "pk": 9,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:50.000Z",
+            "created_by": 322,
+            "updated_at": "2025-09-18T03:04:50.000Z",
+            "updated_by": 322,
+            "title": "Account Review Invitation",
+            "subject": "Let's review your account, {{ instance.name }}",
+            "body": "<p>Hi {{ instance.name }} team,</p><p>We would like to schedule a short review of your account to make sure we are meeting your needs. Please let us know what time works for you.</p>",
+            "content_type": {"app_label": "accounts", "model": "account"}
+        }
+    },
+    {
+        "model": "mail.horillamailtemplate",
+        "pk": 10,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:55.000Z",
+            "created_by": 322,
+            "updated_at": "2025-09-18T03:04:55.000Z",
+            "updated_by": 322,
+            "title": "Contact Introduction Email",
+            "subject": "Nice to meet you, {{ instance.first_name }}",
+            "body": "<p>Hi {{ instance.first_name }},</p><p>Thanks for your time. I am sharing a short introduction about our company and how we can help you.</p>",
+            "content_type": {"app_label": "contacts", "model": "contact"}
+        }
+    }
+]

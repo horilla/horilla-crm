@@ -1,0 +1,162 @@
+[
+    {
+        "model": "notifications.notificationtemplate",
+        "pk": 1,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "title": "New Lead Assigned",
+            "message": "A new lead {{ instance.first_name }} {{ instance.last_name }} has been assigned to you.",
+            "content_type": {"app_label": "leads", "model": "lead"}
+        }
+    },
+    {
+        "model": "notifications.notificationtemplate",
+        "pk": 2,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:20.251Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:20.251Z",
+            "updated_by": null,
+            "title": "Deal Won",
+            "message": "Congratulations! {{ instance.name }} was marked as won.",
+            "content_type": {"app_label": "opportunities", "model": "opportunity"}
+        }
+    },
+    {
+        "model": "notifications.notificationtemplate",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "title": "New Inquiry Received",
+            "message": "A new inquiry from {{ instance.first_name }} {{ instance.last_name }} was received.",
+            "content_type": {"app_label": "leads", "model": "lead"}
+        }
+    },
+    {
+        "model": "notifications.notificationtemplate",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:20.251Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:20.251Z",
+            "updated_by": null,
+            "title": "Deal Closed Won",
+            "message": "Great news! {{ instance.name }} was closed as won.",
+            "content_type": {"app_label": "opportunities", "model": "opportunity"}
+        }
+    },
+    {
+        "model": "notifications.notificationtemplate",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:30.000Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:30.000Z",
+            "updated_by": null,
+            "title": "Campaign Started",
+            "message": "The campaign {{ instance.campaign_name }} has started.",
+            "content_type": {"app_label": "campaigns", "model": "campaign"}
+        }
+    },
+    {
+        "model": "notifications.notificationtemplate",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:35.000Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:35.000Z",
+            "updated_by": null,
+            "title": "New Account Assigned",
+            "message": "The account {{ instance.name }} has been assigned to you.",
+            "content_type": {"app_label": "accounts", "model": "account"}
+        }
+    },
+    {
+        "model": "notifications.notificationtemplate",
+        "pk": 7,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:40.000Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:40.000Z",
+            "updated_by": null,
+            "title": "New Contact Assigned",
+            "message": "The contact {{ instance.first_name }} {{ instance.last_name }} has been assigned to you.",
+            "content_type": {"app_label": "contacts", "model": "contact"}
+        }
+    },
+    {
+        "model": "notifications.notificationtemplate",
+        "pk": 8,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:45.000Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:45.000Z",
+            "updated_by": null,
+            "title": "Campaign Completed",
+            "message": "The campaign {{ instance.campaign_name }} has been completed.",
+            "content_type": {"app_label": "campaigns", "model": "campaign"}
+        }
+    },
+    {
+        "model": "notifications.notificationtemplate",
+        "pk": 9,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:50.000Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:50.000Z",
+            "updated_by": null,
+            "title": "Account Ownership Updated",
+            "message": "You are now the owner of the account {{ instance.name }}.",
+            "content_type": {"app_label": "accounts", "model": "account"}
+        }
+    },
+    {
+        "model": "notifications.notificationtemplate",
+        "pk": 10,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:55.000Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:55.000Z",
+            "updated_by": null,
+            "title": "New Contact Added",
+            "message": "A new contact {{ instance.first_name }} {{ instance.last_name }} was added to your list.",
+            "content_type": {"app_label": "contacts", "model": "contact"}
+        }
+    }
+]

@@ -30,7 +30,7 @@
   },
   {
     "model": "core.company",
-    "pk": 3,
+    "pk": 2,
     "fields": {
       "name": "Horilla Inc",
       "email": "jessicabarnes@hall-braun.com",

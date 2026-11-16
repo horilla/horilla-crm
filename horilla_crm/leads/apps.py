@@ -25,6 +25,7 @@ class LeadsConfig(AppLauncher):
         "menu",
         "dashboard",
         "onboarding",
+        "tour",
     ]
 
     demo_data = [
@@ -39,7 +40,14 @@ class LeadsConfig(AppLauncher):
         },
         {
             "files": [
-                (20, "load_data/cadence.json"),
+                # Shared CRM-wide fixtures
+                # horilla_crm/load_data (one file each).
+                (17, "../load_data/mail_template.json"),
+                (18, "../load_data/notification_template.json"),
+                (20, "../load_data/cadence.json"),
+                (21, "../load_data/workflow_rule.json"),
+                (24, "../load_data/approval_rule.json"),
+                (25, "../load_data/review_process.json"),
                 (26, "load_data/duplicate_control.json"),
             ],
             "order": 7,

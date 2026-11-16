@@ -19,14 +19,6 @@ class MailConfig(AppLauncher):
         "load_template/template.json",
     ]
 
-    demo_data = {
-        "files": [
-            (17, "load_data/mail_template.json"),
-        ],
-        "order": 7,
-        "configurable": False,
-    }
-
     url_prefix = "mail/"
     url_module = "horilla.contrib.mail.urls"
     url_namespace = "mail"

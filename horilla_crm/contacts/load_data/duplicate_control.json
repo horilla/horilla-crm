@@ -5,7 +5,7 @@
     "fields": {
       "is_active": true,
       "additional_info": null,
-      "company": 3,
+      "company": 2,
       "created_at": "2025-09-18T03:04:11.695Z",
       "created_by": null,
       "updated_at": "2025-09-18T03:04:11.695Z",
@@ -24,7 +24,7 @@
     "fields": {
       "is_active": true,
       "additional_info": null,
-      "company": 3,
+      "company": 2,
       "created_at": "2025-09-18T03:04:11.695Z",
       "created_by": null,
       "updated_at": "2025-09-18T03:04:11.695Z",
@@ -46,7 +46,7 @@
         "alert_message_on_create": "A contact with this phone number already exists, so a duplicate can't be created.",
         "alert_message_on_edit": "A contact with this phone number already exists. Do you want to proceed?"
       },
-      "company": 3,
+      "company": 2,
       "created_at": "2025-09-18T03:04:11.695Z",
       "created_by": null,
       "updated_at": "2025-09-18T03:04:11.695Z",
@@ -71,7 +71,7 @@
     "fields": {
       "is_active": true,
       "additional_info": null,
-      "company": 3,
+      "company": 2,
       "created_at": "2025-09-18T03:04:11.695Z",
       "created_by": null,
       "updated_at": "2025-09-18T03:04:11.695Z",

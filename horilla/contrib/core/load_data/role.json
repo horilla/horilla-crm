@@ -108,7 +108,7 @@
         "fields": {
             "is_active": true,
             "additional_info": null,
-            "company": 3,
+            "company": 2,
             "created_at": "2025-09-18T03:04:11.695Z",
             "created_by": null,
             "updated_at": "2025-09-18T03:04:11.695Z",
@@ -125,7 +125,7 @@
         "fields": {
             "is_active": true,
             "additional_info": null,
-            "company": 3,
+            "company": 2,
             "created_at": "2025-09-18T03:04:20.251Z",
             "created_by": null,
             "updated_at": "2025-09-18T03:04:20.251Z",
@@ -142,7 +142,7 @@
         "fields": {
             "is_active": true,
             "additional_info": null,
-            "company": 3,
+            "company": 2,
             "created_at": "2025-09-18T03:04:27.639Z",
             "created_by": null,
             "updated_at": "2025-09-18T03:04:27.639Z",
@@ -159,7 +159,7 @@
         "fields": {
             "is_active": true,
             "additional_info": null,
-            "company": 3,
+            "company": 2,
             "created_at": "2025-09-18T03:04:41.437Z",
             "created_by": null,
             "updated_at": "2025-09-18T03:04:41.437Z",
@@ -176,7 +176,7 @@
         "fields": {
             "is_active": true,
             "additional_info": null,
-            "company": 3,
+            "company": 2,
             "created_at": "2025-09-18T03:04:58.539Z",
             "created_by": null,
             "updated_at": "2025-09-18T03:04:58.539Z",
@@ -193,7 +193,7 @@
         "fields": {
             "is_active": true,
             "additional_info": null,
-            "company": 3,
+            "company": 2,
             "created_at": "2025-09-18T03:05:18.674Z",
             "created_by": null,
             "updated_at": "2025-09-18T03:05:18.674Z",

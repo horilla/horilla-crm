@@ -74,7 +74,7 @@
         "fields": {
             "is_active": true,
             "additional_info": null,
-            "company": 3,
+            "company": 2,
             "created_at": "2025-09-18T03:04:11.695Z",
             "created_by": null,
             "updated_at": "2025-09-18T03:04:11.695Z",
@@ -90,7 +90,7 @@
         "fields": {
             "is_active": true,
             "additional_info": null,
-            "company": 3,
+            "company": 2,
             "created_at": "2025-09-18T03:04:11.695Z",
             "created_by": null,
             "updated_at": "2025-09-18T03:04:11.695Z",
@@ -108,7 +108,7 @@
         "fields": {
             "is_active": true,
             "additional_info": null,
-            "company": 3,
+            "company": 2,
             "created_at": "2025-09-18T03:04:11.695Z",
             "created_by": null,
             "updated_at": "2025-09-18T03:04:11.695Z",
@@ -127,7 +127,7 @@
         "fields": {
             "is_active": true,
             "additional_info": null,
-            "company": 3,
+            "company": 2,
             "created_at": "2025-09-18T03:04:11.695Z",
             "created_by": null,
             "updated_at": "2025-09-18T03:04:11.695Z",
@@ -135,6 +135,1114 @@
             "rule": 2,
             "activity_type": "opened",
             "points": 5
+        }
+    },
+    {
+        "model": "scoring_rules.scoringrule",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Large Deal Score",
+            "module": {"app_label": "opportunities", "model": "opportunity"},
+            "description": "Rewards large, high-probability opportunities and penalises weak ones."
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 3,
+            "name": "Large deal bonus",
+            "points": 25,
+            "operation_type": "add",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 3,
+            "field": "amount",
+            "operator": "gte",
+            "value": "30000",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 3,
+            "name": "High probability bonus",
+            "points": 15,
+            "operation_type": "add",
+            "order": 1
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 4,
+            "field": "probability",
+            "operator": "gte",
+            "value": "40",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 3,
+            "name": "Low probability penalty",
+            "points": 10,
+            "operation_type": "sub",
+            "order": 2
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 5,
+            "field": "probability",
+            "operator": "lte",
+            "value": "20",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringrule",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Key Account Score",
+            "module": {"app_label": "accounts", "model": "account"},
+            "description": "Scores accounts by priority, size and rating to identify key accounts."
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 4,
+            "name": "High priority bonus",
+            "points": 20,
+            "operation_type": "add",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 6,
+            "field": "customer_priority",
+            "operator": "exact",
+            "value": "High",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 7,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 4,
+            "name": "Large workforce bonus",
+            "points": 10,
+            "operation_type": "add",
+            "order": 1
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 7,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 7,
+            "field": "number_of_employees",
+            "operator": "gte",
+            "value": "400",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 8,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 4,
+            "name": "Low rating penalty",
+            "points": 10,
+            "operation_type": "sub",
+            "order": 2
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 8,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 8,
+            "field": "rating",
+            "operator": "exact",
+            "value": "C",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringrule",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Engaged Contact Score",
+            "module": {"app_label": "contacts", "model": "contact"},
+            "description": "Scores contacts on role and email engagement."
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 9,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 5,
+            "name": "Primary contact bonus",
+            "points": 10,
+            "operation_type": "add",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 9,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 9,
+            "field": "is_primary",
+            "operator": "exact",
+            "value": "True",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 10,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 5,
+            "name": "Missing secondary number penalty",
+            "points": 5,
+            "operation_type": "sub",
+            "order": 1
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 10,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 10,
+            "field": "secondary_contact_number",
+            "operator": "isnull",
+            "value": "",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.emailactivityscoring",
+        "pk": 3,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 5,
+            "activity_type": "opened",
+            "points": 5
+        }
+    },
+    {
+        "model": "scoring_rules.emailactivityscoring",
+        "pk": 4,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 5,
+            "activity_type": "clicked",
+            "points": 10
+        }
+    },
+    {
+        "model": "scoring_rules.scoringrule",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Qualified Lead Score",
+            "module": {"app_label": "leads", "model": "lead"},
+            "description": "Scores leads by source and industry fit to prioritise follow-up."
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 11,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 6,
+            "name": "Website source bonus",
+            "points": 10,
+            "operation_type": "add",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 11,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 11,
+            "field": "lead_source",
+            "operator": "exact",
+            "value": "website",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 12,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 6,
+            "name": "Target industry bonus",
+            "points": 15,
+            "operation_type": "add",
+            "order": 1
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 12,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 12,
+            "field": "industry",
+            "operator": "exact",
+            "value": "healthcare",
+            "logical_operator": "or",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 13,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 12,
+            "field": "industry",
+            "operator": "exact",
+            "value": "manufacturing",
+            "logical_operator": "and",
+            "order": 1
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 13,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 6,
+            "name": "Unknown source penalty",
+            "points": 5,
+            "operation_type": "sub",
+            "order": 2
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 14,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 13,
+            "field": "lead_source",
+            "operator": "exact",
+            "value": "other",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.emailactivityscoring",
+        "pk": 5,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 6,
+            "activity_type": "opened",
+            "points": 3
+        }
+    },
+    {
+        "model": "scoring_rules.emailactivityscoring",
+        "pk": 6,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 1,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 6,
+            "activity_type": "clicked",
+            "points": 8
+        }
+    },
+    {
+        "model": "scoring_rules.scoringrule",
+        "pk": 7,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Strategic Deal Score",
+            "module": {"app_label": "opportunities", "model": "opportunity"},
+            "description": "Scores opportunities on customer type, probability and forecast category."
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 14,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 7,
+            "name": "New customer bonus",
+            "points": 20,
+            "operation_type": "add",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 15,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 14,
+            "field": "opportunity_type",
+            "operator": "exact",
+            "value": "new_customer",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 15,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 7,
+            "name": "High probability bonus",
+            "points": 15,
+            "operation_type": "add",
+            "order": 1
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 16,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 15,
+            "field": "probability",
+            "operator": "gte",
+            "value": "40",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 16,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 7,
+            "name": "Best case forecast bonus",
+            "points": 10,
+            "operation_type": "add",
+            "order": 2
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 17,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 16,
+            "field": "forecast_category",
+            "operator": "exact",
+            "value": "best_case",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringrule",
+        "pk": 8,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Strategic Account Score",
+            "module": {"app_label": "accounts", "model": "account"},
+            "description": "Scores accounts by partner status and type."
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 17,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 8,
+            "name": "Partner account bonus",
+            "points": 15,
+            "operation_type": "add",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 18,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 17,
+            "field": "is_partner",
+            "operator": "exact",
+            "value": "True",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 18,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 8,
+            "name": "Technology partner bonus",
+            "points": 20,
+            "operation_type": "add",
+            "order": 1
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 19,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 18,
+            "field": "account_type",
+            "operator": "exact",
+            "value": "technology_partner",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 19,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 8,
+            "name": "Low priority penalty",
+            "points": 10,
+            "operation_type": "sub",
+            "order": 2
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 20,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 19,
+            "field": "customer_priority",
+            "operator": "exact",
+            "value": "Low",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringrule",
+        "pk": 9,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Decision Contact Score",
+            "module": {"app_label": "contacts", "model": "contact"},
+            "description": "Scores contacts on reachability and email engagement."
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 20,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 9,
+            "name": "Primary contact bonus",
+            "points": 10,
+            "operation_type": "add",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 21,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 20,
+            "field": "is_primary",
+            "operator": "exact",
+            "value": "True",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 21,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 9,
+            "name": "Secondary number bonus",
+            "points": 5,
+            "operation_type": "add",
+            "order": 1
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 22,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 21,
+            "field": "secondary_contact_number",
+            "operator": "isnotnull",
+            "value": "",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.emailactivityscoring",
+        "pk": 7,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 9,
+            "activity_type": "opened",
+            "points": 5
+        }
+    },
+    {
+        "model": "scoring_rules.emailactivityscoring",
+        "pk": 8,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 9,
+            "activity_type": "clicked",
+            "points": 12
+        }
+    },
+    {
+        "model": "scoring_rules.scoringrule",
+        "pk": 10,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "name": "Warm Lead Score",
+            "module": {"app_label": "leads", "model": "lead"},
+            "description": "Scores leads by source and industry fit to surface warm leads."
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 22,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 10,
+            "name": "Partner source bonus",
+            "points": 15,
+            "operation_type": "add",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 23,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 22,
+            "field": "lead_source",
+            "operator": "exact",
+            "value": "partner",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 23,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 10,
+            "name": "Industry fit bonus",
+            "points": 15,
+            "operation_type": "add",
+            "order": 1
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 24,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 23,
+            "field": "industry",
+            "operator": "exact",
+            "value": "finance",
+            "logical_operator": "or",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 25,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 23,
+            "field": "industry",
+            "operator": "exact",
+            "value": "banking",
+            "logical_operator": "and",
+            "order": 1
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcriterion",
+        "pk": 24,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 10,
+            "name": "Unknown source penalty",
+            "points": 5,
+            "operation_type": "sub",
+            "order": 2
+        }
+    },
+    {
+        "model": "scoring_rules.scoringcondition",
+        "pk": 26,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "criterion": 24,
+            "field": "lead_source",
+            "operator": "exact",
+            "value": "other",
+            "logical_operator": "and",
+            "order": 0
+        }
+    },
+    {
+        "model": "scoring_rules.emailactivityscoring",
+        "pk": 9,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 10,
+            "activity_type": "opened",
+            "points": 4
+        }
+    },
+    {
+        "model": "scoring_rules.emailactivityscoring",
+        "pk": 10,
+        "fields": {
+            "is_active": true,
+            "additional_info": null,
+            "company": 2,
+            "created_at": "2025-09-18T03:04:11.695Z",
+            "created_by": null,
+            "updated_at": "2025-09-18T03:04:11.695Z",
+            "updated_by": null,
+            "rule": 10,
+            "activity_type": "clicked",
+            "points": 10
         }
     }
 ]

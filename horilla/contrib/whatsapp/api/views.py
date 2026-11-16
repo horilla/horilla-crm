@@ -13,7 +13,11 @@ from rest_framework.response import Response
 
 # First party imports (Horilla)
 from horilla.api.mixins import BulkOperationsMixin, SearchFilterMixin
-from horilla.api.permissions import IsCompanyMember, IsOwnerOrAdmin
+from horilla.api.permissions import (
+    HorillaModelPermissions,
+    IsCompanyMember,
+    IsOwnerOrAdmin,
+)
 
 from ..models import (
     WhatsAppAccount,
@@ -55,7 +59,13 @@ class WhatsAppAccountViewSet(
 
     queryset = WhatsAppAccount.objects.all().select_related("company", "created_by")
     serializer_class = WhatsAppAccountSerializer
-    permission_classes = [permissions.IsAuthenticated, IsCompanyMember, IsOwnerOrAdmin]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsCompanyMember,
+        IsOwnerOrAdmin,
+        HorillaModelPermissions,
+    ]
+    scope_list_to_view_permission = True
     search_fields = ["display_name", "display_phone_number", "business_account_id"]
     filterset_fields = ["is_primary", "bot_enabled", "company", "is_active"]
 
@@ -87,7 +97,12 @@ class WhatsAppTemplateViewSet(
         "content_type", "company", "created_by"
     )
     serializer_class = WhatsAppTemplateSerializer
-    permission_classes = [permissions.IsAuthenticated, IsCompanyMember]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsCompanyMember,
+        HorillaModelPermissions,
+    ]
+    scope_list_to_view_permission = True
     search_fields = ["title", "name"]
     filterset_fields = ["language", "category", "content_type", "company"]
 
@@ -119,7 +134,12 @@ class WhatsAppFlowViewSet(
         "account", "company", "created_by"
     )
     serializer_class = WhatsAppFlowSerializer
-    permission_classes = [permissions.IsAuthenticated, IsCompanyMember]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsCompanyMember,
+        HorillaModelPermissions,
+    ]
+    scope_list_to_view_permission = True
     search_fields = ["title", "flow_id", "flow_name"]
     filterset_fields = ["account", "is_active", "company"]
 
@@ -151,7 +171,12 @@ class WhatsAppConversationViewSet(
         "account", "content_type", "assigned_to", "company"
     )
     serializer_class = WhatsAppConversationSerializer
-    permission_classes = [permissions.IsAuthenticated, IsCompanyMember]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsCompanyMember,
+        HorillaModelPermissions,
+    ]
+    scope_list_to_view_permission = True
     search_fields = ["contact_name", "contact_number"]
     filterset_fields = [
         "account",
@@ -197,7 +222,12 @@ class WhatsAppMessageViewSet(
         "conversation", "template", "sent_by", "company"
     )
     serializer_class = WhatsAppMessageSerializer
-    permission_classes = [permissions.IsAuthenticated, IsCompanyMember]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsCompanyMember,
+        HorillaModelPermissions,
+    ]
+    scope_list_to_view_permission = True
     search_fields = ["body"]
     filterset_fields = [
         "conversation",
@@ -244,7 +274,12 @@ class WhatsAppAttachmentViewSet(
         "message", "company", "created_by"
     )
     serializer_class = WhatsAppAttachmentSerializer
-    permission_classes = [permissions.IsAuthenticated, IsCompanyMember]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsCompanyMember,
+        HorillaModelPermissions,
+    ]
+    scope_list_to_view_permission = True
     search_fields = ["mime_type"]
     filterset_fields = ["message", "company"]
 

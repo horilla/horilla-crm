@@ -286,15 +286,6 @@ class WhatsAppChannel(DeliveryChannel):
     # After mail (10) and notification (20).
     order = 30
 
-    def is_available(self, company=None):
-        """Offer the channel only when a WhatsApp account is connected."""
-        from .models import WhatsAppAccount
-
-        accounts = WhatsAppAccount.objects.filter(is_active=True)
-        if company:
-            accounts = accounts.filter(company=company)
-        return accounts.exists()
-
     def get_detail_fields(self):
         """Show the account and the template on the automation's detail view."""
         return [
@@ -333,7 +324,8 @@ class WhatsAppChannel(DeliveryChannel):
         specs = split_variable_fields(template.variable_fields)
         if len(specs) < needed or not all(specs[:needed]):
             logger.error(
-                "Automation %s: template %s needs %s variable(s) linked to record fields, %s linked",
+                "Automation %s: template %s needs %s variable(s) linked to "
+                "record fields, %s linked",
                 automation.title,
                 template.name,
                 needed,

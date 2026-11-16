@@ -404,5 +404,11 @@ class CadenceDetailNavbar(LoginRequiredMixin, HorillaNavView):
             "target": "#mainContent",
             "swap": "outerHTML",
             "onclick": "void(0)",
-            "attrs": {"hx-select": "#mainContent", "hx-push-url": "true"},
+            "attrs": {
+                "hx-select": "#mainContent",
+                "hx-push-url": "true",
+                # The navbar puts the two buttons side by side with no gap;
+                # this keeps View Reports clear of Edit (flips in RTL).
+                "style": "margin-inline-end: 0.5rem;",
+            },
         }

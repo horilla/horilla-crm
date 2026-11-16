@@ -453,6 +453,32 @@ class DashboardCreateForm(HorillaModelForm):
             if not model:
                 return
 
+            # A table needs its column choices from the chosen module too. Without
+            # this, switching the type to table after picking a module shows an
+            # empty Table Columns list (the choices only load on a module change).
+            if (
+                "columns" in self.fields
+                and component_type == "table_data"
+                and not isinstance(self.fields["columns"], forms.MultipleChoiceField)
+            ):
+                column_choices = get_displayable_field_choices(model)
+                column_choices.extend(self.get_extra_choices(model, "detail"))
+                self.fields["columns"] = forms.MultipleChoiceField(
+                    choices=column_choices,
+                    required=False,
+                    widget=forms.SelectMultiple(
+                        attrs={
+                            "class": "js-example-basic-multiple headselect",
+                            "id": "id_columns",
+                            "name": "columns",
+                            "data-placeholder": _("Add Columns"),
+                            "tabindex": "-1",
+                            "aria-hidden": "true",
+                            "multiple": True,
+                        }
+                    ),
+                )
+
             # Only initialize grouping_field if component_type is 'chart'
             if "grouping_field" in self.fields and component_type == "chart":
                 grouping_fields = get_displayable_field_choices(model)

@@ -85,7 +85,8 @@
         if (formElement) {
           const formData = new FormData(formElement);
           for (let [key, value] of formData.entries()) {
-            if (!params.has(key) && key !== 'csrfmiddlewaretoken') {
+            // Skip the CSRF token and file inputs (a File would be sent as "[object File]")
+            if (!params.has(key) && key !== 'csrfmiddlewaretoken' && !(value instanceof File)) {
               params.append(key, value);
             }
           }

@@ -7,35 +7,27 @@ import logging
 # Third-party imports (Django)
 from django import forms
 
-# First party imports (Horilla)
-from horilla.apps import apps
-from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.generics.forms import HorillaModelForm
-from horilla.registry.feature import FEATURE_REGISTRY
+
+# First party imports (Horilla)
 from horilla.urls import reverse_lazy
 from horilla.utils.translation import gettext_lazy as _
 
-# Local imports
 from .field_choice_helpers import (
     add_current_metric_choice,
     get_displayable_field_choices,
     get_metric_choices,
 )
+
+# Local imports
+from .model_lookup import (
+    get_dashboard_component_models,
+    get_model_by_name,
+    resolve_model_from_module,
+)
 from .models import ComponentCriteria, Dashboard, DashboardComponent, DashboardFolder
 
 logger = logging.getLogger(__name__)
-
-
-def get_dashboard_component_models():
-    """
-    Return a list of (module_key, model_class) for every model that
-    is registered for dashboard components.
-    """
-    models = []
-    for model_cls in FEATURE_REGISTRY.get("dashboard_component_models", []):
-        key = model_cls.__name__.lower()
-        models.append((key, model_cls))
-    return models
 
 
 class DashboardForm(HorillaModelForm):
@@ -226,68 +218,7 @@ class DashboardCreateForm(HorillaModelForm):
             hide_fields(["icon", "metric_type"], nullify=nullify_values)
         else:
             if "metric_type" in self.fields:
-                model = None
-
-                # 1) Prefer the instance's module when editing
-                if (
-                    self.instance_obj
-                    and getattr(self.instance_obj, "module", None)
-                    and getattr(self.instance_obj.module, "model", None)
-                ):
-                    instance_model_name = self.instance_obj.module.model
-                    for app_config in apps.get_app_configs():
-                        try:
-                            model = apps.get_model(
-                                app_label=app_config.label,
-                                model_name=instance_model_name.lower(),
-                            )
-                            break
-                        except LookupError:
-                            continue
-
-                # 2) Fallback to module value coming from the form (create flow)
-                if not model:
-                    module_value = (
-                        (self.data.get("module") or "").strip()
-                        if hasattr(self, "data")
-                        else ""
-                    )
-                    if not module_value and hasattr(self, "request"):
-                        module_value = (
-                            self.request.GET.get("module")
-                            or self.request.POST.get("module")
-                            or ""
-                        )
-
-                    if module_value:
-                        # If it's a HorillaContentType id, resolve to model name
-                        if module_value.isdigit():
-                            try:
-                                ct = HorillaContentType.objects.get(pk=module_value)
-                                module_key = (ct.model or "").strip().lower()
-                            except Exception:
-                                module_key = ""
-                        else:
-                            module_key = module_value.strip().lower()
-
-                        if module_key:
-                            # First, check the dashboard registry
-                            for key, model_cls in get_dashboard_component_models():
-                                if key == module_key:
-                                    model = model_cls
-                                    break
-
-                            # Fallback: search installed apps
-                            if not model:
-                                for app_config in apps.get_app_configs():
-                                    try:
-                                        model = apps.get_model(
-                                            app_label=app_config.label,
-                                            model_name=module_key,
-                                        )
-                                        break
-                                    except LookupError:
-                                        continue
+                model = self._resolve_current_model()
 
                 metric_choices = get_metric_choices(
                     model, self.get_extra_choices(model, "numeric") if model else ()
@@ -329,63 +260,7 @@ class DashboardCreateForm(HorillaModelForm):
         # For chart components, provide a y-axis metric selector that mirrors KPI metric choices.
         if component_type == "chart":
             if "y_axis_metric_type" in self.fields:
-                model = None
-
-                if (
-                    self.instance_obj
-                    and getattr(self.instance_obj, "module", None)
-                    and getattr(self.instance_obj.module, "model", None)
-                ):
-                    instance_model_name = self.instance_obj.module.model
-                    for app_config in apps.get_app_configs():
-                        try:
-                            model = apps.get_model(
-                                app_label=app_config.label,
-                                model_name=instance_model_name.lower(),
-                            )
-                            break
-                        except LookupError:
-                            continue
-
-                if not model:
-                    module_value = (
-                        (self.data.get("module") or "").strip()
-                        if hasattr(self, "data")
-                        else ""
-                    )
-                    if not module_value and hasattr(self, "request"):
-                        module_value = (
-                            self.request.GET.get("module")
-                            or self.request.POST.get("module")
-                            or ""
-                        )
-
-                    if module_value:
-                        if module_value.isdigit():
-                            try:
-                                ct = HorillaContentType.objects.get(pk=module_value)
-                                module_key = (ct.model or "").strip().lower()
-                            except Exception:
-                                module_key = ""
-                        else:
-                            module_key = module_value.strip().lower()
-
-                        if module_key:
-                            for key, model_cls in get_dashboard_component_models():
-                                if key == module_key:
-                                    model = model_cls
-                                    break
-
-                            if not model:
-                                for app_config in apps.get_app_configs():
-                                    try:
-                                        model = apps.get_model(
-                                            app_label=app_config.label,
-                                            model_name=module_key,
-                                        )
-                                        break
-                                    except LookupError:
-                                        continue
+                model = self._resolve_current_model()
 
                 y_metric_choices = get_metric_choices(
                     model, self.get_extra_choices(model, "numeric") if model else ()
@@ -462,17 +337,7 @@ class DashboardCreateForm(HorillaModelForm):
                                 else []
                             )
 
-                        # Find the model
-                        model = None
-                        for app_config in apps.get_app_configs():
-                            try:
-                                model = apps.get_model(
-                                    app_label=app_config.label,
-                                    model_name=instance_model_name.lower(),
-                                )
-                                break
-                            except LookupError:
-                                continue
+                        model = get_model_by_name(instance_model_name)
 
                         if model:
                             column_choices = get_displayable_field_choices(model)
@@ -549,6 +414,27 @@ class DashboardCreateForm(HorillaModelForm):
             if module_value:
                 self._initialize_select_fields_for_edit(module_value)
 
+    def _resolve_current_model(self):
+        """Model the component form currently points at, or None.
+
+        Prefers the saved instance's module (edit flow), then the ``module``
+        value submitted with the form or request (create flow).
+        """
+        module = getattr(self.instance_obj, "module", None)
+        if module is not None and getattr(module, "model", None):
+            model = get_model_by_name(module.model)
+            if model:
+                return model
+
+        module_value = (
+            (self.data.get("module") or "").strip() if hasattr(self, "data") else ""
+        )
+        if not module_value and hasattr(self, "request"):
+            module_value = (
+                self.request.GET.get("module") or self.request.POST.get("module") or ""
+            )
+        return resolve_model_from_module(module_value)
+
     def _initialize_select_fields_for_edit(self, model_name):
         """Initialize select fields in edit mode by mimicking HTMX view behavior"""
         try:
@@ -562,29 +448,7 @@ class DashboardCreateForm(HorillaModelForm):
                 else ""
             )
 
-            model = None
-            if model_name:
-                module_key = (model_name or "").strip().lower()
-                if model_name.isdigit():
-                    try:
-                        ct = HorillaContentType.objects.get(pk=model_name)
-                        module_key = (ct.model or "").strip().lower()
-                    except Exception:
-                        module_key = ""
-                for key, model_cls in get_dashboard_component_models():
-                    if key == module_key:
-                        model = model_cls
-                        break
-                if not model and module_key:
-                    for app_config in apps.get_app_configs():
-                        try:
-                            model = apps.get_model(
-                                app_label=app_config.label,
-                                model_name=module_key,
-                            )
-                            break
-                        except LookupError:
-                            continue
+            model = resolve_model_from_module(model_name)
 
             if not model:
                 return

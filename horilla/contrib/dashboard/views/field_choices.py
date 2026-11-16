@@ -6,10 +6,10 @@ import logging
 # Third-party imports (Django)
 from django.utils.encoding import force_str
 
-# First party imports (Horilla)
-from horilla.apps import apps
 from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.generics.forms.condition_fields import _get_related_field_choices
+
+# First party imports (Horilla)
 from horilla.shortcuts import render
 from horilla.utils.decorators import (
     htmx_required,
@@ -26,37 +26,9 @@ from ..field_choice_helpers import (
     get_displayable_field_choices,
     get_metric_choices,
 )
-from ..forms import get_dashboard_component_models
+from ..model_lookup import resolve_model_from_module
 
 logger = logging.getLogger(__name__)
-
-
-def _resolve_model_from_module(module):
-    """
-    Resolve model class from module param (content type pk or registry key).
-    Prefer dashboard registry so we match the same model as the module dropdown.
-    """
-    if not module:
-        return None
-    if module.isdigit():
-        try:
-            content_type = HorillaContentType.objects.get(pk=module)
-            module = content_type.model
-        except HorillaContentType.DoesNotExist:
-            return None
-    module_key = (module or "").strip().lower()
-    if not module_key:
-        return None
-    for key, model_cls in get_dashboard_component_models():
-        if key == module_key:
-            return model_cls
-    # Fallback: first app with this model name
-    for app_config in apps.get_app_configs():
-        try:
-            return apps.get_model(app_label=app_config.label, model_name=module_key)
-        except LookupError:
-            continue
-    return None
 
 
 class ExtraFieldChoicesView(View):
@@ -124,7 +96,7 @@ class ModuleFieldChoicesView(ExtraFieldChoicesView):
                 {"field_name": field_name, "field_id": field_id},
             )
 
-        model = _resolve_model_from_module(module)
+        model = resolve_model_from_module(module)
         if not model:
             return render(
                 request,
@@ -195,7 +167,7 @@ class ColumnFieldChoicesView(ExtraFieldChoicesView):
                 '<select name="columns" id="id_columns" class="js-example-basic-multiple headselect" multiple ><option value="">---------</option></select>'
             )
 
-        model = _resolve_model_from_module(module)
+        model = resolve_model_from_module(module)
         if not model:
             return render(
                 request,
@@ -227,7 +199,7 @@ class GroupingFieldChoicesView(ExtraFieldChoicesView):
         module = request.GET.get("module")
         current_grouping = (request.GET.get("grouping_field") or "").strip()
 
-        model = _resolve_model_from_module(module)
+        model = resolve_model_from_module(module)
         if not model:
             return render(
                 request,
@@ -262,7 +234,7 @@ class SecondaryGroupingFieldChoicesView(ExtraFieldChoicesView):
         module = request.GET.get("module")
         current_secondary = (request.GET.get("secondary_grouping") or "").strip()
 
-        model = _resolve_model_from_module(module)
+        model = resolve_model_from_module(module)
         if not model:
             return render(
                 request,
@@ -306,7 +278,7 @@ class MetricFieldChoicesView(ExtraFieldChoicesView):
         module = request.GET.get("module")
         current_metric = (request.GET.get("metric_type") or "").strip()
 
-        model = _resolve_model_from_module(module)
+        model = resolve_model_from_module(module)
         metric_choices = self.get_numeric_metric_choices(model, current_metric)
 
         return render(
@@ -348,7 +320,7 @@ class YAxisMetricFieldChoicesView(ExtraFieldChoicesView):
         module = request.GET.get("module")
         current_metric = (request.GET.get("y_axis_metric_type") or "").strip()
 
-        model = _resolve_model_from_module(module)
+        model = resolve_model_from_module(module)
         metric_choices = self.get_numeric_metric_choices(model, current_metric)
 
         return render(

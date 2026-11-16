@@ -8,18 +8,20 @@ import logging
 from django.conf import settings
 from django.core.validators import MinValueValidator
 
-# First party imports (Horilla)
-from horilla.apps import apps
 from horilla.contrib.core.models import HorillaContentType, HorillaCoreModel
 from horilla.contrib.reports.models import Report
 from horilla.contrib.utils.methods import render_template
 from horilla.db import models, transaction
 from horilla.registry.limiters import limit_content_types
 from horilla.registry.permission_registry import permission_exempt_model
+
+# First party imports (Horilla)
 from horilla.urls import reverse_lazy
 from horilla.utils.choices import OPERATOR_CHOICES
 from horilla.utils.translation import gettext_lazy as _
 from horilla.utils.upload import upload_path
+
+from .model_lookup import get_model_by_name
 
 logger = logging.getLogger(__name__)
 
@@ -429,14 +431,7 @@ class DashboardComponent(HorillaCoreModel):
 
         try:
             model = None
-            for app_config in apps.get_app_configs():
-                try:
-                    model = apps.get_model(
-                        app_label=app_config.label, model_name=self.module.lower()
-                    )
-                    break
-                except LookupError:
-                    continue
+            model = get_model_by_name(self.module.model if self.module else None)
 
             if not model:
                 return []

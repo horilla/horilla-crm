@@ -19,6 +19,9 @@ concrete list view automatically, the same way registering directly on
 ``docs/horilla/extension/list/inherit.md`` for the mechanism.
 """
 
+from horilla.contrib.field_management.hooks.filter import (
+    relabel_applied_filter_slot_rows,
+)
 from horilla.contrib.field_management.hooks.list import (
     attach_custom_fields_to_list_context,
 )
@@ -40,5 +43,24 @@ class CustomFieldListContextExtension(ListExtension):
 
             logging.getLogger(__name__).exception(
                 "custom_fields: could not attach list custom fields"
+            )
+        return context
+
+
+class CustomFieldListAppliedFilterExtension(ListExtension):
+    """Show a custom field's real name on the list's applied-filter chip."""
+
+    _inherit_list = "horilla.contrib.generics.views.list.HorillaListView"
+
+    def get_context_data(self, **kwargs):
+        """Relabel ``cf_*`` applied-filter rows after the list builds them."""
+        context = super().get_context_data(**kwargs)
+        try:
+            relabel_applied_filter_slot_rows(self.request, self.model, context)
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).exception(
+                "custom_fields: could not relabel applied filters"
             )
         return context

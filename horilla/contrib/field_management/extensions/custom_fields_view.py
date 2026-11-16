@@ -35,6 +35,9 @@ from horilla.contrib.field_management.hooks.detail import (
     get_custom_field_entries,
     save_custom_field_from_post,
 )
+from horilla.contrib.field_management.hooks.filter import (
+    relabel_applied_filter_slot_rows,
+)
 from horilla.contrib.field_management.hooks.list import (
     attach_custom_field_values_to_objects,
 )
@@ -408,3 +411,28 @@ class CustomFieldPermissionFieldsExtension(ViewExtension):
                 }
             )
         return entries
+
+
+class CustomFieldNavbarAppliedFilterExtension(ViewExtension):
+    """Show a custom field's real name on the navbar's applied-filter chip."""
+
+    _inherit_view = "horilla.contrib.generics.views.navbar.HorillaNavView"
+
+    def get_context_data(self, **kwargs):
+        """Relabel ``cf_*`` applied-filter rows after the navbar builds them."""
+        context = super().get_context_data(**kwargs)
+        # Navbars without a model (e.g. non-list pages) have no custom fields
+        if not (self.model_app_label and self.model_name):
+            return context
+        try:
+            from horilla.apps import apps
+
+            model = apps.get_model(self.model_app_label, self.model_name)
+            relabel_applied_filter_slot_rows(self.request, model, context)
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).exception(
+                "custom_fields: could not relabel applied filters"
+            )
+        return context

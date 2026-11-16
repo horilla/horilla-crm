@@ -330,3 +330,32 @@ def _date_bound_q(column, is_datetime, value, lower, inclusive=True):
     if lower:
         return Q(**{f"{column}__gte": minute_start if inclusive else minute_end})
     return Q(**{f"{column}__lt": minute_end if inclusive else minute_start})
+
+
+def relabel_applied_filter_slot_rows(request, model, context):
+    """
+    Give the navbar's applied-filter chips for ``cf_<id>`` fields their real name.
+
+    The chips are built from model columns only, so a custom field shows as
+    "Cf 1". ``row_id`` is each row's position in the query string's ``field``
+    list, which is how a row is matched back to its field name. Rows are
+    updated in place on ``context["applied_filter_slot_rows"]``.
+    """
+    from horilla.contrib.generics.filters import get_operator_label
+
+    names = request.GET.getlist("field")
+    operators = request.GET.getlist("operator")
+    for row in context.get("applied_filter_slot_rows") or []:
+        row_id = row.get("row_id")
+        if row.get("is_search") or not isinstance(row_id, int):
+            continue
+        if row_id >= len(names) or row_id >= len(operators):
+            continue
+        defn = get_definition_by_form_name(model, names[row_id])
+        if defn is None:
+            continue
+        row["label"] = safe_custom_field_label(defn)
+        row["operator_display"] = get_operator_label(
+            FILTER_TYPE_MAP.get(defn.field_type, "text"), operators[row_id]
+        )
+    return context

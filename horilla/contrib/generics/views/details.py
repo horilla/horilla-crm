@@ -1149,6 +1149,28 @@ class HorillaDetailView(DetailView):
         context["model_name"] = self.model._meta.model_name
         return False
 
+    def _without_edit_action(self, actions, obj):
+        """
+        Drop the record's own "Edit" action (the full form modal) when Edit
+        Details on the Details tab can edit it inline; other actions stay.
+        """
+        if not any(str(a.get("action", "")).strip().lower() == "edit" for a in actions):
+            return actions
+        try:
+            from horilla.contrib.generics.views.helpers.edit_field import (
+                _get_section_view_instance,
+            )
+
+            section_view = _get_section_view_instance(self.model, self.request, obj.pk)
+            inline_edit = section_view.edit_field
+        except Exception:
+            inline_edit = False
+        if not inline_edit:
+            return actions
+        return [
+            a for a in actions if str(a.get("action", "")).strip().lower() != "edit"
+        ]
+
     def get_context_data(self, **kwargs):
         """Add header_fields, body, pipeline_choices, badges, and permissions to context."""
         context = super().get_context_data(**kwargs)
@@ -1206,7 +1228,9 @@ class HorillaDetailView(DetailView):
         context["url_name"] = resolved_url.url_name
         context["app_label"] = self.model._meta.app_label
 
-        detail_actions = list(self.actions) if self.actions else []
+        detail_actions = self._without_edit_action(
+            list(self.actions) if self.actions else [], current_obj
+        )
         if is_split_layout and context.get("split_detail_url"):
             detail_actions = [
                 {

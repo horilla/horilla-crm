@@ -34,6 +34,11 @@ from horilla.views.generic import View
 from horilla.web import ScriptResponse
 
 
+def _blank_if_none(value):
+    """Empty string for ``None`` so inputs don't render the text "None"."""
+    return "" if value is None else value
+
+
 class FieldInfoResolver(View):
     """
     Resolve editable-widget metadata and apply submitted values for a model field.
@@ -85,10 +90,11 @@ class FieldInfoResolver(View):
         field_info = {
             "name": field.name,
             "verbose_name": field.verbose_name,
+            "required": not field.blank and field.editable,
             "field_type": "text",  # default
-            "value": getattr(obj, field.name, ""),
+            "value": _blank_if_none(getattr(obj, field.name, "")),
             "choices": [],
-            "display_value": str(getattr(obj, field.name, "")),
+            "display_value": str(_blank_if_none(getattr(obj, field.name, ""))),
             "use_select2": False,  # Default to False
             "input_attrs": {},
             "placeholder": enter_placeholder(field.verbose_name),
@@ -281,6 +287,8 @@ class FieldInfoResolver(View):
         """
         if isinstance(field, models.ManyToManyField):
             values = request.POST.getlist(f"{field_name}[]")  # Get list of selected IDs
+            if not field.blank and not [v for v in values if v]:
+                return _("This field is required.")
             try:
                 # Clear existing relationships and set new ones
                 related_manager = getattr(obj, field_name)
@@ -295,7 +303,10 @@ class FieldInfoResolver(View):
             code = request.POST.get(f"{field_name}_0", "")
             number = request.POST.get(f"{field_name}_1", "")
             try:
-                setattr(obj, field_name, PhoneField().compress([code, number]))
+                phone = PhoneField().compress([code, number])
+                if not field.blank and not number:
+                    raise ValidationError(_("This field is required."))
+                setattr(obj, field_name, phone)
             except ValidationError as e:
                 return " ".join(str(msg) for msg in e.messages)
             if save:
@@ -412,6 +423,12 @@ class FieldInfoResolver(View):
                     else:
                         setattr(obj, field_name, value)
 
+                    # Enforce required / validators / max_length / choices
+                    # exactly as the model form would.
+                    if field.editable and not field.auto_created:
+                        # FKs validate on the raw id (``attname``), not the instance
+                        field.clean(getattr(obj, field.attname), obj)
+
                     if save:
                         obj.save()
 
@@ -524,8 +541,41 @@ def get_extra_fields_provider():
     return resolve_view_class(ExtraFieldsProvider)()
 
 
+def _get_form_fields(section_view, obj, request):
+    """Fields of the section view's ``form_class`` (if any), else ``{}``."""
+    form_class = getattr(section_view, "form_class", None)
+    if not form_class:
+        return {}
+    try:
+        return form_class(instance=obj, request=request).fields
+    except Exception:  # a form that can't be built must not break Edit Details
+        return {}
+
+
+def _apply_form_wiring(field_info, form_field):
+    """
+    Copy the form widget's ``hx-*`` attributes onto the inline field, and its
+    element id onto read-only fields so those attributes can target them.
+    """
+    field_info.setdefault("element_id", f"id_{field_info['name']}")
+    if form_field is None:
+        return
+    attrs = form_field.widget.attrs
+    hx_attrs = {k: v for k, v in attrs.items() if k.startswith("hx-")}
+    if hx_attrs:
+        field_info["input_attrs"] = {**field_info.get("input_attrs", {}), **hx_attrs}
+    if attrs.get("id"):
+        field_info["element_id"] = attrs["id"]
+
+
 def build_edit_all_fields_context(
-    request, obj, app_label, model_name, pipeline_field=None, cancel_url=""
+    request,
+    obj,
+    app_label,
+    model_name,
+    pipeline_field=None,
+    cancel_url="",
+    field_errors=None,
 ):
     """
     Build the ``partials/edit_all_fields.html`` context for ``obj``.
@@ -541,6 +591,18 @@ def build_edit_all_fields_context(
     section_view.object = obj
     body = section_view.get_effective_body()
 
+    # Cancel does ``hx-get`` on this URL; an empty one makes htmx GET the
+    # POST-only update URL (405), so always fall back to the record page.
+    if not cancel_url:
+        from django.urls import NoReverseMatch, reverse
+
+        detail_url_name = request.GET.get("detail_url_name", "")
+        if detail_url_name:
+            try:
+                cancel_url = reverse(detail_url_name, kwargs={"pk": obj.pk})
+            except NoReverseMatch:
+                pass
+
     from horilla.contrib.core.utils import get_field_permissions_for_model
     from horilla.contrib.generics.views.details import HorillaDetailView
 
@@ -551,6 +613,7 @@ def build_edit_all_fields_context(
     allowed_fields = getattr(request, "bulk_edit_allowed_fields", None)
 
     resolver = get_field_info_resolver()
+    form_fields = _get_form_fields(section_view, obj, request)
     fields = []
     for _verbose_name, field_name in body:
         field_perm = field_permissions.get(field_name, "readwrite")
@@ -564,12 +627,20 @@ def build_edit_all_fields_context(
             continue
 
         field_info = resolver.get_field_info(field, obj, request.user)
+        _apply_form_wiring(field_info, form_fields.get(field_name))
+        not_in_form = bool(form_fields) and field_name not in form_fields
+        if not_in_form:
+            field_info["required"] = False
+        if field_errors and field_name in field_errors:
+            field_info["error"] = field_errors[field_name]
+            keep_posted_value(field_info, request)
         editable = (
             section_view.edit_field
             and field_name not in non_editable_fields
             and field_perm == "readwrite"
             and can_update
             and (allowed_fields is None or field_name in allowed_fields)
+            and not not_in_form
         )
         fields.append({"info": field_info, "editable": editable})
 
@@ -725,6 +796,7 @@ def save_all_fields(request, obj, section_view, hooks):
     errors = result.errors
     changed_fields = result.changed_fields
     allowed_fields = hooks.get_allowed_fields(request, obj)
+    form_fields = _get_form_fields(section_view, obj, request)
     m2m_changed = False
     for verbose_name, field_name in body:
         field_perm = field_permissions.get(field_name, "readwrite")
@@ -736,6 +808,7 @@ def save_all_fields(request, obj, section_view, hooks):
             field_perm != "readwrite"
             or field_name in non_editable_fields
             or not submitted
+            or (form_fields and field_name not in form_fields)
             or (allowed_fields is not None and field_name not in allowed_fields)
         ):
             continue
@@ -914,6 +987,19 @@ class UpdateAllFieldsView(LoginRequiredMixin, View):
             )
             return render(request, "partials/edit_all_fields.html", context)
 
+        if result.errors:
+            # Show each error under its field, with what the user typed.
+            context = build_edit_all_fields_context(
+                request,
+                obj,
+                app_label,
+                model_name,
+                pipeline_field=request.POST.get("pipeline_field"),
+                cancel_url=request.POST.get("return_url", ""),
+                field_errors=result.errors,
+            )
+            return render(request, "partials/edit_all_fields.html", context)
+
         from django.utils.http import url_has_allowed_host_and_scheme
 
         self_url = request.POST.get("return_url", "")
@@ -923,34 +1009,6 @@ class UpdateAllFieldsView(LoginRequiredMixin, View):
             require_https=request.is_secure(),
         ):
             self_url = ""
-
-        errors = result.errors
-        if errors:
-            # Nothing was saved: keep the form open with what was typed and
-            # each error under its field, and say so right away, by the
-            # field's label.
-            context = build_edit_all_fields_context(
-                request,
-                obj,
-                app_label,
-                model_name,
-                pipeline_field=request.GET.get("pipeline_field"),
-                cancel_url=self_url,
-            )
-            labels = {}
-            for entry in context["fields"]:
-                field_info = entry["info"]
-                labels[field_info["name"]] = field_info["verbose_name"]
-                if field_info["name"] in errors:
-                    field_info["error"] = errors[field_info["name"]]
-                    keep_posted_value(field_info, request)
-            for field_name, error in errors.items():
-                messages.error(
-                    request,
-                    _("%(field)s: %(message)s")
-                    % {"field": labels.get(field_name, field_name), "message": error},
-                )
-            return render(request, "partials/edit_all_fields.html", context)
 
         context = section_view.get_context_data(object=obj)
         context["self_url"] = self_url

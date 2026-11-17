@@ -150,6 +150,9 @@ class HorillaDetailSectionView(DetailView):
     body = []
     edit_field = True
     non_editable_fields = []
+    # Optional model form: Edit Details reuses its ``hx-*`` widget wiring
+    # (e.g. stage change refreshing a read-only field) on the inline fields.
+    form_class = None
     base_excluded_fields = HorillaDetailView.base_excluded_fields
     excluded_fields = []
     include_fields = []

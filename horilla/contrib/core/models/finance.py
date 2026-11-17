@@ -3,8 +3,10 @@ This module defines the financial models for the Horilla platform
 """
 
 # Standard library imports
+import unicodedata
 from datetime import date, datetime, timedelta
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import ROUND_DOWN, ROUND_HALF_EVEN, ROUND_HALF_UP, ROUND_UP, Decimal
+from functools import lru_cache
 
 # Third-party imports (Django)
 from dateutil.relativedelta import relativedelta
@@ -20,6 +22,39 @@ from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
 from .base import Company, HorillaCoreModel
+
+
+@lru_cache(maxsize=None)
+def currency_symbol(code):
+    """
+    Symbol for a currency code: the English one when it has one (₹, $, €), else
+    the symbol used in the currency's own country (KWD gives د.ك.), else the code.
+    """
+    if not code:
+        return code
+    try:
+        from babel.core import get_global
+        from babel.languages import get_official_languages
+        from babel.numbers import get_currency_symbol
+
+        symbol = get_currency_symbol(code, "en")
+        if symbol and symbol not in (code, "¤"):
+            return symbol
+        for territory, entries in get_global("territory_currencies").items():
+            if any(entry[0] == code and entry[2] is None for entry in entries):
+                for lang in get_official_languages(
+                    territory, regional=True, de_facto=True
+                ):
+                    try:
+                        local = get_currency_symbol(code, f"{lang}_{territory}")
+                    except Exception:  # a language Babel has no data for
+                        continue
+                    if local and local not in (code, "¤"):
+                        # drop right-to-left marks that can scramble mixed text
+                        return local.replace("\u200f", "").replace("\u200e", "")
+    except Exception:
+        pass
+    return code
 
 
 class MultipleCurrency(HorillaCoreModel):
@@ -40,7 +75,10 @@ class MultipleCurrency(HorillaCoreModel):
     conversion_rate = models.DecimalField(
         max_digits=10,
         decimal_places=4,
-        help_text=_("conversion rate from default currency"),
+        help_text=_(
+            "Conversion rate from default currency. Fetched automatically from "
+            "free public exchange rate APIs and can be edited."
+        ),
         verbose_name=_("Conversion Rate"),
     )
     decimal_places = models.IntegerField(default=2, verbose_name=_("Decimal Places"))
@@ -161,9 +199,16 @@ class MultipleCurrency(HorillaCoreModel):
 
         amount = Decimal(str(amount))
         quantize_string = "0." + "0" * self.decimal_places
-        formatted_amount = amount.quantize(
-            Decimal(quantize_string), rounding=ROUND_HALF_UP
+        rounding_modes = {
+            "half_up": ROUND_HALF_UP,
+            "half_even": ROUND_HALF_EVEN,
+            "up": ROUND_UP,
+            "down": ROUND_DOWN,
+        }
+        rounding = rounding_modes.get(
+            getattr(self.company, "currency_rounding", None), ROUND_HALF_UP
         )
+        formatted_amount = amount.quantize(Decimal(quantize_string), rounding=rounding)
 
         number_format = getattr(user, "number_format", None) or "western_format"
 
@@ -207,7 +252,21 @@ class MultipleCurrency(HorillaCoreModel):
     def display_with_symbol(self, amount, user=None):
         """Display amount with currency symbol - Example: USD 100.00"""
         formatted = self.format_amount(amount, user=user)
-        return f"{self.currency} {formatted}"
+        label = self.get_display_label()
+        if getattr(self.company, "currency_symbol_position", "before") == "after":
+            return f"{formatted} {label}"
+        # Before the amount: a pure currency sign needs no space (₹100); codes and
+        # abbreviations do (INR 100, د.ك. 100).
+        if all(unicodedata.category(ch) == "Sc" for ch in label):
+            return f"{label}{formatted}"
+        return f"{label} {formatted}"
+
+    def get_display_label(self):
+        """Currency code, or its symbol when the company chose symbols."""
+        if getattr(self.company, "currency_display", "code") == "symbol":
+            return currency_symbol(self.currency)
+        return self.currency
+        return self.currency
 
     def convert_from_default(self, amount, conversion_date=None):
         """
@@ -335,6 +394,19 @@ class DatedConversionRate(HorillaCoreModel):
     start_date = models.DateField(
         verbose_name=_("Start Date"),
         help_text=_("The date from which this conversion rate is effective"),
+    )
+    SOURCE_MANUAL = "manual"
+    SOURCE_AUTO = "auto"
+    SOURCE_CHOICES = [
+        (SOURCE_MANUAL, _("Manual")),
+        (SOURCE_AUTO, _("Auto")),
+    ]
+    source = models.CharField(
+        max_length=10,
+        choices=SOURCE_CHOICES,
+        default=SOURCE_MANUAL,
+        verbose_name=_("Source"),
+        help_text=_("Whether this rate was added by a user or recorded automatically"),
     )
 
     class Meta:

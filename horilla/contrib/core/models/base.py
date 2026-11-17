@@ -17,6 +17,7 @@ from django.contrib.contenttypes.models import ContentType
 # Third-party imports (Django)
 from django_countries.fields import CountryField
 from djmoney.settings import CURRENCY_CHOICES
+from multiselectfield import MultiSelectField
 
 from horilla.apps import apps
 from horilla.contrib.utils.middlewares import _thread_local
@@ -134,14 +135,11 @@ class Company(models.Model):
     zip_code = models.CharField(
         max_length=20, blank=True, null=True, verbose_name=_("ZIP/Postal Code")
     )
-    language = models.CharField(
-        max_length=50,
+    language = MultiSelectField(
         choices=settings.LANGUAGES,
         blank=True,
         null=True,
-        verbose_name=_(
-            "Language",
-        ),
+        verbose_name=_("Languages"),
     )
     time_zone = models.CharField(
         max_length=100,
@@ -179,6 +177,84 @@ class Company(models.Model):
     )
     activate_multiple_currencies = models.BooleanField(
         default=False, verbose_name=_("Multiple Currencies")
+    )
+    auto_fetch_exchange_rate = models.BooleanField(
+        default=True,
+        verbose_name=_("Auto Fetch Exchange Rate"),
+        help_text=_(
+            "Automatically fetch live exchange rates when adding a currency "
+            "or changing the default currency."
+        ),
+    )
+    keep_rate_history = models.BooleanField(
+        default=False,
+        verbose_name=_("Keep Rate History"),
+        help_text=_(
+            "Save a dated conversion rate whenever a currency's rate is added or changed."
+        ),
+    )
+    # Valid values come from the provider registry
+    # (services/exchange_providers.py), so apps can add sources without
+    # touching this model; hence no static ``choices`` here.
+    exchange_rate_source = models.CharField(
+        max_length=100,
+        default="auto",
+        verbose_name=_("Exchange Rate Source"),
+    )
+    rates_last_refreshed = models.DateTimeField(
+        null=True, blank=True, verbose_name=_("Rates Last Refreshed")
+    )
+    auto_update_rates = models.BooleanField(
+        default=False,
+        verbose_name=_("Keep Rates Up To Date"),
+        help_text=_("Refresh existing currency rates on a schedule."),
+    )
+    RATE_REFRESH_CHOICES = [("daily", _("Daily")), ("weekly", _("Weekly"))]
+    rate_refresh_frequency = models.CharField(
+        max_length=10,
+        choices=RATE_REFRESH_CHOICES,
+        default="daily",
+        verbose_name=_("Refresh Frequency"),
+    )
+    rate_change_alert_percent = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name=_("Rate Change Alert (%)"),
+        help_text=_(
+            "Notify admins when a refreshed rate moves by more than this %. 0 = off."
+        ),
+    )
+    ROUNDING_CHOICES = [
+        ("half_up", _("Round Half Up")),
+        ("half_even", _("Round Half Even (Banker's)")),
+        ("up", _("Always Round Up")),
+        ("down", _("Always Round Down")),
+    ]
+    currency_rounding = models.CharField(
+        max_length=10,
+        choices=ROUNDING_CHOICES,
+        default="half_up",
+        verbose_name=_("Currency Rounding"),
+    )
+    SYMBOL_POSITION_CHOICES = [
+        ("before", _("Before Amount")),
+        ("after", _("After Amount")),
+    ]
+    CURRENCY_DISPLAY_CHOICES = [
+        ("code", _("Currency Code")),
+        ("symbol", _("Currency Symbol")),
+    ]
+    currency_display = models.CharField(
+        max_length=10,
+        choices=CURRENCY_DISPLAY_CHOICES,
+        default="code",
+        verbose_name=_("Currency Display"),
+        help_text=_("Show amounts with the currency code or its symbol."),
+    )
+    currency_symbol_position = models.CharField(
+        max_length=10,
+        choices=SYMBOL_POSITION_CHOICES,
+        default="before",
+        verbose_name=_("Currency Symbol Position"),
     )
     all_objects = models.Manager()
     objects = models.Manager()

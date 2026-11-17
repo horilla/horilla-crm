@@ -11,3 +11,7 @@
     id="id_conversion_rate"
     value="{{ value }}"
 >
+<span hx-swap-oob="delete:#conversion-rate-hint"></span>
+{% if hint %}
+    <p id="conversion-rate-hint" class="mt-1 text-xs text-gray-500">{{ hint }}</p>
+{% endif %}

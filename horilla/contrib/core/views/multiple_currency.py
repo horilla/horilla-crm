@@ -8,6 +8,7 @@ from functools import cached_property
 
 # Third-party imports (Django)
 from django.contrib import messages
+from django.core.cache import cache
 from django.utils.dateparse import parse_date
 
 # First party imports (Horilla)
@@ -33,7 +34,10 @@ from horilla.web import HttpResponseBadRequest, HxTriggerResponse, ScriptRespons
 # Local imports
 from ..forms import ConversionRateForm, CurrencyForm, DatedConversionRateForm
 from ..models import DatedConversionRate, MultipleCurrency
-from ..utils import fetch_exchange_rate_from_api
+from ..models.finance import currency_symbol
+from ..services.exchange_providers import get_provider_choices, get_provider_keys
+from ..services.exchange_rates import ensure_rate_baseline, refresh_company_rates
+from ..utils import fetch_exchange_rate_with_source
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +72,72 @@ class CompanyMultipleCurrency(LoginRequiredMixin, TemplateView):
         context["cmp"] = cmp
         context["currencies"] = currencies
         context["currency_count"] = currencies.count()
+
+        def _select(field, label, choices, help="", disabled=False):
+            return {
+                "field": field,
+                "label": label,
+                "current": str(getattr(cmp, field)),
+                "choices": [(str(v), l) for v, l in choices],
+                "help": help,
+                "disabled": disabled,
+            }
+
+        default_code = obj.currency if obj else ""
+        context["format_selects"] = [
+            _select(
+                "currency_display",
+                _("Currency Display"),
+                # Show examples for the company's own default currency
+                [
+                    ("code", f"{_('Currency Code')} ({default_code})"),
+                    (
+                        "symbol",
+                        f"{_('Currency Symbol')} ({currency_symbol(default_code)})",
+                    ),
+                ],
+                help=_("Show amounts with the currency code or its symbol."),
+            ),
+            _select(
+                "currency_symbol_position",
+                _("Currency Symbol Position"),
+                cmp.SYMBOL_POSITION_CHOICES,
+                help=_("Place the currency code or symbol before or after the amount."),
+            ),
+            _select(
+                "currency_rounding",
+                _("Rounding"),
+                cmp.ROUNDING_CHOICES,
+                help=_(
+                    "How an amount is rounded when it has more digits than the "
+                    "currency's decimal places."
+                ),
+            ),
+        ]
+        context["sel_source"] = _select(
+            "exchange_rate_source",
+            _("Rate Source"),
+            get_provider_choices(),
+            help=_(
+                "Which free service the rates are fetched from. Automatic tries the "
+                "services in order until one answers."
+            ),
+        )
+        context["sel_frequency"] = _select(
+            "rate_refresh_frequency",
+            _("Refresh Frequency"),
+            cmp.RATE_REFRESH_CHOICES,
+            help=_("How often the scheduled refresh updates the rates."),
+        )
+        context["sel_alert"] = _select(
+            "rate_change_alert_percent",
+            _("Notify When Rate Changes By More Than"),
+            [(0, _("Off"))] + [(v, f"{v} %") for v in (1, 5, 10, 20)],
+            help=_(
+                "Notify admins when a refreshed rate moves by more than this "
+                "percentage. Off means no alerts."
+            ),
+        )
         start_dates = (
             DatedConversionRate.objects.values_list("start_date", flat=True)
             .distinct()
@@ -107,6 +177,16 @@ class CompanyMultipleCurrency(LoginRequiredMixin, TemplateView):
         context["selected_start_date"] = selected_start_date
         return context
 
+    SETTING_FIELDS = {
+        "auto_update_rates": "bool",
+        "exchange_rate_source": get_provider_keys,
+        "rate_refresh_frequency": ["daily", "weekly"],
+        "rate_change_alert_percent": [0, 1, 5, 10, 20],
+        "currency_rounding": ["half_up", "half_even", "up", "down"],
+        "currency_display": ["code", "symbol"],
+        "currency_symbol_position": ["before", "after"],
+    }
+
     def post(self, request, *args, **kwargs):
         """Handle HTMX toggle for multiple currency activation"""
         company = getattr(request, "active_company", None)
@@ -117,6 +197,60 @@ class CompanyMultipleCurrency(LoginRequiredMixin, TemplateView):
 
         if not request.user.has_perm("core.change_company"):
             return render(request, "403.html")
+
+        field = request.POST.get("field")
+        if field in self.SETTING_FIELDS:
+            raw_value = request.POST.get("value", "")
+            spec = self.SETTING_FIELDS[field]
+            if spec == "bool":
+                value = raw_value == "true"
+            else:
+                valid = [str(v) for v in (spec() if callable(spec) else spec)]
+                if raw_value not in valid:
+                    messages.error(request, _("Invalid value."))
+                    context = self.get_context_data(**kwargs)
+                    return render(request, self.template_name, context)
+                value = (
+                    int(raw_value)
+                    if field == "rate_change_alert_percent"
+                    else raw_value
+                )
+            setattr(cmp, field, value)
+            cmp.save(update_fields=[field])
+            messages.success(request, _("Setting updated."))
+            context = self.get_context_data(**kwargs)
+            response = render(request, self.template_name, context)
+            response.content += b"<script>$('#reloadMessagesButton').click();</script>"
+            return response
+
+        keep_history = request.POST.get("keep_history")
+        if keep_history in ("true", "false"):
+            cmp.keep_rate_history = keep_history == "true"
+            cmp.save(update_fields=["keep_rate_history"])
+            if cmp.keep_rate_history:
+                # Start the history from each currency's current rate
+                for currency in MultipleCurrency.all_objects.filter(company=cmp):
+                    ensure_rate_baseline(currency)
+                messages.success(request, _("Rate history enabled."))
+            else:
+                messages.success(request, _("Rate history disabled."))
+            context = self.get_context_data(**kwargs)
+            response = render(request, self.template_name, context)
+            response.content += b"<script>$('#reloadMessagesButton').click();</script>"
+            return response
+
+        auto_fetch = request.POST.get("auto_fetch")
+        if auto_fetch in ("true", "false"):
+            cmp.auto_fetch_exchange_rate = auto_fetch == "true"
+            cmp.save(update_fields=["auto_fetch_exchange_rate"])
+            if cmp.auto_fetch_exchange_rate:
+                messages.success(request, _("Auto fetch of exchange rates enabled."))
+            else:
+                messages.success(request, _("Auto fetch of exchange rates disabled."))
+            context = self.get_context_data(**kwargs)
+            response = render(request, self.template_name, context)
+            response.content += b"<script>$('#reloadMessagesButton').click();</script>"
+            return response
 
         requested = request.POST.get("enable")
         if requested in ("true", "false"):
@@ -197,8 +331,6 @@ class CurrencyNavbar(LoginRequiredMixin, HorillaNavView):
         company = getattr(self.request, "active_company", None) or user.company
         if not company or not company.activate_multiple_currencies:
             return []
-        if MultipleCurrency.objects.filter(company=company).count() < 2:
-            return []
         modal_attrs = """
             hx-get="{url}"
             hx-target="#modalBox"
@@ -206,6 +338,21 @@ class CurrencyNavbar(LoginRequiredMixin, HorillaNavView):
             hx-on:click="openModal();"
         """
         actions = []
+        # Bulk add currencies with their conversion rates (the app's standard import)
+        if user.has_perm("core.add_multiplecurrency"):
+            actions.append(
+                {
+                    "action": _("Import"),
+                    "attrs": f"""
+                        hx-get="{reverse_lazy("core:import_data")}?single_import=true&model_name=MultipleCurrency&app_label=core"
+                        onclick="openModal()"
+                        hx-target="#modalBox"
+                        hx-swap="innerHTML"
+                    """,
+                }
+            )
+        if MultipleCurrency.objects.filter(company=company).count() < 2:
+            return actions
         if user.has_perm("core.change_multiplecurrency") and user.has_perm(
             "core.change_company"
         ):
@@ -224,18 +371,6 @@ class CurrencyNavbar(LoginRequiredMixin, HorillaNavView):
                     "attrs": modal_attrs.format(
                         url=reverse_lazy("core:conversion_rate_view")
                     ),
-                }
-            )
-        if user.has_perm("core.view_datedconversionrate"):
-            actions.append(
-                {
-                    "action": _("Dated Exchange Rates"),
-                    "attrs": f"""
-                        hx-get="{reverse_lazy("core:multiple_currency")}?dated_exchange=true"
-                        hx-target="#inner-tab-currency-view-content"
-                        hx-swap="innerHTML"
-                        hx-push-url="?dated_exchange=true"
-                    """,
                 }
             )
         return actions
@@ -259,17 +394,25 @@ class FetchExchangeRateView(LoginRequiredMixin, View):
         currency_code = request.GET.get("currency")
         company = getattr(request, "active_company", None) or request.user.company
 
+        # Auto fetch turned off for this company: let the user type the rate
+        if not getattr(company, "auto_fetch_exchange_rate", True):
+            return render(
+                request,
+                "settings/conversion_rate_input.html",
+                {"value": "", "hint": ""},
+            )
+
         # Get the default currency for the company
         default_currency = MultipleCurrency.objects.filter(
             company=company, is_default=True
         ).first()
 
         # Render conversion_rate input via template engine (value auto-escaped, XSS-safe)
-        def _conversion_input_response(value):
+        def _conversion_input_response(value, hint=""):
             return render(
                 request,
                 "settings/conversion_rate_input.html",
-                {"value": value},
+                {"value": value, "hint": hint},
             )
 
         # If currency or default not available, keep the input and let user type manually
@@ -281,10 +424,18 @@ class FetchExchangeRateView(LoginRequiredMixin, View):
             return _conversion_input_response("1.0000")
 
         # Fetch exchange rate from free API
-        rate = fetch_exchange_rate_from_api(default_currency.currency, currency_code)
+        rate, source = fetch_exchange_rate_with_source(
+            default_currency.currency,
+            currency_code,
+            getattr(company, "exchange_rate_source", "auto"),
+        )
 
         if rate:
-            return _conversion_input_response(rate)
+            return _conversion_input_response(
+                rate,
+                f"1 {default_currency.currency} = {rate} {currency_code} "
+                f"(via {source})",
+            )
 
         logger.warning(
             "Exchange rate not available for %s to %s",
@@ -292,7 +443,49 @@ class FetchExchangeRateView(LoginRequiredMixin, View):
             currency_code,
         )
         # Keep an empty input so the user can manually enter the rate
-        return _conversion_input_response("")
+        return _conversion_input_response(
+            "",
+            _(
+                "Could not fetch the rate for 1 %(base)s to %(target)s. Please enter it manually."
+            )
+            % {"base": default_currency.currency, "target": currency_code},
+        )
+
+
+@method_decorator(htmx_required, name="dispatch")
+@method_decorator(
+    permission_required_or_denied(
+        ["core.change_multiplecurrency", "core.change_company"],
+    ),
+    name="dispatch",
+)
+class RefreshExchangeRatesView(LoginRequiredMixin, View):
+    """Fetch fresh rates for all currencies of the company right now."""
+
+    def post(self, request, *args, **kwargs):
+        """Refresh the rates and reload the currency tab."""
+        company = getattr(request, "active_company", None) or request.user.company
+        if not company or not company.activate_multiple_currencies:
+            messages.error(request, _("Multiple currencies are disabled."))
+        elif not company.auto_fetch_exchange_rate:
+            messages.error(request, _("Turn on Auto Fetch Exchange Rate first."))
+        elif not cache.add(f"core:refresh_rates_cooldown:{company.pk}", 1, 60):
+            # One refresh per minute per company: protects the rate services
+            messages.warning(
+                request,
+                _("Rates were just refreshed. Please wait a minute and try again."),
+            )
+        else:
+            updated, source = refresh_company_rates(company)
+            if source is None:
+                messages.error(request, _("Could not fetch exchange rates right now."))
+            else:
+                messages.success(
+                    request,
+                    _("%(n)s rate(s) updated via %(src)s.")
+                    % {"n": updated, "src": source},
+                )
+        return ScriptResponse(msgs=True, extra="$('#reloadCurrencyButton').click();")
 
 
 @method_decorator(htmx_required, name="dispatch")
@@ -411,7 +604,10 @@ class ChangeDefaultCurrencyView(LoginRequiredMixin, View):
 
                 if current_default and current_default.id == new_default_currency.id:
                     messages.info(request, _("Currency is already the default."))
-                    return HxTriggerResponse(id="tab-currency-view")
+                    return HxTriggerResponse(
+                        id="tab-currency-view",
+                        extra="$('#reloadMessagesButton').click();",
+                    )
 
                 original_new_default_rate = (
                     new_default_currency.conversion_rate or Decimal("1.0")
@@ -499,7 +695,10 @@ class ChangeDefaultCurrencyView(LoginRequiredMixin, View):
                 company.save()
 
             messages.success(request, _("Default currency changed successfully."))
-            return HxTriggerResponse(id="tab-currency-view")
+            return HxTriggerResponse(
+                id="tab-currency-view",
+                extra="$('#reloadMessagesButton').click();",
+            )
 
         except MultipleCurrency.DoesNotExist:
             messages.error(
@@ -733,7 +932,21 @@ class AddCurrencyView(LoginRequiredMixin, HorillaSingleFormView):
         pk = self.kwargs.get("pk") or self.request.GET.get("id")
 
         # Only add HTMX attributes when adding a new currency (not editing)
-        if not pk and "currency" in form.fields and "conversion_rate" in form.fields:
+        company = (
+            getattr(self.request, "active_company", None) or self.request.user.company
+        )
+        auto_fetch = getattr(company, "auto_fetch_exchange_rate", True)
+        if not auto_fetch and "conversion_rate" in form.fields:
+            # Don't mention automatic fetching when it is turned off
+            form.fields["conversion_rate"].help_text = _(
+                "Conversion rate from default currency."
+            )
+        if (
+            auto_fetch
+            and not pk
+            and "currency" in form.fields
+            and "conversion_rate" in form.fields
+        ):
             # Attach HTMX behavior to currency field
             form.fields["currency"].widget.attrs.update(
                 {
@@ -946,6 +1159,7 @@ class DatedCurrencyListView(LoginRequiredMixin, HorillaListView):
                 instance._meta.get_field("conversion_rate").verbose_name,
                 "conversion_rate",
             ),
+            (instance._meta.get_field("source").verbose_name, "get_source_display"),
         ]
 
     actions = [

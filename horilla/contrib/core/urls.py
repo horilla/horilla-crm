@@ -158,6 +158,11 @@ urlpatterns = [
         name="add_currency",
     ),
     path(
+        "refresh-exchange-rates/",
+        views.RefreshExchangeRatesView.as_view(),
+        name="refresh_exchange_rates",
+    ),
+    path(
         "fetch-exchange-rate/",
         views.FetchExchangeRateView.as_view(),
         name="fetch_exchange_rate",

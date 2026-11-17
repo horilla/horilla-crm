@@ -928,7 +928,7 @@ canvas {
 }
 
 .dropdown-wrapper {
-  z-index: 50;
+  z-index: 49; /* below the fixed header (z-50), so a page menu never paints over its dropdowns */
   position: relative;
 }
 
@@ -2338,6 +2338,15 @@ input::placeholder {
 .htmx-request .htmx-indicator,
 .htmx-request.htmx-indicator {
   display: flex !important;
+}
+
+/* Conversion-rate spinner: Tailwind's inline-flex would otherwise keep its space reserved */
+#conversion-rate-spinner.htmx-indicator {
+  display: none;
+}
+.htmx-request #conversion-rate-spinner.htmx-indicator,
+#conversion-rate-spinner.htmx-indicator.htmx-request {
+  display: inline-flex !important;
 }
 
 /* Inline spinners (buttons, delete modals) */

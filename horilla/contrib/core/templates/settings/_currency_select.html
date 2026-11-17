@@ -1,0 +1,17 @@
+<div>
+    {% include "settings/_currency_label.html" with label=sel.label help=sel.help %}
+    <select
+        name="value"
+        class="js-example-basic-single headselect w-full"
+        {% if sel.disabled or not change_company %}disabled{% endif %}
+        hx-post="{% url 'core:multiple_currency' %}"
+        hx-vals='{"field": "{{ sel.field }}"}'
+        hx-trigger="change"
+        hx-target="#currency-view-container"
+        hx-swap="outerHTML"
+    >
+        {% for value, text in sel.choices %}
+            <option value="{{ value }}" {% if value == sel.current %}selected{% endif %}>{{ text }}</option>
+        {% endfor %}
+    </select>
+</div>

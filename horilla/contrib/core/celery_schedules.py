@@ -13,4 +13,8 @@ HORILLA_BEAT_SCHEDULE = {
         "task": "horilla.contrib.core.tasks.process_scheduled_exports",
         "schedule": timedelta(seconds=10),
     },
+    "refresh-exchange-rates": {
+        "task": "horilla.contrib.core.tasks.refresh_exchange_rates",
+        "schedule": timedelta(hours=1),
+    },
 }

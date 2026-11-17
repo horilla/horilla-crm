@@ -32,6 +32,7 @@ from horilla.utils import timezone
 
 from .models import (
     Company,
+    DatedConversionRate,
     DetailFieldVisibility,
     FieldPermission,
     FiscalYear,
@@ -108,7 +109,14 @@ def handle_company_currency_change(company, old_currency):
 
             # Single bulk API call instead of one per currency
             target_codes = [c.currency for c in other_currencies]
-            bulk_rates = fetch_exchange_rates_bulk(base_code, target_codes)
+            if getattr(company, "auto_fetch_exchange_rate", True):
+                bulk_rates = fetch_exchange_rates_bulk(
+                    base_code,
+                    target_codes,
+                    getattr(company, "exchange_rate_source", "auto"),
+                )
+            else:
+                bulk_rates = {}
 
             currencies_to_update = []
             for curr in other_currencies:
@@ -1356,3 +1364,51 @@ def assign_first_company_to_all_users(sender, instance, created, **kwargs):
     if created:
         if Company.objects.count() == 1:
             User.objects.filter(company__isnull=True).update(company=instance)
+
+
+@receiver(pre_save, sender=MultipleCurrency)
+def _remember_old_conversion_rate(sender, instance, **kwargs):
+    """Remember the previous rate so post_save can tell whether it changed."""
+    instance._old_conversion_rate = None
+    if instance.pk:
+        instance._old_conversion_rate = (
+            MultipleCurrency.all_objects.filter(pk=instance.pk)
+            .values_list("conversion_rate", flat=True)
+            .first()
+        )
+
+
+@receiver(post_save, sender=MultipleCurrency)
+def record_rate_history(sender, instance, created, raw=False, **kwargs):
+    """
+    When the company keeps rate history, save a dated conversion rate (source
+    "auto") whenever a non-default currency is added or its rate changes.
+    A manual entry for the same day is never overwritten.
+    """
+    if raw or instance.is_default or instance.conversion_rate is None:
+        return
+    company = instance.company
+    if not company or not getattr(company, "keep_rate_history", False):
+        return
+    if not created and instance._old_conversion_rate == instance.conversion_rate:
+        return
+
+    today = timezone.now().date()
+    entry, was_created = DatedConversionRate.all_objects.get_or_create(
+        company=company,
+        currency=instance,
+        start_date=today,
+        defaults={
+            "conversion_rate": instance.conversion_rate,
+            "source": DatedConversionRate.SOURCE_AUTO,
+            "created_by": instance.updated_by,
+            "updated_by": instance.updated_by,
+        },
+    )
+    if (
+        not was_created
+        and entry.source == DatedConversionRate.SOURCE_AUTO
+        and entry.conversion_rate != instance.conversion_rate
+    ):
+        entry.conversion_rate = instance.conversion_rate
+        entry.save(update_fields=["conversion_rate", "updated_at"])

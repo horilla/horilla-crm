@@ -494,3 +494,30 @@ def cleanup_old_schedules():
 
     logger.info("Cleaned up %s expired schedules", deleted_count)
     return f"Deleted {deleted_count} expired schedules"
+
+
+@shared_task
+def refresh_exchange_rates():
+    """
+    Refresh currency rates for companies that keep rates up to date and whose
+    chosen frequency (daily or weekly) has elapsed.
+    """
+    from .models import Company
+    from .services.exchange_rates import refresh_company_rates
+
+    now = timezone.now()
+    for company in Company.objects.filter(
+        activate_multiple_currencies=True,
+        auto_fetch_exchange_rate=True,
+        auto_update_rates=True,
+    ):
+        interval = timedelta(
+            days=7 if company.rate_refresh_frequency == "weekly" else 1
+        )
+        last = company.rates_last_refreshed
+        if last and now - last < interval - timedelta(minutes=5):
+            continue
+        try:
+            refresh_company_rates(company)
+        except Exception:
+            logger.exception("Exchange rate refresh failed for company %s", company.pk)

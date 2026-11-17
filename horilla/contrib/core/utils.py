@@ -16,8 +16,10 @@ from horilla.db import models, transaction
 from horilla.db.models import QuerySet
 from horilla.utils.choices import TABLE_FALLBACK_FIELD_TYPES
 
-# Local imports
 from .models import FieldPermission, HorillaContentType, MultipleCurrency, RecycleBin
+
+# Local imports
+from .services.exchange_providers import fetch_rates
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +38,8 @@ def sanitize_export_value(value):
 
 def fetch_exchange_rate_from_api(base_currency, target_currency):
     """
-    Fetch exchange rate from Frankfurter API (free, no API key required).
-    Falls back to open.er-api.com if Frankfurter fails.
+    Fetch exchange rate from Frankfurter (free, no API key required).
+    Falls back to the free Currency API (CC0) if Frankfurter fails.
 
     Args:
         base_currency: The base currency code (e.g., 'USD')
@@ -46,56 +48,45 @@ def fetch_exchange_rate_from_api(base_currency, target_currency):
     Returns:
         Decimal: The exchange rate, or None if fetch fails
     """
-    rates = fetch_exchange_rates_bulk(base_currency, [target_currency])
+    rates, _source = fetch_exchange_rates_bulk_with_source(
+        base_currency, [target_currency]
+    )
     return rates.get(target_currency)
 
 
-def fetch_exchange_rates_bulk(base_currency, target_currencies):
+def fetch_exchange_rate_with_source(base_currency, target_currency, preferred="auto"):
+    """
+    Same as fetch_exchange_rate but returns (rate, source_name).
+    """
+    rates, source = fetch_exchange_rates_bulk_with_source(
+        base_currency, [target_currency], preferred
+    )
+    return rates.get(target_currency), source
+
+
+def fetch_exchange_rates_bulk(base_currency, target_currencies, preferred="auto"):
     """
     Fetch exchange rates for multiple target currencies in a single API call.
-
-    Args:
-        base_currency: The base currency code (e.g., 'USD')
-        target_currencies: List of target currency codes (e.g., ['INR', 'EUR', 'GBP'])
-
-    Returns:
-        dict: Mapping of currency code -> Decimal rate for successfully fetched rates
+    Returns a dict of currency code -> Decimal rate.
     """
-    if not target_currencies:
-        return {}
+    return fetch_exchange_rates_bulk_with_source(
+        base_currency, target_currencies, preferred
+    )[0]
 
-    symbols = ",".join(target_currencies)
-    result = {}
 
-    try:
-        url = f"https://api.frankfurter.app/latest?from={base_currency}&to={symbols}"
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            for code, rate in data.get("rates", {}).items():
-                result[code] = Decimal(str(rate)).quantize(Decimal("0.0001"))
-            if result:
-                return result
-    except Exception as e:
-        logger.warning("Frankfurter bulk API failed: %s", e)
+def fetch_exchange_rates_bulk_with_source(
+    base_currency, target_currencies, preferred="auto"
+):
+    """
+    Fetch exchange rates for several currencies using the chosen provider.
 
-    try:
-        url = f"https://open.er-api.com/v6/latest/{base_currency}"
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("result") == "success":
-                all_rates = data.get("rates", {})
-                for code in target_currencies:
-                    if code in all_rates:
-                        result[code] = Decimal(str(all_rates[code])).quantize(
-                            Decimal("0.0001")
-                        )
-                return result
-    except Exception as e:
-        logger.warning("Fallback exchange rate bulk API failed: %s", e)
+    ``preferred`` is "auto" (the providers marked in_auto, in priority order)
+    or the key of one registered provider. Providers are pluggable: see
+    ``services/exchange_providers.py``.
 
-    return result
+    Returns (rates dict of code -> Decimal, provider label or None).
+    """
+    return fetch_rates(base_currency, target_currencies, preferred)
 
 
 def restore_recycle_bin_records(request, recycle_objs):

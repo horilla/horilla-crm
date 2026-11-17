@@ -19,62 +19,169 @@
         {% has_perm "core.view_datedconversionrate" as view_datedconversion %}
         {% has_perm "core.add_datedconversionrate" as add_datedconversion %}
 
-        {% if cmp.activate_multiple_currencies and request.GET.dated_exchange == 'true' and view_datedconversion %}
-            <div class="flex flex-wrap justify-between items-center h-14 flex-shrink-0">
-                <div class="flex gap-2 items-center">
-                    <button
-                        class="text-sm items-center mb-2 mt-2 text-primary-600"
-                        hx-get="{% url 'core:multiple_currency' %}"
-                        hx-target="#inner-tab-currency-view-content"
-                        hx-swap="innerHTML"
-                        hx-push-url="?dated_exchange=false"
-                    >
-                        <i class="fas {% if LANGUAGE_BIDI %}fa-arrow-right{% else %}fa-arrow-left{% endif %} me-2"></i>
-                    </button>
-                    <h3 class="text-md font-semibold">{% trans  "Dated Exchange  Rates" %}</h3>
-                </div>
-                <div class="relative flex gap-2 justify-items-center">
-                    <select
-                        class="js-example-basic-single headselect"
-                        name="start_date"
-                        hx-get="{% url 'core:dated_currency_list_view' %}"
-                        hx-target="#dated-currency-list"
-                        hx-trigger="change"
-                        class="border rounded p-2"
-                    >
-                        <option value="">{% trans "Select a Date Range" %}</option>
-                        {% for range in date_ranges %}
-                            <option
-                                value="{{ range.start_date|date:'Y-m-d' }}"
-                                {% if request.GET.start_date == range.start_date|date:'Y-m-d' or selected_start_date == range.start_date %}
-                                    selected
-                                {% endif %}
+            <div class="flex flex-wrap gap-y-2 justify-between mb-2 flex-shrink-0">
+                <ul
+                    id="currency-subtabs"
+                    class="flex gap-2 text-sm font-normal text-gray-500 dark:text-gray-400"
+                    role="tablist"
+                    aria-label="{% trans 'Currency management' %}"
+                >
+                    <li>
+                        <button
+                            type="button"
+                            role="tab"
+                            id="tab-trigger-currency-settings"
+                            aria-controls="panel-currency-settings"
+                            aria-selected="true"
+                            class="cur-tab-btn inline-flex items-center px-3 py-1 text-white bg-primary-600 rounded-sm text-xs"
+                            onclick="window.switchCurrencyPanel('settings')"
+                        >
+                            {% trans "Rates & Formatting" %}
+                        </button>
+                    </li>
+                    {% if cmp.activate_multiple_currencies %}
+                    <li>
+                        <button
+                            type="button"
+                            role="tab"
+                            id="tab-trigger-currency-list"
+                            aria-controls="panel-currency-list"
+                            aria-selected="false"
+                            class="cur-tab-btn inline-flex items-center px-3 py-1 bg-primary-200 text-primary-600 rounded-sm text-xs"
+                            onclick="window.switchCurrencyPanel('list')"
+                        >
+                            {% trans "Currencies" %}
+                        </button>
+                    </li>
+                    {% if view_datedconversion %}
+                    <li>
+                        <button
+                            type="button"
+                            role="tab"
+                            id="tab-trigger-currency-dated"
+                            aria-controls="panel-currency-dated"
+                            aria-selected="false"
+                            class="cur-tab-btn inline-flex items-center px-3 py-1 bg-primary-200 text-primary-600 rounded-sm text-xs"
+                            onclick="window.switchCurrencyPanel('dated')"
+                        >
+                            {% trans "Dated Exchange Rates" %}
+                        </button>
+                    </li>
+                    {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+            <div id="panel-currency-settings" role="tabpanel" aria-labelledby="tab-trigger-currency-settings" class="flex-1 min-h-0 overflow-y-auto">
+            <div class="mb-4 rounded-md border border-primary-300 flex-shrink-0">
+                <h3 class="text-sm font-semibold bg-primary-100 text-primary-600 rounded-t-md p-3">{% trans "General" %}</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 items-start">
+                    <div>
+                        {% trans "The currency every other currency is converted from. Changing it recalculates all conversion rates." as t_help %}
+                        {% include "settings/_currency_label.html" with label=obj|verbose_name:"is_default" help=t_help %}
+                        {% if change_company and cmp.activate_multiple_currencies and currency_count > 1 %}
+                            <select
+                                id="default-currency-select"
+                                class="js-example-basic-single headselect w-full"
+                                data-current="{{ obj.pk }}"
+                                data-url-template="{% url 'core:change_default_currency' 0 %}"
+                                hx-post=""
+                                hx-trigger="confirmed"
+                                hx-swap="none"
                             >
-                                {{ range.display }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                    {% if   add_datedconversion %}
-                        {% url 'core:dated_conversion_rate_view' as btn_hx_get_url %}
-                        {% btn _("New Exchange Rates") sizing="text-sm px-4 py-2 w-full" id="exchange-rates-btn" hx_get=btn_hx_get_url hx_target="#modalBox" hx_swap="innerHTML" hx_on_click="openModal();" %}
+                                {% for c in currencies %}
+                                    <option value="{{ c.pk }}" {% if c.pk == obj.pk %}selected{% endif %}>
+                                        {{ c.get_currency_display }} - ({{ c.currency }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <script>
+                                (function () {
+                                    var sel = document.getElementById("default-currency-select");
+                                    if (!sel || sel.dataset.bound) return;
+                                    sel.dataset.bound = "1";
+                                    $(sel).on("change", function () {
+                                        var current = sel.dataset.current;
+                                        var value = sel.value;
+                                        if (!value || value === current) return;
+                                        // Same confirmation and endpoint as the Default Currency checkbox in the list
+                                        sel.setAttribute("hx-post", sel.dataset.urlTemplate.replace(/0\/$/, value + "/"));
+                                        htmx.process(sel);
+                                        hxConfirm(sel, "{% trans 'Are you sure you want to change the default currency? The previous default will be unset.' %}");
+                                        // Show the current default again; a confirmed change reloads the tab.
+                                        $(sel).val(current).trigger("change.select2");
+                                    });
+                                })();
+                            </script>
+                        {% else %}
+                            <div class="text-color-600 px-3 font-normal w-full border border-dark-50 bg-gray-50 rounded-md text-sm cursor-default break-words h-[38px] flex items-center">
+                                {{ obj.get_currency_display }} - ({{ obj.currency }})
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if change_company %}
+                    {% trans "Enable Multiple Currency" as t_label %}
+                    {% trans "Allow records in more than one currency. Turning this off hides the other currency options." as t_help %}
+                    {% trans "Allow more than one currency" as t_desc %}
+                    {% include "settings/_currency_toggle.html" with label=t_label desc=t_desc help=t_help checked=cmp.activate_multiple_currencies vals="js:{enable: event.target.checked}" %}
                     {% endif %}
                 </div>
             </div>
-            <p class="text-sm mb-3 flex-shrink-0">
-                {{ obj|verbose_name:"is_default" }} &nbsp : &nbsp
-                <span class="font-semibold">{{ obj.get_currency_display }} - ({{ obj.currency }})</span>
-            </p>
-            {% if cmp.activate_multiple_currencies and request.GET.dated_exchange == 'true' %}
-                <div
-                    id="dated-currency-list"
-                    class="flex-1 min-h-0 flex flex-col"
-                    hx-get="{% url 'core:dated_currency_list_view' %}"
-                    hx-trigger="load"
-                    hx-vals='js:{start_date: document.querySelector("select[name=start_date]").value}'
-                >
+            {% if cmp.activate_multiple_currencies and change_company %}
+            <div class="mb-4 rounded-md border border-primary-300 flex-shrink-0">
+                <h3 class="text-sm font-semibold bg-primary-100 text-primary-600 rounded-t-md p-3">{% trans "Exchange Rates" %}</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 items-start">
+                    {% trans "Auto Fetch Exchange Rate" as t_label %}
+                    {% trans "Fetch conversion rates from free online exchange rate services: when you add a currency, when you change the default currency, and when rates are refreshed. Turn it off to enter every rate yourself." as t_help %}
+                    {% trans "Fetch rates from online services" as t_desc %}
+                    {% include "settings/_currency_toggle.html" with label=t_label desc=t_desc help=t_help checked=cmp.auto_fetch_exchange_rate vals="js:{auto_fetch: event.target.checked}" %}
+                    {% if cmp.auto_fetch_exchange_rate %}
+                    {% include "settings/_currency_select.html" with sel=sel_source %}
+                    {% trans "Keep Rates Up To Date" as t_label %}
+                    {% trans "Automatically updates the conversion rates of all your other currencies on the schedule you choose (daily or weekly), so you don't have to refresh them by hand. The default currency stays at 1." as t_help %}
+                    {% trans "Refresh on a schedule" as t_desc %}
+                    {% include "settings/_currency_toggle.html" with label=t_label desc=t_desc help=t_help checked=cmp.auto_update_rates vals="js:{field: 'auto_update_rates', value: event.target.checked}" %}
+                    {% if cmp.auto_update_rates %}
+                            {% include "settings/_currency_select.html" with sel=sel_frequency %}
+                    {% endif %}
+                    {% include "settings/_currency_select.html" with sel=sel_alert %}
+                    <div>
+                        {% trans "Last Refreshed" as t_label %}
+                        {% trans "When rates were last fetched. Use Refresh Now to update them straight away." as t_help %}
+                        {% include "settings/_currency_label.html" with label=t_label help=t_help %}
+                        <div class="h-[38px] px-3 w-full flex items-center justify-between gap-3 border border-dark-50 bg-gray-50 rounded-md">
+                            <span class="text-sm text-color-600 font-normal">
+                                {% if cmp.rates_last_refreshed %}{{ cmp.rates_last_refreshed|date:"d M Y, H:i" }}{% else %}{% trans "Never" %}{% endif %}
+                            </span>
+                            <button
+                                type="button"
+                                class="text-xs text-primary-600 font-semibold"
+                                hx-post="{% url 'core:refresh_exchange_rates' %}"
+                                hx-target="body"
+                                hx-swap="beforeend"
+                            >
+                                {% trans "Refresh Now" %}
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% trans "Keep Rate History" as t_label %}
+                    {% trans "Save a dated exchange rate whenever a rate is added or changes, so older records keep the rate that applied at the time." as t_help %}
+                    {% trans "Save a dated rate on change" as t_desc %}
+                    {% include "settings/_currency_toggle.html" with label=t_label desc=t_desc help=t_help checked=cmp.keep_rate_history vals="js:{keep_history: event.target.checked}" %}
                 </div>
+            </div>
+            <div class="mb-4 rounded-md border border-primary-300 flex-shrink-0">
+                <h3 class="text-sm font-semibold bg-primary-100 text-primary-600 rounded-t-md p-3">{% trans "Formatting" %}</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 items-start">
+                    {% for sel in format_selects %}
+                        {% include "settings/_currency_select.html" with sel=sel %}
+                    {% endfor %}
+                </div>
+            </div>
             {% endif %}
-        {% else %}
+            </div>
+            {% if cmp.activate_multiple_currencies %}
+            <div id="panel-currency-list" role="tabpanel" aria-labelledby="tab-trigger-currency-list" class="hidden flex-1 min-h-0 flex flex-col">
             <div
                 id="navBar"
                 class="flex-shrink-0"
@@ -82,34 +189,6 @@
                 hx-trigger="load"
             >
             </div>
-            <p class="text-sm mb-3 flex-shrink-0">
-                {{ obj|verbose_name:"is_default" }} &nbsp : &nbsp
-                <span class="font-semibold">
-                    {{ obj.get_currency_display }} - ({{ obj.currency }})
-                </span>
-            </p>
-            {% if  change_company %}
-                <div class="text-sm font-semibold flex gap-2 relative mb-3 flex-shrink-0">
-                    {% trans "Enable Multiple Currency" %}
-                    <label class="inline-flex items-center cursor-pointer">
-                        <input
-                            type="checkbox"
-                            value=""
-                            class="sr-only peer"
-                            {% if cmp.activate_multiple_currencies %}
-                                checked
-                            {% endif %}
-                            hx-post="{% url 'core:multiple_currency' %}"
-                            hx-vals="js:{enable: event.target.checked}"
-                            hx-trigger="change"
-                            hx-target="#currency-view-container"
-                            hx-swap="outerHTML"
-                        >
-                        <div class="relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6">
-                        </div>
-                    </label>
-                </div>
-            {% endif %}
             {% if cmp.activate_multiple_currencies %}
                 <div
                     id="mainSession"
@@ -119,6 +198,79 @@
                 >
                 </div>
             {% endif %}
-        {% endif %}
+            </div>
+            {% if view_datedconversion %}
+                <div id="panel-currency-dated" role="tabpanel" aria-labelledby="tab-trigger-currency-dated" class="hidden flex-1 min-h-0 flex flex-col">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3 flex-shrink-0">
+                        <div>
+                            <h3 class="text-md font-semibold">{% trans "Dated Exchange Rates" %}</h3>
+                            <p class="text-xs text-gray-500">{% trans "Set a different conversion rate for a date range." %}</p>
+                        </div>
+                        <div class="relative flex gap-2 justify-items-center">
+                            <select
+                                class="js-example-basic-single headselect"
+                                name="start_date"
+                                hx-get="{% url 'core:dated_currency_list_view' %}"
+                                hx-target="#dated-currency-list"
+                                hx-trigger="change"
+                            >
+                                <option value="">{% trans "Select a Date Range" %}</option>
+                                {% for range in date_ranges %}
+                                    <option
+                                        value="{{ range.start_date|date:'Y-m-d' }}"
+                                        {% if selected_start_date == range.start_date %}selected{% endif %}
+                                    >
+                                        {{ range.display }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if add_datedconversion %}
+                                {% url 'core:dated_conversion_rate_view' as btn_hx_get_url %}
+                                {% btn _("New Exchange Rates") sizing="text-sm px-4 py-2 w-full" id="exchange-rates-btn" hx_get=btn_hx_get_url hx_target="#modalBox" hx_swap="innerHTML" hx_on_click="openModal();" %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div
+                        id="dated-currency-list"
+                        class="flex-1 min-h-0 flex flex-col"
+                        hx-get="{% url 'core:dated_currency_list_view' %}"
+                        hx-trigger="load"
+                        hx-vals='js:{start_date: document.querySelector("#panel-currency-dated select[name=start_date]").value}'
+                    >
+                    </div>
+                </div>
+            {% endif %}
+            {% endif %}
+            <script>
+                window.switchCurrencyPanel = function (which) {
+                    var panels = {
+                        settings: document.getElementById("panel-currency-settings"),
+                        list: document.getElementById("panel-currency-list"),
+                        dated: document.getElementById("panel-currency-dated"),
+                    };
+                    if (!panels[which]) which = "settings";
+                    window.__currencyPanel = which;
+                    try { sessionStorage.setItem("currencyPanel", which); } catch (e) {}
+                    document.querySelectorAll("#currency-subtabs .cur-tab-btn").forEach(function (b) {
+                        b.classList.remove("bg-primary-600", "text-white");
+                        b.classList.add("bg-primary-200", "text-primary-600");
+                        b.setAttribute("aria-selected", "false");
+                    });
+                    var active = document.getElementById("tab-trigger-currency-" + which);
+                    if (active) {
+                        active.classList.remove("bg-primary-200", "text-primary-600");
+                        active.classList.add("bg-primary-600", "text-white");
+                        active.setAttribute("aria-selected", "true");
+                    }
+                    Object.keys(panels).forEach(function (k) {
+                        if (panels[k]) panels[k].classList.toggle("hidden", k !== which);
+                    });
+                };
+                (function () {
+                    var saved = window.__currencyPanel;
+                    if (!saved) { try { saved = sessionStorage.getItem("currencyPanel"); } catch (e) {} }
+                    window.switchCurrencyPanel(saved || "settings");
+                })();
+            </script>
     {% endif %}
 </div>

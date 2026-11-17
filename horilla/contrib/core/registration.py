@@ -8,6 +8,7 @@ from horilla.contrib.generics.related_fields import register_default_related_fie
 from horilla.registry.asset_registry import register_html
 from horilla.registry.feature import (
     register_feature,
+    register_model_for_feature,
     register_models_for_feature,
     set_feature_options,
 )
@@ -38,6 +39,16 @@ register_models_for_feature(
     ],
     all=True,
     exclude=["dashboard_component", "report_choices"],
+)
+
+# Let users bulk import currencies (with their conversion rates) from the
+# Currencies tab's actions menu.
+register_model_for_feature(
+    app_label="core",
+    model_name="MultipleCurrency",
+    features=["import_data"],
+    # The default currency is changed with the Default Currency control, not by import.
+    options={"import_data": {"exclude_fields": ["is_default"]}},
 )
 
 # What global search looks in and shows for each core model.

@@ -1,0 +1,20 @@
+<div>
+    {% include "settings/_currency_label.html" %}
+    <div class="h-[38px] px-3 w-full flex items-center justify-between gap-3 border border-dark-50 bg-gray-50 rounded-md">
+        <span class="text-sm text-color-600 font-normal">{{ desc }}</span>
+        <label class="inline-flex items-center cursor-pointer">
+            <input
+                type="checkbox"
+                value=""
+                class="sr-only peer"
+                {% if checked %}checked{% endif %}
+                hx-post="{% url 'core:multiple_currency' %}"
+                hx-vals="{{ vals }}"
+                hx-trigger="change"
+                hx-target="#currency-view-container"
+                hx-swap="outerHTML"
+            >
+            <div class="relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6"></div>
+        </label>
+    </div>
+</div>

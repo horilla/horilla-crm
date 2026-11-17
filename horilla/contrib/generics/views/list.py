@@ -99,6 +99,8 @@ class HorillaListView(HorillaListViewMixin, ListView):
     filter_url_push = True
     max_visible_actions = 4
     bulk_update_fields = []
+    bulk_update_choices = {}
+    bulk_update_country_state_fields = {}
     bulk_update_two_column = False
     raw_attrs: list = []
     number_of_recent_view = 20
@@ -1256,11 +1258,16 @@ class HorillaListView(HorillaListViewMixin, ListView):
         editable_bulk_field_names = get_editable_fields(
             self.request.user, self.model, self.bulk_update_fields
         )
-        context["bulk_update_fields"] = [
-            field
-            for field in filter_fields
-            if field["name"] in editable_bulk_field_names
-        ]
+        context["bulk_update_fields"] = (
+            HorillaBulkUpdateMixin.apply_bulk_update_choices(
+                self,
+                [
+                    field
+                    for field in filter_fields
+                    if field["name"] in editable_bulk_field_names
+                ],
+            )
+        )
         user = self.request.user
         app_label = self.model._meta.app_label
         model_name = self.model._meta.model_name

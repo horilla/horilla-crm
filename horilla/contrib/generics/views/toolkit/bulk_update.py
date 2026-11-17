@@ -20,6 +20,7 @@ from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.core.utils import get_editable_fields
 from horilla.db.models import Q
 from horilla.shortcuts import render
+from horilla.urls import reverse_lazy
 
 # First party imports (Horilla)
 from horilla.utils import timezone
@@ -34,6 +35,39 @@ class HorillaBulkUpdateMixin:
     Mixin that encapsulates all bulk update logic so that HorillaListView
     can delegate to it instead of implementing everything inline.
     """
+
+    def apply_bulk_update_choices(self, field_infos):
+        """
+        Replace the options of fields listed in ``bulk_update_choices`` with the
+        view's own limited set, and link the country/state pairs listed in
+        ``bulk_update_country_state_fields`` so the states reload when the country
+        changes. Returns new dicts; the input is not modified.
+        """
+        overrides = getattr(self, "bulk_update_choices", None) or {}
+        pairs = getattr(self, "bulk_update_country_state_fields", None) or {}
+        parents = {child: parent for parent, child in pairs.items()}
+        options_url = str(reverse_lazy("core:get_country_subdivisions"))
+        result = []
+        for info in field_infos:
+            name = info["name"]
+            get_choices = overrides.get(name)
+            if get_choices:
+                info = {
+                    **info,
+                    "choices": [
+                        {"value": value, "label": label}
+                        for value, label in get_choices()
+                    ],
+                }
+            if name in parents:
+                info = {**info, "depends_on": parents[name]}
+            if name in pairs:
+                info = {
+                    **info,
+                    "dependent": {"child": pairs[name], "url": options_url},
+                }
+            result.append(info)
+        return result
 
     def handle_bulk_update_post(self, request, record_ids, columns):
         """
@@ -268,7 +302,12 @@ class HorillaBulkUpdateMixin:
         """
         # Use list view's field metadata when available (avoids cyclic import)
         if hasattr(self, "_get_model_fields"):
-            field_infos = {field["name"]: field for field in self._get_model_fields()}
+            field_infos = {
+                field["name"]: field
+                for field in HorillaBulkUpdateMixin.apply_bulk_update_choices(
+                    self, self._get_model_fields()
+                )
+            }
         else:
             field_infos = {}
 

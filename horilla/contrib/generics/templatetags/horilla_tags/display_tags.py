@@ -247,7 +247,10 @@ def display_field_value(obj, field_name, user, style=None):
     try:
         field = obj._meta.get_field(field_name)
         if hasattr(field, "choices") and field.choices:
-            return dict(field.choices).get(value, value)
+            labels = dict(field.flatchoices)
+            if isinstance(value, (list, tuple)):
+                return ", ".join(str(labels.get(item, item)) for item in value)
+            return labels.get(value, value)
     except Exception:
         pass
 

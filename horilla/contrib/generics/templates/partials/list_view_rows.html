@@ -89,7 +89,7 @@
                         {% endif %}
                         {% with cell_value=data|get_field:cell.1 %}
                             {% if cell_value|striptags != cell_value %}
-                                {{ cell_value }}
+                                <div class="truncate min-w-0 max-w-full whitespace-nowrap" data-truncate-text>{{ cell_value }}</div>
                             {% else %}
                                 <span
                                     class="truncate block min-w-0 whitespace-nowrap"
@@ -202,6 +202,12 @@
         document.querySelectorAll('[data-truncate-title]').forEach(function (el) {
             if (el.scrollWidth > el.clientWidth) {
                 el.title = el.dataset.truncateTitle;
+            }
+        });
+
+        document.querySelectorAll('[data-truncate-text]').forEach(function (el) {
+            if (el.scrollWidth > el.clientWidth && !el.title) {
+                el.title = el.textContent.trim();
             }
         });
 

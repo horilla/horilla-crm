@@ -1,0 +1,26 @@
+<nav class="p-5 pt-20" aria-label="{% trans 'breadcrumb' %}" data-native-tooltip="true">
+    <ol class="flex items-center text-sm">
+        {% for crumb in crumbs %}
+            <li class="flex items-center">
+                {% if crumb.active %}
+                    <span class="text-primary-600 font-semibold">{{ crumb.name }}</span>
+                {% elif crumb.url %}
+                    <a
+                        href="{{ crumb.url }}"
+                        class="text-gray-700 hover:text-primary-600"
+                        hx-get="{{ crumb.url }}"
+                        hx-target="#mainContent"
+                        hx-swap="outerHTML"
+                        hx-select="#mainContent"
+                        hx-push-url="true"
+                    >{{ crumb.name }}</a>
+                {% else %}
+                    <span class="text-gray-500">{{ crumb.name }}</span>
+                {% endif %}
+                {% if not forloop.last %}
+                    <span class="mx-2">></span>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ol>
+</nav>

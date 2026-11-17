@@ -6,335 +6,323 @@
         {% if not integration_setting %}
             {% include "components/empty_states/activate_company.html" %}
         {% else %}
-        <h3 class="text-md font-semibold">{% trans "Meeting Integration" %}</h3>
-        <p class="text-xs text-gray-500 mb-4">
-            {% trans "Connect and manage the meeting providers available to your organization." %}
-        </p>
+            <h3 class="text-md font-semibold">{% trans "Meeting Integration" %}</h3>
+            <p class="text-xs text-gray-500 mb-4">
+                {% trans "Connect and manage the meeting providers available to your organization." %}
+            </p>
 
-        {# ── Enable / Disable toggle ── #}
-        <div class="rounded-md mb-4 border border-primary-400">
-            <h3 class="text-md font-semibold mb-0 border-b border-primary-400 p-2 bg-primary-100 text-primary-600">
-                {% trans "Meeting Links" %}
-            </h3>
-            <div class="p-4">
-                <p class="text-sm text-gray-600 mb-4">
-                    {% trans "Enable meeting integration to allow users to generate and share meeting links using Zoom, Google Meet, Microsoft Teams, and more." %}
-                </p>
+            {# ── Enable / Disable toggle ── #}
+            <div class="rounded-md mb-4 border border-primary-400">
+                <h3 class="text-md font-semibold mb-0 border-b border-primary-400 p-2 bg-primary-100 text-primary-600">
+                    {% trans "Meeting Links" %}
+                </h3>
+                <div class="p-4">
+                    <p class="text-sm text-gray-600 mb-4">
+                        {% trans "Enable meeting integration to allow users to generate and share meeting links using Zoom, Google Meet, Microsoft Teams, and more." %}
+                    </p>
 
-                <div class="text-sm font-semibold flex gap-2 items-center mb-3">
-                    {% trans "Enable Meeting Integration" %}
-                    <label class="inline-flex items-center cursor-pointer">
-                        <input
-                            type="checkbox"
-                            class="sr-only peer"
-                            {% if integration_setting.is_enabled %}
-                                checked
-                            {% endif %}
-                            data-enabled="{{ integration_setting.is_enabled|yesno:'true,false' }}"
-                            onclick="event.preventDefault();
+                    <div class="text-sm font-semibold flex gap-2 items-center mb-3">
+                        {% trans "Enable Meeting Integration" %}
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                class="sr-only peer"
+                                {% if integration_setting.is_enabled %}
+                                    checked
+                                {% endif %}
+                                data-enabled="{{ integration_setting.is_enabled|yesno:'true,false' }}"
+                                onclick="event.preventDefault();
                             if (this.dataset.enabled === 'true') {
                                 hxConfirm(document.getElementById('meeting-disable-btn'), '{% trans "Disable Meeting Integration?" %}', '{% trans "Users will no longer be able to create meeting links." %}');
                             } else {
                                 hxConfirm(document.getElementById('meeting-enable-btn'), '{% trans "Enable Meeting Integration?" %}');
                             }"
+                            >
+                            <div class="relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6">
+                            </div>
+                        </label>
+                        <button
+                            id="meeting-enable-btn"
+                            type="button"
+                            class="hidden"
+                            hx-post="{% url 'meeting:meeting_integration_settings' %}"
+                            hx-trigger="confirmed"
+                            hx-target="#meeting-integration-settings-view"
+                            hx-select="#meeting-integration-settings-view"
+                            hx-swap="outerHTML"
+                            hx-vals='{"is_meeting_enabled": "true"}'
+                            hx-include="[name=csrfmiddlewaretoken]"
                         >
-                        <div class="relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6">
-                        </div>
-                    </label>
-                    <button
-                        id="meeting-enable-btn"
-                        type="button"
-                        class="hidden"
-                        hx-post="{% url 'meeting:meeting_integration_settings' %}"
-                        hx-trigger="confirmed"
-                        hx-target="#meeting-integration-settings-view"
-                        hx-select="#meeting-integration-settings-view"
-                        hx-swap="outerHTML"
-                        hx-vals='{"is_meeting_enabled": "true"}'
-                        hx-include="[name=csrfmiddlewaretoken]"
-                    >
-                    </button>
-                    <button
-                        id="meeting-disable-btn"
-                        type="button"
-                        class="hidden"
-                        hx-post="{% url 'meeting:meeting_integration_settings' %}"
-                        hx-trigger="confirmed"
-                        hx-target="#meeting-integration-settings-view"
-                        hx-select="#meeting-integration-settings-view"
-                        hx-swap="outerHTML"
-                        hx-vals='{"is_meeting_enabled": "false"}'
-                        hx-include="[name=csrfmiddlewaretoken]"
-                    >
-                    </button>
-                </div>
-                {% csrf_token %}
-
-                <div class="flex items-center gap-2">
-                    {% if integration_setting.is_enabled %}
-                        <span
-                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700"
+                        </button>
+                        <button
+                            id="meeting-disable-btn"
+                            type="button"
+                            class="hidden"
+                            hx-post="{% url 'meeting:meeting_integration_settings' %}"
+                            hx-trigger="confirmed"
+                            hx-target="#meeting-integration-settings-view"
+                            hx-select="#meeting-integration-settings-view"
+                            hx-swap="outerHTML"
+                            hx-vals='{"is_meeting_enabled": "false"}'
+                            hx-include="[name=csrfmiddlewaretoken]"
                         >
-                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
-                            {% trans "Enabled — users can now create meeting links" %}
-                        </span>
-                    {% else %}
-                        <span
-                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500"
-                        >
-                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
-                            {% trans "Disabled — users cannot create meeting links" %}
-                        </span>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        {# ── Access Control ── #}
-        {% if integration_setting.is_enabled %}
-            <div class="rounded-md border border-primary-400 flex flex-col" style="max-height: calc(100vh - 200px)">
-                <h3 class="text-md font-semibold mb-0 border-b border-primary-400 p-2 bg-primary-100 text-primary-600 flex-shrink-0">
-                    {% trans "Access Control" %}
-                </h3>
-                <div class="p-4 overflow-y-auto flex-1">
-                    <p class="text-sm text-gray-500 mb-4">{% trans "Choose who can generate meeting links." %}</p>
+                        </button>
+                    </div>
                     {% csrf_token %}
 
-                    {# ── Row: All Users ── #}
-                    <button
-                        id="access-all-btn"
-                        type="button"
-                        class="hidden"
-                        hx-post="{% url 'meeting:meeting_integration_settings' %}"
-                        hx-trigger="confirmed"
-                        hx-target="#meeting-integration-settings-view"
-                        hx-select="#meeting-integration-settings-view"
-                        hx-swap="outerHTML"
-                        hx-vals='{"access_type": "all"}'
-                        hx-include="[name=csrfmiddlewaretoken]"
-                    >
-                    </button>
-                    <div
-                        class="rounded-md border border-primary-400 mb-3 overflow-hidden [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg {% if integration_setting.access_type != 'all' %}cursor-pointer{% endif %}"
-                        {% if integration_setting.access_type != 'all' %}
-                            hx-get="{% url 'meeting:meeting_integration_settings' %}?check=1"
+                    <div class="flex items-center gap-2">
+                        {% if integration_setting.is_enabled %}
+                            {% status_badge _("Enabled  — users can now create meeting links") variant="success" icon="check" %}
+                        {% else %}
+                            {% status_badge _("Disabled — users cannot create meeting links") variant="neutral" icon="cross" %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {# ── Access Control ── #}
+            {% if integration_setting.is_enabled %}
+                <div class="rounded-md border border-primary-400 flex flex-col" style="max-height: calc(100vh - 200px)">
+                    <h3 class="text-md font-semibold mb-0 border-b border-primary-400 p-2 bg-primary-100 text-primary-600 flex-shrink-0">
+                        {% trans "Access Control" %}
+                    </h3>
+                    <div class="p-4 overflow-y-auto flex-1">
+                        <p class="text-sm text-gray-500 mb-4">{% trans "Choose who can generate meeting links." %}</p>
+                        {% csrf_token %}
+
+                        {# ── Row: All Users ── #}
+                        <button
+                            id="access-all-btn"
+                            type="button"
+                            class="hidden"
+                            hx-post="{% url 'meeting:meeting_integration_settings' %}"
+                            hx-trigger="confirmed"
                             hx-target="#meeting-integration-settings-view"
                             hx-select="#meeting-integration-settings-view"
                             hx-swap="outerHTML"
-                            hx-on::after-request="if (event.detail.xhr.status === 204) { hxConfirm(document.getElementById('access-all-btn'), '{% trans "Set access to All Users?" %}', '{% trans "Every user in the company will be able to create meeting links." %}') }"
-                        {% endif %}
-                    >
-                        <div class="flex items-center justify-between p-3 bg-white">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 12.094A5.973 5.973 0 004 15v1H1v-1a3 3 0 013.75-2.906z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-800">{% trans "All Users" %}</p>
-                                    <p class="text-xs text-gray-500">
-                                        {% trans "Every user in the company can use meeting links." %}
-                                    </p>
-                                </div>
-                            </div>
-                            {% if integration_setting.access_type == 'all' %}
-                                <span
-                                    class="text-xs font-medium text-white bg-primary-600 px-2 py-0.5 rounded-full"
-                                >{% trans "Active" %}</span>
-                            {% else %}
-                                <span class="text-xs text-gray-400">{% trans "Click To Activate" %}</span>
+                            hx-vals='{"access_type": "all"}'
+                            hx-include="[name=csrfmiddlewaretoken]"
+                        >
+                        </button>
+                        <div
+                            class="rounded-md border border-primary-400 mb-3 overflow-hidden [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg {% if integration_setting.access_type != 'all' %}cursor-pointer{% endif %}"
+                            {% if integration_setting.access_type != 'all' %}
+                                hx-get="{% url 'meeting:meeting_integration_settings' %}?check=1"
+                                hx-target="#meeting-integration-settings-view"
+                                hx-select="#meeting-integration-settings-view"
+                                hx-swap="outerHTML"
+                                hx-on::after-request="if (event.detail.xhr.status === 204) { hxConfirm(document.getElementById('access-all-btn'), '{% trans "Set access to All Users?" %}', '{% trans "Every user in the company will be able to create meeting links." %}') }"
                             {% endif %}
-                        </div>
-                    </div>
-
-                    {# ── Row: Specific Roles ── #}
-                    <button
-                        id="access-roles-btn"
-                        type="button"
-                        class="hidden"
-                        hx-get="{% url 'meeting:meeting_access_roles' %}"
-                        hx-trigger="confirmed"
-                        hx-target="#modalBox"
-                        hx-swap="innerHTML"
-                        hx-on::after-request="openModal()"
-                    >
-                    </button>
-                    <div
-                        class="rounded-md border border-primary-400 mb-3 overflow-hidden [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg cursor-pointer"
-                        {% if integration_setting.access_type == 'roles' %}
-                            onclick="htmx.trigger(document.getElementById('access-roles-btn'), 'confirmed')"
-                        {% else %}
-                            hx-get="{% url 'meeting:meeting_integration_settings' %}?check=1"
-                            hx-target="#meeting-integration-settings-view"
-                            hx-select="#meeting-integration-settings-view"
-                            hx-swap="outerHTML"
-                            hx-on::after-request="if (event.detail.xhr.status === 204) { hxConfirm(document.getElementById('access-roles-btn'), '{% trans "Select Specific Roles?" %}', '{% trans "Only users with selected roles will be able to create meeting links." %}') }"
-                        {% endif %}
-                    >
-                        <div class="flex items-center justify-between p-3 bg-white">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path
-                                            fill-rule="evenodd"
-                                            d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z"
-                                            clip-rule="evenodd"
-                                        />
-                                        <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-800">{% trans "Specific Roles" %}</p>
-                                    <p class="text-xs text-gray-500">
-                                        {% trans "Only users with selected roles can use meeting links." %}
-                                        {% if integration_setting.access_type == 'roles' %}
-                                            <span
-                                                class="text-primary-500"
-                                            >{% trans "· Click To Add Or Remove Roles" %}</span>{% endif %}
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                {% if integration_setting.access_type == 'roles' and selected_role_ids %}
-                                    <button
-                                        type="button"
-                                        onclick="event.stopPropagation()"
-                                        hx-get="{% url 'meeting:meeting_allowed_roles_list' %}"
-                                        hx-target="#contentModalBox"
-                                        hx-swap="innerHTML"
-                                        hx-on::after-request="openContentModal()"
-                                        class="inline-flex items-center gap-1 text-xs font-medium bg-primary-100 text-primary-700 px-2.5 py-0.5 rounded-full"
-                                    >
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                            />
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                            />
+                        >
+                            <div class="flex items-center justify-between p-3 bg-white">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 12.094A5.973 5.973 0 004 15v1H1v-1a3 3 0 013.75-2.906z" />
                                         </svg>
-                                        {{ selected_role_ids|length }}
-                                        {% trans "Role(s)" %}
-                                    </button>
-                                {% endif %}
-                                {% if integration_setting.access_type == 'roles' %}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-800">{% trans "All Users" %}</p>
+                                        <p class="text-xs text-gray-500">
+                                            {% trans "Every user in the company can use meeting links." %}
+                                        </p>
+                                    </div>
+                                </div>
+                                {% if integration_setting.access_type == 'all' %}
                                     <span
                                         class="text-xs font-medium text-white bg-primary-600 px-2 py-0.5 rounded-full"
                                     >{% trans "Active" %}</span>
                                 {% else %}
-                                    <span class="text-xs text-gray-400">{% trans "Click To Select" %}</span>
+                                    <span class="text-xs text-gray-400">{% trans "Click To Activate" %}</span>
                                 {% endif %}
                             </div>
                         </div>
-                    </div>
 
-                    {# ── Row: Specific Users ── #}
-                    <button
-                        id="access-users-btn"
-                        type="button"
-                        class="hidden"
-                        hx-get="{% url 'meeting:meeting_access_users' %}"
-                        hx-trigger="confirmed"
-                        hx-target="#modalBox"
-                        hx-swap="innerHTML"
-                        hx-on::after-request="openModal()"
-                    >
-                    </button>
-                    <div
-                        class="rounded-md border border-primary-400 overflow-hidden [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg cursor-pointer"
-                        {% if integration_setting.access_type == 'users' %}
-                            onclick="htmx.trigger(document.getElementById('access-users-btn'), 'confirmed')"
-                        {% else %}
-                            hx-get="{% url 'meeting:meeting_integration_settings' %}?check=1"
-                            hx-target="#meeting-integration-settings-view"
-                            hx-select="#meeting-integration-settings-view"
-                            hx-swap="outerHTML"
-                            hx-on::after-request="if (event.detail.xhr.status === 204) { hxConfirm(document.getElementById('access-users-btn'), '{% trans "Select Specific Users?" %}', '{% trans "Only selected users will be able to create meeting links." %}') }"
-                        {% endif %}
-                    >
-                        <div class="flex items-center justify-between p-3 bg-white">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path
-                                            fill-rule="evenodd"
-                                            d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                                            clip-rule="evenodd"
-                                        />
-                                    </svg>
+                        {# ── Row: Specific Roles ── #}
+                        <button
+                            id="access-roles-btn"
+                            type="button"
+                            class="hidden"
+                            hx-get="{% url 'meeting:meeting_access_roles' %}"
+                            hx-trigger="confirmed"
+                            hx-target="#modalBox"
+                            hx-swap="innerHTML"
+                            hx-on::after-request="openModal()"
+                        >
+                        </button>
+                        <div
+                            class="rounded-md border border-primary-400 mb-3 overflow-hidden [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                            {% if integration_setting.access_type == 'roles' %}
+                                onclick="htmx.trigger(document.getElementById('access-roles-btn'), 'confirmed')"
+                            {% else %}
+                                hx-get="{% url 'meeting:meeting_integration_settings' %}?check=1"
+                                hx-target="#meeting-integration-settings-view"
+                                hx-select="#meeting-integration-settings-view"
+                                hx-swap="outerHTML"
+                                hx-on::after-request="if (event.detail.xhr.status === 204) { hxConfirm(document.getElementById('access-roles-btn'), '{% trans "Select Specific Roles?" %}', '{% trans "Only users with selected roles will be able to create meeting links." %}') }"
+                            {% endif %}
+                        >
+                            <div class="flex items-center justify-between p-3 bg-white">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z"
+                                                clip-rule="evenodd"
+                                            />
+                                            <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-800">{% trans "Specific Roles" %}</p>
+                                        <p class="text-xs text-gray-500">
+                                            {% trans "Only users with selected roles can use meeting links." %}
+                                            {% if integration_setting.access_type == 'roles' %}
+                                                <span
+                                                    class="text-primary-500"
+                                                >{% trans "· Click To Add Or Remove Roles" %}</span>{% endif %}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-800">{% trans "Specific Users" %}</p>
-                                    <p class="text-xs text-gray-500">
-                                        {% trans "Only selected individual users can use meeting links." %}
-                                        {% if integration_setting.access_type == 'users' %}
-                                            <span
-                                                class="text-primary-500"
-                                            >{% trans "· Click To Add Or Remove Users" %}</span>{% endif %}
-                                    </p>
+                                <div class="flex items-center gap-2">
+                                    {% if integration_setting.access_type == 'roles' and selected_role_ids %}
+                                        <button
+                                            type="button"
+                                            onclick="event.stopPropagation()"
+                                            hx-get="{% url 'meeting:meeting_allowed_roles_list' %}"
+                                            hx-target="#contentModalBox"
+                                            hx-swap="innerHTML"
+                                            hx-on::after-request="openContentModal()"
+                                            class="inline-flex items-center gap-1 text-xs font-medium bg-primary-100 text-primary-700 px-2.5 py-0.5 rounded-full"
+                                        >
+                                            <svg
+                                                class="w-3.5 h-3.5"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                />
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                />
+                                            </svg>
+                                            {{ selected_role_ids|length }}
+                                            {% trans "Role(s)" %}
+                                        </button>
+                                    {% endif %}
+                                    {% if integration_setting.access_type == 'roles' %}
+                                        <span
+                                            class="text-xs font-medium text-white bg-primary-600 px-2 py-0.5 rounded-full"
+                                        >{% trans "Active" %}</span>
+                                    {% else %}
+                                        <span class="text-xs text-gray-400">{% trans "Click To Select" %}</span>
+                                    {% endif %}
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                {% if integration_setting.access_type == 'users' and selected_user_ids %}
-                                    <button
-                                        type="button"
-                                        onclick="event.stopPropagation()"
-                                        hx-get="{% url 'meeting:meeting_allowed_users_list' %}"
-                                        hx-target="#contentModalBox"
-                                        hx-swap="innerHTML"
-                                        hx-on::after-request="openContentModal()"
-                                        class="inline-flex items-center gap-1 text-xs font-medium bg-primary-100 text-primary-700 px-2.5 py-0.5 rounded-full"
-                                    >
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        </div>
+
+                        {# ── Row: Specific Users ── #}
+                        <button
+                            id="access-users-btn"
+                            type="button"
+                            class="hidden"
+                            hx-get="{% url 'meeting:meeting_access_users' %}"
+                            hx-trigger="confirmed"
+                            hx-target="#modalBox"
+                            hx-swap="innerHTML"
+                            hx-on::after-request="openModal()"
+                        >
+                        </button>
+                        <div
+                            class="rounded-md border border-primary-400 overflow-hidden [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                            {% if integration_setting.access_type == 'users' %}
+                                onclick="htmx.trigger(document.getElementById('access-users-btn'), 'confirmed')"
+                            {% else %}
+                                hx-get="{% url 'meeting:meeting_integration_settings' %}?check=1"
+                                hx-target="#meeting-integration-settings-view"
+                                hx-select="#meeting-integration-settings-view"
+                                hx-swap="outerHTML"
+                                hx-on::after-request="if (event.detail.xhr.status === 204) { hxConfirm(document.getElementById('access-users-btn'), '{% trans "Select Specific Users?" %}', '{% trans "Only selected users will be able to create meeting links." %}') }"
+                            {% endif %}
+                        >
+                            <div class="flex items-center justify-between p-3 bg-white">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                                             <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                            />
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                fill-rule="evenodd"
+                                                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                                clip-rule="evenodd"
                                             />
                                         </svg>
-                                        {{ selected_user_ids|length }}
-                                        {% trans "User(s)" %}
-                                    </button>
-                                {% endif %}
-                                {% if integration_setting.access_type == 'users' %}
-                                    <span
-                                        class="text-xs font-medium text-white bg-primary-600 px-2 py-0.5 rounded-full"
-                                    >{% trans "Active" %}</span>
-                                {% else %}
-                                    <span class="text-xs text-gray-400">{% trans "Click To Select" %}</span>
-                                {% endif %}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-800">{% trans "Specific Users" %}</p>
+                                        <p class="text-xs text-gray-500">
+                                            {% trans "Only selected individual users can use meeting links." %}
+                                            {% if integration_setting.access_type == 'users' %}
+                                                <span
+                                                    class="text-primary-500"
+                                                >{% trans "· Click To Add Or Remove Users" %}</span>{% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    {% if integration_setting.access_type == 'users' and selected_user_ids %}
+                                        <button
+                                            type="button"
+                                            onclick="event.stopPropagation()"
+                                            hx-get="{% url 'meeting:meeting_allowed_users_list' %}"
+                                            hx-target="#contentModalBox"
+                                            hx-swap="innerHTML"
+                                            hx-on::after-request="openContentModal()"
+                                            class="inline-flex items-center gap-1 text-xs font-medium bg-primary-100 text-primary-700 px-2.5 py-0.5 rounded-full"
+                                        >
+                                            <svg
+                                                class="w-3.5 h-3.5"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                />
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                />
+                                            </svg>
+                                            {{ selected_user_ids|length }}
+                                            {% trans "User(s)" %}
+                                        </button>
+                                    {% endif %}
+                                    {% if integration_setting.access_type == 'users' %}
+                                        <span
+                                            class="text-xs font-medium text-white bg-primary-600 px-2 py-0.5 rounded-full"
+                                        >{% trans "Active" %}</span>
+                                    {% else %}
+                                        <span class="text-xs text-gray-400">{% trans "Click To Select" %}</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
         {% endif %}
     </div>
 {% endblock settings %}

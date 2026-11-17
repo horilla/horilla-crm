@@ -1,19 +1,75 @@
 """Reusable component tags (inclusion tags) for Horilla templates."""
 
-from inspect import getfullargspec, signature
+from inspect import getfullargspec
 
 from django.template.base import Node
 from django.template.library import parse_bits
 from django.template.loader import get_template
+from django.utils.html import conditional_escape, format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from ._registry import register
 
-# Django 6.1 dropped takes_context from parse_bits; Django 6.0 still requires it.
-PARSE_BITS_TAKES_CONTEXT = (
-    (False,) if "takes_context" in signature(parse_bits).parameters else ()
-)
+# Keyword on a template tag -> the attribute written in HTML. A template
+# keyword cannot contain a colon, so ``__`` stands in for one: ``hx_on__click``
+# is ``hx-on:click``. An htmx event keeps the second colon, so
+# ``hx_on__after_request`` is ``hx-on::after-request``. ``hx_on_click`` is the
+# same attribute; older call sites already pass it with one underscore.
+# A name that is not listed still turns underscores into hyphens
+# (``data_toggle`` is ``data-toggle``). Add a DOM event here before using it:
+# the hyphen fallback would write ``hx-on--click``, which htmx reads as
+# ``htmx:click``.
+HX_TAGS = {
+    "hx_get": "hx-get",
+    "hx_post": "hx-post",
+    "hx_put": "hx-put",
+    "hx_patch": "hx-patch",
+    "hx_delete": "hx-delete",
+    "hx_target": "hx-target",
+    "hx_swap": "hx-swap",
+    "hx_swap_oob": "hx-swap-oob",
+    "hx_trigger": "hx-trigger",
+    "hx_select": "hx-select",
+    "hx_select_oob": "hx-select-oob",
+    "hx_push_url": "hx-push-url",
+    "hx_replace_url": "hx-replace-url",
+    "hx_indicator": "hx-indicator",
+    "hx_vals": "hx-vals",
+    "hx_vars": "hx-vars",
+    "hx_include": "hx-include",
+    "hx_params": "hx-params",
+    "hx_confirm": "hx-confirm",
+    "hx_disable": "hx-disable",
+    "hx_disabled_elt": "hx-disabled-elt",
+    "hx_disinherit": "hx-disinherit",
+    "hx_encoding": "hx-encoding",
+    "hx_ext": "hx-ext",
+    "hx_headers": "hx-headers",
+    "hx_history": "hx-history",
+    "hx_history_elt": "hx-history-elt",
+    "hx_boost": "hx-boost",
+    "hx_preserve": "hx-preserve",
+    "hx_prompt": "hx-prompt",
+    "hx_sync": "hx-sync",
+    "hx_validate": "hx-validate",
+    "hx_request": "hx-request",
+    "hx_inherit": "hx-inherit",
+    "hx_on_click": "hx-on:click",
+    "hx_on__click": "hx-on:click",
+    "hx_on__after_request": "hx-on::after-request",
+    "hx_on__before_request": "hx-on::before-request",
+    "hx_on__config_request": "hx-on::config-request",
+    "hx_on__before_swap": "hx-on::before-swap",
+    "hx_on__after_swap": "hx-on::after-swap",
+    "hx_on__after_settle": "hx-on::after-settle",
+}
+
+
+def html_attr_name(name):
+    """The HTML attribute a template keyword writes."""
+    return HX_TAGS.get(name, name.replace("_", "-"))
+
 
 # Written out in full so the classes stay greppable.
 SPINNER_SIZES = {
@@ -67,7 +123,7 @@ def reload_button(
     }
 
     # Custom attributes override defaults instead of creating duplicates.
-    pairs.update((name.replace("_", "-"), value) for name, value in attrs.items())
+    pairs.update((html_attr_name(name), value) for name, value in attrs.items())
 
     rendered = []
     for name, value in pairs.items():
@@ -127,6 +183,169 @@ def spinner(size="lg", *, centered=False, wrapper_class=""):
     }
 
 
+BADGE_STYLES = {
+    "success": "bg-green-100 text-green-700",
+    "danger": "bg-red-100 text-red-700",
+    "warning": "bg-yellow-100 text-yellow-700",
+    "info": "bg-blue-100 text-blue-700",
+    "neutral": "bg-gray-100 text-gray-600",
+}
+BADGE_DOTS = {
+    "success": "bg-green-600",
+    "danger": "bg-red-600",
+    "warning": "bg-yellow-600",
+    "info": "bg-blue-600",
+    "neutral": "bg-gray-400",
+}
+BADGE_ICONS = ("check", "cross", "dot")
+
+
+@register.inclusion_tag("components/_status_badge.html")
+def status_badge(label, variant="neutral", *, icon=None):
+    """Render a pill that names a status.
+
+    ``variant`` is ``success``, ``danger``, ``warning``, ``info``, or
+    ``neutral`` (the default). ``icon`` is ``check``, ``cross``, ``dot``,
+    or left off. The label is escaped.
+
+    Usage:
+        {% status_badge _("Enabled") variant="success" icon="check" %}
+        {% status_badge _("Disabled") icon="cross" %}
+    """
+    if variant not in BADGE_STYLES:
+        raise ValueError(
+            f"Unknown status badge variant {variant!r}; "
+            f"expected one of {', '.join(BADGE_STYLES)}"
+        )
+    if icon == "":
+        icon = None
+    if icon is not None and icon not in BADGE_ICONS:
+        raise ValueError(
+            f"Unknown status badge icon {icon!r}; "
+            f"expected one of {', '.join(BADGE_ICONS)}"
+        )
+    return {
+        "label": label,
+        "style": BADGE_STYLES[variant],
+        "icon": icon,
+        "dot_class": BADGE_DOTS[variant],
+    }
+
+
+def _breadcrumb_item(item):
+    """Read ``name``, ``url``, and ``active`` from a dict or an object."""
+    if isinstance(item, dict):
+        name = item.get("name") or ""
+        url = item.get("url") or ""
+        active = bool(item.get("active"))
+    else:
+        name = getattr(item, "name", "") or ""
+        url = getattr(item, "url", "") or ""
+        active = bool(getattr(item, "active", False))
+    return {"name": name, "url": "" if active else url, "active": active}
+
+
+@register.inclusion_tag("components/_breadcrumbs.html")
+def breadcrumb_nav(crumbs):
+    """Render the folder breadcrumb trail.
+
+    The tag is ``breadcrumb_nav`` so it does not hide the ``breadcrumbs``
+    variable the views already put in the template context. Each crumb has
+    ``name``, an optional ``url``, and an optional ``active``. The active
+    crumb is the current page and is not a link. A crumb with a url replaces
+    ``#mainContent``. Anything else is plain text. A missing or empty list
+    still renders the nav, which is what the favourite pages do.
+
+    Usage:
+        {% breadcrumb_nav breadcrumbs %}
+    """
+    if not isinstance(crumbs, (list, tuple)):
+        crumbs = []
+    return {"crumbs": [_breadcrumb_item(item) for item in crumbs]}
+
+
+HX_ANCHOR_DEFAULTS = (
+    ("hx-trigger", "click"),
+    ("hx-target", "#mainContent"),
+    ("hx-select", "#mainContent"),
+    ("hx-swap", "outerHTML"),
+    ("hx-push-url", "true"),
+)
+# Variant name -> class string. ``submenu`` has a resting class and an
+# ``active`` class for the current page. Written out in full so the classes
+# stay greppable. The quotes in before:content-[''] cannot sit inside a
+# template attribute: the formatter treats them as the end of the attribute.
+HX_ANCHOR_VARIANTS = {
+    "base": "hover:text-primary-600 transition duration-300 text-sm px-3 py-1.5",
+    "submenu": {
+        "class": (
+            "ps-3 flex items-center text-sm py-1 rounded-md transition-colors "
+            "duration-300 relative before:content-[''] before:absolute before:start-0 "
+            "before:w-1 before:h-full before:bg-primary-600 before:opacity-0 "
+            "hover:text-primary-600 hover:before:opacity-100"
+        ),
+        "active": (
+            "ps-3 flex items-center text-sm py-1 rounded-md text-primary-600 "
+            "transition-colors duration-300 relative before:content-[''] before:absolute "
+            "before:start-0 before:w-1 before:h-full before:bg-primary-600 "
+            "before:opacity-100 hover:text-primary-600 hover:before:opacity-100"
+        ),
+    },
+}
+
+
+@register.inclusion_tag("components/_hx_anchor.html")
+def hx_anchor(label, *, variant=None, href="#", active=False, **attrs):
+    """Render an anchor. ``variant="submenu"`` replaces ``#mainContent``.
+
+    Only ``submenu`` gets ``hx-trigger``, ``hx-target``, ``hx-select``,
+    ``hx-swap`` and ``hx-push-url`` from ``HX_ANCHOR_DEFAULTS``. Any other
+    variant, and a tag with no variant, writes just the attributes passed
+    in. Pass the same name with underscores to replace a default
+    (``hx_target="#other"``). An empty value leaves that attribute off.
+    ``active=True`` marks the current page. ``variant="base"`` is the
+    dropdown item. With no variant, ``class`` is the class string.
+
+    Usage:
+        {% hx_anchor _("All Dashboards") variant="submenu" active=True hx_get=url %}
+        {% hx_anchor _("All Folders") variant="submenu" hx_get=url %}
+        {% hx_anchor _("Change Chart") variant="base" hx_get=url hx_target="#modalBox" hx_swap="innerHTML" %}
+    """
+    if variant is not None and variant not in HX_ANCHOR_VARIANTS:
+        raise ValueError(
+            f"Unknown hx_anchor variant {variant!r}; "
+            f"expected one of {', '.join(HX_ANCHOR_VARIANTS)}"
+        )
+    classes = attrs.pop("class", "") or ""
+    if variant is not None:
+        spec = HX_ANCHOR_VARIANTS[variant]
+        if isinstance(spec, dict):
+            base = spec["active"] if active else spec["class"]
+        else:
+            base = spec
+        classes = f"{base} {classes}".strip() if classes else base
+    defaults = dict(HX_ANCHOR_DEFAULTS) if variant == "submenu" else {}
+    pairs = dict(defaults)
+    pairs.update((html_attr_name(name), value) for name, value in attrs.items())
+    order = list(defaults)
+    order.extend(name for name in pairs if name not in order)
+    rendered = []
+    for name in order:
+        value = pairs[name]
+        if value is None or value is False or value == "":
+            continue
+        if value is True:
+            rendered.append(conditional_escape(name))
+        else:
+            rendered.append(format_html('{}="{}"', name, value))
+    return {
+        "label": label,
+        "href": href,
+        "classes": classes,
+        "attrs": mark_safe(" ".join(rendered)),
+    }
+
+
 BTN_VARIANTS = {
     "primary": (
         "bg-primary-600 rounded-md hover:bg-primary-800 transition duration-300 "
@@ -154,9 +373,10 @@ def btn(
 
     The tag owns the colour tokens; ``sizing`` carries text size, padding and width
     (default ``text-sm px-4 py-2``) and ``extra_class`` any other class or JS hook.
-    Other keywords become attributes with underscores turned into dashes
-    (``hx_get`` is ``hx-get``, ``hx_on__after_request`` is
-    ``hx-on--after-request``). ``True`` renders a bare attribute; ``None``, ``False``
+    Other keywords become attributes through ``HX_TAGS``
+    (``hx_get`` is ``hx-get``, ``hx_on__click`` is ``hx-on:click``,
+    ``hx_on__after_request`` is ``hx-on::after-request``). ``True`` renders a
+    bare attribute; ``None``, ``False``
     and ``""`` leave it out. ``tag`` is ``button`` (default), ``a``, ``span`` or
     ``label``. ``label`` defaults to "Save" for ``type="submit"``; any other type
     needs one, unless ``body`` is set and the contents are between ``{% endbtn %}``.
@@ -195,7 +415,7 @@ def btn(
     for name, value in attrs.items():
         if value is None or value is False or value == "":
             continue
-        rendered.append((name.replace("_", "-"), None if value is True else value))
+        rendered.append((html_attr_name(name), None if value is True else value))
 
     return {
         "tag": tag,
@@ -246,7 +466,6 @@ def compile_btn(parser, token):
         spec.defaults,
         spec.kwonlyargs,
         spec.kwonlydefaults,
-        *PARSE_BITS_TAKES_CONTEXT,
         "btn",
     )
     nodelist = None

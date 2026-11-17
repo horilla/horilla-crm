@@ -81,13 +81,10 @@ class GetViewColumnsVerboseNameTests(SimpleTestCase):
         self.assertEqual(by_field_name["lead_status"], "Lead Stage")
 
     def test_method_based_column_falls_back_to_a_humanized_name(self):
-        """A plain string column such as `status_col`, a model method with no
-        corresponding `_meta` field, can't resolve a verbose_name and must keep
-        the humanized fallback."""
-        from calls.views import CallProviderListView
-
-        with mock.patch.object(CallProviderListView, "columns", ["name", "status_col"]):
-            columns = get_view_columns("provider_list", "calls", "CallProvider")
+        """`CallProviderListView.columns` has `status_col`, a model method
+        with no corresponding `_meta` field, so it can't resolve a
+        verbose_name and must keep the humanized fallback."""
+        columns = get_view_columns("provider_list", "calls", "CallProvider")
         by_field_name = {field_name: label for label, field_name in columns}
         self.assertEqual(by_field_name["status_col"], "Status Col")
 
@@ -986,6 +983,17 @@ class BtnTagTests(SimpleTestCase):
         self.assertIn("bg-primary-600", html)
         self.assertIn("text-sm px-4 py-2", html)
 
+    def test_hx_names_come_from_the_shared_map(self):
+        html = self.render(
+            '{% btn "Open" type="button" hx_get="/x/" hx_on_click="openModal();" '
+            'hx_on__after_request="closeModal();" %}'
+        )
+        self.assertIn('hx-get="/x/"', html)
+        self.assertIn('hx-on:click="openModal();"', html)
+        self.assertIn('hx-on::after-request="closeModal();"', html)
+        self.assertNotIn("hx-on-click", html)
+        self.assertNotIn("hx-on--after-request", html)
+
     def test_loading_id_draws_the_spinner_before_the_label(self):
         html = self.render(
             '{% btn type="submit" hx_indicator="#single-form-save-spinner" '
@@ -1032,6 +1040,232 @@ class BtnTagTests(SimpleTestCase):
     def test_non_submit_without_label_raises(self):
         with self.assertRaises(ValueError):
             self.render("{% btn %}")
+
+
+class StatusBadgeTagTests(SimpleTestCase):
+    """``{% status_badge %}`` renders one pill for a status label."""
+
+    def render(self, tag_args, **context):
+        template = Template(
+            "{% load horilla_tags %}{% status_badge " + tag_args + " %}"
+        )
+        return template.render(Context(context)).strip()
+
+    def test_default_is_a_neutral_pill_without_an_icon(self):
+        html = self.render('"Pending"')
+        self.assertHTMLEqual(
+            html,
+            '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full '
+            'text-xs font-medium bg-gray-100 text-gray-600">Pending</span>',
+        )
+        self.assertNotIn("<svg", html)
+
+    def test_success_with_check(self):
+        html = self.render('"Enabled" variant="success" icon="check"')
+        self.assertIn("bg-green-100 text-green-700", html)
+        self.assertIn("M16.707 5.293", html)
+        self.assertIn("Enabled", html)
+
+    def test_neutral_with_cross(self):
+        html = self.render('"Disabled" icon="cross"')
+        self.assertIn("bg-gray-100 text-gray-600", html)
+        self.assertIn("M4.293 4.293", html)
+        self.assertIn("Disabled", html)
+
+    def test_every_variant(self):
+        styles = {
+            "success": "bg-green-100 text-green-700",
+            "danger": "bg-red-100 text-red-700",
+            "warning": "bg-yellow-100 text-yellow-700",
+            "info": "bg-blue-100 text-blue-700",
+            "neutral": "bg-gray-100 text-gray-600",
+        }
+        for name, classes in styles.items():
+            with self.subTest(variant=name):
+                self.assertIn(classes, self.render(f'"Label" variant="{name}"'))
+
+    def test_dot_uses_the_variant_colour(self):
+        html = self.render('"Shown" variant="success" icon="dot"')
+        self.assertIn("bg-green-600", html)
+        self.assertNotIn("<svg", html)
+        self.assertIn("bg-gray-400", self.render('"Hidden" icon="dot"'))
+
+    def test_label_from_context_is_escaped(self):
+        html = self.render("label", label='"><script>')
+        self.assertNotIn("<script>", html)
+        self.assertIn("&quot;&gt;&lt;script&gt;", html)
+
+    def test_unknown_variant_raises(self):
+        with self.assertRaises(ValueError):
+            self.render('"Label" variant="primary"')
+
+    def test_unknown_icon_raises(self):
+        with self.assertRaises(ValueError):
+            self.render('"Label" icon="star"')
+
+    def test_empty_icon_is_omitted(self):
+        html = self.render('"Label" icon=""')
+        self.assertNotIn("<svg", html)
+        self.assertNotIn("w-1.5", html)
+
+
+class BreadcrumbsTagTests(SimpleTestCase):
+    """``{% breadcrumb_nav %}`` renders the folder trail."""
+
+    def render(self, **context):
+        template = Template("{% load horilla_tags %}{% breadcrumb_nav crumbs %}")
+        return template.render(Context(context))
+
+    def test_empty_list_is_an_empty_nav(self):
+        html = self.render(crumbs=[])
+        self.assertIn('aria-label="breadcrumb"', html)
+        self.assertNotIn("<a ", html)
+        self.assertNotIn("<li", html)
+
+    def test_missing_crumbs_still_render_the_nav(self):
+        html = self.render()
+        self.assertIn("<nav ", html)
+        self.assertNotIn("<li", html)
+
+    def test_link_replaces_main_content(self):
+        html = self.render(crumbs=[{"name": "All Folders", "url": "/reports/"}])
+        self.assertIn('href="/reports/"', html)
+        self.assertIn('hx-get="/reports/"', html)
+        self.assertIn('hx-target="#mainContent"', html)
+        self.assertIn('hx-select="#mainContent"', html)
+        self.assertIn('hx-swap="outerHTML"', html)
+        self.assertIn('hx-push-url="true"', html)
+        self.assertIn("text-gray-700 hover:text-primary-600", html)
+        self.assertIn("All Folders", html)
+        self.assertNotIn('class="mx-2"', html)
+
+    def test_active_crumb_is_not_a_link(self):
+        html = self.render(
+            crumbs=[
+                {"name": "All Folders", "url": "/reports/"},
+                {"name": "Sales", "url": "/reports/4/", "active": True},
+            ]
+        )
+        self.assertIn("text-primary-600 font-semibold", html)
+        self.assertIn("Sales", html)
+        self.assertNotIn('href="/reports/4/"', html)
+        self.assertNotIn('hx-get="/reports/4/"', html)
+        self.assertEqual(html.count('class="mx-2"'), 1)
+
+    def test_plain_crumb_is_gray(self):
+        html = self.render(crumbs=[{"name": "Here"}])
+        self.assertIn("text-gray-500", html)
+        self.assertIn("Here", html)
+        self.assertNotIn("<a ", html)
+
+    def test_name_is_escaped(self):
+        html = self.render(crumbs=[{"name": '"><script>'}])
+        self.assertNotIn("<script>", html)
+        self.assertIn("&quot;&gt;&lt;script&gt;", html)
+
+
+class HxAnchorTagTests(SimpleTestCase):
+    """``{% hx_anchor %}`` renders a link that replaces ``#mainContent``."""
+
+    def render(self, tag_args, **context):
+        template = Template("{% load horilla_tags %}{% hx_anchor " + tag_args + " %}")
+        return template.render(Context(context))
+
+    def test_defaults(self):
+        html = self.render('"All Dashboards" variant="submenu" hx_get="/dashboards/"')
+        self.assertIn('href=""', html)
+        self.assertIn('hx-get="/dashboards/"', html)
+        self.assertIn('hx-trigger="click"', html)
+        self.assertIn('hx-target="#mainContent"', html)
+        self.assertIn('hx-select="#mainContent"', html)
+        self.assertIn('hx-swap="outerHTML"', html)
+        self.assertIn('hx-push-url="true"', html)
+        self.assertIn("All Dashboards", html)
+
+    def test_defaults_are_only_for_submenu(self):
+        html = self.render('"Change Chart" variant="base" hx_get="/chart/"')
+        self.assertIn('hx-get="/chart/"', html)
+        self.assertNotIn("hx-trigger", html)
+        self.assertNotIn("hx-target", html)
+        self.assertNotIn("hx-select", html)
+        self.assertNotIn("hx-swap", html)
+        self.assertNotIn("hx-push-url", html)
+        plain = self.render('"Open" hx_get="/x/"')
+        self.assertIn('hx-get="/x/"', plain)
+        self.assertNotIn("hx-trigger", plain)
+
+    def test_submenu_without_active_is_the_resting_link(self):
+        html = self.render('"All Folders" variant="submenu" hx_get="/folders/"')
+        self.assertIn("before:opacity-0", html)
+        self.assertNotIn(" text-primary-600", html)
+        self.assertIn("hover:text-primary-600", html)
+
+    def test_submenu_active_uses_the_current_page_class(self):
+        html = self.render(
+            '"All Dashboards" variant="submenu" active=True hx_get="/dashboards/"'
+        )
+        self.assertIn("text-primary-600", html)
+        self.assertIn("before:opacity-100", html)
+        self.assertNotIn("before:opacity-0", html)
+
+    def test_base_variant_is_the_dropdown_item(self):
+        html = self.render(
+            '"Change Chart" variant="base" href="#" hx_get="/chart/" '
+            'hx_target="#modalBox" hx_swap="innerHTML"'
+        )
+        self.assertIn(
+            'class="hover:text-primary-600 transition duration-300 text-sm px-3 py-1.5"',
+            html,
+        )
+        self.assertIn('hx-target="#modalBox"', html)
+        self.assertIn('hx-swap="innerHTML"', html)
+        self.assertNotIn("hx-trigger", html)
+        self.assertNotIn("hx-select", html)
+        self.assertNotIn("hx-push-url", html)
+        self.assertNotIn("before:opacity", html)
+
+    def test_class_is_used_when_no_variant_is_given(self):
+        html = self.render('"Folders" class="resting-link" hx_get="/folders/"')
+        self.assertIn('class="resting-link"', html)
+        self.assertNotIn("before:opacity-100", html)
+
+    def test_passed_attribute_replaces_the_default(self):
+        html = self.render(
+            '"Open" variant="submenu" hx_get="/x/" hx_target="#panel" hx_select=""'
+        )
+        self.assertIn('hx-target="#panel"', html)
+        self.assertEqual(html.count("hx-target"), 1)
+        self.assertNotIn("hx-select", html)
+        self.assertIn('hx-trigger="click"', html)
+
+    def test_unknown_variant_raises(self):
+        with self.assertRaises(ValueError):
+            self.render('"Open" variant="primary"')
+
+    def test_hx_on_click_uses_the_colon_form(self):
+        html = self.render('"Open" hx_get="/x/" hx_on__click="openModal();"')
+        self.assertIn('hx-on:click="openModal();"', html)
+        self.assertNotIn("hx-on-click", html)
+        self.assertNotIn("hx-on--click", html)
+
+    def test_reports_add_keeps_the_path_and_concat_appends_the_query(self):
+        shared = (
+            "{% hx_anchor 'Change Chart' variant='base' hx_target='#modalBox' "
+            "hx_get=url|"
+        )
+        context = Context({"url": "/reports/change-chart-type/4/", "total": 1})
+        added = Template(
+            "{% load reports_tags %}" + shared + "add:'?total='|add:total %}"
+        ).render(context)
+        joined = Template(shared + "concat:'?total='|concat:total %}").render(context)
+        self.assertIn('hx-get="/reports/change-chart-type/4/"', added)
+        self.assertNotIn("?total=1", added)
+        self.assertIn('hx-get="/reports/change-chart-type/4/?total=1"', joined)
+
+    def test_label_is_escaped(self):
+        html = self.render("label hx_get='/x/'", label='"><script>')
+        self.assertNotIn("<script>", html)
+        self.assertIn("&quot;&gt;&lt;script&gt;", html)
 
 
 class _SubmittedValues(HTMLParser):

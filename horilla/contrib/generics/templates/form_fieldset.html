@@ -5,16 +5,34 @@
                 {{ fieldset.name }}
             </h3>
         {% endif %}
-        <div class="grid grid-cols-2 gap-5 p-4 pt-0">
+        <div class="grid grid-cols-2 gap-5 p-4 pt-2">
             {% for field in fieldset.fields %}
                 <div data-field-name="{{ field.name }}">
-                    <label class="text-xs font-semibold text-color-600" for="{{ field.id_for_label }}">
-                        {{ field.label }}
-                    </label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-semibold text-color-600 flex-1 min-w-0" for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+                        {% if field.help_text %}
+                            <span
+                                class="ms-1 inline-flex cursor-pointer text-[#a19e9e] flex-shrink-0"
+                                title="{{ field.help_text|striptags }}"
+                                aria-label="{{ field.help_text|striptags }}"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="15"
+                                    height="15"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        fill="currentColor"
+                                        d="M2.93 17.07A10 10 0 1 1 17.07 2.93A10 10 0 0 1 2.93 17.07m12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32M9 11V9h2v6H9zm0-6h2v2H9z"
+                                    />
+                                </svg>
+                            </span>
+                        {% endif %}
+                    </div>
                     {{ field }}
-                    {% if field.help_text %}
-                        <p class="text-[11px] text-gray-500 mt-1">{{ field.help_text }}</p>
-                    {% endif %}
                     {% if field.errors %}
                         <div class="text-xs text-red-600 mt-1">{{ field.errors }}</div>
                     {% endif %}

@@ -764,6 +764,17 @@ class GetCountrySubdivisionsView(LoginRequiredMixin, View):
             HttpResponse: HTML string containing option elements for subdivisions.
         """
         country_code = request.GET.get("country")
+        if not country_code:
+            # The bulk update form sends the country as ``bulk_update_value_<field>``
+            # (e.g. ``..._country`` or ``..._address_country``).
+            country_code = next(
+                (
+                    value
+                    for key, value in request.GET.items()
+                    if key.startswith("bulk_update_value_")
+                ),
+                None,
+            )
         options = mark_safe('<option value="">Select State</option>')
 
         if country_code:

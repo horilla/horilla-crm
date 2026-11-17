@@ -135,6 +135,7 @@ class ContactListView(LoginRequiredMixin, HorillaListView):
         "address_country",
         "is_primary",
     ]
+    bulk_update_country_state_fields = {"address_country": "address_state"}
 
     header_attrs = [
         {"email": {"style": "width: 250px;"}, "title": {"style": "width: 250px;"}},
@@ -281,6 +282,7 @@ class ContactGroupByView(LoginRequiredMixin, HorillaGroupByView):
     ]
     actions = ContactListView.actions
     bulk_update_fields = ContactListView.bulk_update_fields
+    bulk_update_country_state_fields = ContactListView.bulk_update_country_state_fields
 
     def no_record_add_button(self):
         """Button to add a new contact if no records exist"""

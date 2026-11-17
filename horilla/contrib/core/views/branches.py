@@ -46,6 +46,31 @@ from ..signals import company_created
 from .core import CompanyDetailsTab
 
 
+def refresh_company_dropdown_html():
+    """
+    Script that reloads the header company switcher.
+
+    Used when a ``company_created`` receiver replaces the default response (for
+    example with a follow-up setup modal the user may dismiss), so the new
+    company still shows up in the header straight away. It is rendered inside the
+    response container, before the receiver's own script, so it runs before that
+    script closes the modal. Its helper element is attached to ``document.body``
+    so it survives the modal being closed.
+    """
+    return mark_safe(
+        "<script>(function(){"
+        "var d=document.createElement('div');"
+        "d.setAttribute('hx-get',window.location.href);"
+        "d.setAttribute('hx-trigger','load');"
+        "d.setAttribute('hx-select','#dropdown-companies');"
+        "d.setAttribute('hx-target','#dropdown-companies');"
+        "d.setAttribute('hx-swap','outerHTML');"
+        "d.setAttribute('hx-push-url','false');"
+        "document.body.appendChild(d);htmx.process(d);"
+        "})();</script>"
+    )
+
+
 @method_decorator(
     permission_required_or_denied("core.view_company", wrapper_id="branches-view"),
     name="dispatch",
@@ -555,8 +580,9 @@ class CompanyMultiFormView(LoginRequiredMixin, HorillaMultiStepFormView):
             if isinstance(response, HttpResponse):
                 wrapped_response = HttpResponse(
                     format_html(
-                        '<div id="{}-container">{}</div>',
+                        '<div id="{}-container">{}{}</div>',
                         self.view_id,
+                        refresh_company_dropdown_html(),
                         mark_safe(response.content.decode()),
                     )
                 )
@@ -661,8 +687,9 @@ class CompanyFormView(LoginRequiredMixin, HorillaSingleFormView):
             if isinstance(response, HttpResponse):
                 wrapped_response = HttpResponse(
                     format_html(
-                        '<div id="{}-container">{}</div>',
+                        '<div id="{}-container">{}{}</div>',
                         self.view_id,
+                        refresh_company_dropdown_html(),
                         mark_safe(response.content.decode()),
                     )
                 )

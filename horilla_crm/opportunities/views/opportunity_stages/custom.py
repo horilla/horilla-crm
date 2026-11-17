@@ -366,8 +366,7 @@ class SaveCustomOppStagesView(LoginRequiredMixin, View):
                 'hx-select="#branches-view" '
                 'hx-target="#branches-view" '
                 'hx-swap="outerHTML" '
-                'hx-on::after-request="closeContentModal()"'
-                'hx-select-oob="#dropdown-companies">'
+                'hx-on::after-request="closeContentModal()">'
                 "</span>"
                 '<div id="custom-stages-error" hx-swap-oob="true"></div>',
                 branches_view_url,
@@ -524,8 +523,7 @@ class CreateOppStageGroupView(LoginRequiredMixin, View):
                 'hx-select="#branches-view" '
                 'hx-target="#branches-view" '
                 'hx-swap="outerHTML" '
-                'hx-on::after-request="closeContentModal()"'
-                'hx-select-oob="#dropdown-companies">'
+                'hx-on::after-request="closeContentModal()">'
                 "</span>",
                 branches_view_url,
             )

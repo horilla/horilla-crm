@@ -111,6 +111,7 @@ INSTALLED_APPS = [
     "horilla.contrib.workflow",
     "horilla.contrib.meeting",
     "horilla.contrib.whatsapp",
+    "horilla.contrib.tour",
 ]
 
 
@@ -480,7 +481,7 @@ except ImportError as e:
 
 
 ALLOWED_LANGUAGES = [
-    ("en", "English", "usa.webp"),
+    ("en", "English", "usa.jpg"),
     ("ar", "Arabic", "ar.png"),
     ("de", "German", "german.jpeg"),
     ("fr", "French", "france.webp"),

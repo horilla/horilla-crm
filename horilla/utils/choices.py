@@ -13,6 +13,8 @@ from zoneinfo import available_timezones
 import pycountry
 
 # Third-party imports (Django)
+from django import forms
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 TIMEZONE_CHOICES = sorted([(tz, tz) for tz in available_timezones()])
@@ -228,3 +230,76 @@ def resolve_subdivision_choice(choices, stored_value):
         if stored_value.casefold() == name.casefold():
             return code
     return stored_value
+
+
+def get_allowed_language_choices():
+    """
+    Return ``settings.ALLOWED_LANGUAGES`` as ``[(code, label), ...]`` choices.
+    """
+    return [(code, _(name)) for code, name, _flag in settings.ALLOWED_LANGUAGES]
+
+
+def get_company_language_choices(company):
+    """
+    Return the languages selected on ``company`` as ``[(code, label), ...]``.
+
+    Falls back to ``settings.ALLOWED_LANGUAGES`` when there is no company or the
+    company has no language selected yet.
+    """
+    codes = list(getattr(company, "language", None) or [])
+    if not codes:
+        return get_allowed_language_choices()
+    labels = dict(settings.LANGUAGES)
+    return [(code, _(labels.get(code, code))) for code in codes]
+
+
+def limit_language_choices(form, company=None):
+    """
+    Restrict the options of the form's ``language`` field (single or multi-select).
+
+    With a ``company`` the options are the languages selected on that company;
+    without one they are ``settings.ALLOWED_LANGUAGES``. The model field still
+    accepts every language in ``settings.LANGUAGES``. Languages already saved on
+    the record that are not in the list stay as extra options, so opening and
+    re-saving it does not blank out or reject them.
+    """
+    field = form.fields.get("language")
+    if field is None:
+        return
+
+    choices = (
+        get_company_language_choices(company)
+        if company is not None
+        else get_allowed_language_choices()
+    )
+    saved = form.instance.language if form.instance.pk else None
+    saved = [saved] if isinstance(saved, str) else list(saved or [])
+    labels = dict(settings.LANGUAGES)
+    known = {code for code, _name in choices}
+    choices += [
+        (code, _(labels.get(code, code))) for code in saved if code not in known
+    ]
+
+    if isinstance(field, forms.MultipleChoiceField):
+        # Same chips dropdown the rest of the CRM uses for multi-selects.
+        field.widget = forms.SelectMultiple(
+            attrs={
+                "class": "js-example-basic-multiple headselect w-full",
+                "data-placeholder": _("Select Language(s)"),
+            }
+        )
+        field.choices = choices
+    else:
+        field.choices = [("", "---------")] + choices
+
+
+def limit_language_choices_to_company(form):
+    """
+    Limit a user form's ``language`` dropdown to the languages selected on the
+    user's company: the edited user's company, else the current user's.
+    """
+    company = getattr(form.instance, "company", None) if form.instance.pk else None
+    if company is None:
+        request = getattr(form, "request", None)
+        company = getattr(getattr(request, "user", None), "company", None)
+    limit_language_choices(form, company)

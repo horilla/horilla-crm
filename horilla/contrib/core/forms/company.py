@@ -13,7 +13,11 @@ from horilla.contrib.generics.forms import HorillaModelForm, HorillaMultiStepFor
 
 # First-party imports (Horilla)
 from horilla.urls import reverse_lazy
-from horilla.utils.choices import get_subdivision_choices, resolve_subdivision_choice
+from horilla.utils.choices import (
+    get_subdivision_choices,
+    limit_language_choices,
+    resolve_subdivision_choice,
+)
 from horilla.utils.translation import gettext_lazy as _
 
 # Local / relative imports
@@ -21,6 +25,21 @@ from ..mixins import OwnerQuerysetMixin
 from ..models import Company
 
 logger = logging.getLogger(__name__)
+
+# Currency management settings are edited on the Currencies settings tab,
+# not when creating or editing a company.
+CURRENCY_SETTINGS_FIELDS = [
+    "auto_fetch_exchange_rate",
+    "keep_rate_history",
+    "exchange_rate_source",
+    "rates_last_refreshed",
+    "auto_update_rates",
+    "rate_refresh_frequency",
+    "rate_change_alert_percent",
+    "currency_rounding",
+    "currency_display",
+    "currency_symbol_position",
+]
 
 
 class CompanyMultistepFormClass(OwnerQuerysetMixin, HorillaMultiStepForm):
@@ -35,6 +54,7 @@ class CompanyMultistepFormClass(OwnerQuerysetMixin, HorillaMultiStepForm):
 
         model = Company
         fields = "__all__"
+        exclude = CURRENCY_SETTINGS_FIELDS
 
     step_fields = {
         1: [
@@ -98,6 +118,8 @@ class CompanyMultistepFormClass(OwnerQuerysetMixin, HorillaMultiStepForm):
                 self.fields["state"].choices, self.instance.state
             )
 
+        limit_language_choices(self)
+
 
 class CompanyFormClass(HorillaModelForm):
     """Form class for Company model."""
@@ -158,6 +180,7 @@ class CompanyFormClassSingle(HorillaModelForm):
 
         model = Company
         fields = "__all__"
+        exclude = CURRENCY_SETTINGS_FIELDS
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -190,6 +213,30 @@ class CompanyFormClassSingle(HorillaModelForm):
             self.fields["state"].initial = resolve_subdivision_choice(
                 self.fields["state"].choices, self.instance.state
             )
+
+        limit_language_choices(self)
+
+    def clean(self):
+        """Re-validate the language multi-select the generic form check rejects."""
+        cleaned_data = super().clean()
+
+        # The generic form validation compares the whole selection with a single
+        # choice, so a valid multi-select is flagged (same as business-hour week_days).
+        if "language" in self.errors:
+            field = self.fields["language"]
+            values = (
+                self.data.getlist("language")
+                if hasattr(self.data, "getlist")
+                else self.data.get("language", [])
+            )
+            try:
+                cleaned_data["language"] = field.clean(values)
+            except forms.ValidationError:
+                pass
+            else:
+                del self.errors["language"]
+
+        return cleaned_data
 
 
 class CompanyDetailsInlineForm(CompanyFormClassSingle):

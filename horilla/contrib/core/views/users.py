@@ -30,6 +30,7 @@ from horilla.contrib.generics.views import (
 )
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse, reverse_lazy
+from horilla.utils.choices import get_allowed_language_choices
 from horilla.utils.decorators import (
     htmx_required,
     method_decorator,
@@ -180,6 +181,8 @@ class UserListView(LoginRequiredMixin, HorillaListView):
         "date_format",
         "number_format",
     ]
+    bulk_update_choices = {"language": get_allowed_language_choices}
+    bulk_update_country_state_fields = {"country": "state"}
 
     columns = [
         (_("Name"), "get_avatar_with_name"),

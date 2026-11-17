@@ -22,7 +22,12 @@ from horilla.contrib.generics.forms import (
 
 # First-party imports (Horilla)
 from horilla.urls import reverse_lazy
-from horilla.utils.choices import DAY_LABELS, SHORT_TO_DAY_PREFIX, WEEK_ORDER
+from horilla.utils.choices import (
+    DAY_LABELS,
+    SHORT_TO_DAY_PREFIX,
+    WEEK_ORDER,
+    limit_language_choices_to_company,
+)
 from horilla.utils.html import format_html
 from horilla.utils.translation import gettext_lazy as _
 
@@ -704,8 +709,10 @@ class RegionalFormattingForm(HorillaModelForm):
         ]
 
     def __init__(self, *args, **kwargs):
-        """Set HTMX attributes on fields for auto-save on change."""
+        """Limit language choices and set HTMX attributes for auto-save on change."""
         super().__init__(*args, **kwargs)
+
+        limit_language_choices_to_company(self)
 
         hx_post_url = reverse_lazy("core:regional_formating_view")
 

@@ -615,6 +615,9 @@ class Opportunity(HorillaCoreModel):
             self.probability = self.stage.probability
         if self.amount is not None and self.probability is not None:
             self.expected_revenue = self.amount * (self.probability / 100)
+        else:
+            # No amount (or probability) means nothing to forecast; don't keep a stale value.
+            self.expected_revenue = None
         self.set_forecast_category()
 
         super().save(*args, **kwargs)

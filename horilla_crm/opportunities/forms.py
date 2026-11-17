@@ -1,9 +1,10 @@
 """Forms for managing Opportunity-related models in the CRM application."""
 
 # Standard library imports
+# Third-party imports (Django)
+import json
 import logging
 
-# Third-party imports (Django)
 from django import forms
 
 # First party imports (Horilla)
@@ -60,14 +61,24 @@ def _wire_stage_probability_refresh(form):
     stage_field = form.fields.get("stage")
     if not stage_field:
         return
-    stage_field.widget.attrs.update(
-        {
-            "hx-get": reverse_lazy("opportunities:stage_probability_field"),
-            "hx-trigger": "change",
-            "hx-target": f"#{PROBABILITY_FIELD_ID}",
-            "hx-swap": "outerHTML",
-        }
-    )
+    refresh_attrs = {
+        "hx-get": reverse_lazy("opportunities:stage_probability_field"),
+        "hx-trigger": "change",
+        "hx-target": f"#{PROBABILITY_FIELD_ID}",
+        "hx-swap": "outerHTML",
+        # Expected revenue is amount x probability, so send both values.
+        "hx-include": "[name='stage'], [name='amount']",
+    }
+    if form.instance and form.instance.pk:
+        # Stage may not be on the page (detail view); the endpoint falls back
+        # to this record's current stage.
+        refresh_attrs["hx-vals"] = json.dumps({"opportunity": str(form.instance.pk)})
+    stage_field.widget.attrs.update(refresh_attrs)
+    amount_field = form.fields.get("amount")
+    if amount_field:
+        amount_field.widget.attrs.update(
+            {**refresh_attrs, "hx-trigger": "input changed delay:400ms, change"}
+        )
 
 
 def render_probability_input(value=None):

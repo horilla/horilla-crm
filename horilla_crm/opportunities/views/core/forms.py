@@ -1,7 +1,10 @@
 """Opportunity create/edit and change-owner form views."""
 
-# First party imports (Horilla)
+from decimal import Decimal, InvalidOperation
+
 from horilla.apps import apps
+
+# First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.generics.views import (
     HorillaMultiStepFormView,
@@ -42,6 +45,12 @@ class StageProbabilityFieldView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         """Return the probability input pre-filled with the selected stage's value."""
         stage_id = request.GET.get("stage")
+        if not stage_id and request.GET.get("opportunity"):
+            stage_id = (
+                Opportunity.objects.filter(pk=request.GET["opportunity"])
+                .values_list("stage_id", flat=True)
+                .first()
+            )
         probability = None
         if stage_id:
             queryset = OpportunityStage.objects.filter(pk=stage_id)
@@ -51,7 +60,26 @@ class StageProbabilityFieldView(LoginRequiredMixin, View):
             stage = queryset.first()
             if stage:
                 probability = stage.probability
-        return HttpResponse(render_probability_input(probability))
+        html = render_probability_input(probability)
+        # Out-of-band: the detail page's read-only Expected Revenue
+        # (amount x probability). No such element on the create/edit form.
+        try:
+            amount = Decimal(request.GET.get("amount") or "")
+        except InvalidOperation:
+            amount = None
+        expected = (
+            f"{amount * probability / 100:.2f}"
+            if amount is not None and probability is not None
+            else ""
+        )
+        html += (
+            f'<input type="text" id="id_expected_revenue" value="{expected}" '
+            'hx-swap-oob="outerHTML" readonly tabindex="-1" '
+            'class="text-color-600 p-2 placeholder:text-xs font-normal w-full border '
+            "border-dark-50 bg-gray-50 rounded-md mt-1 outline-0 focus:outline-0 "
+            'focus:border-dark-50 focus:ring-0 text-sm cursor-default">'
+        )
+        return HttpResponse(html)
 
     def post(self, request, *args, **kwargs):
         """Support POST the same as GET (htmx may include it via an enclosing form)."""

@@ -19,6 +19,7 @@ from horilla.utils.translation import gettext_lazy as _
 from horilla.web import Http404
 
 # Local imports
+from horilla_crm.opportunities.forms import OpportunitySingleForm
 from horilla_crm.opportunities.models import Opportunity
 
 from .base import OpportunityListView
@@ -296,6 +297,7 @@ class OpportunityDetailTab(LoginRequiredMixin, HorillaDetailSectionView):
     """Detail tab view for opportunities."""
 
     model = Opportunity
+    form_class = OpportunitySingleForm
     non_editable_fields = ["expected_revenue", "forecast_category", "probability"]
 
 

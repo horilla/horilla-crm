@@ -10,109 +10,14 @@
 {% endblock navbar %}
 
 {% block main %}
-    <nav class="p-5 pt-20" aria-label="{% trans 'breadcrumb' %}" data-native-tooltip="true">
-        <ol class="flex items-center text-sm">
-            {% for breadcrumb in breadcrumbs %}
-                <li class="flex items-center">
-                    {% if breadcrumb.active %}
-                        <span class="text-primary-600 font-semibold">{{ breadcrumb.name }}</span>
-                    {% elif breadcrumb.url %}
-                        <a
-                            href="{{ breadcrumb.url }}"
-                            class="text-gray-700 hover:text-primary-600"
-                            hx-get="{{ breadcrumb.url }}"
-                            hx-target="#mainContent"
-                            hx-swap="outerHTML"
-                            hx-select="#mainContent"
-                            hx-push-url="true"
-                        >
-                            {{ breadcrumb.name }}
-                        </a>
-                    {% else %}
-                        <span class="text-gray-500">{{ breadcrumb.name }}</span>
-                    {% endif %}
-
-                    {% if not forloop.last %}
-                        <span class="mx-2">></span>
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ol>
-    </nav>
+    {% breadcrumb_nav breadcrumbs %}
 
     <div class="ps-5 pe-5 flex-1 min-h-0 flex flex-col">
         <div class="grid grid-cols-12 gap-4 flex-1 min-h-0">
             <div class="col-span-9 xl:col-span-10 flex flex-col min-h-0">
                 <div id="mainSession" class="flex-1 min-h-0 flex flex-col">{% include "list_view.html" %}</div>
             </div>
-            <div class="col-span-3 xl:col-span-2 min-w-0">
-                <div class="[box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] bg-white rounded-lg ps-0 p-3 h-[calc(100vh_-_190px)]">
-                    <h3 class="text-sm mb-1 font-semibold ps-3">{% trans "Reports" %}</h3>
-                    <ul>
-                        <li>
-                            <a
-                                href=""
-                                class="ps-3 flex items-center text-sm py-1 rounded-md transition duration-300 hover:text-primary-600 relative before:content[''] before:absolute before:start-0 before:inset-0 before:w-1 before:h-full before:bg-primary-600 before:opacity-0 hover:before:opacity-100"
-                                hx-get="{% url 'reports:reports_list_view' %}?{{ request.GET.urlencode}}"
-                                hx-swap="outerHTML"
-                                hx-trigger="click"
-                                hx-target="#mainContent"
-                                hx-select="#mainContent"
-                                hx-push-url="true"
-                            >
-                                {% trans "All Reports" %}
-                            </a>
-                        </li>
-                    </ul>
-                    <h3 class="text-sm mb-1 font-semibold mt-3 ps-3">{% trans "Folders" %}</h3>
-                    <ul>
-                        <li>
-                            <a
-                                href=""
-                                class="ps-3 flex items-center text-sm py-1 rounded-md text-primary-600 hover:text-primary-600 transition duration-300 hover:text-primary-600 relative before:content[''] before:absolute before:start-0 before:inset-0 before:w-1 before:h-full before:bg-primary-600 before:opacity-1 hover:before:opacity-100"
-                                hx-get="{% url 'reports:report_folder_list' %}?{{ request.GET.urlencode}}"
-                                hx-swap="outerHTML"
-                                hx-trigger="click"
-                                hx-target="#mainContent"
-                                hx-select="#mainContent"
-                                hx-push-url="true"
-                            >
-                                {% trans "All Folders" %}
-                            </a>
-                        </li>
-                    </ul>
-                    <h3 class="text-sm mb-1 font-semibold mt-3 ps-3">{% trans "Favourites" %}</h3>
-                    <ul>
-                        <li>
-                            <a
-                                href=""
-                                class="ps-3 flex items-center text-sm py-1 rounded-md hover:text-primary-600 transition duration-300 hover:text-primary-600 relative before:content[''] before:absolute before:start-0 before:inset-0 before:w-1 before:h-full before:bg-primary-600 before:opacity-0 hover:before:opacity-100"
-                                hx-get="{% url 'reports:favourite_folder_list_view' %}?{{ request.GET.urlencode}}"
-                                hx-trigger="click"
-                                hx-target="#mainContent"
-                                hx-select="#mainContent"
-                                hx-swap="outerHTML"
-                                hx-push-url="true"
-                            >
-                                {% trans "Folders" %}
-                            </a>
-                        </li>
-                        <li>
-                            <a
-                                href=""
-                                class="ps-3 flex items-center text-sm py-1 rounded-md hover:text-primary-600 transition duration-300 hover:text-primary-600 relative before:content[''] before:absolute before:start-0 before:inset-0 before:w-1 before:h-full before:bg-primary-600 before:opacity-0 hover:before:opacity-100"
-                                hx-get="{% url 'reports:favourite_reports_list_view' %}?{{ request.GET.urlencode}}"
-                                hx-trigger="click"
-                                hx-target="#mainContent"
-                                hx-select="#mainContent"
-                                hx-swap="outerHTML"
-                                hx-push-url="true"
-                            >{% trans "Reports" %}
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+            {% include "partials/report_sidebar.html" with active="all_folders" %}
         </div>
     </div>
 {% endblock main %}

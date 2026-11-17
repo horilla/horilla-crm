@@ -6,7 +6,7 @@
         </button>
     </div>
 
-    <form id="bulkUpdateForm" hx-post="{{ search_url }}" hx-push-url="false" hx-on::after-request="closeModal()">
+    <form id="bulkUpdateForm" hx-post="{{ search_url }}" hx-push-url="false" hx-on::after-request="if (event.target === this) closeModal()">
         {% csrf_token %}
         {% if bulk_update_fields %}
             <div class="{% if bulk_update_two_column %}grid grid-cols-1 sm:grid-cols-2 gap-x-4{% endif %}">
@@ -16,7 +16,18 @@
                             for="bulkUpdateValue_{{ field.name }}"
                             class="text-xs font-semibold text-color-600"
                         >{{ field.verbose_name }}</label>
-                        {% if field.type == 'text' or field.type == 'char' %}
+                        {% if field.depends_on %}
+                            <div class="flex w-full mb-3">
+                                <select
+                                    id="bulkUpdateValue_{{ field.name }}"
+                                    name="bulk_update_value_{{ field.name }}"
+                                    class="js-example-basic-single headselect"
+                                    style="width: 100%"
+                                >
+                                    <option value="">{% trans "Select state/province" %}</option>
+                                </select>
+                            </div>
+                        {% elif field.type == 'text' or field.type == 'char' %}
                             <input
                                 type="text"
                                 id="bulkUpdateValue_{{ field.name }}"
@@ -60,6 +71,12 @@
                                     name="bulk_update_value_{{ field.name }}"
                                     class="js-example-basic-single headselect"
                                     style="width: 100%"
+                                    {% if field.dependent %}
+                                        hx-get="{{ field.dependent.url }}"
+                                        hx-target="#bulkUpdateValue_{{ field.dependent.child }}"
+                                        hx-trigger="change"
+                                        hx-swap="innerHTML"
+                                    {% endif %}
                                 >
                                     <option value="">
                                         {% blocktrans with field=field.verbose_name|lower|force_escape %}Select

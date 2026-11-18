@@ -1,0 +1,30 @@
+{# active is all_reports, all_folders, folders, or reports #}
+<div class="col-span-3 xl:col-span-2 min-w-0">
+    <div class="[box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] bg-white rounded-lg ps-0 p-3 h-[calc(100vh_-_190px)]">
+        <h3 class="text-sm mb-1 font-semibold ps-3">{% trans "Reports" %}</h3>
+        <ul>
+            <li>
+                {% url 'reports:reports_list_view' as all_reports_url %}
+                {% hx_anchor _("All Reports") variant="submenu" active=active|eq:"all_reports" hx_get=all_reports_url|add:"?"|add:request.GET.urlencode %}
+            </li>
+        </ul>
+        <h3 class="text-sm mb-1 font-semibold mt-3 ps-3">{% trans "Folders" %}</h3>
+        <ul>
+            <li>
+                {% url 'reports:report_folder_list' as all_folders_url %}
+                {% hx_anchor _("All Folders") variant="submenu" active=active|eq:"all_folders" hx_get=all_folders_url|add:"?"|add:request.GET.urlencode %}
+            </li>
+        </ul>
+        <h3 class="text-sm mb-1 font-semibold mt-3 ps-3">{% trans "Favourites" %}</h3>
+        <ul>
+            <li>
+                {% url 'reports:favourite_folder_list_view' as favourite_folders_url %}
+                {% hx_anchor _("Folders") variant="submenu" active=active|eq:"folders" hx_get=favourite_folders_url|add:"?"|add:request.GET.urlencode %}
+            </li>
+            <li>
+                {% url 'reports:favourite_reports_list_view' as favourite_reports_url %}
+                {% hx_anchor _("Reports") variant="submenu" active=active|eq:"reports" hx_get=favourite_reports_url|add:"?"|add:request.GET.urlencode %}
+            </li>
+        </ul>
+    </div>
+</div>

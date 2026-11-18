@@ -33,7 +33,7 @@
                 <div class="flex items-center">
                     <button
                         onclick="$('#reloadButton').click()"
-                        class="bg-[#f3f4f6] w-6 h-6 md:w-10 md:h-10 flex items-center justify-center rounded transition duration-300 cursor-pointer"
+                        class="bg-[#f3f4f6] w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded transition duration-300 cursor-pointer"
                     >
                         <img src="{% static 'assets/icons/l5.svg' %}" alt="{% trans 'Refresh' %}" width="17">
                     </button>
@@ -49,7 +49,7 @@
                                 hx-target="#mainContent"
                                 hx-swap="outerHTML"
                                 hx-select="#mainContent"
-                                class="bg-[#f3f4f6] w-6 h-6 md:w-10 md:h-10 flex items-center justify-center rounded transition duration-300 cursor-pointer"
+                                class="bg-[#f3f4f6] w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded transition duration-300 cursor-pointer"
                             >
                                 <img
                                     src="{% static 'assets/icons/save.svg' %}"
@@ -67,7 +67,7 @@
                                 hx-target="#mainContent"
                                 hx-swap="outerHTML"
                                 hx-select="#mainContent"
-                                class="bg-[#f3f4f6] w-6 h-6 md:w-10 md:h-10 flex items-center justify-center rounded transition duration-300 cursor-pointer"
+                                class="bg-[#f3f4f6] w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded transition duration-300 cursor-pointer"
                             >
                                 <img
                                     src="{% static 'assets/icons/close.svg' %}"
@@ -81,7 +81,7 @@
                             <button
                                 id="closeBtn"
                                 title="{% trans 'Close Panel' %}"
-                                class="bg-[#f3f4f6] w-6 h-6 md:w-10 md:h-10 flex items-center justify-center rounded transition duration-300 cursor-pointer"
+                                class="bg-[#f3f4f6] w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded transition duration-300 cursor-pointer"
                                 hx-get="{% url 'reports:report_detail' report.pk %}"
                                 hx-target="#mainContent"
                                 hx-swap="outerHTML"
@@ -105,49 +105,49 @@
                             hx-target="#mainContent"
                             hx-swap="outerHTML"
                             hx-select="#mainContent"
-                            class="bg-[#f3f4f6] w-6 h-6 md:w-10 md:h-10 flex items-center justify-center rounded transition duration-300 cursor-pointer"
+                            class="bg-[#f3f4f6] w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded transition duration-300 cursor-pointer"
                         >
                             <img src="{% static 'assets/icons/edit.svg' %}" alt="{% trans 'Edit' %}" width="16">
                         </button>
                     </div>
                 {% endif %}
                 {% if can_export %}
-                <div class="flex items-center relative">
-                    <button
-                        id="exportDropdownButton"
-                        data-dropdown-toggle="exportDropdown"
-                        type="button"
-                        class="bg-[#f3f4f6] w-6 h-6 md:w-10 md:h-10 flex items-center justify-center rounded transition duration-300 cursor-pointer"
-                    >
-                        <i class="fas fa-cog" aria-hidden="true"></i>
-                    </button>
-                    <!-- Dropdown menu -->
-                    <div
-                        id="exportDropdown"
-                        class="z-10 hidden bg-white rounded-lg shadow-lg min-w-[160px] absolute top-8 end-0"
-                    >
-                        <ul class="text-sm" aria-labelledby="exportDropdownButton">
-                            <li>
-                                <a
-                                    href="{% url 'reports:report_export' report.pk %}?format=excel"
-                                    class="block px-4 py-2 hover:bg-gray-100 flex items-center"
-                                >
-                                    <i class="fas fa-file-excel text-green-600 me-2"></i>
-                                    Excel (.xlsx)
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="{% url 'reports:report_export' report.pk %}?format=csv"
-                                    class="block px-4 py-2 hover:bg-gray-100 flex items-center"
-                                >
-                                    <i class="fas fa-file-csv text-blue-600 me-2"></i>
-                                    CSV (.csv)
-                                </a>
-                            </li>
-                        </ul>
+                    <div class="flex items-center relative">
+                        <button
+                            id="exportDropdownButton"
+                            data-dropdown-toggle="exportDropdown"
+                            type="button"
+                            class="bg-[#f3f4f6] w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded transition duration-300 cursor-pointer"
+                        >
+                            <i class="fas fa-cog" aria-hidden="true"></i>
+                        </button>
+                        <!-- Dropdown menu -->
+                        <div
+                            id="exportDropdown"
+                            class="z-10 hidden bg-white rounded-lg shadow-lg min-w-[160px] absolute top-8 end-0"
+                        >
+                            <ul class="text-sm" aria-labelledby="exportDropdownButton">
+                                <li>
+                                    <a
+                                        href="{% url 'reports:report_export' report.pk %}?format=excel"
+                                        class="block px-4 py-2 hover:bg-gray-100 flex items-center"
+                                    >
+                                        <i class="fas fa-file-excel text-green-600 me-2"></i>
+                                        Excel (.xlsx)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="{% url 'reports:report_export' report.pk %}?format=csv"
+                                        class="block px-4 py-2 hover:bg-gray-100 flex items-center"
+                                    >
+                                        <i class="fas fa-file-csv text-blue-600 me-2"></i>
+                                        CSV (.csv)
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
                 {% endif %}
             </div>
         </div>
@@ -187,44 +187,99 @@
             {# What this report is built from: columns, grouping, filters. Click a group to edit it. #}
             <div id="rpt-summary" class="flex items-start gap-3 mb-3{% if panel_open %} rpt-compact{% endif %}">
                 <div class="rpt-summary-group flex items-stretch gap-2 min-w-0 flex-1">
-                <div class="rpt-summary-chip flex items-center gap-2 min-w-0 max-w-full bg-white text-[#1f2430] border border-[#e3e5ea] shadow-sm rounded-lg px-2.5 py-1.5 text-xs text-start shrink-0 cursor-default">
-                    <span class="rpt-summary-label shrink-0 font-bold text-primary-600">{% trans "Total Count" %}</span>
-                    <span class="rpt-summary-value min-w-0 font-semibold">{{ total_count }}</span>
-                </div>
-                <button type="button" class="rpt-summary-chip flex items-center gap-2 min-w-0 max-w-full bg-white text-[#1f2430] border border-[#e3e5ea] shadow-sm rounded-lg px-2.5 py-1.5 text-xs text-start hover:border-primary-600" data-edit-tab="grouping" title="{% trans 'Edit Grouping' %}">
-                    <span class="rpt-summary-label shrink-0 font-bold text-primary-600">{% trans "Grouping" %}</span>
-                    <span class="rpt-summary-count hidden font-semibold">{{ temp_report|grouping_count }}</span>
-                    <span class="rpt-summary-value min-w-0 whitespace-normal [overflow-wrap:anywhere]">
-                        {% if temp_report.row_groups_list or temp_report.column_groups_list %}
-                            {% if temp_report.row_groups_list %}{% trans "Rows" %}: {% for g in temp_report.row_groups_list %}{{ g|get_field_verbose_name:temp_report.model_class }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}
-                            {% if temp_report.row_groups_list and temp_report.column_groups_list %} · {% endif %}
-                            {% if temp_report.column_groups_list %}{% trans "Columns" %}: {% for g in temp_report.column_groups_list %}{{ g|get_field_verbose_name:temp_report.model_class }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}
-                        {% else %}
-                            <i class="opacity-70">{% trans "None" %}</i>
-                        {% endif %}
-                    </span>
-                </button>
-                {% with filter_count=temp_report|applied_filter_count %}
-                <button type="button" class="rpt-summary-chip flex items-center gap-2 min-w-0 max-w-full bg-white text-[#1f2430] border border-[#e3e5ea] shadow-sm rounded-lg px-2.5 py-1.5 text-xs text-start hover:border-primary-600{% if filter_count > 1 %} group relative{% endif %}" data-edit-tab="filter" {% if filter_count <= 1 %}title="{% trans 'Edit Filters' %}"{% endif %}>
-                    <span class="rpt-summary-label shrink-0 font-bold text-primary-600">{% trans "Filters" %}</span>
-                    <span class="rpt-summary-count{% if filter_count <= 1 %} hidden{% endif %} font-semibold">{{ filter_count }}</span>
-                    <span class="rpt-summary-value min-w-0 whitespace-normal [overflow-wrap:anywhere] flex-wrap gap-1 {% if filter_count > 1 %}hidden group-hover:flex absolute top-full start-0 z-30 mt-1 w-max max-w-[420px] flex-col items-start bg-white border border-[#e3e5ea] rounded-lg p-2 shadow-lg{% else %}flex{% endif %}">
-                        {% if temp_report|has_applied_filters %}
-                            {% for fk, fv in temp_report.filters_dict.items %}{% with t=fv|filter_summary:temp_report %}{% if t %}<span class="rpt-filter-pill inline-block me-1.5 rounded-md px-2 py-px bg-[#25c32417] border border-[#25c32429] text-[#177a16]">{{ t }}</span>{% endif %}{% endwith %}{% endfor %}
-                        {% else %}
-                            <i class="opacity-70">{% trans "None" %}</i>
-                        {% endif %}
-                    </span>
-                </button>
-                {% endwith %}
+                    <div class="rpt-summary-chip flex items-center gap-2 min-w-0 max-w-full bg-white text-[#1f2430] border border-[#e3e5ea] shadow-sm rounded-lg px-2.5 py-1.5 text-xs text-start shrink-0 cursor-default">
+                        <span
+                            class="rpt-summary-label shrink-0 font-bold text-primary-600"
+                        >{% trans "Total Count" %}</span>
+                        <span class="rpt-summary-value min-w-0 font-semibold">{{ total_count }}</span>
+                    </div>
+                    <button
+                        type="button"
+                        class="rpt-summary-chip flex items-center gap-2 min-w-0 max-w-full bg-white text-[#1f2430] border border-[#e3e5ea] shadow-sm rounded-lg px-2.5 py-1.5 text-xs text-start hover:border-primary-600"
+                        data-edit-tab="grouping"
+                        title="{% trans 'Edit Grouping' %}"
+                    >
+                        <span
+                            class="rpt-summary-label shrink-0 font-bold text-primary-600"
+                        >{% trans "Grouping" %}</span>
+                        <span class="rpt-summary-count hidden font-semibold">{{ temp_report|grouping_count }}</span>
+                        <span class="rpt-summary-value min-w-0 whitespace-normal [overflow-wrap:anywhere]">
+                            {% if temp_report.row_groups_list or temp_report.column_groups_list %}
+                                {% if temp_report.row_groups_list %}{% trans "Rows" %}:
+                                    {% for g in temp_report.row_groups_list %}{{ g|get_field_verbose_name:temp_report.model_class }}{% if not forloop.last %},
+                                        {% endif %}{% endfor %}{% endif %}
+                                {% if temp_report.row_groups_list and temp_report.column_groups_list %}
+                                    ·
+                                {% endif %}
+                                {% if temp_report.column_groups_list %}{% trans "Columns" %}:
+                                    {% for g in temp_report.column_groups_list %}{{ g|get_field_verbose_name:temp_report.model_class }}{% if not forloop.last %},
+                                        {% endif %}{% endfor %}{% endif %}
+                            {% else %}
+                                <i class="opacity-70">{% trans "None" %}</i>
+                            {% endif %}
+                        </span>
+                    </button>
+                    {% with filter_count=temp_report|applied_filter_count %}
+                        <button
+                            type="button"
+                            class="rpt-summary-chip flex items-center gap-2 min-w-0 max-w-full bg-white text-[#1f2430] border border-[#e3e5ea] shadow-sm rounded-lg px-2.5 py-1.5 text-xs text-start hover:border-primary-600{% if filter_count > 1 %} group relative{% endif %}"
+                            data-edit-tab="filter"
+                            {% if filter_count <= 1 %}
+                                title="{% trans 'Edit Filters' %}"
+                            {% endif %}
+                        >
+                            <span
+                                class="rpt-summary-label shrink-0 font-bold text-primary-600"
+                            >{% trans "Filters" %}</span>
+                            <span
+                                class="rpt-summary-count{% if filter_count <= 1 %} hidden{% endif %} font-semibold"
+                            >{{ filter_count }}</span>
+                            <span
+                                class="rpt-summary-value min-w-0 whitespace-normal [overflow-wrap:anywhere] flex-wrap gap-1 {% if filter_count > 1 %}hidden group-hover:flex absolute top-full start-0 z-30 mt-1 w-max max-w-[420px] flex-col items-start bg-white border border-[#e3e5ea] rounded-lg p-2 shadow-lg{% else %}flex{% endif %}"
+                            >
+                                {% if temp_report|has_applied_filters %}
+                                    {% for fk, fv in temp_report.filters_dict.items %}{% with t=fv|filter_summary:temp_report %}{% if t %}<span
+                                                    class="rpt-filter-pill inline-block me-1.5 rounded-md px-2 py-px bg-[#25c32417] border border-[#25c32429] text-[#177a16]"
+                                                >{{ t }}</span>{% endif %}{% endwith %}{% endfor %}
+                                {% else %}
+                                    <i class="opacity-70">{% trans "None" %}</i>
+                                {% endif %}
+                            </span>
+                        </button>
+                    {% endwith %}
                 </div>
                 {% if total_count %}
-                    <div class="flex bg-white rounded-lg p-0.5 flex-shrink-0 ms-auto" style="box-shadow:0 1px 3px rgba(0,0,0,.06)" role="tablist">
-                        <button type="button" role="tab" class="rpt-tab text-sm font-semibold rounded-md px-4 py-1.5" data-view="pivot">{% trans "Pivot" %}</button>
+                    <div
+                        class="flex bg-white rounded-lg p-0.5 flex-shrink-0 ms-auto"
+                        style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06)"
+                        role="tablist"
+                    >
+                        <button
+                            type="button"
+                            role="tab"
+                            class="rpt-tab text-sm font-semibold rounded-md px-4 py-1.5"
+                            data-view="pivot"
+                        >
+                            {% trans "Pivot" %}
+                        </button>
                         {% if columns %}
-                            <button type="button" role="tab" class="rpt-tab text-sm font-semibold rounded-md px-4 py-1.5" data-view="detail">{% trans "Details" %}</button>
+                            <button
+                                type="button"
+                                role="tab"
+                                class="rpt-tab text-sm font-semibold rounded-md px-4 py-1.5"
+                                data-view="detail"
+                            >
+                                {% trans "Details" %}
+                            </button>
                         {% endif %}
-                        <button type="button" role="tab" class="rpt-tab text-sm font-semibold rounded-md px-4 py-1.5" data-view="chart">{% trans "Chart" %}</button>
+                        <button
+                            type="button"
+                            role="tab"
+                            class="rpt-tab text-sm font-semibold rounded-md px-4 py-1.5"
+                            data-view="chart"
+                        >
+                            {% trans "Chart" %}
+                        </button>
                     </div>
                 {% endif %}
             </div>
@@ -281,7 +336,9 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div id="details-table" class="flex flex-col min-h-0">{% include 'list_view.html' %}</div>
+                                <div id="details-table" class="flex flex-col min-h-0">
+                                    {% include 'list_view.html' %}
+                                </div>
                             </div>
                         </div>
                     {% endif %}
@@ -297,7 +354,7 @@
                                 id="pivot-table-wrap"
                                 class="flex-1 min-h-0 overflow-auto custom-scroll"
                                 data-reset-url="{% url 'reports:report_detail_filtered' report.pk %}?{{request.GET.urlencode}}"
-                                data-all-label="{% trans "All" %}"
+                                data-all-label='{% trans "All" %}'
                             >
                                 {% include 'partials/pivot_table.html' %}
                             </div>
@@ -311,59 +368,37 @@
                             <div class="flex justify-between">
                                 <h3 class="text-sm font-semibold mb-3">{% trans "Report Chart" %}</h3>
                                 <div class="flex items-start gap-1">
-                                <div class="relative dropdown-wrapper">
-                                    <button
-                                        id="dropdownLeftEndButton"
-                                        type="button"
-                                        class="flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 transition-colors relative"
-                                    >
-                                        <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
-                                    </button>
-                                    <div class="dropdown-content absolute z-10 bg-white border-primary-300 rounded-lg [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_8%)] min-w-[150px] py-2 end-0">
-                                        <ul class="text-sm z-50 relative" aria-labelledby="dropdownLeftEndButton">
-                                            <li>
-                                                <a
-                                                    href="#"
-                                                    class="block px-3 py-1.5 hover:text-primary-600 transition duration-300 text-[.8rem]"
-                                                    hx-get="{% url 'reports:change_chart_type' report.pk %}?total={{total_groups_count}}"
-                                                    hx-on:click="openModal();"
-                                                    hx-target="#modalBox"
-                                                    hx-swap="innerHTML"
-                                                >{% trans "Change Chart" %}
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a
-                                                    href="#"
-                                                    class="block px-3 py-1.5 hover:text-primary-600 transition duration-300 text-[.8rem]"
-                                                    onclick="exportChartAsPDF('chart-{{ report.pk }}', 'report_{{ report.pk }}')"
-                                                >{% trans "Export as PDF" %}
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a
-                                                    href="#"
-                                                    class="block px-3 py-1.5 hover:text-primary-600 transition duration-300 text-[.8rem]"
-                                                    onclick="EChartsConfig.exportChart(window.reportChartInstance_{{ report.pk }}, 'report_{{ report.pk }}', 'png')"
-                                                >{% trans "Export as PNG" %}
-                                                </a>
-                                            </li>
-                                            {% if total_groups_count > 0 %}
+                                    <div class="relative dropdown-wrapper">
+                                        <button
+                                            id="dropdownLeftEndButton"
+                                            type="button"
+                                            class="flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 transition-colors relative"
+                                        >
+                                            <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+                                        </button>
+                                        <div class="dropdown-content absolute z-10 bg-white border-primary-300 rounded-lg [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_8%)] min-w-[150px] py-2 end-0">
+                                            <ul class="text-sm z-50 relative" aria-labelledby="dropdownLeftEndButton">
                                                 <li>
-                                                    <a
-                                                        href="#"
-                                                        class="block px-3 py-1.5 hover:text-primary-600 transition duration-300 text-[.8rem]"
-                                                        hx-get="{% url 'dashboard:report_to_dashboard' %}?report_id={{report.pk}}"
-                                                        hx-on:click="openModal();"
-                                                        hx-target="#modalBox"
-                                                        hx-swap="innerHTML"
-                                                    >{% trans "Add to Dashboard" %}
-                                                    </a>
+                                                    {% url 'reports:change_chart_type' report.pk as change_chart_url %}
+                                                    {% hx_anchor _("Change Chart") variant="base" hx_get=change_chart_url|concat:"?total="|concat:total_groups_count hx_on_click="openModal();" hx_target="#modalBox" hx_swap="innerHTML" %}
                                                 </li>
-                                            {% endif %}
-                                        </ul>
+                                                {% with chart_id=report.pk|stringformat:"s" %}
+                                                    <li>
+                                                        {% hx_anchor _("Export as PDF") variant="base" href="#" hx_on_click="exportChartAsPDF('chart-"|concat:chart_id|concat:"', 'report_"|concat:chart_id|concat:"')" %}
+                                                    </li>
+                                                    <li>
+                                                        {% hx_anchor _("Export as PNG") variant="base" href="#" hx_on_click="EChartsConfig.exportChart(window.reportChartInstance_"|concat:chart_id|concat:", 'report_"|concat:chart_id|concat:"', 'png')" %}
+                                                    </li>
+                                                {% endwith %}
+                                                {% if total_groups_count > 0 %}
+                                                    <li>
+                                                        {% url 'dashboard:report_to_dashboard' as report_to_dashboard_url %}
+                                                        {% hx_anchor _("Add to Dashboard") variant="base" href="#" hx_get=report_to_dashboard_url|concat:"?report_id="|concat:report.pk hx_on_click="openModal();" hx_target="#modalBox" hx_swap="innerHTML" %}
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
                                     </div>
-                                </div>
                                 </div>
                             </div>
                             <p class="text-xs mb-2">{% trans "Record Count:" %} {{ total_count }}</p>
@@ -384,23 +419,43 @@
             {% endif %}
         </div>
         <style>
-            #rpt-summary.rpt-compact [data-edit-tab] .rpt-summary-value { display: none; }
-            #rpt-summary.rpt-compact .rpt-summary-count { display: inline; }
-            #rpt-summary.rpt-compact .rpt-summary-chip { padding: 3px 10px; font-size: 11px; gap: 6px; }
-            #rpt-summary.rpt-compact .rpt-summary-group > .rpt-summary-chip, #rpt-summary.rpt-compact .rpt-summary-group > [data-edit-tab="filter"] { flex: 0 0 auto; }
-            #rpt-summary.rpt-compact .rpt-tab { font-size: 12px; padding: 5px 12px; }
-            .sec1 [data-rpt-section]:not(.rpt-active) { display: none; }
-            .sec1 #details-table > div { display: flex; flex-direction: column; min-height: 0; }
+            #rpt-summary.rpt-compact [data-edit-tab] .rpt-summary-value {
+                display: none;
+            }
+            #rpt-summary.rpt-compact .rpt-summary-count {
+                display: inline;
+            }
+            #rpt-summary.rpt-compact .rpt-summary-chip {
+                padding: 3px 10px;
+                gap: 6px;
+                font-size: 11px;
+            }
+            #rpt-summary.rpt-compact .rpt-summary-group > .rpt-summary-chip,
+            #rpt-summary.rpt-compact .rpt-summary-group > [data-edit-tab='filter'] {
+                flex: 0 0 auto;
+            }
+            #rpt-summary.rpt-compact .rpt-tab {
+                padding: 5px 12px;
+                font-size: 12px;
+            }
+            .sec1 [data-rpt-section]:not(.rpt-active) {
+                display: none;
+            }
+            .sec1 #details-table > div {
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+            }
         </style>
         <div
             id="report-detail-config"
             class="hidden"
             data-report-id="{{ report.pk }}"
             data-chart-error="{% if chart_data.error %}true{% endif %}"
-            data-chart-type="{{ chart_data.type|lower|default:"pie" }}"
-            data-label-field="{{ chart_data.label_field|title|default:"Count" }}"
+            data-chart-type='{{ chart_data.type|lower|default:"pie" }}'
+            data-label-field='{{ chart_data.label_field|title|default:"Count" }}'
             data-label-count="{{ chart_data.labels|length|default:0 }}"
-            data-has-multiple-groups="{{ chart_data.has_multiple_groups|yesno:"true,false" }}"
+            data-has-multiple-groups='{{ chart_data.has_multiple_groups|yesno:"true,false" }}'
         >
             {% if not chart_data.error %}
                 {{ chart_data.labels|default:"[]"|json_script:"report-chart-labels" }}

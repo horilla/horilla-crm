@@ -4,12 +4,24 @@
 
 `misc_tags.py` contains small generic tags that do not fit other specialized tag modules:
 
+- `eq` — true when two values are equal
+- `sanitize_html` — clean stored rich text before it is rendered
 - `empty_add_message` — standard empty-list sentence for generic views
 - `get_user_model_meta` — user model identity metadata for dynamic components
 
 `horilla_tags` is a **built-in** library — do not add `{% load horilla_tags %}` in new templates. See [coding_rule.md](../../../../../coding_rule.md#django-templates--built-in-tag-libraries).
 
 ---
+
+## `eq` (filter)
+
+Returns true when the value equals the argument. A template-tag argument cannot contain `==`, so this is how one keyword is turned on for the current page:
+
+```django
+{% hx_anchor _("All Dashboards") variant="submenu" active=active|eq:"all_dashboards" hx_get=url %}
+```
+
+`partials/dashboard_sidebar.html` uses it for `all_dashboards`, `all_folders`, `folders`, and `dashboards`. Only the matching link gets the current-page class.
 
 ## `empty_add_message` (simple_tag)
 
@@ -78,7 +90,7 @@ Typical uses: dynamic URLs, data attributes, or generic helper components requir
 
 - `get_user_model_meta` reads model metadata from imported `User` directly (not from settings-based runtime lookup).
 - Because output is static metadata, there is no request/user dependency in that tag.
-- Both tags are lightweight and safe for repeated template usage.
+- The tags are lightweight and safe for repeated template usage.
 
 ---
 
@@ -96,6 +108,8 @@ Typical uses: dynamic URLs, data attributes, or generic helper components requir
 
 | Tag | Role |
 |-----|------|
+| `eq` | Boolean equality for a tag keyword, such as `active=active\|eq:"folders"` |
+| `sanitize_html` | Sanitized rich text marked safe for rendering |
 | `empty_add_message` | Standard “add your first …” sentence for generic list/kanban/card empty states |
 | `get_user_model_meta` | Exposes `User` model app/model/class identifiers for dynamic template components |
 

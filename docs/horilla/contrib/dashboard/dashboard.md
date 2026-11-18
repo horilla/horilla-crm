@@ -86,6 +86,7 @@ Apps that contribute **Get started** steps add `"onboarding"` to their own `auto
 - **`Meta.fields = "__all__"`** — no extra `exclude`; chart/KPI/table fields are hidden at runtime in **`__init__`** by `component_type`
 - **View**: `DashboardComponentFormView` sets **`hidden_fields`** for `dashboard`, `sequence`, `component_owner`, `reports`, `company`, etc.
 - **Conditions**: `ComponentCriteria` via `condition_fields` on the view
+- Changing **component type** to table loads that module's table columns into the form
 
 Core audit fields are auto-excluded via **`HORILLA_FORM_EXCLUDE`**; do not duplicate them in `Meta.exclude`.
 
@@ -93,10 +94,11 @@ Core audit fields are auto-excluded via **`HORILLA_FORM_EXCLUDE`**; do not dupli
 
 ## Views and templates
 
-- **Home** — one template, `home/home.html`, serves both the dynamic default home (`is_default_home=True`) and a dashboard used as home; `default_home.html` no longer exists. The date range control is the shared `components/date_range_filter.html`. "Set to Default" only shows for a layout that differs from the template default (KPIs by index, then two charts per table); saving an order equal to the default deletes the stored `DefaultHomeLayoutOrder`, and the save response returns `is_custom`.
+- **Home** — one template, `home/home.html`, serves both the dynamic default home (`is_default_home=True`) and a dashboard used as home; `default_home.html` no longer exists. The date range control is the shared `components/date_range_filter.html`, with named presets (Created Today, Created Yesterday, Created This Week, Created This Month) and a custom range. Start Date and End Date use `id_date_from` and `id_date_to`. An empty Leads chart on the home page still shows its title. "Set to Default" only shows for a layout that differs from the template default (KPIs by index, then two charts per table); saving an order equal to the default deletes the stored `DefaultHomeLayoutOrder`, and the save response returns `is_custom`.
 - **Get started guide** — included in the default home only (`home/onboarding.html`); see below.
 - **Dashboard detail** — `dashboard_detail_view.html` uses the generic navbar (`dashboard_detail_nav_actions.html`). Other partials live under `templates/` / `templates/home/`.
-- **Folder detail** — navigates mixed lists of child folders + dashboards (`get_detail_view_url` on folder model points at `dashboard:dashboard_folder_detail_list`).
+- **Folder detail** — navigates mixed lists of child folders + dashboards (`get_detail_view_url` on folder model points at `dashboard:dashboard_folder_detail_list`). The folder pages also render `{% breadcrumb_nav breadcrumbs %}`.
+- **List sidebar** — `dashboard_list_view.html`, `dashboard_folder_detail.html`, `favourite_folder.html`, and `favourite_dashboard.html` include `partials/dashboard_sidebar.html`. Pass `active` as `all_dashboards`, `all_folders`, `folders`, or `dashboards`. The include marks that link with `{% hx_anchor %}` `variant="submenu"`.
 
 ### Dashboard action views (`views/dashboard_actions.py`)
 
@@ -194,3 +196,4 @@ Rendering reads the same fields from the reports engine's virtual fields (see [r
 - Onboarding steps registry (how apps add steps): [../../registry/onboarding.md](../../registry/onboarding.md)
 - Reports model: [../reports/reports.md](../reports/reports.md)
 - Generics chart view: [../generics/views/chart.md](../generics/views/chart.md)
+- Sidebar and breadcrumb tags: [../generics/templatetags/horilla_tags/components.md](../generics/templatetags/horilla_tags/components.md)

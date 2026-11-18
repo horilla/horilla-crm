@@ -162,7 +162,16 @@ The Custom Fields app supplies `cf_<id>` virtual fields through `ReportFieldProv
 
 ---
 
+## Templates
+
+- **List sidebar** — `report_list_view.html`, `report_folder_detail.html`, `favourite_folder_list.html`, and `favourite_report_list_view.html` include `partials/report_sidebar.html`. Pass `active` as `all_reports`, `all_folders`, `folders`, or `reports`. The include marks that one link with `{% hx_anchor %}` `variant="submenu"`. These four pages do not load `reports_tags`, so the query string is `url|add:"?"|add:request.GET.urlencode`.
+- **Folder trails** — `report_folder_detail.html` and `favourite_folder_list.html` render `{% breadcrumb_nav breadcrumbs %}`.
+- **Chart menu** — `report_detail.html` loads `reports_tags`, so `{% hx_anchor variant="base" %}` builds its URLs and click scripts with `concat`. Change Chart opens `#modalBox` at `change_chart_url|concat:"?total="|concat:total_groups_count`. Export as PDF and Export as PNG share `{% with chart_id=report.pk|stringformat:"s" %}` and pass that id into `hx_on_click`, which renders `hx-on:click`. Add to Dashboard is shown only when `total_groups_count > 0`, and its `hx-get` is `report_to_dashboard_url|concat:"?report_id="|concat:report.pk`.
+
+---
+
 ## Related documentation
 
 - Dashboard models referencing `Report`: [../dashboard/dashboard.md](../dashboard/dashboard.md)
 - Chart views in generics: [../generics/views/chart.md](../generics/views/chart.md)
+- Report detail chart menu (`{% hx_anchor %}` `variant="base"`, with `concat` for the query and the export script) and the shared folder sidebar (`partials/report_sidebar.html`): [../generics/templatetags/horilla_tags/components.md](../generics/templatetags/horilla_tags/components.md)

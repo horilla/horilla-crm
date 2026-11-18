@@ -4,15 +4,29 @@
 
 `url_filters.py` provides template-level URL manipulation helpers.
 
-Currently it contains one focused filter:
+It contains two filters:
 
-- `remove_query_param`
+- `concat` — join two values as text
+- `remove_query_param` — drop one query key from a URL
 
-This is useful for building clean navigation/filter-reset links directly in templates without custom view code.
+`horilla_tags` is a built-in library. Do not add `{% load horilla_tags %}`.
 
 ---
 
-## Registered filter
+## `concat(value, arg)`
+
+Joins two values as text. `None` on either side is an empty string. An integer is written as its digits, so a primary key can be appended without `stringformat`.
+
+```django
+{% url 'reports:change_chart_type' report.pk as change_chart_url %}
+hx_get=change_chart_url|concat:"?total="|concat:total_groups_count
+```
+
+With report `4` and a total of `1`, that is `/reports/change-chart-type/4/?total=1`.
+
+Use `concat` when the page loads `reports_tags`. That library's `add` only adds numbers. A path plus `?total=` is not a number, so that `add` returns the original path and the query is lost. Django's own `add` still concatenates strings on pages that do not load `reports_tags`. The dashboard sidebar uses that `add` for `url|add:"?"|add:request.GET.urlencode`.
+
+A `{% %}` tag does not evaluate `{{ }}` inside its arguments. Build the string with `concat` (or `{% url %} … as name`) instead of writing `{{ report.pk }}` inside `{% hx_anchor %}`.
 
 ## `remove_query_param(url, param)`
 
@@ -143,4 +157,4 @@ Removing `section` keeps:
 
 ## Summary
 
-`url_filters.py` provides a compact but useful template filter for query-string cleanup. `remove_query_param` helps templates generate cleaner links for resetting specific filter/search/pagination state while preserving the rest of the current URL.
+`concat` joins text, including a path and a query string, on pages where `reports_tags` has replaced Django's `add`. `remove_query_param` drops one query key and keeps the rest of the URL.

@@ -29,10 +29,13 @@ Then decorate functions with:
 Examples in this package include:
 - `action_tags.py`
 - `asset_tags.py`
+- `components.py`
 - `datetime_filters.py`
 - `display_tags.py`
 - `field_filters.py`
 - `history_display.py`
+- `history_i18n.py`
+- `icon_tags.py`
 - `misc_tags.py`
 - `navigation_tags.py`
 - `permission_tags.py`

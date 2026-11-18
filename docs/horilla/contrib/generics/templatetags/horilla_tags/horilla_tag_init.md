@@ -14,10 +14,13 @@ Core actions in this module:
 2. imports all tag/filter submodules for side effects (registration):
    - `action_tags`
    - `asset_tags`
+   - `components`
    - `datetime_filters`
    - `display_tags`
    - `field_filters`
    - `history_display`
+   - `history_i18n`
+   - `icon_tags`
    - `misc_tags`
    - `navigation_tags`
    - `permission_tags`

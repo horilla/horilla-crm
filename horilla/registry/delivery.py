@@ -219,14 +219,21 @@ class DeliveryChannel(abc.ABC):
         if target is None or target == "":
             return None
         if isinstance(target, str):
-            value = target.strip()
-            if self.address_kind == ADDRESS_PHONE:
-                return value if is_phone_number(value) else None
-            if "@" not in value:
-                return None
-            if self.address_kind == ADDRESS_USER:
-                return User.objects.filter(email=value).first()
-            return value
+            return self._address_from_string(target.strip())
+        return self._address_from_object(target)
+
+    def _address_from_string(self, value):
+        """Address for a raw string ``value``, or ``None`` if it does not fit."""
+        if self.address_kind == ADDRESS_PHONE:
+            return value if is_phone_number(value) else None
+        if "@" not in value:
+            return None
+        if self.address_kind == ADDRESS_USER:
+            return User.objects.filter(email=value).first()
+        return value
+
+    def _address_from_object(self, target):
+        """Address read from the relevant field of an object (usually a user)."""
         if self.address_kind == ADDRESS_USER:
             if isinstance(target, User):
                 return target

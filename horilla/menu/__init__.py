@@ -37,3 +37,15 @@ MAIN_SECTION_HX_ATTRS = {
     **MAIN_CONTENT_HX_ATTRS,
     "hx-select-oob": "#sideMenuContainer",
 }
+
+
+def condition_met(condition, request) -> bool:
+    """Return whether a menu ``condition`` allows this request.
+
+    A callable is called with the request and must be true. With no request,
+    a callable condition fails. A plain value is used as a flag, and a missing
+    condition defaults to ``True`` at the call site.
+    """
+    if callable(condition):
+        return bool(request and condition(request))
+    return bool(condition)

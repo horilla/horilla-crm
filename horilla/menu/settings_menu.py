@@ -4,6 +4,8 @@ Settings menu registry for Horilla, managing settings pages with permissions and
 
 from typing import Any, Dict, List, Type
 
+from horilla.menu import condition_met
+
 settings_registry: List[Any] = []
 
 
@@ -29,12 +31,7 @@ def get_settings_menu(request=None) -> List[Dict]:
         ),
     ):
         obj = cls()
-
-        condition = getattr(obj, "condition", True)
-        if callable(condition):
-            if not request or not condition(request):
-                continue
-        elif not condition:
+        if not condition_met(getattr(obj, "condition", True), request):
             continue
 
         data = {
@@ -59,11 +56,7 @@ def get_settings_menu(request=None) -> List[Dict]:
                 if not item:
                     continue
 
-            item_condition = item.get("condition", True)
-            if callable(item_condition):
-                if not request or not item_condition(request):
-                    continue
-            elif not item_condition:
+            if not condition_met(item.get("condition", True), request):
                 continue
 
             data["items"].append(item)

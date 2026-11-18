@@ -4,6 +4,8 @@ My settings menu system for Horilla, with registration and permission-based filt
 
 from typing import Any, List, Type
 
+from horilla.menu import condition_met
+
 my_settings_menu: List[Any] = []
 
 
@@ -18,12 +20,7 @@ def get_my_settings_menu(request=None) -> list[dict]:
     items = []
     for cls in my_settings_menu:
         obj = cls()
-
-        condition = getattr(obj, "condition", True)
-        if callable(condition):
-            if not request or not condition(request):
-                continue
-        elif not condition:
+        if not condition_met(getattr(obj, "condition", True), request):
             continue
 
         perm = getattr(obj, "perm", None)

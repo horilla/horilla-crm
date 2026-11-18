@@ -24,6 +24,10 @@ class WhatsAppAccountSerializer(serializers.ModelSerializer):
         write_only=True, required=False, allow_blank=True
     )
 
+    app_secret = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, allow_null=True
+    )
+
     class Meta:
         """Meta class for WhatsAppAccountSerializer"""
 
@@ -31,7 +35,12 @@ class WhatsAppAccountSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate(self, attrs):
-        """Ensure only one primary WhatsApp account exists per company."""
+        """Require an app secret; ensure one primary account per company."""
+        has_secret = attrs.get("app_secret") or getattr(
+            self.instance, "app_secret", None
+        )
+        if not has_secret:
+            raise serializers.ValidationError({"app_secret": "App secret is required."})
         is_primary = attrs.get(
             "is_primary", getattr(self.instance, "is_primary", False)
         )

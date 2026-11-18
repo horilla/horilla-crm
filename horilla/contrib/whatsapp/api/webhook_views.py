@@ -85,38 +85,10 @@ class WhatsAppWebhookView(View):
         except json.JSONDecodeError:
             return HttpResponse(status=400)
 
-        # TEMP-DEBUG-WEBHOOK: summary only (no message text); remove after diagnosing.
-        try:
-            summary = []
-            for entry in payload.get("entry", []):
-                for change in entry.get("changes", []):
-                    value = change.get("value", {})
-                    summary.append(
-                        {
-                            "field": change.get("field"),
-                            "messages": [
-                                m.get("type") for m in value.get("messages", [])
-                            ],
-                            "statuses": [
-                                f"{st.get('status')}:{str(st.get('id'))[-8:]}"
-                                for st in value.get("statuses", [])
-                            ],
-                            "phone_number_id": value.get("metadata", {}).get(
-                                "phone_number_id"
-                            ),
-                        }
-                    )
-            with open(
-                "/tmp/claude-1000/-home-cybrosys-Horilla-whatsapp/80b9e263-771f-4556-af48-53db23957cd8/scratchpad/webhook_debug.log",
-                "a",
-                encoding="utf-8",
-            ) as debug_file:
-                debug_file.write(
-                    f"{timezone.now().isoformat()} {json.dumps(summary)}\n"
-                )
-        except Exception:  # pylint: disable=broad-except
-            pass
+        signature = request.headers.get("X-Hub-Signature-256", "")
 
+        # Resolve and authenticate every target account before touching any data.
+        work = []
         for entry in payload.get("entry", []):
             for change in entry.get("changes", []):
                 value = change.get("value", {})
@@ -130,11 +102,25 @@ class WhatsAppWebhookView(View):
                         phone_number_id,
                     )
                     continue
+                if not account.get_decrypted_app_secret():
+                    logger.warning(
+                        "WhatsApp webhook rejected: no app secret configured for account %s",
+                        account.pk,
+                    )
+                    return HttpResponse(status=403)
+                if not account.verify_webhook_signature(request.body, signature):
+                    logger.warning(
+                        "WhatsApp webhook rejected: invalid signature for account %s",
+                        account.pk,
+                    )
+                    return HttpResponse(status=403)
+                work.append((account, value))
 
-                for message in value.get("messages", []):
-                    self._handle_message(account, value, message)
-                for status_update in value.get("statuses", []):
-                    self._handle_status(status_update)
+        for account, value in work:
+            for message in value.get("messages", []):
+                self._handle_message(account, value, message)
+            for status_update in value.get("statuses", []):
+                self._handle_status(status_update)
 
         return JsonResponse({"success": True})
 

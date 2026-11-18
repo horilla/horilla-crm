@@ -24,7 +24,12 @@ class WhatsAppAccountFilter(HorillaFilterSet):
 
         model = WhatsAppAccount
         fields = "__all__"
-        exclude = ["additional_info", "access_token", "webhook_verify_token"]
+        exclude = [
+            "additional_info",
+            "access_token",
+            "webhook_verify_token",
+            "app_secret",
+        ]
         search_fields = ["display_name", "display_phone_number"]
 
 

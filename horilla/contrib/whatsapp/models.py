@@ -3,11 +3,14 @@ Models for the whatsapp app.
 """
 
 # Standard library imports
+import hashlib
+import hmac
 import re
 from datetime import timedelta
 
 # Third-party imports (Django)
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 from horilla.contrib.core.models import HorillaContentType, HorillaCoreModel
 from horilla.contrib.mail.encryption_utils import decrypt_password
@@ -107,6 +110,16 @@ class WhatsAppAccount(HorillaCoreModel):
         null=True,
         verbose_name=_("Webhook Verify Token"),
     )
+    app_secret = EncryptedCharField(
+        max_length=512,
+        blank=True,
+        null=True,
+        verbose_name=_("App Secret"),
+        help_text=_(
+            "Meta app secret (App settings > Basic). Used to verify the "
+            "signature of incoming webhook requests."
+        ),
+    )
     api_version = models.CharField(
         max_length=10, default="v21.0", verbose_name=_("Graph API Version")
     )
@@ -152,6 +165,30 @@ class WhatsAppAccount(HorillaCoreModel):
             return decrypt_password(self.webhook_verify_token)
         return None
 
+    def get_decrypted_app_secret(self):
+        """Return the decrypted Meta app secret."""
+        if self.app_secret:
+            return decrypt_password(self.app_secret)
+        return None
+
+    def verify_webhook_signature(self, raw_body, signature_header):
+        """
+        Check Meta's X-Hub-Signature-256 header against the raw request body.
+
+        Returns False when the account has no app secret, or when the header is
+        missing, malformed or does not match.
+        """
+        secret = self.get_decrypted_app_secret()
+        if not secret or not signature_header:
+            return False
+        prefix = "sha256="
+        if not signature_header.startswith(prefix):
+            return False
+        expected = hmac.new(
+            secret.encode("utf-8"), raw_body or b"", hashlib.sha256
+        ).hexdigest()
+        return hmac.compare_digest(expected, signature_header[len(prefix) :].strip())
+
     def get_edit_url(self):
         """Return the edit URL for this account."""
         return reverse_lazy(
@@ -170,8 +207,20 @@ class WhatsAppAccount(HorillaCoreModel):
             "whatsapp:whatsapp_account_test_connection_view", kwargs={"pk": self.pk}
         )
 
+    def clean(self):
+        """An account cannot be saved without a Meta app secret."""
+        super().clean()
+        if not self.app_secret:
+            raise ValidationError(
+                {"app_secret": _("App secret is required to save an account.")}
+            )
+
     def save(self, *args, **kwargs):
-        """Enforce only one primary WhatsApp account per company."""
+        """Require an app secret; enforce one primary account per company."""
+        if not self.app_secret:
+            raise ValidationError(
+                {"app_secret": _("App secret is required to save an account.")}
+            )
         if getattr(self, "_saving", False):
             return super().save(*args, **kwargs)
 

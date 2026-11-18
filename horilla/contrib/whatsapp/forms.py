@@ -42,28 +42,29 @@ class WhatsAppAccountForm(HorillaModelForm):
     stored value is encrypted and never decrypted back into a form field.
     """
 
-    access_token = forms.CharField(
-        widget=PasswordInputWithEye(attrs={"placeholder": _("Enter access token")}),
-        help_text=_("Permanent access token generated from the Meta app."),
-        required=False,
-    )
-    webhook_verify_token = forms.CharField(
-        widget=PasswordInputWithEye(
-            attrs={"placeholder": _("Enter webhook verify token")}
-        ),
-        required=False,
-    )
-
     class Meta:
         """Meta class for WhatsAppAccountForm."""
 
         model = WhatsAppAccount
         fields = "__all__"
+        widgets = {
+            "access_token": PasswordInputWithEye(
+                attrs={"placeholder": _("Enter access token")}
+            ),
+            "webhook_verify_token": PasswordInputWithEye(
+                attrs={"placeholder": _("Enter webhook verify token")}
+            ),
+            "app_secret": PasswordInputWithEye(
+                attrs={"placeholder": _("Enter app secret")}
+            ),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not self.instance.pk:
-            self.fields["access_token"].required = True
+        # Stored secrets are never shown back, so a blank edit keeps them.
+        self.fields["access_token"].required = not self.instance.pk
+        self.fields["webhook_verify_token"].required = False
+        self.fields["app_secret"].required = True
 
         default_bot_rule_qs = WhatsAppBotRule.objects.filter(
             trigger_type="inbound_message", content_type__isnull=True
@@ -854,7 +855,10 @@ class WhatsAppBotRuleNodeForm(HorillaModelForm):
         return result
 
     def _parse_options_field(self):
-        """Reconstruct the options list from flat POST rows (`options_id_<n>` / `options_label_<n>`)."""
+        """
+        Reconstruct the options list from flat POST rows
+        (`options_id_<n>` / `options_label_<n>`).
+        """
         id_prefix = "options_id_"
         result = []
         for name in self.data:

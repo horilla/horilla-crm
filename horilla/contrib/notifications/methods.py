@@ -54,3 +54,29 @@ def create_notification(
         return notification
     except Exception:
         return None
+
+
+def get_user_notifications(user):
+    """
+    Return the user's notifications, leaving out those whose related record is
+    not visible in the active company (the default manager is company-scoped).
+    """
+    queryset = Notification.objects.filter(user=user)
+    linked = queryset.filter(content_type__isnull=False, object_id__isnull=False)
+    hidden = []
+    for content_type_id in linked.values_list("content_type_id", flat=True).distinct():
+        model = HorillaContentType.objects.get(pk=content_type_id).model_class()
+        if model is None:
+            continue
+        rows = list(
+            linked.filter(content_type_id=content_type_id).values_list(
+                "pk", "object_id"
+            )
+        )
+        visible = set(
+            model._default_manager.filter(
+                pk__in={object_id for _, object_id in rows}
+            ).values_list("pk", flat=True)
+        )
+        hidden.extend(pk for pk, object_id in rows if object_id not in visible)
+    return queryset.exclude(pk__in=hidden)

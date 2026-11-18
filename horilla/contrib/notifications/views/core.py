@@ -12,6 +12,7 @@ from horilla.views.generic import View
 from horilla.web import HttpResponse, ScriptResponse
 
 # Local imports
+from ..methods import get_user_notifications
 from ..models import Notification, NotificationSoundPreference
 
 
@@ -32,7 +33,7 @@ class MarkNotificationReadView(LoginRequiredMixin, View):
             HttpResponse: HTTP 200 response on success.
         """
         try:
-            notif = Notification.objects.get(pk=pk, user=request.user)
+            notif = get_user_notifications(request.user).get(pk=pk)
             notif.read = True
             notif.save()
         except Notification.DoesNotExist:
@@ -57,11 +58,9 @@ class MarkAllNotificationsReadView(LoginRequiredMixin, View):
         Returns:
             HttpResponse: Rendered notification list template.
         """
-        Notification.objects.filter(user=request.user, read=False).update(read=True)
+        get_user_notifications(request.user).filter(read=False).update(read=True)
         messages.success(request, _("All notifications marked as read."))
-        unread_notifications = Notification.objects.filter(
-            user=request.user, read=False
-        )
+        unread_notifications = get_user_notifications(request.user).filter(read=False)
         return render(
             request,
             "notification_list.html",
@@ -89,7 +88,7 @@ class DeleteNotification(LoginRequiredMixin, View):
             HttpResponse: HTTP 200 response on success.
         """
         try:
-            notif = Notification.objects.get(pk=pk, user=request.user)
+            notif = get_user_notifications(request.user).get(pk=pk)
             notif.delete()
         except Notification.DoesNotExist:
             # The delete button reloads the messages after its click, which shows this.
@@ -115,7 +114,7 @@ class DeleteAllNotification(LoginRequiredMixin, View):
         Returns:
             HttpResponse: Rendered sidebar list template.
         """
-        Notification.objects.filter(user=request.user).delete()
+        get_user_notifications(request.user).delete()
         messages.success(request, f"All notifications cleared.")
         return render(request, "sidebar_list.html", {"request": request})
 
@@ -130,7 +129,7 @@ class OpenNotificationView(LoginRequiredMixin, View):
         detail popup with the related object's details (or notification message only).
         """
         try:
-            notif = Notification.objects.get(pk=pk, user=request.user)
+            notif = get_user_notifications(request.user).get(pk=pk)
             notif.read = True
             notif.save()
 
@@ -151,7 +150,7 @@ class ToggleNotificationSoundView(LoginRequiredMixin, View):
         pref, _ = NotificationSoundPreference.objects.get_or_create(user=request.user)
         pref.sound_muted = not pref.sound_muted
         pref.save()
-        unread = Notification.objects.filter(user=request.user, read=False)
+        unread = get_user_notifications(request.user).filter(read=False)
         return render(
             request,
             "notification_list.html",

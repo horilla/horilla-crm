@@ -6,7 +6,7 @@
         <div
             id="navBar"
             class="flex-shrink-0"
-            hx-get="{% url 'field_management:form_layout_detail_nav' ct=selected_content_type.pk %}"
+            hx-get="{% url 'field_management:form_layout_detail_nav' ct=selected_content_type.pk %}{% if is_editing %}?mode=edit{% endif %}"
             hx-trigger="load"
         >
         </div>

@@ -178,7 +178,7 @@ def detail_url(content_type_id):
 @method_decorator(htmx_required, name="dispatch")
 @method_decorator(permission_required_or_denied(ADD_PERM, modal=True), name="dispatch")
 class FormLayoutCreateView(LoginRequiredMixin, HorillaSingleFormView):
-    """Modal form: pick a model, store its default layout, open the detail page."""
+    """Modal form: pick a model, store its default layout, open it in edit mode."""
 
     model = FormLayoutField
     form_class = FormLayoutCreateForm
@@ -190,7 +190,7 @@ class FormLayoutCreateView(LoginRequiredMixin, HorillaSingleFormView):
     full_width_fields = ["content_type"]
 
     def form_valid(self, form):
-        """Store the layout with every field shown, then open its detail page."""
+        """Store the layout with every field shown, then open its editor."""
         content_type = form.cleaned_data["content_type"]
         model = content_type.model_class()
         if model is None:
@@ -207,10 +207,11 @@ class FormLayoutCreateView(LoginRequiredMixin, HorillaSingleFormView):
         )
         messages.success(self.request, _("Form layout created."))
         url = detail_url(content_type.pk)
+        edit_url = f"{url}?mode={MODE_EDIT}"
         return ScriptResponse(
             close=True,
             extra=(
-                f"htmx.ajax('GET', '{url}', {{target: '#settings-content', "
+                f"htmx.ajax('GET', '{edit_url}', {{target: '#settings-content', "
                 f"select: '#form-layout-view', swap: 'innerHTML'}})"
                 f".then(function () {{ history.pushState({{}}, '', '{url}'); }});"
             ),
@@ -284,15 +285,16 @@ class FormLayoutEditorMixin:
     name="dispatch",
 )
 class FormLayoutView(LoginRequiredMixin, FormLayoutEditorMixin, View):
-    """Detail page for one model's layout; always opens read-only."""
+    """Detail page for one model's layout; read-only unless ``?mode=edit``."""
 
     template_name = "field_management/form_layouts/form_layout_view.html"
 
     def get(self, request, *args, **kwargs):
-        """Render the detail page with the read-only editor."""
+        """Render the detail page; ``?mode=edit`` opens edit mode for users who may change."""
         content_type, model = self.get_selected_model(request)
+        mode = MODE_EDIT if request.GET.get("mode") == MODE_EDIT else MODE_VIEW
         return self.render_editor(
-            request, content_type, model, template_name=self.template_name
+            request, content_type, model, template_name=self.template_name, mode=mode
         )
 
 

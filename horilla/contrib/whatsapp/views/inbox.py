@@ -12,15 +12,16 @@ import uuid
 
 # Third-party imports (Django)
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import OperationalError, close_old_connections
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.html import escape
 from django.views.generic import DetailView, FormView, View
 
-# First party imports (Horilla)
 from horilla.apps import apps
+
+# First party imports (Horilla)
+from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.generics.views.details import (
     check_record_access,
@@ -50,6 +51,26 @@ from ..models import (
 from ..services import WhatsAppAPIError, WhatsAppCloudAPIClient
 
 logger = logging.getLogger(__name__)
+
+
+def _can_access_conversation(user, conversation, change=False):
+    """
+    Object-level access check for a conversation.
+
+    Linked conversations defer to the related record's access rules. Conversations
+    with no live related record (never linked, or the record was deleted) fall
+    back to the model-level WhatsAppConversation permission instead of being
+    open to every authenticated user.
+    """
+    related_object = conversation.related_to
+    if related_object:
+        check = check_record_change_access if change else check_record_access
+        return check(user, related_object)
+    if getattr(user, "is_superuser", False):
+        return True
+    meta = WhatsAppConversation._meta
+    codename = "change" if change else "view"
+    return user.has_perm(f"{meta.app_label}.{codename}_{meta.model_name}")
 
 
 _delivery_queues = {}
@@ -363,8 +384,7 @@ class WhatsAppMessageListView(LoginRequiredMixin, DetailView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        related_object = self.object.related_to
-        if related_object and not check_record_access(request.user, related_object):
+        if not _can_access_conversation(request.user, self.object):
             return render(request, "403.html", status=403)
         after = request.GET.get("after")
         if after is not None:
@@ -412,6 +432,7 @@ class WhatsAppMessageItemView(LoginRequiredMixin, View):
     """
 
     def get(self, request, pk, message_pk):
+        """One message bubble, so a live update can replace that message."""
         message = (
             WhatsAppMessage.objects.select_related(
                 "conversation", "template", "sent_by"
@@ -422,8 +443,7 @@ class WhatsAppMessageItemView(LoginRequiredMixin, View):
         )
         if not message:
             raise Http404(_("Message not found."))
-        related_object = message.conversation.related_to
-        if related_object and not check_record_access(request.user, related_object):
+        if not _can_access_conversation(request.user, message.conversation):
             return render(request, "403.html", status=403)
         previous = (
             WhatsAppMessage.objects.filter(conversation_id=pk, pk__lt=message.pk)
@@ -451,10 +471,7 @@ class WhatsAppSendMessageView(LoginRequiredMixin, FormView):
         if not self.conversation or not self.conversation.account:
             raise Http404(_("Conversation not found."))
 
-        related_object = self.conversation.related_to
-        if related_object and not check_record_change_access(
-            request.user, related_object
-        ):
+        if not _can_access_conversation(request.user, self.conversation, change=True):
             messages.error(
                 request, _("You don't have permission to message this record.")
             )
@@ -532,6 +549,7 @@ class WhatsAppTemplateSendFormView(LoginRequiredMixin, _TemplateParamMixin, View
     """
 
     def get(self, request, *args, **kwargs):
+        """The form that sends a template into this conversation."""
         conversation = WhatsAppConversation.objects.filter(pk=kwargs.get("pk")).first()
         if not conversation or not conversation.account:
             raise Http404(_("Conversation not found."))
@@ -575,10 +593,7 @@ class WhatsAppSendTemplateView(LoginRequiredMixin, _TemplateParamMixin, View):
         if not self.conversation or not self.conversation.account:
             raise Http404(_("Conversation not found."))
 
-        related_object = self.conversation.related_to
-        if related_object and not check_record_change_access(
-            request.user, related_object
-        ):
+        if not _can_access_conversation(request.user, self.conversation, change=True):
             messages.error(
                 request, _("You don't have permission to message this record.")
             )
@@ -695,6 +710,7 @@ class WhatsAppSendTemplateView(LoginRequiredMixin, _TemplateParamMixin, View):
         return components, preview_body, preview_media
 
     def post(self, request, *args, **kwargs):
+        """Send the chosen template into this conversation."""
         conversation = self.conversation
         template = (
             WhatsAppTemplate.objects.filter(
@@ -778,10 +794,7 @@ class WhatsAppSendFlowView(LoginRequiredMixin, View):
         if not self.conversation or not self.conversation.account:
             raise Http404(_("Conversation not found."))
 
-        related_object = self.conversation.related_to
-        if related_object and not check_record_change_access(
-            request.user, related_object
-        ):
+        if not _can_access_conversation(request.user, self.conversation, change=True):
             messages.error(
                 request, _("You don't have permission to message this record.")
             )
@@ -789,6 +802,7 @@ class WhatsAppSendFlowView(LoginRequiredMixin, View):
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        """Start a flow in this conversation."""
         conversation = self.conversation
         flow = (
             WhatsAppFlow.objects.filter(
@@ -860,10 +874,7 @@ class WhatsAppSendBotRuleView(LoginRequiredMixin, View):
         if not self.conversation or not self.conversation.account:
             raise Http404(_("Conversation not found."))
 
-        related_object = self.conversation.related_to
-        if related_object and not check_record_change_access(
-            request.user, related_object
-        ):
+        if not _can_access_conversation(request.user, self.conversation, change=True):
             messages.error(
                 request, _("You don't have permission to message this record.")
             )
@@ -871,6 +882,7 @@ class WhatsAppSendBotRuleView(LoginRequiredMixin, View):
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        """Start a bot rule in this conversation."""
         from ..engine.base import FlowEngine
 
         conversation = self.conversation
@@ -899,14 +911,12 @@ class WhatsAppConversationTakeOverView(LoginRequiredMixin, View):
     """Disable the bot for a conversation so a human agent can take over."""
 
     def post(self, request, *args, **kwargs):
+        """Turn the bot off so a person can reply in this conversation."""
         conversation = WhatsAppConversation.objects.filter(pk=kwargs.get("pk")).first()
         if not conversation:
             raise Http404(_("Conversation not found."))
 
-        related_object = conversation.related_to
-        if related_object and not check_record_change_access(
-            request.user, related_object
-        ):
+        if not _can_access_conversation(request.user, conversation, change=True):
             return JsonResponse({"success": False}, status=403)
 
         conversation.is_bot_active = False

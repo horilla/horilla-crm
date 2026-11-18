@@ -13,6 +13,16 @@ from ...forms.rich_text import HorillaSummernoteWidget
 from ._registry import register
 
 
+@register.filter
+def eq(value, arg):
+    """True when the two values are equal.
+
+    A template tag argument cannot contain ``==``, so
+    ``active=active|eq:"folders"`` is how a link is marked current.
+    """
+    return value == arg
+
+
 @register.filter(is_safe=True)
 def sanitize_html(value):
     """Sanitize stored rich text before it is rendered as trusted HTML."""

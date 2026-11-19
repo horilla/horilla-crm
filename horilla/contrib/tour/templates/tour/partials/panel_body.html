@@ -1,0 +1,28 @@
+{% for group in groups %}
+    <div class="mt-2.5">
+        <p class="mb-1 text-[11px] font-semibold uppercase tracking-wide text-dark-400">{{ group.name }}</p>
+        {% for tour in group.tours %}
+            <a
+                href="{{ tour.start_url|default:'#' }}"
+                class="group block cursor-pointer py-1 focus-visible:outline-none"
+                data-tour-card="{{ tour.key }}"
+                data-tour-start="{{ tour.key }}"
+            >
+                <div class="flex items-center gap-3 rounded-lg border border-dark-50 px-3 py-2.5 transition-all duration-300 ease-in-out group-hover:border-primary-600 group-hover:-translate-y-1 group-hover:shadow-lg group-focus-visible:border-primary-600 group-focus-visible:-translate-y-1 group-focus-visible:shadow-lg">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-300">
+                        {% themed_icon tour.icon "h-[18px] w-[18px]" %}
+                    </span>
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-semibold text-dark-600" title="{{ tour.title }}">{{ tour.title }}</p>
+                        <p class="truncate text-xs text-dark-400" title="{{ tour.description }}">{{ tour.description }}</p>
+                    </div>
+                    <span class="shrink-0 text-xs text-dark-400">{% blocktrans count n=tour.steps_total %}{{ n }} step{% plural %}{{ n }} steps{% endblocktrans %}</span>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+{% endfor %}
+
+{% if not groups %}
+    <p class="my-4 text-[13px] text-dark-400">{% trans "No tours are available for your account yet." %}</p>
+{% endif %}

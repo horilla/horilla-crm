@@ -288,7 +288,7 @@
                     >
                         <i class="fas fa-th-large transition duration-300 group-hover:text-white"></i>
                     </button>
-                    <div class="dropdown-content w-44 absolute z-10 bg-white border-primary-300 rounded-lg [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_8%)] py-2 end-0">
+                    <div class="dropdown-content w-max min-w-44 max-w-xs absolute z-10 bg-white border-primary-300 rounded-lg [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_8%)] py-2 end-0">
                         <!-- All Companies Toggle -->
                         <div class="px-4 py-2 border-b border-dark-50">
                             <div class="flex items-center justify-between gap-3">
@@ -331,15 +331,15 @@
                                             onclick="this.closest('form').action = '/switch-company/{{ company.id }}/'"
                                             class="px-4 py-1.5 hover:text-primary-600 transition duration-300 text-sm gap-4 items-center flex w-full {% if request.active_company.id == company.id %}text-primary-600{% endif %}"
                                         >
-                                            <div class="flex items-center gap-2">
-                                                <span class="rounded-full overflow-hidden w-6 h-6">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="rounded-full overflow-hidden w-6 h-6 shrink-0">
                                                     <img
                                                         src="{% if company.icon %}{{ company.icon.url }}{% else %}{{ company.get_avatar}}{% endif %}"
                                                         alt="{{ company.name }}"
                                                         class="object-cover w-full h-full"
                                                     >
                                                 </span>
-                                                {{ company.name }}
+                                                <span class="truncate whitespace-nowrap">{{ company.name }}</span>
                                             </div>
                                             {% if request.active_company.id == company.id %}
                                                 <i class="fas fa-check-circle text-green-500 text-xs ms-auto"></i>
@@ -391,6 +391,22 @@
                                     class="px-4 py-1.5 hover:text-primary-600 transition duration-300 text-sm gap-4 items-center flex w-full"
                                 >
                                     {% trans "My Settings" %}
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    id="horilla-tour-launcher"
+                                    aria-haspopup="dialog"
+                                    aria-expanded="false"
+                                    aria-controls="horilla-tour-panel"
+                                    hx-get="{% url 'tour:panel' %}"
+                                    hx-vals='js:{path: window.location.pathname}'
+                                    hx-target="#tour-panel-content"
+                                    hx-indicator="#tour-panel-loading"
+                                    class="px-4 py-1.5 hover:text-primary-600 transition duration-300 text-sm gap-4 items-center flex w-full"
+                                >
+                                    {% trans "Product Tours" %}
                                 </button>
                             </li>
                             <li>

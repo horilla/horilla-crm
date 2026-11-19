@@ -1,0 +1,37 @@
+    {# Tour popover and message card: tour.js copies these in and fills the text #}
+    <template id="horilla-tour-popover" data-popover-class="!rounded-lg !p-4 !min-w-[260px] !max-w-[340px] !bg-white !shadow-2xl">
+        <div>
+            <button type="button" data-tour-close data-native-tooltip="true" class="absolute top-1.5 right-3 focus:outline-none text-xl leading-none text-dark-400 hover:text-dark-600 cursor-pointer" aria-label="{% trans 'Close' %}">&times;</button>
+            <p data-tour-title class="pe-5 text-base font-semibold text-dark-600"></p>
+            <p data-tour-body class="mt-1.5 text-sm leading-relaxed text-dark-400"></p>
+            <p data-tour-progress class="mt-2.5 text-xs text-dark-400"></p>
+            <div class="mt-3 flex justify-end gap-2">
+                {% btn _("Skip") variant="outline" type="button" data_tour_skip=True %}
+                {% btn _("Back") variant="outline" type="button" data_tour_prev=True %}
+                {% btn _("Next") type="button" data_tour_next=True %}
+            </div>
+        </div>
+    </template>
+    <template id="horilla-tour-card">
+        <div id="horilla-tour-card" role="status" class="fixed right-[20px] top-[70px] z-[1000000001] w-[340px] max-w-[calc(100vw-20px)] rounded-lg bg-white px-4 py-4 [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_8%)]">
+            <p data-tour-card-title class="text-sm font-semibold text-dark-600"></p>
+            <p data-tour-card-body class="mt-1.5 text-xs leading-normal text-dark-400"></p>
+            <div class="mt-3.5 flex justify-end">
+                {% btn _("Close") variant="outline" type="button" %}
+            </div>
+        </div>
+    </template>
+    <div
+        id="horilla-tour-panel"
+        class="fixed right-[20px] top-[70px] z-[60] w-[380px] max-w-[calc(100vw-20px)] overflow-hidden rounded-lg bg-white [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_8%)]"
+        role="dialog"
+        aria-labelledby="tour-panel-title"
+        hidden
+    >
+        <div class="flex items-center gap-3 px-4 pb-1.5 pt-3.5">
+            <div class="flex-1 text-[15px] font-semibold text-dark-600" id="tour-panel-title">{% trans "Product Tours" %}</div>
+            <button type="button" class="h-7 w-7 rounded-md text-[22px] leading-none text-dark-400 hover:bg-dark-25 hover:text-dark-600 cursor-pointer" data-tour-panel-close aria-label="{% trans 'Close' %}">&times;</button>
+        </div>
+        <div id="tour-panel-content" class="max-h-[480px] min-h-[120px] overflow-y-auto px-4 pb-2.5 pt-1.5"></div>
+        <div id="tour-panel-loading" class="htmx-indicator pointer-events-none absolute inset-0 flex items-center justify-center bg-white/70">{% spinner "md" %}</div>
+    </div>

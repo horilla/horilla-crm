@@ -1,16 +1,6 @@
 <div class="p-5">
-    <div class="flex justify-between items-center mb-2">
-        <h2 class="text-md font-semibold">{% trans module.name %}</h2>
-        <button
-            type="button"
-            onclick="closeContentModal()"
-            class="text-gray-500 hover:text-red-500 text-xl cursor-pointer"
-            aria-label="{% trans 'Close' %}"
-        >
-            <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-        </button>
-    </div>
-
+    {% trans module.name as module_label %}
+    {% modal_header module_label on_close="closeContentModal()" %}
     <p class="text-gray-600 mb-3">{% trans module.description %}</p>
     <div class="flex flex-wrap gap-2 mb-3">
         <span

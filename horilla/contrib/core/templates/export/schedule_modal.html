@@ -16,16 +16,7 @@
             {% endif %}
 
             <!-- Header -->
-            <div class="flex justify-between items-center mb-2">
-                <h2 class="text-md font-semibold">{% trans "Schedule Export" %}</h2>
-                <button
-                    type="button"
-                    onclick="closeModal()"
-                    class="text-gray-500 hover:text-red-500 text-xl cursor-pointer"
-                >
-                    <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}" class="w-5 h-5">
-                </button>
-            </div>
+            {% modal_header _("Schedule Export") %}
 
             {% if non_field_error %}
                 <div class="bg-primary-100 text-primary-600 px-4 py-2 rounded mb-4">

@@ -11,19 +11,14 @@
         <input type="hidden" name="related_object_id" value="{{ related_object_id }}">
 
         <div class="p-5">
-            <div class="flex justify-between items-center mb-2">
-                <h2 class="text-md font-semibold">
-                    {% if phone_number %}{% trans "Call" %}
-                        {{ phone_number }}{% else %}{% trans "Make a Call" %}{% endif %}
-                </h2>
-                <button
-                    type="button"
-                    onclick="closeModal()"
-                    class="text-gray-500 hover:text-red-500 text-xl cursor-pointer"
-                >
-                    <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-                </button>
-            </div>
+            {% if phone_number %}
+                {% trans "Call" as call_label %}
+                {% with call_title=call_label|concat:" "|concat:phone_number %}
+                    {% modal_header call_title %}
+                {% endwith %}
+            {% else %}
+                {% modal_header _("Make a Call") %}
+            {% endif %}
 
             {% if error %}
                 <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mb-3">

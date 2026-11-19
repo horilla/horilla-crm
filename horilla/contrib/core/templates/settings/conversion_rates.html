@@ -9,12 +9,7 @@
         {% csrf_token %}
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
         <div class="p-5">
-            <div class="flex justify-between items-center mb-2">
-                <h2 class="text-md font-semibold">{% trans "Conversion Rates" %}</h2>
-                <button type="button" onclick="closeModal()" class="text-gray-500 hover:text-red-500 text-xl cursor-pointer">
-                    <img src='{% static "assets/icons/close.svg" %}' alt="{% trans 'Close' %}">
-                </button>
-            </div>
+            {% modal_header _("Conversion Rates") %}
             <div class="overflow-hidden overflow-y-auto pe-2">
                 <div class="mb-4">
                     <p class="text-sm text-gray-600 font-medium">

@@ -48,6 +48,7 @@ class CustomFieldQuickFilterExtension(ListExtension):
     _inherit_list = "horilla.contrib.generics.views.list.HorillaListView"
 
     def get_extra_quick_filter_fields(self):
+        """Choice custom fields offered as quick filters."""
         fields = list(super().get_extra_quick_filter_fields())
         for name, defn in _choice_definitions(self).items():
             fields.append(
@@ -60,6 +61,7 @@ class CustomFieldQuickFilterExtension(ListExtension):
         return fields
 
     def get_extra_quick_filter_choices(self, field_name):
+        """Choices for a custom quick-filter field."""
         if not is_custom_field_name(field_name):
             return super().get_extra_quick_filter_choices(field_name)
         defn = _choice_definitions(self).get(field_name)
@@ -68,6 +70,7 @@ class CustomFieldQuickFilterExtension(ListExtension):
         return [{"value": c, "label": c} for c in defn.get_choices_list()]
 
     def apply_extra_quick_filter(self, queryset, field_name, value):
+        """Restrict the queryset to rows whose custom field has this value."""
         if not is_custom_field_name(field_name):
             return super().apply_extra_quick_filter(queryset, field_name, value)
         defn = _choice_definitions(self).get(field_name)

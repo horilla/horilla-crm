@@ -314,6 +314,7 @@ class CustomFieldScheduleExportProviderExtension(ViewExtension):
                 class _Namer:
                     @staticmethod
                     def get_export_filename(model, fmt):
+                        """File name for an export that contains only custom fields."""
                         return f"{model.__name__}_export.{fmt}"
 
                 return _custom_fields_only_export(
@@ -379,6 +380,7 @@ class CustomFieldFieldSelectionExtension(ViewExtension):
     )
 
     def get_context_data(self, **kwargs):
+        """Field-selection context, with this model's custom fields added."""
         context = super().get_context_data(**kwargs)
         try:
             return _add_template_custom_fields(self, context)
@@ -399,6 +401,7 @@ class CustomFieldPermissionFieldsExtension(ViewExtension):
     )
 
     def get_extra_permission_fields(self, model, existing_permissions):
+        """Field-permission rows for this model's custom fields."""
         entries = list(super().get_extra_permission_fields(model, existing_permissions))
         for label, name in custom_field_selector_items(model):
             entries.append(

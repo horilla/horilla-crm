@@ -31,6 +31,7 @@ class CustomFieldModelFieldChoicesExtension(ViewExtension):
     _inherit_view = "horilla.contrib.generics.views.helpers.condition_widget.GetModelFieldChoicesView"
 
     def get_extra_field_choices(self, model):
+        """Condition-field choices, including this model's custom fields."""
         return list(super().get_extra_field_choices(model)) + _custom_field_choices(
             model
         )

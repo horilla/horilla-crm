@@ -54,6 +54,7 @@ class CustomFieldDashboardChoicesExtension(ViewExtension):
     )
 
     def get_extra_choices(self, model, purpose):
+        """Picker choices for this purpose, including custom fields."""
         return list(super().get_extra_choices(model, purpose)) + _picker_choices(
             model, purpose
         )
@@ -65,6 +66,7 @@ class CustomFieldDashboardFormExtension(FormExtension):
     _inherit_form = "horilla.contrib.dashboard.forms.DashboardCreateForm"
 
     def get_extra_choices(self, model, purpose):
+        """Form picker choices for this purpose, including custom fields."""
         return list(super().get_extra_choices(model, purpose)) + _picker_choices(
             model, purpose
         )

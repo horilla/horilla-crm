@@ -54,6 +54,7 @@ class ImportStep1RequirementsExtension(ViewExtension):
     _inherit_view = f"{_IMPORT}.step1.ImportStep1View"
 
     def get_model_fields(self, module_name, app_label):
+        """Step 1 fields, with the field-requirement overrides applied."""
         fields = super().get_model_fields(module_name, app_label)
         return _apply_requirements(fields, module_name, app_label)
 
@@ -64,6 +65,7 @@ class ImportStep2RequirementsExtension(ViewExtension):
     _inherit_view = f"{_IMPORT}.step2.ImportStep2View"
 
     def get_model_fields(self, module_name, app_label):
+        """Step 2 fields, with the field-requirement overrides applied."""
         fields = super().get_model_fields(module_name, app_label)
         return _apply_requirements(fields, module_name, app_label)
 
@@ -74,6 +76,7 @@ class ImportStep3RequirementsExtension(ViewExtension):
     _inherit_view = f"{_IMPORT}.step3.ImportStep3View"
 
     def get_model_fields(self, module_name, app_label):
+        """Step 3 fields, with the field-requirement overrides applied."""
         fields = super().get_model_fields(module_name, app_label)
         return _apply_requirements(fields, module_name, app_label)
 
@@ -84,6 +87,7 @@ class DownloadTemplateModalFieldsExtension(ViewExtension):
     _inherit_view = f"{_IMPORT}.aux_views.DownloadTemplateModalView"
 
     def get_model_fields(self, module_name, app_label):
+        """Template fields, with requirements applied and custom fields added."""
         fields = _apply_requirements(
             super().get_model_fields(module_name, app_label), module_name, app_label
         )
@@ -108,6 +112,7 @@ class DownloadTemplateHeadersExtension(ViewExtension):
     _inherit_view = f"{_IMPORT}.aux_views.DownloadTemplateView"
 
     def post(self, request, *args, **kwargs):
+        """Template download, with custom-field headers shown as labels."""
         response = super().post(request, *args, **kwargs)
         selected = [
             n for n in request.POST.getlist("selected_fields") if n.startswith("cf_")

@@ -179,12 +179,14 @@ class _GroupMethods:
         return [name for name in current if is_custom_field_name(name)]
 
     def get_group_field(self, field_name):
+        """Grouping field for a custom field, or the parent view's field."""
         definition = _group_definitions(self.model).get(field_name)
         if definition is None:
             return super().get_group_field(field_name)
         return _CustomChoiceField(field_name, definition)
 
     def persist_group_value(self, item, group_by):
+        """Save a card's custom-field group, or the parent view's value."""
         if not is_custom_field_name(group_by):
             return super().persist_group_value(item, group_by)
         save_custom_field_values(
@@ -206,6 +208,7 @@ class _GroupMethods:
         return allowed
 
     def get_group_by_field_choices(self):
+        """Group-by choices, including the visible custom fields."""
         choices = list(super().get_group_by_field_choices())
         known = {value for value, _label in choices}
         exclude, include = self._get_kanban_exclude_include_fields("group_by")
@@ -216,6 +219,7 @@ class _GroupMethods:
         return choices
 
     def get_chart_dimension_choices(self):
+        """Chart dimension choices, including the visible custom fields."""
         choices = list(super().get_chart_dimension_choices())
         known = {value for value, _label in choices}
         exclude, include = self._get_kanban_exclude_include_fields()
@@ -226,6 +230,7 @@ class _GroupMethods:
         return choices
 
     def get_queryset(self):
+        """Queryset annotated with the custom fields used for grouping."""
         queryset = super().get_queryset()
         names = self._cf_group_names()
         if not names:
@@ -326,6 +331,7 @@ class CustomFieldKanbanSettingsExtension(ViewExtension):
     )
 
     def get_form(self, form_class=None):
+        """Settings form, with custom fields available as group-by choices."""
         form = super().get_form(form_class)
         data = self.request.POST if self.request.method == "POST" else self.request.GET
         model = _settings_model(data)

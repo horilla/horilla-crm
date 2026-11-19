@@ -218,29 +218,35 @@ class CustomFieldConditionProviderExtension(ViewExtension):
     )
 
     def owns(self, field_name):
+        """Whether this name is a custom field this provider handles."""
         return _CUSTOM_FIELD_CONDITIONS.owns(field_name) or super().owns(field_name)
 
     def get_choices(self, model):
+        """Condition-field choices, including this model's custom fields."""
         return list(super().get_choices(model)) + _CUSTOM_FIELD_CONDITIONS.get_choices(
             model
         )
 
     def get_label(self, field_name):
+        """Label for a custom field, or the parent provider's label."""
         if _CUSTOM_FIELD_CONDITIONS.owns(field_name):
             return _CUSTOM_FIELD_CONDITIONS.get_label(field_name)
         return super().get_label(field_name)
 
     def get_value(self, field_name, instance):
+        """Stored value of a custom field on this instance."""
         if _CUSTOM_FIELD_CONDITIONS.owns(field_name):
             return _CUSTOM_FIELD_CONDITIONS.get_value(field_name, instance)
         return super().get_value(field_name, instance)
 
     def get_widget_info(self, field_name):
+        """Widget description for a custom condition field."""
         if _CUSTOM_FIELD_CONDITIONS.owns(field_name):
             return _CUSTOM_FIELD_CONDITIONS.get_widget_info(field_name)
         return super().get_widget_info(field_name)
 
     def build_condition_q(self, model, field_name, operator, value):
+        """Query for a custom-field condition, or the parent provider's query."""
         if _CUSTOM_FIELD_CONDITIONS.owns(field_name):
             return _CUSTOM_FIELD_CONDITIONS.build_condition_q(
                 model, field_name, operator, value
@@ -248,6 +254,7 @@ class CustomFieldConditionProviderExtension(ViewExtension):
         return super().build_condition_q(model, field_name, operator, value)
 
     def evaluate_condition(self, field_name, instance, operator, value):
+        """Whether this instance meets a custom-field condition."""
         if _date_field_definition(field_name) is not None:
             return evaluate_date_criterion(field_name, operator, value, instance)
         return super().evaluate_condition(field_name, instance, operator, value)

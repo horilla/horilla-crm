@@ -82,6 +82,7 @@ class CustomFieldReportFieldProviderExtension(ViewExtension):
     _inherit_view = "horilla.contrib.reports.utils.ReportFieldProvider"
 
     def get_virtual_fields(self, model_class):
+        """Report virtual fields, including this model's custom fields."""
         fields = dict(super().get_virtual_fields(model_class))
         try:
             request = get_current_request()

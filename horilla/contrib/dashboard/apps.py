@@ -25,6 +25,7 @@ class DashboardConfig(AppLauncher):
         "registration",
         "signals",
         "menu",
+        "tour",
     ]
 
     demo_data = {

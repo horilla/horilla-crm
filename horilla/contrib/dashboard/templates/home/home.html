@@ -68,7 +68,7 @@
                         {% endif %}
                         {% if not is_default_home or request.user|has_super_user:"dashboard.view_own_dashboard" %}
                             {% url 'dashboard:dashboard_list_view' as btn_href_url %}
-                            {% btn _("View All Dashboards") tag="a" href=btn_href_url|add:"?section=analytics" %}
+                            {% btn _("View All Dashboards") tag="a" href=btn_href_url|add:"?section=analytics" id="viewAllDashboardsBtn" %}
                         {% endif %}
                     </div>
                 </div>

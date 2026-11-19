@@ -576,7 +576,7 @@ class RoleListView(LoginRequiredMixin, HorillaListView):
     search_url = reverse_lazy("core:role_list_view")
     main_url = reverse_lazy("core:roles_view")
     bulk_select_option = False
-    max_visible_actions = 5
+    max_visible_actions = 6
 
     def get_queryset(self):
         """Order roles level by level (roots first, then each deeper level) unless the user sorts a column."""
@@ -661,7 +661,7 @@ class RoleListView(LoginRequiredMixin, HorillaListView):
             },
             {
                 "action": _("View Users"),
-                "src": "assets/icons/eye1.svg",
+                "src": "assets/icons/view-users.svg",
                 "img_class": "w-4 h-4",
                 "permission": f"{User._meta.app_label}.view_{User._meta.model_name}",
                 "attrs": f"""

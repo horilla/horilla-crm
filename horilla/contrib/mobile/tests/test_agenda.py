@@ -28,10 +28,12 @@ INVITES = "horilla.contrib.activity.views.create_view.meeting.send_meeting_invit
 
 
 def agenda_url(day):
+    """Agenda url."""
     return f"{URL}?date={day.isoformat()}"
 
 
 def new_url(kind, day):
+    """New url."""
     return f"/m/agenda/new/{kind}/?date={day.isoformat()}"
 
 
@@ -41,6 +43,7 @@ class AgendaTestBase(LogActivityTestBase):
     """A seller who may view, change and add their own activities, and a day two weeks ahead."""
 
     def setUp(self):
+        """Create the records these tests share."""
         super().setUp()
         self.grant(self.seller, Activity, "view_own", "change_own", "add_own")
         now = user_now(self.seller)
@@ -52,6 +55,7 @@ class AgendaTestBase(LogActivityTestBase):
         return self.midnight + timedelta(days=days, hours=hours)
 
     def activity(self, subject, kind, start, end=None, owner=None, **extra):
+        """Activity."""
         fields = {
             "subject": subject,
             "activity_type": kind,
@@ -68,6 +72,7 @@ class AgendaTestBase(LogActivityTestBase):
         return Activity.objects.create(**fields)
 
     def titles(self, items):
+        """Titles."""
         return [item["row"].title for item in items if item["kind"] == "activity"]
 
 
@@ -75,6 +80,7 @@ class AgendaDayTests(AgendaTestBase):
     """What a day shows."""
 
     def setUp(self):
+        """Create the records these tests share."""
         super().setUp()
         self.activity("Call the bank", "task", self.at(10))
         self.activity("Demo", "meeting", self.at(9), self.at(10))
@@ -92,6 +98,7 @@ class AgendaDayTests(AgendaTestBase):
         self.client.force_login(self.seller)
 
     def test_all_day_and_running_over_first_then_by_time(self):
+        """All day and running over first then by time."""
         response = self.client.get(agenda_url(self.day))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -103,6 +110,7 @@ class AgendaDayTests(AgendaTestBase):
         )
 
     def test_a_meeting_from_the_night_before_shows_until_when(self):
+        """A meeting from the night before shows until when."""
         response = self.client.get(agenda_url(self.day))
         row = next(
             item["row"]
@@ -112,6 +120,7 @@ class AgendaDayTests(AgendaTestBase):
         self.assertTrue(row.when.startswith("Until "))
 
     def test_the_week_strip_marks_the_days_with_dots(self):
+        """The week strip marks the days with dots."""
         response = self.client.get(agenda_url(self.day))
         week = response.context["week"]
         self.assertEqual(len(week), 7)
@@ -120,6 +129,7 @@ class AgendaDayTests(AgendaTestBase):
         self.assertEqual(len(picked["colors"]), 3)  # meeting, event, task
 
     def test_unavailability_shows_in_grey_and_only_the_users_own(self):
+        """Unavailability shows in grey and only the users own."""
         UserAvailability.objects.create(
             user=self.seller,
             from_datetime=self.at(13),
@@ -144,6 +154,7 @@ class AgendaDayTests(AgendaTestBase):
         self.assertContains(response, "Dentist")
 
     def test_the_desktop_type_filter_applies(self):
+        """The desktop type filter applies."""
         UserCalendarPreference.objects.create(
             user=self.seller,
             calendar_type="task",
@@ -157,6 +168,7 @@ class AgendaDayTests(AgendaTestBase):
         self.assertContains(response, "data-calendar-filter")
 
     def test_moving_between_days_returns_only_the_content(self):
+        """Moving between days returns only the content."""
         response = self.client.get(
             agenda_url(self.day + timedelta(days=1)), HTTP_HX_REQUEST="true"
         )
@@ -164,12 +176,14 @@ class AgendaDayTests(AgendaTestBase):
         self.assertTemplateNotUsed(response, "mobile/base.html")
 
     def test_a_date_that_isnt_one_shows_today(self):
+        """A date that isnt one shows today."""
         response = self.client.get(URL, {"date": "soon"})
         self.assertEqual(response.context["day"], user_now(self.seller).date())
         # The top bar shows the date; the day's title just says so.
         self.assertEqual(response.context["day_title"], "Today")
 
     def test_mark_done_on_the_agenda_refreshes_the_agenda(self):
+        """Mark done on the agenda refreshes the agenda."""
         demo = Activity.objects.get(subject="Demo")
         response = self.client.post(
             f"/m/activities/{demo.pk}/status/",
@@ -187,6 +201,7 @@ class WeekStartTests(AgendaTestBase):
     """The week starts on the language's first day."""
 
     def test_saturday_in_persian_and_sunday_in_english(self):
+        """Saturday in persian and sunday in english."""
         with translation.override("fa"):
             self.assertEqual(week_start(self.day).weekday(), 5)
         with translation.override("en"):
@@ -197,13 +212,16 @@ class AgendaAddTests(AgendaTestBase):
     """Adding a task, an event or a meeting on the picked day."""
 
     def setUp(self):
+        """Create the records these tests share."""
         super().setUp()
         self.client.force_login(self.seller)
 
     def stamp(self, hours):
+        """Stamp."""
         return self.at(hours).strftime("%Y-%m-%dT%H:%M")
 
     def test_adding_needs_the_add_permission(self):
+        """Adding needs the add permission."""
         viewer = self.make_user("viewer")
         self.grant(viewer, Activity, "view_own", "change_own")
         self.client.force_login(viewer)
@@ -212,9 +230,11 @@ class AgendaAddTests(AgendaTestBase):
         self.assertEqual(self.client.get(new_url("task", self.day)).status_code, 403)
 
     def test_a_logged_call_is_not_added_from_the_agenda(self):
+        """A logged call is not added from the agenda."""
         self.assertEqual(self.client.get(new_url("call", self.day)).status_code, 404)
 
     def test_new_forms_start_on_the_picked_day(self):
+        """New forms start on the picked day."""
         response = self.client.get(new_url("meeting", self.day))
         self.assertEqual(
             response.context["form"].initial["start_datetime"], self.stamp(9)
@@ -224,6 +244,7 @@ class AgendaAddTests(AgendaTestBase):
         )
 
     def test_a_task_from_the_agenda_belongs_to_no_record(self):
+        """A task from the agenda belongs to no record."""
         response = self.client.post(
             new_url("task", self.day),
             {
@@ -242,6 +263,7 @@ class AgendaAddTests(AgendaTestBase):
         self.assertEqual(task.owner, self.seller)
 
     def test_an_event_from_the_agenda(self):
+        """An event from the agenda."""
         self.client.post(
             new_url("event", self.day),
             {
@@ -259,6 +281,7 @@ class AgendaAddTests(AgendaTestBase):
         )
 
     def test_a_meeting_goes_through_the_desktop_meeting_save(self):
+        """A meeting goes through the desktop meeting save."""
         with mock.patch(INVITES) as invites:
             response = self.client.post(
                 new_url("meeting", self.day),
@@ -284,6 +307,7 @@ class AgendaAddTests(AgendaTestBase):
         self.assertIn(self.other_seller.email, recipients)
 
     def test_an_in_person_meeting_needs_a_location(self):
+        """An in person meeting needs a location."""
         response = self.client.post(
             new_url("meeting", self.day),
             {
@@ -298,6 +322,7 @@ class AgendaAddTests(AgendaTestBase):
         self.assertFalse(Activity.objects.filter(subject="Nowhere").exists())
 
     def test_ticking_all_day_redraws_the_form_without_saving(self):
+        """Ticking all day redraws the form without saving."""
         response = self.client.post(
             new_url("meeting", self.day),
             {
@@ -316,6 +341,7 @@ class AgendaAddTests(AgendaTestBase):
         self.assertContains(response, 'value="Kick-off"')
 
     def test_ticking_online_drops_the_location(self):
+        """Ticking online drops the location."""
         response = self.client.post(
             new_url("meeting", self.day),
             {"mobile_toggle": "1", "is_online": "on", "subject": "Call"},
@@ -325,6 +351,7 @@ class AgendaAddTests(AgendaTestBase):
         self.assertNotIn("is_all_day", names)
 
     def test_signed_out_visitors_go_to_the_mobile_login(self):
+        """Signed out visitors go to the mobile login."""
         self.client.logout()
         response = self.client.get(new_url("meeting", self.day))
         self.assertEqual(response.status_code, 302)
@@ -335,15 +362,18 @@ class RecordMeetingTests(AgendaTestBase):
     """Meetings and events from a record page, and editing a meeting."""
 
     def setUp(self):
+        """Create the records these tests share."""
         super().setUp()
         self.client.force_login(self.seller)
 
     def test_the_log_activity_sheet_offers_meetings_and_events(self):
+        """The log activity sheet offers meetings and events."""
         response = self.client.get(record_url(self.record))
         self.assertContains(response, f'href="{log_url(self.record, "meeting")}"')
         self.assertContains(response, f'href="{log_url(self.record, "event")}"')
 
     def test_a_meeting_on_a_record(self):
+        """A meeting on a record."""
         stamp = self.at(10).strftime("%Y-%m-%dT%H:%M")
         with mock.patch(INVITES):
             response = self.client.post(
@@ -364,6 +394,7 @@ class RecordMeetingTests(AgendaTestBase):
         self.assertEqual(meeting.content_type_id, self.content_type.pk)
 
     def test_editing_a_meeting_keeps_what_the_phone_doesnt_show(self):
+        """Editing a meeting keeps what the phone doesnt show."""
         meeting = self.activity(
             "Kick-off",
             "meeting",

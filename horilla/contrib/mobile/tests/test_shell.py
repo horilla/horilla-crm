@@ -34,6 +34,7 @@ class QueryStaticStorage(StaticFilesStorage):
     """Static storage whose ``url()`` already carries a query string."""
 
     def url(self, name):
+        """Url."""
         base = super().url(name)
         separator = "&" if "?" in base else "?"
         return f"{base}{separator}v=storage"
@@ -59,6 +60,7 @@ class MobileShellTestBase(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        """SetUpClass."""
         super().setUpClass()
         # django-login-history reads request.META['HTTP_USER_AGENT'] on
         # login/logout, which the test client's bare request doesn't set.
@@ -67,11 +69,13 @@ class MobileShellTestBase(TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        """TearDownClass."""
         user_logged_in.connect(post_login)
         user_logged_out.connect(post_logout)
         super().tearDownClass()
 
     def setUp(self):
+        """Create the records these tests share."""
         cache.clear()
         self.company = Company.objects.create(
             name="Acme", email="acme@example.com", country="US"
@@ -88,11 +92,13 @@ class MobileLoginTests(MobileShellTestBase):
     """The phone login reuses the desktop login logic on its own page."""
 
     def test_pages_send_signed_out_users_to_the_mobile_login(self):
+        """Pages send signed out users to the mobile login."""
         response = self.client.get("/m/more/")
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response["Location"].startswith("/m/login/?next="))
 
     def test_login_page_uses_the_mobile_template(self):
+        """Login page uses the mobile template."""
         response = self.client.get("/m/login/")
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "mobile/login.html")
@@ -100,18 +106,21 @@ class MobileLoginTests(MobileShellTestBase):
         self.assertContains(response, 'name="next" value="/m/"')
 
     def test_login_page_can_show_the_password(self):
+        """Login page can show the password."""
         response = self.client.get("/m/login/")
         self.assertContains(response, 'id="mobile-password-toggle"')
         self.assertContains(response, 'aria-controls="mobile-password"')
 
     def test_login_page_sets_its_own_required_message(self):
         # The browser's built-in message follows the browser language.
+        """Login page sets its own required message."""
         response = self.client.get("/m/login/")
         self.assertContains(
             response, 'const requiredMessage = "This field is required.";'
         )
 
     def test_wrong_password_returns_to_the_mobile_login(self):
+        """Wrong password returns to the mobile login."""
         response = self.client.post(
             "/m/login/",
             {"username": "salesperson", "password": "wrong", "next": "/m/"},
@@ -120,6 +129,7 @@ class MobileLoginTests(MobileShellTestBase):
         self.assertTrue(response["Location"].startswith("/m/login/?next="))
 
     def test_valid_login_opens_the_mobile_home(self):
+        """Valid login opens the mobile home."""
         response = self.client.post(
             "/m/login/",
             {"username": "salesperson", "password": self.password},
@@ -129,11 +139,13 @@ class MobileLoginTests(MobileShellTestBase):
         self.assertEqual(int(self.client.session["_auth_user_id"]), self.user.pk)
 
     def test_signed_in_user_skips_the_login_form(self):
+        """Signed in user skips the login form."""
         self.client.force_login(self.user)
         response = self.client.get("/m/login/")
         self.assertRedirects(response, "/m/", fetch_redirect_response=False)
 
     def test_logout_returns_to_the_mobile_login(self):
+        """Logout returns to the mobile login."""
         self.client.force_login(self.user)
         response = self.client.get("/m/logout/")
         self.assertEqual(response.status_code, 200)
@@ -145,14 +157,17 @@ class MobileLayoutTests(MobileShellTestBase):
     """Pages in the phone layout."""
 
     def setUp(self):
+        """Create the records these tests share."""
         super().setUp()
         self.client.force_login(self.user)
 
     def test_home_opens_the_first_page(self):
+        """Home opens the first page."""
         response = self.client.get("/m/")
         self.assertRedirects(response, "/m/today/", fetch_redirect_response=False)
 
     def test_more_page_links_full_version_language_and_logout(self):
+        """More page links full version language and logout."""
         response = self.client.get("/m/more/", follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "mobile/more.html")
@@ -161,10 +176,12 @@ class MobileLayoutTests(MobileShellTestBase):
         self.assertContains(response, 'rel="manifest" href="/m/manifest.webmanifest"')
 
     def test_layout_registers_the_worker_for_the_mobile_scope_only(self):
+        """Layout registers the worker for the mobile scope only."""
         response = self.client.get("/m/more/", follow=True)
         self.assertContains(response, '.register("/m/sw.js", {scope: "/m/"})')
 
     def test_layout_static_files_carry_the_asset_version(self):
+        """Layout static files carry the asset version."""
         response = self.client.get("/m/more/", follow=True)
         # The template escapes & to &amp; when the storage URL already has a query.
         expected = expected_mobile_static("assets/js/htmx/htmx.min.js").replace(
@@ -177,6 +194,7 @@ class MobileManifestTests(MobileShellTestBase):
     """The web app manifest behind "Add to Home Screen"."""
 
     def test_manifest_is_public_and_scoped_to_mobile(self):
+        """Manifest is public and scoped to mobile."""
         response = self.client.get("/m/manifest.webmanifest")
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
@@ -192,6 +210,7 @@ class MobileManifestTests(MobileShellTestBase):
         )
 
     def test_manifest_follows_the_language_direction(self):
+        """Manifest follows the language direction."""
         response = self.client.get("/m/manifest.webmanifest", HTTP_ACCEPT_LANGUAGE="fa")
         manifest = json.loads(response.content)
         if manifest["lang"].startswith("fa"):
@@ -202,11 +221,13 @@ class MobileServiceWorkerTests(MobileShellTestBase):
     """The worker only ever serves versioned static files from its cache."""
 
     def get_worker(self, **extra):
+        """Get worker."""
         response = self.client.get("/m/sw.js", **extra)
         self.assertEqual(response.status_code, 200)
         return response
 
     def test_worker_is_served_as_uncached_javascript(self):
+        """Worker is served as uncached javascript."""
         response = self.get_worker()
         self.assertTrue(response["Content-Type"].startswith("application/javascript"))
         self.assertEqual(response["Cache-Control"], "no-cache")
@@ -215,11 +236,13 @@ class MobileServiceWorkerTests(MobileShellTestBase):
 
     def test_worker_is_not_redirected_for_signed_in_users(self):
         # Browsers refuse a worker script behind a redirect.
+        """Worker is not redirected for signed in users."""
         self.client.force_login(self.user)
         response = self.client.get("/m/sw.js")
         self.assertEqual(response.status_code, 200)
 
     def test_worker_names_its_cache_after_the_asset_version(self):
+        """Worker names its cache after the asset version."""
         body = self.get_worker().content.decode()
         version = get_asset_version()
         self.assertIn(f"const ASSET_VERSION = {json.dumps(version)};", body)
@@ -228,10 +251,12 @@ class MobileServiceWorkerTests(MobileShellTestBase):
 
     @override_settings(DEBUG=False)
     def test_worker_caches_when_debug_is_off(self):
+        """Worker caches when debug is off."""
         self.assertIn("const CACHE_ENABLED = true;", self.get_worker().content.decode())
 
     @override_settings(DEBUG=True)
     def test_worker_does_not_cache_while_debugging(self):
+        """Worker does not cache while debugging."""
         self.assertIn(
             "const CACHE_ENABLED = false;", self.get_worker().content.decode()
         )
@@ -242,20 +267,21 @@ class MobileStaticTagTests(TestCase):
     """``mobile_static`` adds the version the worker caches by."""
 
     def render(self, path):
+        """Render."""
         return Template("{% load mobile_tags %}{% mobile_static path %}").render(
             Context({"path": path})
         )
 
     def test_adds_the_asset_version(self):
+        """Adds the asset version."""
         path = "assets/css/style.css"
         # The template escapes the URL, which shows when the active static
         # storage's URL already carries a query ("&" becomes "&amp;").
         self.assertEqual(self.render(path), escape(expected_mobile_static(path)))
 
     def test_uses_ampersand_when_the_static_url_already_has_a_query(self):
-        storages = {
-            alias: dict(config) for alias, config in settings.STORAGES.items()
-        }
+        """Uses ampersand when the static url already has a query."""
+        storages = {alias: dict(config) for alias, config in settings.STORAGES.items()}
         storages["staticfiles"] = {
             "BACKEND": "horilla.contrib.mobile.tests.test_shell.QueryStaticStorage",
         }
@@ -268,6 +294,7 @@ class MobileStaticTagTests(TestCase):
 
     def test_the_stamp_changes_with_the_apps_own_static_files(self):
         # A changed mobile.css must not be served from a phone's old cache.
+        """The stamp changes with the apps own static files."""
         before = get_asset_version()
         mobile_utils._own_static_digest.cache_clear()
         self.addCleanup(mobile_utils._own_static_digest.cache_clear)

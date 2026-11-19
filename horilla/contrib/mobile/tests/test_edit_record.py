@@ -18,11 +18,7 @@ from horilla.web import HttpResponse
 from .base import MOBILE_INSTALLED, MobileTestBase
 
 if MOBILE_INSTALLED:
-    from horilla.contrib.core.models import (
-        Company,
-        FieldPermission,
-        HorillaContentType,
-    )
+    from horilla.contrib.core.models import Company, FieldPermission, HorillaContentType
     from horilla.contrib.generics.forms.generics import PhoneWidget
 
     from .models import MobileTestRecord
@@ -31,10 +27,12 @@ TEST_URLCONF = "horilla.contrib.mobile.tests.urls"
 
 
 def record_url(record):
+    """Record url."""
     return f"/m/records/mobile/mobiletestrecord/{record.pk}/"
 
 
 def edit_url(record):
+    """Edit url."""
     return f"{record_url(record)}edit/"
 
 
@@ -42,13 +40,16 @@ class StoppingHooks:
     """Edit Details hooks whose pre-save check stops the save, as a duplicate check would."""
 
     def get_allowed_fields(self, request, obj):
+        """Get allowed fields."""
         return None
 
     def check_before_save(self, request, obj, changed_fields):
+        """Check before save."""
         messages.warning(request, "A record like this one already exists.")
         return HttpResponse("desktop warning markup")
 
     def handle_save_error(self, request, obj, error, app_label, model_name):
+        """Handle save error."""
         return None
 
 
@@ -56,9 +57,11 @@ class CityOnlyHooks(StoppingHooks):
     """Edit Details hooks that only let the city be changed, and save."""
 
     def get_allowed_fields(self, request, obj):
+        """Get allowed fields."""
         return {"city"}
 
     def check_before_save(self, request, obj, changed_fields):
+        """Check before save."""
         return None
 
 
@@ -68,6 +71,7 @@ class EditRecordAccessTests(MobileTestBase):
     """Who may edit: an owner with change_own, or change, never a locked record."""
 
     def setUp(self):
+        """Create the records these tests share."""
         super().setUp()
         self.mine = self.make_record("Mine", owner=self.seller, city="Tehran")
         self.viewer = self.make_user("viewer")
@@ -75,12 +79,14 @@ class EditRecordAccessTests(MobileTestBase):
         self.viewed = self.make_record("Viewed", owner=self.viewer)
 
     def test_the_owner_with_change_own_gets_the_form(self):
+        """The owner with change own gets the form."""
         self.client.force_login(self.seller)
         response = self.client.get(edit_url(self.mine))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "mobile/edit_record.html")
 
     def test_the_record_page_links_to_the_form_only_for_users_who_may_edit(self):
+        """The record page links to the form only for users who may edit."""
         self.client.force_login(self.seller)
         self.assertContains(self.client.get(record_url(self.mine)), edit_url(self.mine))
         self.client.force_login(self.viewer)
@@ -89,6 +95,7 @@ class EditRecordAccessTests(MobileTestBase):
         )
 
     def test_view_permission_alone_is_refused(self):
+        """View permission alone is refused."""
         self.client.force_login(self.viewer)
         response = self.client.post(edit_url(self.viewed), {"city": "Shiraz"})
         self.assertEqual(response.status_code, 403)
@@ -97,6 +104,7 @@ class EditRecordAccessTests(MobileTestBase):
         self.assertEqual(self.viewed.city, "")
 
     def test_someone_elses_record_is_refused(self):
+        """Someone elses record is refused."""
         self.client.force_login(self.other_seller)
         response = self.client.post(edit_url(self.mine), {"city": "Shiraz"})
         self.assertEqual(response.status_code, 403)
@@ -104,12 +112,14 @@ class EditRecordAccessTests(MobileTestBase):
         self.assertEqual(self.mine.city, "Tehran")
 
     def test_change_permission_edits_any_record(self):
+        """Change permission edits any record."""
         self.client.force_login(self.admin)
         self.client.post(edit_url(self.mine), {"city": "Shiraz"})
         self.mine.refresh_from_db()
         self.assertEqual(self.mine.city, "Shiraz")
 
     def test_a_locked_record_is_refused(self):
+        """A locked record is refused."""
         self.client.force_login(self.admin)
         with mock.patch.object(MobileTestRecord, "is_record_locked", True, create=True):
             response = self.client.post(edit_url(self.mine), {"city": "Shiraz"})
@@ -123,6 +133,7 @@ class EditRecordAccessTests(MobileTestBase):
         self.assertEqual(self.mine.city, "Tehran")
 
     def test_missing_record_is_not_found(self):
+        """Missing record is not found."""
         self.client.force_login(self.admin)
         response = self.client.get("/m/records/mobile/mobiletestrecord/999999/edit/")
         self.assertEqual(response.status_code, 404)
@@ -134,6 +145,7 @@ class EditRecordFormTests(MobileTestBase):
     """The fields offered, and the save through the desktop Edit Details save."""
 
     def setUp(self):
+        """Create the records these tests share."""
         super().setUp()
         self.record = self.make_record(
             "Aria Trading", owner=self.seller, city="Tehran", phone="+98 9123456789"
@@ -141,10 +153,12 @@ class EditRecordFormTests(MobileTestBase):
         self.client.force_login(self.seller)
 
     def field_names(self):
+        """Field names."""
         response = self.client.get(edit_url(self.record))
         return [field["name"] for field in response.context["fields"]]
 
     def test_the_details_tab_fields_without_the_stage_and_non_editable_ones(self):
+        """The details tab fields without the stage and non editable ones."""
         names = self.field_names()
         for name in ("name", "phone", "city", "owner"):
             self.assertIn(name, names)
@@ -153,6 +167,7 @@ class EditRecordFormTests(MobileTestBase):
         self.assertNotIn("email", names)
 
     def test_fields_the_user_may_not_change_are_left_out(self):
+        """Fields the user may not change are left out."""
         content_type = HorillaContentType.objects.get_for_model(MobileTestRecord)
         for field_name, permission in (("city", "readonly"), ("phone", "hidden")):
             FieldPermission.objects.create(
@@ -171,6 +186,7 @@ class EditRecordFormTests(MobileTestBase):
         self.assertEqual(self.record.name, "Aria")
 
     def test_inputs_follow_the_desktop_field_types(self):
+        """Inputs follow the desktop field types."""
         response = self.client.get(edit_url(self.record))
         fields = {field["name"]: field for field in response.context["fields"]}
         self.assertEqual(fields["owner"]["kind"], "related")
@@ -187,6 +203,7 @@ class EditRecordFormTests(MobileTestBase):
 
     def test_the_company_country_code_comes_first(self):
         # The phone's list has no search box: the likely code is on top.
+        """The company country code comes first."""
         Company.objects.filter(pk=self.company.pk).update(country="IR")
         response = self.client.get(edit_url(self.record))
         codes = [code for code, _label in response.context["phone_codes"]]
@@ -194,6 +211,7 @@ class EditRecordFormTests(MobileTestBase):
         self.assertEqual(codes.count("+98"), 1)
 
     def test_saving_goes_back_to_the_record(self):
+        """Saving goes back to the record."""
         response = self.client.post(
             edit_url(self.record), {"name": "Aria Trading Co", "city": "Shiraz"}
         )
@@ -206,6 +224,7 @@ class EditRecordFormTests(MobileTestBase):
         self.assertContains(self.client.get(record_url(self.record)), "Changes saved.")
 
     def test_only_posted_fields_change(self):
+        """Only posted fields change."""
         self.client.post(edit_url(self.record), {"city": "Shiraz"})
         self.record.refresh_from_db()
         self.assertEqual(self.record.name, "Aria Trading")
@@ -213,6 +232,7 @@ class EditRecordFormTests(MobileTestBase):
         self.assertEqual(self.record.owner, self.seller)
 
     def test_a_value_that_cannot_be_applied_is_shown_under_its_field(self):
+        """A value that cannot be applied is shown under its field."""
         response = self.client.post(
             edit_url(self.record), {"owner": "999999", "city": "Shiraz"}
         )
@@ -223,6 +243,7 @@ class EditRecordFormTests(MobileTestBase):
         self.assertEqual(self.record.city, "Tehran")
 
     def test_an_invalid_phone_number_keeps_what_was_typed(self):
+        """An invalid phone number keeps what was typed."""
         response = self.client.post(
             edit_url(self.record), {"phone_0": "+98", "phone_1": "12"}
         )
@@ -234,6 +255,7 @@ class EditRecordFormTests(MobileTestBase):
 
     def test_only_the_fields_an_extension_allows_are_offered_and_saved(self):
         # As under a pending approval that lets the approver change one field.
+        """Only the fields an extension allows are offered and saved."""
         with mock.patch(
             "horilla.contrib.mobile.edit_record.get_update_all_fields_view",
             return_value=CityOnlyHooks(),
@@ -247,6 +269,7 @@ class EditRecordFormTests(MobileTestBase):
         self.assertEqual(self.record.name, "Aria Trading")
 
     def test_a_check_that_stops_the_save_is_explained(self):
+        """A check that stops the save is explained."""
         with mock.patch(
             "horilla.contrib.mobile.edit_record.get_update_all_fields_view",
             return_value=StoppingHooks(),
@@ -260,6 +283,7 @@ class EditRecordFormTests(MobileTestBase):
         self.assertEqual(self.record.city, "Tehran")
 
     def test_a_save_error_is_shown(self):
+        """A save error is shown."""
         with mock.patch.object(
             MobileTestRecord,
             "save",

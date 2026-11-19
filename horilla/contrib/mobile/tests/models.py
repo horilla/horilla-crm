@@ -9,10 +9,11 @@ has no models and no migrations, and its tests never import ``horilla_crm``.
 # Third-party imports (Django)
 from django.conf import settings
 
+from horilla.contrib.core.models import HorillaCoreModel
+
 # First party imports (Horilla)
 from horilla.db import models
 from horilla.urls import reverse
-from horilla.contrib.core.models import HorillaCoreModel
 
 
 class MobileTestRecord(HorillaCoreModel):
@@ -46,6 +47,8 @@ class MobileTestRecord(HorillaCoreModel):
     OWNER_FIELDS = ["owner"]
 
     class Meta:
+        """Meta."""
+
         app_label = "mobile"
         ordering = ["name"]
 

@@ -24,6 +24,7 @@ class AgendaTeamTests(AgendaTestBase):
     """A manager whose role is above the seller's, and a peer outside the team."""
 
     def setUp(self):
+        """Create the records these tests share."""
         super().setUp()
         manager_role = Role.objects.create(role_name="Manager", company=self.company)
         rep_role = Role.objects.create(
@@ -45,12 +46,14 @@ class AgendaTeamTests(AgendaTestBase):
         self.activity("Peer call", "task", self.at(11), owner=self.other_seller)
 
     def titles_for(self, user, query=""):
+        """Titles for."""
         self.client.force_login(user)
         response = self.client.get(agenda_url(self.day) + query)
         context = response.context
         return self.titles(context["all_day_items"] + context["timed_items"])
 
     def test_no_switch_without_a_team(self):
+        """No switch without a team."""
         self.client.force_login(self.seller)
         response = self.client.get(agenda_url(self.day))
         self.assertFalse(response.context["team_available"])
@@ -59,6 +62,7 @@ class AgendaTeamTests(AgendaTestBase):
         self.assertEqual(self.titles_for(self.seller, "&scope=team"), ["Rep visit"])
 
     def test_mine_shows_the_managers_own_and_team_adds_subordinates(self):
+        """Mine shows the managers own and team adds subordinates."""
         self.client.force_login(self.manager)
         response = self.client.get(agenda_url(self.day))
         self.assertTrue(response.context["team_available"])
@@ -70,6 +74,7 @@ class AgendaTeamTests(AgendaTestBase):
         )
 
     def test_team_rows_say_whose_activity_it_is(self):
+        """Team rows say whose activity it is."""
         self.client.force_login(self.manager)
         response = self.client.get(agenda_url(self.day) + "&scope=team")
         people = {
@@ -80,12 +85,14 @@ class AgendaTeamTests(AgendaTestBase):
         self.assertContains(response, "Sara Ahmadi")
 
     def test_the_choice_is_kept_between_visits(self):
+        """The choice is kept between visits."""
         self.titles_for(self.manager, "&scope=team")
         self.assertEqual(self.titles_for(self.manager), ["Manager review", "Rep visit"])
         self.titles_for(self.manager, "&scope=mine")
         self.assertEqual(self.titles_for(self.manager), ["Manager review"])
 
     def test_the_members_filter_narrows_team(self):
+        """The members filter narrows team."""
         self.titles_for(self.manager, "&scope=team")
         self.assertEqual(
             self.titles_for(self.manager, f"&members_set=1&members={self.seller.pk}"),
@@ -105,6 +112,7 @@ class AgendaTeamTests(AgendaTestBase):
         )
 
     def test_members_outside_the_team_are_ignored(self):
+        """Members outside the team are ignored."""
         self.titles_for(self.manager, "&scope=team")
         self.assertEqual(
             self.titles_for(
@@ -114,6 +122,7 @@ class AgendaTeamTests(AgendaTestBase):
         )
 
     def test_view_activity_shows_the_whole_company(self):
+        """View activity shows the whole company."""
         self.grant(self.manager, Activity, "view")
         self.assertEqual(
             self.titles_for(self.manager, "&scope=team"),
@@ -121,6 +130,7 @@ class AgendaTeamTests(AgendaTestBase):
         )
 
     def test_a_teammates_activity_is_read_only_without_change_rights(self):
+        """A teammates activity is read only without change rights."""
         self.client.force_login(self.manager)
         response = self.client.get(agenda_url(self.day) + "&scope=team")
         rows = {
@@ -136,6 +146,7 @@ class AgendaTeamTests(AgendaTestBase):
         self.assertEqual(self.rep_task.status, "not_started")
 
     def test_a_manager_with_change_own_marks_a_teammates_activity_done(self):
+        """A manager with change own marks a teammates activity done."""
         self.grant(self.manager, Activity, "change_own")
         self.client.force_login(self.manager)
         self.client.get(agenda_url(self.day) + "&scope=team")

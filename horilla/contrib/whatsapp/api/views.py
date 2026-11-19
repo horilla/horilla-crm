@@ -241,7 +241,10 @@ class WhatsAppMessageViewSet(
         """Block direct message creation via the API; use the send-message flow instead."""
         return Response(
             {
-                "detail": "Sending messages via the API is not supported. Use the WhatsApp inbox instead."
+                "detail": (
+                    "Sending messages via the API is not supported. "
+                    "Use the WhatsApp inbox instead."
+                )
             },
             status=status.HTTP_405_METHOD_NOT_ALLOWED,
         )

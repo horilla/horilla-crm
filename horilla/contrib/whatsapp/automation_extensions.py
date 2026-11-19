@@ -74,6 +74,8 @@ class AutomationWhatsAppFormExtension(FormExtension):
     _inherit_form = "horilla.contrib.automations.forms.HorillaAutomationForm"
 
     class Meta:
+        """Fields this extension appends to the automation form."""
+
         fields_append = ["whatsapp_account", "whatsapp_template"]
 
     def setup_form_extension_fields(self):
@@ -131,14 +133,12 @@ class AutomationWhatsAppFormExtension(FormExtension):
             if name in self.fields
         ]
         names = [name for name in self.fields if name not in ours]
-        anchor = next(
-            (
-                n
-                for n in ("notification_template", "mail_template", "delivery_channel")
-                if n in names
-            ),
-            None,
+        channel_fields = (
+            "notification_template",
+            "mail_template",
+            "delivery_channel",
         )
+        anchor = next((name for name in channel_fields if name in names), None)
         if anchor:
             # After the mail and notification fields, so the order follows the channels.
             position = names.index(anchor) + 1
@@ -213,6 +213,7 @@ class AutomationWhatsAppFieldsExtension(ViewExtension):
     _inherit_view = "horilla.contrib.automations.views.TemplateFieldsView"
 
     def get(self, request, *args, **kwargs):
+        """Fragment that shows the WhatsApp fields for that channel."""
         response = super().get(request, *args, **kwargs)
 
         from horilla.contrib.automations.models import HorillaAutomation

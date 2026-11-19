@@ -52,6 +52,7 @@ class Command(BaseCommand):
                 f"No WhatsAppAccount found with phone_number_id={phone_number_id!r}."
             )
 
+        message_id = f"wamid.SIMULATED.{options['from_number']}.{uuid.uuid4().hex}"
         payload = {
             "entry": [
                 {
@@ -67,7 +68,7 @@ class Command(BaseCommand):
                                 ],
                                 "messages": [
                                     {
-                                        "id": f"wamid.SIMULATED.{options['from_number']}.{uuid.uuid4().hex}",
+                                        "id": message_id,
                                         "from": options["from_number"],
                                         "type": "text",
                                         "text": {"body": options["body"]},

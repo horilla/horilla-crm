@@ -45,6 +45,7 @@ class ActivityWhatsAppTabExtension(ViewExtension):
     _inherit_view = "horilla.contrib.activity.views.core.HorillaActivitySectionView"
 
     def get_context_data(self, **kwargs):
+        """Activity context, with the WhatsApp tab when the record has a phone."""
         context = super().get_context_data(**kwargs)
         model = getattr(self, "model", None)
         record = getattr(self, "object", None)

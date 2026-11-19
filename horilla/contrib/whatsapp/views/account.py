@@ -7,10 +7,11 @@ from functools import cached_property
 
 # Third-party imports (Django)
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, render
 from django.views import View
 
+# First party imports (Horilla)
+from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.generics.views import (
     HorillaListView,
     HorillaNavView,
@@ -18,8 +19,6 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
     HorillaView,
 )
-
-# First party imports (Horilla)
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
@@ -262,6 +261,7 @@ class WhatsAppAccountTestConnectionView(LoginRequiredMixin, View):
         )
 
     def get(self, request, pk):
+        """Connection-test result for this WhatsApp account."""
         account = get_object_or_404(WhatsAppAccount, pk=pk)
         checks = WhatsAppCloudAPIClient(account).test_connection()
         statuses = {check["status"] for check in checks}
@@ -308,7 +308,8 @@ class WhatsAppAccountTestConnectionView(LoginRequiredMixin, View):
                     messages.error(
                         request,
                         _(
-                            "Test message failed: %(error)s (the text message also failed: %(text_error)s)"
+                            "Test message failed: %(error)s "
+                            "(the text message also failed: %(text_error)s)"
                         )
                         % {
                             "error": WhatsAppCloudAPIClient._error_text(template_exc),

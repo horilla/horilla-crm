@@ -8,7 +8,6 @@ from functools import cached_property
 
 # Third-party imports (Django)
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
@@ -16,6 +15,8 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.views import View
 
+# First party imports (Horilla)
+from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.generics.views import (
     HorillaListView,
     HorillaNavView,
@@ -23,8 +24,6 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
     HorillaView,
 )
-
-# First party imports (Horilla)
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
@@ -240,6 +239,7 @@ class WhatsAppBotRuleBuilderView(LoginRequiredMixin, View):
     template_name = "whatsapp_bot_rule/whatsapp_bot_rule_builder.html"
 
     def get(self, request, pk):
+        """The builder page for one bot rule."""
         flow = get_object_or_404(WhatsAppBotRule, pk=pk)
         nodes = flow.nodes.prefetch_related(
             models.Prefetch(
@@ -315,7 +315,10 @@ class WhatsAppBotRuleNodeFormView(LoginRequiredMixin, HorillaSingleFormView):
         return context
 
     def _kv_rows(self, builder, config):
-        """Build {row_id, field_name, value, value_widget_html} for each saved field_mapping/filters entry."""
+        """
+        Build {row_id, field_name, value, value_widget_html} for each saved
+        field_mapping/filters entry.
+        """
         content_type_id = config.get("content_type_id") or config.get(
             "_ui_hint_content_type_id"
         )
@@ -545,6 +548,7 @@ class WhatsAppFieldMappingOptionsView(LoginRequiredMixin, View):
         ]
 
     def get(self, request, *args, **kwargs):
+        """Field choices for the model selected in the mapping."""
         render_mode = request.GET.get("render")
         if render_mode == "field_select":
             return self._render_field_select(request)
@@ -610,7 +614,10 @@ class WhatsAppFieldMappingOptionsView(LoginRequiredMixin, View):
         return JsonResponse({"kind": "text"})
 
     def _render_field_select(self, request):
-        """Return the field-name <select> HTML for one field_mapping/filters row (used when the Target Model changes)."""
+        """
+        Return the field-name <select> HTML for one field_mapping/filters row,
+        used when the Target Model changes.
+        """
         builder = request.GET.get("builder", "field_mapping")
         row_id = request.GET.get("row_id", "0")
         content_type_id = request.GET.get("content_type")
@@ -726,7 +733,8 @@ class WhatsAppFieldMappingOptionsView(LoginRequiredMixin, View):
                 label,
             )
         return format_html(
-            '<select name="{}" id="{}" class="kv-value-live js-example-basic-single headselect w-full text-sm">{}</select>',
+            '<select name="{}" id="{}" class="kv-value-live '
+            'js-example-basic-single headselect w-full text-sm">{}</select>',
             name,
             field_id,
             options_html,
@@ -776,6 +784,7 @@ class WhatsAppKeyValueAddRowView(LoginRequiredMixin, View):
     """Return one new blank field_mapping/filters row, appended via hx-swap=beforeend."""
 
     def get(self, request, *args, **kwargs):
+        """One more key and value row for the node form."""
         builder = request.GET.get("builder", "field_mapping")
         row_id = self._next_row_id(request, builder)
         content_type_id = request.GET.get("content_type", "")
@@ -818,6 +827,7 @@ class WhatsAppKeyValueRemoveRowView(LoginRequiredMixin, View):
     """Remove a field_mapping/filters row - client's hx-swap=outerHTML on the row does the work."""
 
     def delete(self, request, row_id, *args, **kwargs):
+        """Remove one key and value row."""
         return HttpResponse("")
 
 
@@ -830,6 +840,7 @@ class WhatsAppOptionsAddRowView(LoginRequiredMixin, View):
     """Return one new blank button/list option row, appended via hx-swap=beforeend."""
 
     def get(self, request, *args, **kwargs):
+        """One more option row for the node form."""
         max_id = -1
         for key in request.GET:
             if key.startswith("options_id_"):
@@ -854,6 +865,7 @@ class WhatsAppOptionsRemoveRowView(LoginRequiredMixin, View):
     """Remove an option row - client's hx-swap=outerHTML on the row does the work."""
 
     def delete(self, request, row_id, *args, **kwargs):
+        """Remove one option row."""
         return HttpResponse("")
 
 
@@ -866,6 +878,7 @@ class WhatsAppBranchAddRowView(LoginRequiredMixin, View):
     """Return one new blank condition branch, appended via hx-swap=beforeend."""
 
     def get(self, request, *args, **kwargs):
+        """One more branch row for the node form."""
         from ..forms import RULE_TYPES
 
         max_id = -1
@@ -897,6 +910,7 @@ class WhatsAppBranchRemoveRowView(LoginRequiredMixin, View):
     """Remove a condition branch - client's hx-swap=outerHTML on the row does the work."""
 
     def delete(self, request, row_id, *args, **kwargs):
+        """Remove one branch row."""
         return HttpResponse("")
 
 
@@ -909,6 +923,7 @@ class WhatsAppRuleAddRowView(LoginRequiredMixin, View):
     """Return one new blank rule row within a branch, appended via hx-swap=beforeend."""
 
     def get(self, request, *args, **kwargs):
+        """One more rule row for the node form."""
         from ..forms import RULE_TYPES
 
         branch_id = request.GET.get("branch_id", "0")
@@ -944,6 +959,7 @@ class WhatsAppRuleRemoveRowView(LoginRequiredMixin, View):
     """Remove a rule row - client's hx-swap=outerHTML on the row does the work."""
 
     def delete(self, request, branch_id, row_id, *args, **kwargs):
+        """Remove one rule row."""
         return HttpResponse("")
 
 

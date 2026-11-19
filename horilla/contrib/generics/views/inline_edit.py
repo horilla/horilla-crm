@@ -11,6 +11,7 @@ a model, a form class and its templates.
 
 # Third-party imports (Django)
 from django.contrib import messages
+from django.core.exceptions import FieldDoesNotExist
 
 # First party imports (Horilla)
 from horilla.db import models
@@ -44,6 +45,10 @@ class HorillaInlineEditMixin:
     edit = False
     change_perm = None
     success_message = _("Details updated successfully.")
+    # Form-only fields shown when reading: ``{field_name: label}``, drawn by
+    # ``form_only_template`` (which gets ``field_name`` and the extra context).
+    form_only_fields = {}
+    form_only_template = ""
 
     def get_object(self):
         """The record named by ``pk`` in the URL."""
@@ -62,10 +67,17 @@ class HorillaInlineEditMixin:
         for title, options in self.form_class.fieldsets:
             rows = []
             for name in options["fields"]:
-                field = obj._meta.get_field(name)
+                try:
+                    field = obj._meta.get_field(name)
+                except FieldDoesNotExist:
+                    # A form-only field is shown by ``form_only_template``.
+                    if name in self.form_only_fields:
+                        rows.append((self.form_only_fields[name], name))
+                    continue
                 if not isinstance(field, FILE_FIELD_TYPES):
                     rows.append((field.verbose_name, name))
-            sections.append((title, rows))
+            if rows:
+                sections.append((title, rows))
         return sections
 
     def render_inline(self, request, obj, form=None, saved=False):
@@ -76,8 +88,35 @@ class HorillaInlineEditMixin:
             "form": form,
             "saved": saved,
             "can_change": self.can_change(),
+            "bool_values": self.get_bool_values(obj),
+            "form_only_fields": list(self.form_only_fields),
+            "form_only_template": self.form_only_template,
+            **self.get_extra_context(obj),
         }
         return render(request, self.template_name, context)
+
+    def get_bool_values(self, obj):
+        """
+        ``{field_name: label}`` for the yes/no fields of ``obj``, worded as the form's
+        ``boolean_labels`` (Yes / No when it gives none), so the read-only view
+        says the same as the switch in the form.
+        """
+        labels = getattr(self.form_class, "boolean_labels", None) or {}
+        values = {}
+        for _title, options in self.form_class.fieldsets:
+            for name in options["fields"]:
+                try:
+                    field = obj._meta.get_field(name)
+                except FieldDoesNotExist:
+                    continue
+                if isinstance(field, models.BooleanField):
+                    true_label, false_label = labels.get(name, (_("Yes"), _("No")))
+                    values[name] = true_label if getattr(obj, name) else false_label
+        return values
+
+    def get_extra_context(self, obj):
+        """Extra template context for ``obj``; override to add more."""
+        return {}
 
     def get(self, request, *args, **kwargs):
         """Render read-only, or the form when ``edit`` / ``?edit=true`` is set."""

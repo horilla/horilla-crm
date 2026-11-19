@@ -6,7 +6,7 @@
                 <div>
                     <label class="text-xs text-color-600">{{ label }}</label>
                     <div class="text-color-600 p-2 font-normal w-full border border-dark-50 bg-gray-50 rounded-md mt-1 text-sm cursor-default break-words min-h-[2.5rem] flex items-center">
-                        {% display_field_value obj field_name request.user style="detail" %}
+                        {% if field_name in form_only_fields %}{% include form_only_template %}{% elif field_name in bool_values %}{{ bool_values|get_item_form:field_name }}{% else %}{% display_field_value obj field_name request.user style="detail" %}{% endif %}
                     </div>
                 </div>
             {% endfor %}

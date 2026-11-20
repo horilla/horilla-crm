@@ -61,7 +61,8 @@ class TelnyxAdapter(BaseCallAdapter):
         connection_id = self._val("api_key")
         if not connection_id:
             raise ValueError(
-                "Connection ID is required for Telnyx. Enter it in the 'Connection ID' field on the provider form."
+                "Connection ID is required for Telnyx. Enter it in the "
+                "'Connection ID' field on the provider form."
             )
         payload = {
             "connection_id": connection_id,

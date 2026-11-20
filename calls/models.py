@@ -66,7 +66,7 @@ class CallIntegrationSetting(HorillaCoreModel):
         return f"Call Integration – {'on' if self.is_enabled else 'off'}"
 
     def user_has_access(self, user):
-        """Return True if the given user has access to the calls integration based on the access_type setting."""
+        """Whether this user may use calls, based on the access type."""
         if not self.is_enabled:
             return False
         if self.access_type == self.ACCESS_ALL:
@@ -166,7 +166,7 @@ class CallIntegrationSetting(HorillaCoreModel):
 
     @classmethod
     def user_can_access(cls, user, company, request=None):
-        """Utility method to check if a given user has access to the calls integration for a given company."""
+        """Whether this user may use calls for the given company."""
         setting = cls._get_cached_setting(request, company)
         return bool(setting and setting.user_has_access(user))
 

@@ -65,7 +65,8 @@ class SignalWireAdapter(BaseCallAdapter):
             raise ValueError("A destination phone number is required to place a call.")
         if not from_e164:
             raise ValueError(
-                "A caller ID (From number) is required. Set it in your agent settings or provider default."
+                "A caller ID (From number) is required. Set it in your agent "
+                "settings or provider default."
             )
 
         project_id = self._val("account_sid")
@@ -115,7 +116,8 @@ class SignalWireAdapter(BaseCallAdapter):
                     resp.text[:500],
                 )
                 raise ValueError(
-                    f"SignalWire HTTP {resp.status_code} — unexpected response: {resp.text[:300] or '(empty body)'}"
+                    f"SignalWire HTTP {resp.status_code} — unexpected response: "
+                    f"{resp.text[:300] or '(empty body)'}"
                 ) from exc
             return {
                 "call_id": data.get("sid", ""),
@@ -149,7 +151,10 @@ class SignalWireAdapter(BaseCallAdapter):
 
     def cancel_call(self, provider_call_id: str, in_progress: bool = False) -> bool:
         project_id = self._val("account_sid")
-        url = f"{self._base_url()}/api/laml/2010-04-01/Accounts/{project_id}/Calls/{provider_call_id}.json"
+        url = (
+            f"{self._base_url()}/api/laml/2010-04-01/Accounts/"
+            f"{project_id}/Calls/{provider_call_id}.json"
+        )
         status = "completed" if in_progress else "canceled"
         try:
             resp = requests.post(
@@ -164,7 +169,10 @@ class SignalWireAdapter(BaseCallAdapter):
         if not provider_call_id:
             return None
         project_id = self._val("account_sid")
-        url = f"{self._base_url()}/api/laml/2010-04-01/Accounts/{project_id}/Calls/{provider_call_id}.json"
+        url = (
+            f"{self._base_url()}/api/laml/2010-04-01/Accounts/"
+            f"{project_id}/Calls/{provider_call_id}.json"
+        )
         try:
             resp = requests.get(url, auth=self._auth(), timeout=5)
             if resp.ok:

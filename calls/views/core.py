@@ -95,7 +95,7 @@ class CallIntegrationSettingsView(LoginRequiredMixin, View):
         return self._render(request)
 
     def post(self, request, *args, **kwargs):
-        """Handle form submission to update the main Call Integration settings (enabled + access type)."""
+        """Save the Call Integration settings: enabled and access type."""
         company = request.active_company
         setting = CallIntegrationSetting.get_for_company(company)
         if setting is None:
@@ -193,7 +193,7 @@ class CallProvidersTabContent(LoginRequiredMixin, View):
     template_name = "calls/tab_providers.html"
 
     def get(self, request, *args, **kwargs):
-        """Render the Providers tab with the list of existing providers and the Add Provider button."""
+        """Render the provider list and the Add Provider button."""
         return render(request, self.template_name)
 
 
@@ -222,7 +222,7 @@ class CallAccessRolesView(LoginRequiredMixin, HorillaSingleFormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_form(self, form_class=None):
-        """Override to limit the allowed_roles queryset to roles from this company and set initial values."""
+        """Limit allowed roles to this company and set the current selection."""
         company = self.request.active_company
         setting = CallIntegrationSetting.get_for_company(company)
         form = super().get_form(form_class)
@@ -262,7 +262,7 @@ class CallAccessUsersView(LoginRequiredMixin, HorillaSingleFormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_form(self, form_class=None):
-        """Override to limit the allowed_users queryset to active users from this company and set initial values."""
+        """Limit allowed users to this company's active users and set the current selection."""
         company = self.request.active_company
         setting = CallIntegrationSetting.get_for_company(company)
         form = super().get_form(form_class)
@@ -401,7 +401,10 @@ class CallUserSettingsView(LoginRequiredMixin, View):
         return cards
 
     def get(self, request, *args, **kwargs):
-        """Render the user's settings page with a card for each active provider, showing their current extension/agent ID if set."""
+        """
+        Render the user's settings page, with a card for each active provider
+        and the current extension or agent ID.
+        """
         company = request.active_company
         has_access = (
             CallIntegrationSetting.user_can_access(request.user, company)
@@ -418,7 +421,7 @@ class CallUserSettingsView(LoginRequiredMixin, View):
         )
 
     def post(self, request, *args, **kwargs):
-        """Handle saving/updating the user's AgentMapping for a given provider based on the submitted form data."""
+        """Save the user's agent mapping for the submitted provider."""
         provider_id = request.POST.get("provider_id")
         action = request.POST.get("action", "save")
         provider = (

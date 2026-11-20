@@ -108,7 +108,8 @@ class ExotelAdapter(BaseCallAdapter):
                     resp.text[:300],
                 )
                 raise ValueError(
-                    f"Exotel HTTP {resp.status_code} — unexpected response: {resp.text[:200] or '(empty body)'}"
+                    f"Exotel HTTP {resp.status_code} — unexpected response: "
+                    f"{resp.text[:200] or '(empty body)'}"
                 ) from exc
             call_data = data.get("Call", {})
             return {

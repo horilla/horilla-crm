@@ -184,7 +184,7 @@ class CallProviderForm(HorillaModelForm):
             self.add_error(field_name, error)
 
     def save(self, commit=True):
-        """Override save to handle secret fields left blank on edit (keep existing encrypted value)."""
+        """Keep the stored secret when a secret field is left blank on edit."""
         instance = super().save(commit=False)
         # Re-apply existing encrypted values for secret fields left blank on edit.
         if self.instance and self.instance.pk:

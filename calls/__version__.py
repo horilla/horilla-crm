@@ -2,15 +2,21 @@
 
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.16"
+__version__ = "1.11.17"
 __module_name__ = _("Calls Integration")
 __release_date__ = ""
 __description__ = _(
     "Telephony integration for click-to-call from CRM records, multi-provider "
-    "support (Twilio, SignalWire(Beta), Telnyx(Beta), Sinch(Beta), Exotel(Beta), call logging, agent "
+    "support (Twilio, SignalWire(Beta), Telnyx(Beta), Sinch(Beta), "
+    "Exotel(Beta), call logging, agent "
     "mapping, and company-level access control."
 )
 __icon__ = "assets/fontawesome/svgs/solid/phone.svg"
+
+__1_11_17__ = _(
+    "Restyle the access control cards to match the other settings cards. "
+    "Enabled and disabled states use the shared status badge."
+)
 
 __1_11_16__ = _(
     "Call integration settings no longer fail when no company is active, "
@@ -95,7 +101,8 @@ __1_11_1__ = _(
 )
 
 __1_11_0__ = _(
-    "Initial release: multi-provider telephony (Twilio, SignalWire(Beta), Telnyx(Beta), Sinch(Beta), "
+    "Initial release: multi-provider telephony (Twilio, SignalWire(Beta), "
+    "Telnyx(Beta), Sinch(Beta), "
     "Exotel(Beta), Mock) with adapter factory; company enable/disable and role/user access "
     "control; Click-to-Call modal with HTMX live status, cancel, and recording toggles; "
     "CallLog history with Activity Timeline integration; agent mapping; secure "

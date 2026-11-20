@@ -131,7 +131,10 @@ class ClickToCallView(LoginRequiredMixin, View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        """Render the click-to-call modal with a list of active providers and pre-filled phone number if provided."""
+        """
+        Render the click-to-call modal with the active providers and a
+        pre-filled phone number when one was provided.
+        """
         if self._related_is_locked(
             request.GET.get("model_name", ""), request.GET.get("object_id")
         ):
@@ -149,7 +152,10 @@ class ClickToCallView(LoginRequiredMixin, View):
         )
 
     def post(self, request, *args, **kwargs):
-        """Initiate the call via the selected provider's adapter, create a CallLog entry, and return an HTMX response indicating success or failure."""
+        """
+        Start the call through the selected provider, create a CallLog, and
+        return an HTMX response for success or failure.
+        """
         provider_id = request.POST.get("provider_id")
         from_number = request.POST.get("from_number", "")
         to_number = request.POST.get("to_number", "")
@@ -534,10 +540,16 @@ class ObjectCallLogView(LoginRequiredMixin, HorillaListView):
 
     @property
     def search_url(self):
-        """Construct the search URL for this object's call log list based on the model_name and object_id query parameters."""
+        """
+        Search URL for this record's call log, from the model_name and
+        object_id query parameters.
+        """
         model_name = self.request.GET.get("model_name", "")
         object_id = self.request.GET.get("object_id", "")
-        return f"{reverse_lazy('calls:object_call_logs')}?model_name={model_name}&object_id={object_id}"
+        return (
+            f"{reverse_lazy('calls:object_call_logs')}"
+            f"?model_name={model_name}&object_id={object_id}"
+        )
 
     @property
     def main_url(self):
@@ -592,6 +604,3 @@ class CallLogDetailView(LoginRequiredMixin, HorillaModalDetailView):
         ("Status", "get_status_display"),
         ("Duration", "get_duration_display"),
     ]
-
-
-#

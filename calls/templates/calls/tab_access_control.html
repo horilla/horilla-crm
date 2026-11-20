@@ -40,8 +40,8 @@
     {# All Users #}
     <div
         class="
-            flex items-center gap-3 px-4 py-2 rounded-lg border border-primary-400 bg-white transition-all duration-150
-            {% if not access_all %}cursor-pointer hover:bg-gray-50{% endif %}
+            flex items-center gap-3 p-3 rounded-md border border-primary-400 bg-white [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg
+            {% if not access_all %}cursor-pointer{% endif %}
         "
         {% if not access_all %}
             hx-get="{% url 'calls:integration_settings' %}?check=1"
@@ -51,8 +51,8 @@
             hx-on::after-request="if (event.detail.xhr.status === 204) { hxConfirm(document.getElementById('access-all-btn'), '{% trans "Set access to All Users?" %}', '{% trans "Every user in the company will be able to initiate calls." %}') }"
         {% endif %}
     >
-        <div class="w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+        <div class="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 12.094A5.973 5.973 0 004 15v1H1v-1a3 3 0 013.75-2.906z" />
             </svg>
         </div>
@@ -69,7 +69,7 @@
 
     {# Specific Roles #}
     <div
-        class="flex items-center gap-3 px-4 py-2 rounded-lg border border-primary-400 bg-white transition-all duration-150 cursor-pointer hover:bg-gray-50"
+        class="flex items-center gap-3 p-3 rounded-md border border-primary-400 bg-white [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg cursor-pointer"
         {% if access_roles %}
             hx-get="{% url 'calls:call_access_roles' %}"
             hx-target="#modalBox"
@@ -83,8 +83,8 @@
             hx-on::after-request="if (event.detail.xhr.status === 204) { hxConfirm(document.getElementById('access-roles-btn'), '{% trans "Switch to Specific Roles?" %}', '{% trans "Only users with selected roles will be able to make calls." %}') }"
         {% endif %}
     >
-        <div class="w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+        <div class="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path
                     fill-rule="evenodd"
                     d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z"
@@ -139,7 +139,7 @@
 
     {# Specific Users #}
     <div
-        class="flex items-center gap-3 px-4 py-2 rounded-lg border border-primary-400 bg-white transition-all duration-150 cursor-pointer hover:bg-gray-50"
+        class="flex items-center gap-3 p-3 rounded-md border border-primary-400 bg-white [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg cursor-pointer"
         {% if access_users %}
             hx-get="{% url 'calls:call_access_users' %}"
             hx-target="#modalBox"
@@ -153,8 +153,8 @@
             hx-on::after-request="if (event.detail.xhr.status === 204) { hxConfirm(document.getElementById('access-users-btn'), '{% trans "Switch to Specific Users?" %}', '{% trans "Only individually selected users will be able to make calls." %}') }"
         {% endif %}
     >
-        <div class="w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+        <div class="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
             </svg>
         </div>

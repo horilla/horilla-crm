@@ -258,6 +258,7 @@ DefaultDashboardGenerator.extra_models.append(
         "name": _("Leads"),
         "kpi_func": lead_kpi_cards,
         "chart_func": [create_lead_source_charts, create_lead_charts_by_stage],
+        "chart_titles": [_("Leads by Status"), _("Leads by Stage")],
         "table_func": [lead_convert_table_func, lead_open_pipeline_table_func],
         "table_fields_func": lead_table_fields,
     }

@@ -259,6 +259,9 @@ class DefaultDashboardGenerator:
 
     - ``chart_func``: a single callable ``(generator, queryset, model_info) -> dict``,
       or a list/tuple of such callables (multiple charts per registration).
+    - ``chart_titles``: optional list of titles, one per ``chart_func``, shown on
+      the empty-state card when the model has no records (falls back to
+      ``"<name> (<n>)"`` when missing).
     - ``table_func``: a single callable ``(generator, model_info) -> dict``, or a
       list/tuple of such callables (multiple tables per registration).
     - ``kpi_func``: optional callable or list of callables
@@ -572,7 +575,10 @@ class DefaultDashboardGenerator:
                 for idx, chart_func in enumerate(chart_funcs):
                     if count == 0:
                         title = base_name
-                        if multi:
+                        titles = model_info.get("chart_titles") or []
+                        if idx < len(titles) and titles[idx]:
+                            title = titles[idx]
+                        elif multi:
                             title = _("%(name)s (%(index)d)") % {
                                 "name": base_name,
                                 "index": idx + 1,

@@ -113,9 +113,13 @@ def _send_reminder_email(booking):
     mail_config = _get_mail_config(company)
 
     start_str = _format_for_booker(booking)
+    host_label = page.host.get_full_name() or page.host.username
 
     if page.is_online and booking.meeting_url:
-        location_line = f'<p>&#128279; <strong>Join:</strong> <a href="{booking.meeting_url}">{booking.meeting_url}</a></p>'
+        location_line = (
+            f"<p>&#128279; <strong>Join:</strong> "
+            f'<a href="{booking.meeting_url}">{booking.meeting_url}</a></p>'
+        )
     elif page.location:
         location_line = f"<p>&#128205; <strong>Location:</strong> {page.location}</p>"
     else:
@@ -139,7 +143,7 @@ def _send_reminder_email(booking):
   <div style="background:#f9fafb;border-left:4px solid #e54f38;border-radius:6px;padding:16px;margin-bottom:20px">
     <p style="margin:4px 0"><strong>{page.title}</strong></p>
     <p style="margin:4px 0;color:#555">&#128197; {start_str}</p>
-    <p style="margin:4px 0;color:#555">&#128100; Host: {page.host.get_full_name() or page.host.username}</p>
+    <p style="margin:4px 0;color:#555">&#128100; Host: {host_label}</p>
     {location_line}
   </div>
   <p style="font-size:12px;color:#999">
@@ -235,7 +239,8 @@ def send_booking_confirmation_email(booking, cancel_url="", reschedule_url=""):
         links = []
         if reschedule_url:
             links.append(
-                f'<a href="{reschedule_url}" style="color:#e54f38;text-decoration:none;">Reschedule</a>'
+                f'<a href="{reschedule_url}" '
+                f'style="color:#e54f38;text-decoration:none;">Reschedule</a>'
             )
         if cancel_url:
             links.append(
@@ -256,9 +261,15 @@ def send_booking_confirmation_email(booking, cancel_url="", reschedule_url=""):
     Your booking with <strong>{host_name}</strong> has been confirmed.
   </p>
   <div style="margin:20px 0;padding:15px;background:#fdf2f1;border-left:4px solid #e54f38;border-radius:6px">
-    <p style="margin:6px 0;font-size:14px;color:#333">&#128197; <strong>Title:</strong> {page.title}</p>
-    <p style="margin:6px 0;font-size:14px;color:#333">&#128336; <strong>When:</strong> {time_line}</p>
-    <p style="margin:6px 0;font-size:14px;color:#333">&#128100; <strong>Host:</strong> {host_name}</p>
+    <p style="margin:6px 0;font-size:14px;color:#333">
+      &#128197; <strong>Title:</strong> {page.title}
+    </p>
+    <p style="margin:6px 0;font-size:14px;color:#333">
+      &#128336; <strong>When:</strong> {time_line}
+    </p>
+    <p style="margin:6px 0;font-size:14px;color:#333">
+      &#128100; <strong>Host:</strong> {host_name}
+    </p>
     {join_link_row}
   </div>
   {join_button}
@@ -347,7 +358,10 @@ def send_status_change_email(booking, new_status):
     html_body = f"""
 <div style="max-width:600px;margin:auto;background:white;border-radius:12px;padding:32px;font-family:sans-serif">
   <h2 style="color:#111">Booking {label}</h2>
-  <p style="color:#555">Your booking for <strong>{page.title}</strong> on {start_str} has been <strong>{label.lower()}</strong>.</p>
+  <p style="color:#555">
+    Your booking for <strong>{page.title}</strong> on {start_str} has been
+    <strong>{label.lower()}</strong>.
+  </p>
 </div>"""
     plain_body = (
         f"Your booking for {page.title} on {start_str} has been {label.lower()}."

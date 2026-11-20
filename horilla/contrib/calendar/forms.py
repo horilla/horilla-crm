@@ -172,12 +172,12 @@ class UserAvailabilityForm(HorillaModelForm):
 
     def clean(self):
         """
-        Reject unavailability in the past, like activities.
+        Reject unavailability on a day that is over, like activities.
 
-        The start may be any time today (a whole-day block starts at 00:00) but
-        not an earlier day, and the end must not have passed. A value left
-        unchanged on an existing record is skipped, so an old one can still be
-        edited.
+        Both the start and the end are checked by day only: either may be any
+        time today (a whole-day block starts at 00:00) but not an earlier day.
+        A value left unchanged on an existing record is skipped, so an old one
+        can still be edited.
         """
         cleaned_data = super().clean()
         from_datetime = cleaned_data.get("from_datetime")
@@ -190,7 +190,7 @@ class UserAvailabilityForm(HorillaModelForm):
             self.add_error("from_datetime", _("From cannot be in the past."))
         if (
             to_datetime
-            and to_datetime < timezone.now()
+            and timezone.localtime(to_datetime).date() < timezone.localdate()
             and not self._unchanged("to_datetime", to_datetime)
         ):
             self.add_error("to_datetime", _("To cannot be in the past."))

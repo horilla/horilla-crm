@@ -200,7 +200,7 @@ initialization behavior, reuse prefetched related managers, and validate with
 
 ## Cadence detail board (`views/detail.py`)
 
-- Header is a `CadenceDetailNavbar` (`HorillaNavView`, URL `cadence_detail_nav_view`): back arrow via `navbar_indication` (`get_cadence_previous_url`), **Edit** as primary button (`cadences.change_cadence`), **View Reports** as secondary; search/filter/reload/view-type are off. The cadence description is the navbar description (default text as fallback).
+- Header is a `CadenceDetailNavbar` (`HorillaNavView`, URL `cadence_detail_nav_view`): back arrow via `navbar_indication` (`get_cadence_previous_url`), **Edit** as primary button (`cadences.change_cadence`), **View Reports** as secondary, with space between the two buttons; search/filter/reload/view-type are off. The cadence description is the navbar description (default text as fallback).
 - 5 follow-up columns shown by default (was 4).
 - Add buttons: a standalone **"add another"** at the bottom of the follow-up 1 column (`show_standalone_add`); per-card `can_add_sibling` (`_flag_last_sibling_add`) shows "Add another follow-up here" only under the last card of a sibling group and while the parent has unused statuses; decisions use `_bucket_followups` / `_can_add_next_for_parent` (`_compute_can_add_to_bucket` removed). `branch_from` is passed to the create form only for cards with a parent.
 - Hovering a card highlights it and all its ancestors (`data-branch-from-id`, `cadence_detail.js`).

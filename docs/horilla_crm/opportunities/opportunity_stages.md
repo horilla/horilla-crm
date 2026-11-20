@@ -85,6 +85,8 @@ The closed-stage popup preselects **Closed Won**, unless the opportunity is alre
 
 `email` is on both opportunity forms, after Amount.
 
+Edit Details and the opportunity forms keep **Probability** read-only. Changing **Stage** refreshes Probability from that stage, and Expected Revenue from Amount × Probability. Saving with an empty Amount clears Expected Revenue.
+
 ---
 
 ## Related documentation

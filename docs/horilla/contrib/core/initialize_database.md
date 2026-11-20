@@ -6,7 +6,7 @@ First-run onboarding runs only while no users exist in the database. Views are g
 
 ## Progress steps
 
-`ProgressStepsMixin` + `BASE_STEPS` drive the step indicator in init templates.
+`ProgressStepsMixin` + `BASE_STEPS` drive the step indicator in init templates. Each step shows a loading spinner while it submits.
 
 | Step | View | Purpose |
 |------|------|---------|

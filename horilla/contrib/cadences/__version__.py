@@ -5,13 +5,18 @@ Version information for the cadences app
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.12"
+__version__ = "1.11.13"
 __module_name__ = "Cadences"
 __release_date__ = ""
 __description__ = _(
     "Module for managing cadence workflows and runtime activity sequences."
 )
 __icon__ = "cadences/assets/icons/cadence.svg"
+
+__1_11_13__ = _(
+    "Add spacing between the Edit and View Reports buttons on the cadence "
+    "detail board."
+)
 
 __1_11_12__ = _(
     "Assign task and call follow-ups to the record owner. Stop an automatic "

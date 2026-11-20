@@ -285,6 +285,8 @@ objects = CompanyFilteredManager()
 
 ✔ Enables multi-company behavior globally
 
+An authenticated request with no company (and `show_all_companies` off) gets an empty queryset. An unexpected error in `get_queryset` does the same. A request with no user still returns the unfiltered queryset, so startup and management commands keep working.
+
 ---
 
 ## 🧱 HorillaCoreModel (Base Model)

@@ -86,7 +86,7 @@ Same shape as `ZoomOAuthConfig` plus `tenant_id` (Azure AD tenant or `"common"`)
 
 ### Admin views (Settings → Integrations)
 
-**`MeetingIntegrationSettingsView`** — permission-gated (`meeting.change_meetingintegrationsetting`). GET renders the toggle + access panel. POST handles two paths: `is_meeting_enabled=true/false` toggles the integration (disabling clears **all** OAuth credentials for every company user via `_clear_meeting_credentials()`); `access_type=all` immediately sets open access.
+**`MeetingIntegrationSettingsView`** — permission-gated (`meeting.change_meetingintegrationsetting`). GET renders the toggle + access panel. Enabled and disabled states use `{% status_badge %}`. POST handles two paths: `is_meeting_enabled=true/false` toggles the integration (disabling clears **all** OAuth credentials for every company user via `_clear_meeting_credentials()`); `access_type=all` immediately sets open access.
 
 **`MeetingAccessRolesView`** / **`MeetingAccessUsersView`** — both extend `HorillaSingleFormView`. On `form_valid`: update `access_type`, sync the M2M, find users losing access, and call `_clear_meeting_credentials()` on them. Return `<script>closeModal(); location.reload();</script>`.
 

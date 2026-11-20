@@ -2,13 +2,28 @@
 
 from django.utils.translation import gettext_lazy as _
 
-__version__ = "1.18.0"
+__version__ = "1.18.1"
 __module_name__ = _("Core System")
 __release_date__ = ""
 __description__ = _(
     "Core system providing authentication, configuration, utilities, and platform-level services."
 )
 __icon__ = "assets/icons/logo.png"
+
+__1_18_1__ = _(
+    "Product Tour: guided walkthroughs of the CRM screens, including Home "
+    "and Leads. A step is skipped when its target is missing. Currency "
+    "Management uses pluggable rate sources, a scheduled refresh and rate "
+    "history. A company chooses its languages, and users pick from those. "
+    "History and dashboards use named date-range presets. Edit Details "
+    "validates like the form and shows errors under each field. WhatsApp "
+    "verifies incoming webhooks, checks chats with no linked record, and "
+    "enforces API permissions. Notifications stay in the active company. "
+    "A new company appears in the header as soon as it is saved. Bulk "
+    "update can link country and state and limit a field's options. Long "
+    "titles truncate, and field help shows as an info icon. The company "
+    "switcher fits long names, and page dropdowns stay below the header."
+)
 
 __1_18_0__ = _(
     "Get started: a home-page setup guide with steps from each app. Skip "

@@ -112,6 +112,10 @@ including this fiscal period, quarter and year.
 even when Custom Layout is not the active mode. See
 [form layouts](form_layouts.md).
 
+An applied-filter chip for a custom field uses the field's name.
+`relabel_applied_filter_slot_rows` rewrites the chip that the navbar built as
+`Cf <id>`. A navbar with no model skips that relabel.
+
 ## Not supported yet
 
 - Import lists custom fields on the downloaded template, but steps 1–4 only

@@ -4,7 +4,7 @@ Version information for the whatsapp app
 
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __module_name__ = "Whatsapp"
 __description__ = _(
     "WhatsApp Business messaging for records, with company accounts, "
@@ -12,6 +12,13 @@ __description__ = _(
     "automation delivery channel."
 )
 __icon__ = "whatsapp/assets/icons/whatsapp.svg"
+
+__1_0_1__ = _(
+    "Verify the Meta signature on incoming webhooks. Check access on "
+    "conversations that have no linked record. The API enforces model "
+    "permissions and company scope. The WhatsApp channel stays available "
+    "on automations. Inbox empty states use the shared empty state."
+)
 
 __1_0_0__ = _(
     "Add live chat updates, an Activity tab, a connection test and an "

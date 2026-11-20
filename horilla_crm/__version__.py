@@ -2,11 +2,19 @@
 
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.24"
+__version__ = "1.11.25"
 __module_name__ = "CRM"
 __release_date__ = ""
 __description__ = _("CRM module for managing leads, contacts, and opportunities.")
 __icon__ = "assets/icons/icon2.svg"
+
+__1_11_25__ = _(
+    "Leads: product tours for the list and a single lead. Opportunities: "
+    "Probability and Expected Revenue refresh live in Edit Details, and "
+    "Expected Revenue clears when Amount is empty. Contact bulk update "
+    "links country and state. Team Selling uses the shared status badge. "
+    "Demo fixtures live in a shared folder, and the sample data is larger."
+)
 
 __1_11_24__ = _(
     "Leads: Round Robin assignment; Allow Owner Reassignment locks the owner "

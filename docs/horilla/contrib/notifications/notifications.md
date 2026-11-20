@@ -141,6 +141,8 @@ also [settings/base.md](../../settings/base.md#-channels-channel_layers).
 2. User loads any page → context processor adds **`unread_notifications`** queryset + **`notification_sound_muted`**.
 3. User marks read via HTMX POST → view flips `read=True`.
 
+`get_user_notifications` (`methods.py`) drops a notification whose related record is not visible in the active company. The related model's default manager is company-scoped, so a record in another company is treated as missing. Notifications with no related record stay.
+
 ---
 
 ## Insert Fields modal

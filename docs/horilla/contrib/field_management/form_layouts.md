@@ -135,10 +135,10 @@ Admins with `field_management.view_formlayoutfield` open
 **Settings → Field Management → Form Layout**. The page is a list of saved
 layouts (one row per model: model name, fields shown, last updated), the same
 shape as Custom Fields. **New** (`add_formlayoutfield`) asks only for the
-model, stores a layout with every field shown, and opens that layout's detail
-page.
+model, stores a layout with every field shown, and opens that layout **in
+edit mode** (`?mode=edit`). The address bar stays on the detail URL.
 
-The detail page opens **read-only**: numbered fields in their current order,
+The detail page opens **read-only** when it is opened later: numbered fields in their current order,
 each marked Shown or Hidden, with a Full Width badge where set. Nothing can
 change until a user with `change_formlayoutfield` clicks **Edit Layout**,
 which swaps in edit mode:

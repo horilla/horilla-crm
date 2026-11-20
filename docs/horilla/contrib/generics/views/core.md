@@ -221,7 +221,7 @@ It builds `history_by_date` as:
 #### `get()`
 
 - always renders the history tab; there is no filter modal or `show_filter` branch any more
-- the date-range dropdown (`partials/history_date_range_filter.html`) re-requests the tab with `date_range` params; `apply_filter(history_by_date, today)` keeps the days in range
+- the date-range dropdown (`components/date_range_filter.html`) offers named presets (Today, Yesterday, This Week, This Month) and a custom range, and re-requests the tab with `date_range` params; `apply_filter(history_by_date, today)` keeps the days in range
 - related records only contribute entries that link/unlink them to this object (FK set/cleared, generic link created/deleted)
 
 ### Example subclass

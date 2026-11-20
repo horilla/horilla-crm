@@ -2,6 +2,27 @@
 
 This tree mirrors **`horilla/contrib/`** Django apps. Each subfolder holds documentation for that app.
 
+## Recent updates (14–20 Nov 2026, v1.18.1)
+
+Platform version is **1.18.1** ([core/horilla.md](core/horilla.md)). Module versions stay on their own lines.
+
+| Topic | Doc |
+|-------|-----|
+| Product Tour walkthroughs | [../../../horilla/contrib/tour/README.md](../../../horilla/contrib/tour/README.md) |
+| Named date-range presets | [dashboard/dashboard.md](dashboard/dashboard.md#views-and-templates) · [generics/views/core.md](generics/views/core.md) |
+| Unavailability may end earlier today | [calendar/calendar.md](calendar/calendar.md#all-day-row-and-assignees) |
+| Shared dashboard and reports sidebars | [dashboard/dashboard.md](dashboard/dashboard.md#views-and-templates) · [reports/reports.md](reports/reports.md) |
+| Currency, company languages, and a new company in the header | [core/core_app.md](core/core_app.md#regional-formatting) |
+| Edit Details, inline yes/no fields, and long titles | [generics/views/details.md](generics/views/details.md#edit-details-bulk-field-edit) |
+| Bulk update country, state, and limited choices | [generics/views/toolkit/bulk_update.md](generics/views/toolkit/bulk_update.md#stage-3-editable-allowlist-enforcement) |
+| WhatsApp webhooks, access, and the inbox | [whatsapp/whatsapp.md](whatsapp/whatsapp.md) |
+| Notifications stay in the active company | [notifications/notifications.md](notifications/notifications.md#typical-flows) |
+| Form layouts open in edit mode; filter chips use the field name | [field_management/form_layouts.md](field_management/form_layouts.md#settings-ui) · [field_management/custom_fields.md](field_management/custom_fields.md#surfaces) |
+| Company filter fails closed | [core/models.md](core/models.md#-companyfilteredmanager) |
+| Expected Revenue follows Stage and Amount | [../../horilla_crm/opportunities/opportunity_stages.md](../../horilla_crm/opportunities/opportunity_stages.md#detail-pipeline) |
+
+Also in this release: field help shows as an info icon. The company switcher fits long names, and page dropdowns stay below the header. Permission checkboxes wrap long names, and the roles list View Users action has its own icon. Database initialization steps show a spinner. Call access cards and meeting settings use the shared status badge. Cadence Edit and View Reports have space between them.
+
 ## Recent updates (7–13 Nov 2026, v1.18.0)
 
 Platform version is **1.18.0** ([core/horilla.md](core/horilla.md)). Module versions stay on their own lines.

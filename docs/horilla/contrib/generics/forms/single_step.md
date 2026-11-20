@@ -15,6 +15,8 @@ It combines:
 
 This is the form foundation used by `HorillaSingleFormView` and related dynamic form builders.
 
+Fieldset forms (`form_fieldset.html`) show a field's `help_text` as an info icon. The icon's accessible name is that text.
+
 ---
 
 ## Class overview

@@ -5,7 +5,7 @@ Version information for the field settings app.
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __module_name__ = "Field Management"
 __release_date__ = ""
 __description__ = _(
@@ -14,6 +14,12 @@ __description__ = _(
     "and in what order, per company."
 )
 __icon__ = "field_management/assets/icons/field-requirement.svg"
+
+__1_0_4__ = _(
+    "A new form layout opens in edit mode. An applied-filter chip shows "
+    "the custom field's name. Navbars with no model skip applied-filter "
+    "relabelling."
+)
 
 __1_0_3__ = _("List search covers field-management fields.")
 

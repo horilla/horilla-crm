@@ -83,18 +83,26 @@
                         >
                             <input type="hidden" name="date_range" value="custom">
                             <div>
-                                <label class="block text-xs text-gray-500 mb-0.5">{% trans "Start Date" %}</label>
+                                <label
+                                    for="id_date_from"
+                                    class="block text-xs text-gray-500 mb-0.5"
+                                >{% trans "Start Date" %}</label>
                                 <input
                                     type="date"
+                                    id="id_date_from"
                                     name="date_from"
                                     value="{{ date_from|date:'Y-m-d' }}"
                                     class="w-full text-sm border border-primary-300 rounded px-2 py-1.5"
                                 >
                             </div>
                             <div>
-                                <label class="block text-xs text-gray-500 mb-0.5">{% trans "End Date" %}</label>
+                                <label
+                                    for="id_date_to"
+                                    class="block text-xs text-gray-500 mb-0.5"
+                                >{% trans "End Date" %}</label>
                                 <input
                                     type="date"
+                                    id="id_date_to"
                                     name="date_to"
                                     value="{{ date_to|date:'Y-m-d' }}"
                                     class="w-full text-sm border border-primary-300 rounded px-2 py-1.5"

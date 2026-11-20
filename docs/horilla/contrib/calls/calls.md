@@ -196,7 +196,7 @@ Credentials stored via `EncryptedCharField` are decrypted via `_decrypt()` / `se
 
 **`CallAccessRolesDetailView`** / **`CallAccessUsersDetailView`** — read-only panels listing currently allowed roles/users.
 
-**`CallSettingsTabView`** / **`CallAccessControlTabContent`** / **`CallProvidersTabContent`** — tabbed settings layout via `HorillaTabView`.
+**`CallSettingsTabView`** / **`CallAccessControlTabContent`** / **`CallProvidersTabContent`** — tabbed settings layout via `HorillaTabView`. The access-control cards match the other settings cards, and enabled and disabled states use the shared status badge.
 
 ### Provider management views (`views/provider.py`)
 

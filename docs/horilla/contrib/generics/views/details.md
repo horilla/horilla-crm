@@ -23,7 +23,12 @@ The details tab (`details_tab.html`) exposes **Edit Details**, which HTMX-loads
 `generics:edit_all_fields` and saves via `generics:update_all_fields`. See
 [edit_field.md](helpers/edit_field.md) for `EditAllFieldsView`,
 `UpdateAllFieldsView`, and extension seams (`check_before_save`,
-`ExtraFieldsProvider`, Jalali `FieldInfoResolver`).
+`ExtraFieldsProvider`, Jalali `FieldInfoResolver`). A value the form rejects
+comes back under that field, and the record is not saved. When Edit Details
+can edit the record, `_without_edit_action` drops the header **Edit** action
+(the full form modal). The other header actions stay.
+
+Long titles in the detail header, breadcrumbs and list cells are truncated.
 
 ### Edit Details (one record)
 
@@ -33,9 +38,12 @@ The details tab (`details_tab.html`) exposes **Edit Details**, which HTMX-loads
 `TemplateView` that names `model` and a `HorillaModelForm` with `fieldsets`.
 The sections render read-only until `?edit=true` (or `as_view(edit=True)`),
 then the same page shows the form. The navbar mixin supplies Edit Details,
-Cancel and Save. File fields stay on the form and are left out of the
-read-only sections. `can_change` checks `change_<model>` unless `change_perm`
-is set.
+Cancel and Save. Yes/no fields use the form's two-segment control, labelled
+from `boolean_labels` (Yes / No when the form sets none). Fields listed in
+`form_only_fields` stay on the form, including file fields, and are left out
+of the read-only sections. `can_change` checks `change_<model>` unless
+`change_perm` is set. A save checks the form the same way a normal form save
+does, and a rejected value is shown under its field.
 
 Core uses this for the company Details tab, the branch detail page, the user
 detail Details tab and My Profile. Those pages reload after a save so the

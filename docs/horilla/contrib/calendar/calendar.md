@@ -235,7 +235,9 @@ as one all-day bar. An end of exactly `00:00` belongs to the previous day.
 FullCalendar's `end` is exclusive (`last_day + 1 day`). All-day events and
 meetings (`is_all_day`) use `_all_day_fields()` so the popup shows the dates,
 not an empty "All Day Event" end. A whole-day unavailability block (00:00 to
-23:59) is drawn the same way. Creating unavailability in the past is refused.
+23:59) is drawn the same way. Creating unavailability on an earlier day is
+refused. Any time today is allowed, including an end time that has already
+passed.
 
 `ActivityAssigneesView` is a read-only modal of everyone an activity is
 assigned to. It only loads activities the user can already see on the calendar

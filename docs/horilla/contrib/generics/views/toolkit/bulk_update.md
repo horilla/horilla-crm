@@ -177,6 +177,10 @@ Only fields in this resolved list are accepted; others are silently skipped.
 
 This provides field-level security for bulk operations.
 
+A list view can narrow a field's options with `bulk_update_choices`: a dict of field name to a callable that returns `(value, label)` pairs. `apply_bulk_update_choices` replaces that field's choices before the modal renders.
+
+`bulk_update_country_state_fields` maps a country field to its state field. Choosing a country reloads the state options from `core:get_country_subdivisions`. User and contact bulk update set this pair.
+
 ---
 
 ## Stage 4: type coercion and validation rules

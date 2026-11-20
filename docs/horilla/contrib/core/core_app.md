@@ -194,6 +194,10 @@ Ten class-based views manage business hour configuration per company.
 
 ---
 
+## Roles list and the permission grid
+
+The roles list **View Users** action uses `static/assets/icons/view-users.svg`. The permission checkbox grid wraps long permission names instead of overflowing the cell.
+
 ## View and menu permission gates
 
 ### Login (`views/core.py` — `LoginUserView`)
@@ -396,6 +400,14 @@ class RegionalFormattingFormExtension(FormExtension):
 
 Display of those preferences still goes through `DateTimeFormatter` ([`_inherit_formatter`](../../extension/formatting/inherit.md)).
 
+A company chooses the languages it offers. `limit_language_choices` keeps a user language field to that company's languages (or `settings.ALLOWED_LANGUAGES` when no company is passed). A language already saved on the record stays selectable, so re-saving does not clear it.
+
+A user's preferred currency is limited to currencies of their company.
+
+### Currency management
+
+**Settings → Currency** uses pluggable rate sources (`services/exchange_providers.py`, `services/exchange_rates.py`). A refresh can be scheduled. Each non-default currency keeps a dated rate history (`DatedConversionRate`), starting from its current rate. Admins are notified when a rate moves past the configured threshold. Currency management fields are not on the company create and edit forms.
+
 ---
 
 ## Inline company, branch, user and profile details
@@ -404,7 +416,7 @@ Company, branch, user and My Profile details use [inline Edit Details](../generi
 
 ### Company details tab (`CompanyDetailsTab`)
 
-`HorillaInlineEditMixin` with `CompanyDetailsInlineForm`. Fieldsets are Branch Information, Address and Localization. The object is the active company, or the user's company. `after_save` still sends `company_created` with `is_new=False`.
+`HorillaInlineEditMixin` with `CompanyDetailsInlineForm`. Fieldsets are Branch Information, Address and Localization. The object is the active company, or the user's company. `after_save` still sends `company_created` with `is_new=False`. Saving a new company puts it in the header immediately, including when the stage-setup modals are closed.
 
 ### Branch detail
 

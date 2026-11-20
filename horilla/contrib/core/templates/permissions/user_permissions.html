@@ -78,9 +78,9 @@
                             {% endif %}
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 {% if model.has_export %}lg:grid-cols-5{% else %}lg:grid-cols-4{% endif %} gap-x-4 gap-y-3 sm:gap-x-6 lg:gap-x-8 text-xs text-dark-300 w-[calc(100%-15rem)] px-4 sm:px-0">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-4 gap-y-3 sm:gap-x-6 lg:gap-x-8 text-xs text-dark-300 items-center w-[calc(100%-15rem)] px-4 sm:px-0">
                             {% for perm in model.permissions %}
-                                <label class="flex items-center whitespace-nowrap">
+                                <label class="flex items-center min-w-0 {% if perm.label|length > 12 %}sm:col-span-2{% else %}whitespace-nowrap{% endif %}">
                                     <input
                                         type="checkbox"
                                         name="permissions"

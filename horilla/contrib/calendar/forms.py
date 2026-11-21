@@ -10,6 +10,7 @@ from django import forms
 from horilla.auth.models import User
 from horilla.contrib.core.models import HorillaContentType, Role
 from horilla.contrib.generics.forms import HorillaModelForm
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import ValidationError
 from horilla.urls import reverse, reverse_lazy
 from horilla.utils import timezone
@@ -130,16 +131,6 @@ class CustomCalendarForm(HorillaModelForm):
             self.initial["activity_types"] = [
                 value for value, _label in self.activity_type_choices
             ]
-        self.fields["name"].label = CustomCalendar._meta.get_field("name").verbose_name
-        self.fields["color"].label = CustomCalendar._meta.get_field(
-            "color"
-        ).verbose_name
-        self.fields["module"].label = CustomCalendar._meta.get_field(
-            "module"
-        ).verbose_name
-        self.fields["is_selected"].label = CustomCalendar._meta.get_field(
-            "is_selected"
-        ).verbose_name
         # Keep native color swatch appearance with compact boxed styling.
         self.fields["color"].widget.attrs.pop("placeholder", None)
         self.fields["color"].widget.attrs[
@@ -194,6 +185,10 @@ class UserAvailabilityForm(HorillaModelForm):
             and not self._unchanged("to_datetime", to_datetime)
         ):
             self.add_error("to_datetime", _("To cannot be in the past."))
+        # An inverted range would never overlap anything, so the person would
+        # look available while they believe they are away.
+        if from_datetime and to_datetime and to_datetime < from_datetime:
+            self.add_error("to_datetime", _("To cannot be earlier than From."))
         return cleaned_data
 
     def _unchanged(self, field_name, value):
@@ -361,7 +356,7 @@ class GoogleAccessUsersForm(forms.Form):
         _pop_single_form_view_kwargs(self, kwargs)
         super().__init__(*args, **kwargs)
         if request is not None:
-            company = getattr(request, "active_company", None) or request.user.company
+            company = get_active_company(request)
             self.fields["allowed_users"].queryset = User.objects.filter(
                 company=company, is_active=True
             )

@@ -84,9 +84,9 @@
 
             <div id="role-model-container" class="min-h-0 flex-1 overflow-y-auto overflow-x-auto">
                 {% for model in all_models %}
-                    <div class="border-[1px] border-[solid] border-[#efefef] last:border-b-0 px-4 py-2">
+                    <div class="border-[1px] border-[solid] border-[#efefef] last:border-b-0 px-4 py-3">
                         <div class="flex gap-4 permItem">
-                            <div class="w-[10rem] flex items-center">
+                            <div class="w-[12rem] shrink-0 flex items-center">
                                 <label class="flex items-center">
                                     <input
                                         type="checkbox"
@@ -103,7 +103,7 @@
                                 </label>
                                 {% if model.is_managed %}
                                     <button
-                                        class="whitespace-nowrap text-start hover:text-primary-600"
+                                        class="text-start break-words hover:text-primary-600"
                                         hx-get="{% url 'core:model_fields_modal_role' role.id model.app_label model.model_name %}"
                                         hx-target="#modalBox"
                                         hx-swap="innerHTML"
@@ -113,7 +113,7 @@
                                     </button>
                                 {% else %}
                                     <div
-                                        class="inline-block cursor-pointer whitespace-nowrap text-black"
+                                        class="inline-block cursor-pointer break-words text-black"
                                         title="{% trans 'Field permissions not available for this model' %}"
                                         aria-label="{% trans 'Field permissions not available for this model' %}"
                                     >
@@ -122,7 +122,7 @@
                                 {% endif %}
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-4 gap-y-3 sm:gap-x-6 lg:gap-x-4 text-xs text-dark-300 items-center w-[calc(100%-13rem)] px-4 sm:px-0 lg:pr-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-4 gap-y-4 sm:gap-x-6 lg:gap-x-7 text-xs text-dark-300 items-center flex-1 min-w-0 px-4 sm:px-0 lg:pr-4">
                                 {% for perm in model.permissions %}
                                     <label class="flex items-center min-w-0 {% if perm.label|length > 12 %}sm:col-span-2{% else %}whitespace-nowrap{% endif %}">
                                         <input

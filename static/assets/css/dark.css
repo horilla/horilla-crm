@@ -79,7 +79,6 @@ body.dark .select2-container--default .select2-results__option--selected.select2
 body.dark .header{
   background: transparent;
 }
-body.dark .text-secondary-900,
 body.dark .text-color-600,
 body.dark .text-gray-700{
   color: #ebebeb;
@@ -244,7 +243,6 @@ body.dark .import-stepper span.text-primary-600 {
 }
 body.dark button.text-gray-500 img,
 body.dark #profile-edit-btn img,
-body.dark img.my-profile-edit-icon,
 body.dark #navBar img,
 body.dark .bg-dark-25 img,
 body.dark #dropdownLeftEndButton img,
@@ -504,19 +502,6 @@ body.dark .bg-\[\#e6fff5\]:hover, body.dark .bg-\[\#ffefed\]:hover{
 /* Surface (kanban/group-by): dark mode override */
 body.dark .bg-surface {
   background-color: #2f2f2f !important;
-}
-body.dark .group-by-details {
-  border-color: #565656 !important;
-}
-body.dark .group-by-header-band {
-  background-color: #383838 !important;
-  border-color: #565656 !important;
-}
-body.dark .group-by-details .group-by-summary span.text-primary-600 {
-  color: var(--menu-arrow-fg, #E54F38) !important;
-}
-body.dark .group-by-details .group-by-summary .fa-chevron-down {
-  color: var(--menu-arrow-fg, #E54F38) !important;
 }
 
 /* Timeline view: make pills + active group label use theme colors in dark mode */

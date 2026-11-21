@@ -74,52 +74,12 @@
   padding-top: 60px;
 }
 
-@layer utilities {
-  @keyframes fade-in {
-    0% {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-
-    100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.3s ease-out forwards;
-  }
-}
-
 .container {
   width: 70%;
   min-width: 50%;
   margin: auto;
   display: flex;
   flex-direction: column;
-}
-
-.kanban-heading {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  font-family: sans-serif;
-}
-
-.kanban-heading-text {
-  font-size: 1.8rem;
-  background-color: tomato;
-  padding: 0.8rem 1.7rem;
-  border-radius: 0.5rem;
-  margin: 1rem;
-}
-
-.kanban-board {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  font-family: sans-serif;
 }
 
 /* .kanban-block {
@@ -532,34 +492,6 @@ input[type="checkbox"] {
   color: #e54f38;
 }
 
-/* table button img{
-  filter: brightness(0);
-  opacity: .5;
-} */
-
-.file-label {
-  padding: 10px;
-  background: #e57938;
-  display: inline-flex;
-  align-items: center;
-  color: #fff;
-  cursor: pointer;
-  border-radius: 4px;
-  gap: 6px;
-  /* spacing between icon and text */
-}
-
-.file-label input[type="file"] {
-  display: none;
-}
-
-.file-content {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.9rem;
-}
-
 .swal-footer {
   display: flex;
   justify-content: center;
@@ -639,10 +571,6 @@ input[type="checkbox"] {
 
 .select2-container--default .select2-selection--single {
   position: relative;
-}
-
-.default-modal6::before {
-  pointer-events: none !important;
 }
 
 .custom-scroll::-webkit-scrollbar {
@@ -750,29 +678,6 @@ input[type="checkbox"] {
   text-align: start;
 }
 
-.file-label {
-  padding: 10px !important;
-  background: #e57938 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  color: #fff !important;
-  cursor: pointer !important;
-  border-radius: 4px !important;
-  gap: 6px !important;
-  /* spacing between icon and text */
-}
-
-.file-label input[type="file"] {
-  display: none !important;
-}
-
-.file-content {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 5px !important;
-  font-size: 0.9rem !important;
-}
-
 /*  for dashboard styles */
 
 .chart-container {
@@ -797,19 +702,6 @@ canvas {
   overflow: hidden;
 }
 
-.component-item {
-  transition: all 0.2s ease;
-  cursor: grab;
-}
-
-.component-item:hover {
-  transform: translateX(2px);
-}
-
-.component-item:active {
-  cursor: grabbing;
-}
-
 .fa-solid {
   width: 16px;
   text-align: center;
@@ -822,17 +714,6 @@ canvas {
 /* KPI Fixed Position Styles */
 .kpi-component-fixed {
   position: relative;
-}
-
-/* Ensure KPIs are always in their grid layout */
-.kpi-section {
-  position: sticky;
-  top: 70px;
-  /* Account for the fixed header */
-  z-index: 10;
-  background: #f9fafb;
-  padding: 1rem 0;
-  margin-bottom: 2rem;
 }
 
 /* KPI Card Styles */
@@ -1250,20 +1131,6 @@ canvas {
   display: block;
 }
 
-.member-image {
-  padding: 10px;
-  width: 120px;
-  position: relative;
-}
-
-.member-image img {
-  width: 100px;
-  height: 100px;
-  border-radius: 6px;
-  background-color: #fff;
-  z-index: 1;
-}
-
 .member-header {
   /* padding: 5px 0; */
   /* text-align: center; */
@@ -1433,21 +1300,6 @@ canvas {
     margin-bottom: 20px;
     max-width: 600px;
 }
-.permission-info {
-  font-size: 14px;
-  color: #6c757d;
-  margin-bottom: 32px;
-}
-
-.permission-code {
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-family: "Monaco", "Consolas", monospace;
-  font-size: 13px;
-  color: #495057;
-}
 
 /* Hide default radio */
 input[type="radio"] {
@@ -1535,22 +1387,6 @@ input[type="radio"] {
   font-size: 16px;
   color: #6c757d;
   margin-bottom: 8px;
-}
-
-.permission-info {
-  font-size: 14px;
-  color: #6c757d;
-  margin-bottom: 32px;
-}
-
-.permission-code {
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-family: "Monaco", "Consolas", monospace;
-  font-size: 13px;
-  color: #495057;
 }
 
 .file-preview {
@@ -1731,54 +1567,6 @@ input[type="radio"] {
   color: var(--menu-arrow-fg, #e54f38);
 }
 
-/* .contact-info {
-  background: #e54f380f;
-  padding: 10px 15px;
-  border-radius: 10px;
-  font-size: 13px;
-  margin-bottom: 10px;
-  display: flex;
-  flex-flow: wrap;
-  row-gap: 5px;
-  column-gap: 40px;
-} */
-
-.contact-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 3px 0;
-  color: #2d3748;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.status-lost {
-  background: #fed7d7;
-  color: #c53030;
-}
-
-.status-won {
-  background: #c6f6d5;
-  color: #276749;
-}
-
-.email-container {
-  max-width: 600px;
-  width: 100%;
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  /* box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15); */
-  border: 1px solid #e2e8f0;
-}
-
 .header {
   background: linear-gradient(135deg, #4285f4 0%, #2563eb 100%);
   padding: 20px;
@@ -1820,20 +1608,11 @@ input[type="radio"] {
   color: #4a5568;
 }
 
-.signature-line {
-  margin-bottom: 4px;
-}
-
 .footer {
   background: #f7fafc;
   padding: 10px;
   text-align: center;
   border-top: 1px solid #e2e8f0;
-}
-
-.footer-text {
-  font-size: 13px;
-  color: #718096;
 }
 
 @media (max-width: 640px) {
@@ -1852,11 +1631,6 @@ input[type="radio"] {
   .greeting,
   .message,
   .signature {
-    font-size: 15px;
-  }
-
-  .cta-button {
-    padding: 14px 40px;
     font-size: 15px;
   }
 }
@@ -2079,46 +1853,6 @@ img {
   line-height: 1.6;
 }
 
-.stats-bar {
-  background: white;
-  border-radius: 12px;
-  padding: 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 30px;
-  border: 1px solid #f2f2f2;
-}
-
-.stat-item {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-
-.stat-item .module-icon {
-  width: 80px;
-  height: 80px;
-}
-
-.stat-item .module-icon img {
-  width: 40px;
-}
-
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #ee5a52;
-}
-
-.stat-label {
-  color: #636e72;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
 @media (max-width: 768px) {
   .header h1 {
     font-size: 2rem;
@@ -2193,12 +1927,6 @@ input::placeholder {
 .horilla-search-icon-start {
   position: absolute;
   inset-inline-start: 10px;
-  top: 9px;
-}
-
-.horilla-search-icon-end {
-  position: absolute;
-  inset-inline-end: 10px;
   top: 9px;
 }
 

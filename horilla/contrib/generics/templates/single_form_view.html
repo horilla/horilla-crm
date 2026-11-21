@@ -45,13 +45,6 @@
                     </div>
                 {% endif %}
             {% endif %}
-            {% if form.non_field_errors %}
-                <div class="bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm mb-4">
-                    {% for error in form.non_field_errors %}
-                        {{ error }}<br>
-                    {% endfor %}
-                </div>
-            {% endif %}
             <!-- Render all hidden fields -->
             {% for field in form %}
                 {% if field.is_hidden %}
@@ -61,7 +54,7 @@
             <!-- Display errors for hidden fields -->
             {% for field in form %}
                 {% if field.is_hidden and field.errors %}
-                    <div class="flex gap-1 bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm mb-4">
+                    <div class="bg-red-50 text-red-500 rounded px-4 py-3 text-sm mb-4 flex gap-1">
                         <strong>
                             {% if field.label %}
                                 {{ field.label }}
@@ -75,7 +68,16 @@
                     </div>
                 {% endif %}
             {% endfor %}
-            <div class="{% if modal_height %}max-h-[500px]{% elif modal_height_class %}{{ modal_height_class }}{% endif %} overflow-hidden overflow-y-auto pe-2 custom-scroll">
+            {% if form.non_field_errors %}
+                <div class="bg-red-50 text-red-500 rounded px-4 py-3 text-sm mb-4 me-2" data-form-error>
+                    {% for error in form.non_field_errors %}
+                        {{ error }}<br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% include "partials/form_error_summary.html" %}
+            <div class="{% if modal_height %}max-h-[620px]{% elif modal_height_class %}{{ modal_height_class }}{% endif %} overflow-hidden overflow-y-auto pe-2 custom-scroll">
+                {% block form_fields %}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                     {% for field in form %}
                         {% with field_perm=field_permissions|get_item:field.name|default:"readwrite" %}
@@ -83,7 +85,7 @@
                                 {% if field_perm != "hidden" or duplicate_mode and field.field.required or not form.instance.pk and field.field.required %}
                                     <div
                                         id="{{ field.name }}_container"
-                                        class="{% if field.name in full_width_fields %}col-span-2{% else %}{% if field.field.widget.input_type == 'checkbox' %}text-sm flex flex-col gap-2 relative{% else %}flex flex-col{% endif %}{% endif %}"
+                                        class="{% if field.errors %}[&_input]:!border-red-600 [&_select]:!border-red-600 [&_textarea]:!border-red-600 [&_.select2-selection]:!border-red-600 {% endif %}{% if field.name in full_width_fields %}col-span-2{% else %}{% if field.field.widget.input_type == 'checkbox' %}text-sm flex flex-col gap-2 relative{% else %}flex flex-col{% endif %}{% endif %}"
                                         {% if field.field.widget.attrs.container_style %}
                                             style="{{ field.field.widget.attrs.container_style }}"
                                         {% endif %}
@@ -307,7 +309,7 @@
                                         {% endif %}
 
                                         {% if field.errors %}
-                                            <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                                            <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1" data-field-error>
                                                 {% for error in field.errors %}
                                                     {{ error }}
                                                 {% endfor %}
@@ -319,9 +321,11 @@
                         {% endwith %}
                     {% endfor %}
                 </div>
+                {% endblock form_fields %}
 
                 {% block extra_form_content %}{% endblock %}
 
+                {% block condition_section %}
                 <!-- Condition Fields Section -->
                 {% if condition_fields %}
                     <label class="text-xs font-semibold text-color-600 pb-2">{% if condition_fields_tiltle %}
@@ -484,6 +488,7 @@
                         </button>
                     {% endif %}
                 {% endif %}
+                {% endblock condition_section %}
 
                 {% block extra_form_content_after_conditions %}{% endblock %}
             </div>

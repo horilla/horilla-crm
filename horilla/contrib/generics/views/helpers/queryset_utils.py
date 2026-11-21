@@ -21,6 +21,8 @@ __all__ = [
     "filter_viewable_queryset",
     "get_granted_access_filter",
     "user_has_granted_access",
+    "parent_granted_access_filter",
+    "parent_has_granted_access",
 ]
 
 
@@ -60,6 +62,48 @@ def user_has_granted_access(obj, user, action):
     except Exception:
         logger.exception("Error resolving granted access for %r action=%s", obj, action)
         return False
+
+
+def parent_granted_access_filter(model, parent_field, user, action):
+    """
+    ``granted_access_filter`` for a model with no owner of its own: match the
+    records whose parent (the ``parent_field`` foreign key) the user may access
+    through the parent's ownership (``OWNER_FIELDS``, including subordinate
+    roles) or the parent's own ``granted_access_filter``.
+    """
+    from horilla.contrib.core.utils import get_allowed_user_ids
+
+    parent_model = model._meta.get_field(parent_field).related_model
+    query = Q(pk__in=[])
+    owner_fields = getattr(parent_model, "OWNER_FIELDS", None) or []
+    allowed_ids = list(get_allowed_user_ids(user))
+    for field in owner_fields:
+        query |= Q(**{f"{field}__in": allowed_ids})
+    granted = get_granted_access_filter(parent_model, user, action)
+    if granted is not None:
+        query |= granted
+    parents = parent_model._base_manager.filter(query).values("pk")
+    return Q(**{f"{parent_field}__in": parents})
+
+
+def parent_has_granted_access(obj, parent_field, user, action):
+    """Instance form of :func:`parent_granted_access_filter`."""
+    from horilla.contrib.core.utils import get_allowed_user_ids
+
+    parent = getattr(obj, parent_field, None)
+    if parent is None:
+        return False
+    allowed_ids = get_allowed_user_ids(user)
+    for field in getattr(parent.__class__, "OWNER_FIELDS", None) or []:
+        value = getattr(parent, field, None)
+        if value is None:
+            continue
+        if hasattr(value, "all"):
+            if any(member.pk in allowed_ids for member in value.all()):
+                return True
+        elif getattr(value, "pk", None) in allowed_ids:
+            return True
+    return user_has_granted_access(parent, user, action)
 
 
 def get_queryset_for_module(user, model):

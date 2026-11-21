@@ -15,7 +15,7 @@ from horilla.contrib.core.models import (
     TeamRole,
 )
 from horilla.contrib.utils.methods import render_template
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 from horilla.core.exceptions import ValidationError
 from horilla.db import models, transaction
 from horilla.db.models.signals import post_delete, pre_save
@@ -782,6 +782,25 @@ class OpportunityTeamMember(HorillaCoreModel):
     def __str__(self):
         return f"{self.user} - {self.team_role}"
 
+    # No owner of its own: ``*_own_`` permissions follow the parent
+    # ``opportunity`` record (its owner and its granted access).
+    @classmethod
+    def granted_access_filter(cls, user, action):
+        """Q matching records whose parent opportunity the user may access."""
+        from horilla.contrib.generics.views.helpers.queryset_utils import (
+            parent_granted_access_filter,
+        )
+
+        return parent_granted_access_filter(cls, "opportunity", user, action)
+
+    def has_granted_access(self, user, action):
+        """True if the user may access the parent opportunity."""
+        from horilla.contrib.generics.views.helpers.queryset_utils import (
+            parent_has_granted_access,
+        )
+
+        return parent_has_granted_access(self, "opportunity", user, action)
+
     def get_edit_url(self):
         """
         This method to get edit url
@@ -953,10 +972,7 @@ class OpportunitySettings(HorillaCoreModel):
         if company_or_request is None or isinstance(
             company_or_request, (HttpRequest, DRFRequest)
         ):
-            request = company_or_request or getattr(_thread_local, "request", None)
-            if request is None:
-                return None
-            return getattr(request.user, "company", None)
+            return get_active_company(company_or_request)
         # Passed an actual Company object
         return company_or_request
 

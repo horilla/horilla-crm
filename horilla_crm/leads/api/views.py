@@ -281,6 +281,9 @@ class LeadStatusViewSet(SearchFilterMixin, BulkOperationsMixin, viewsets.ModelVi
         HorillaModelPermissions,
     ]
     scope_list_to_view_permission = True
+    # final_stages returns a bare collection via get_queryset(), so it is
+    # gated and scoped like "list".
+    list_actions = ("list", "final_stages")
     # reorder only mutates existing rows (it never creates one), so it must
     # be gated on change/change_own like bulk_update, not on add_leadstatus
     # via the generic "any POST needs add" fallback.

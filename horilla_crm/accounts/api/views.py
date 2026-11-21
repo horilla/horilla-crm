@@ -202,6 +202,11 @@ class PartnerAccountRelationshipViewSet(
         HorillaModelPermissions,
     ]
 
+    # by_account/by_partner return bare collections via get_queryset(), so
+    # gate them like "list" and scope rows to view/view_own permission.
+    scope_list_to_view_permission = True
+    list_actions = ("list", "by_account", "by_partner")
+
     search_fields = [
         "account__name",
         "partner__name",

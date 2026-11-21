@@ -369,6 +369,25 @@ class PartnerAccountRelationship(HorillaCoreModel):
     def __str__(self):
         return f"{self.account} ({self.role})"
 
+    # No owner of its own: ``*_own_`` permissions follow the parent
+    # ``account`` record (its owner and its granted access).
+    @classmethod
+    def granted_access_filter(cls, user, action):
+        """Q matching records whose parent account the user may access."""
+        from horilla.contrib.generics.views.helpers.queryset_utils import (
+            parent_granted_access_filter,
+        )
+
+        return parent_granted_access_filter(cls, "account", user, action)
+
+    def has_granted_access(self, user, action):
+        """True if the user may access the parent account."""
+        from horilla.contrib.generics.views.helpers.queryset_utils import (
+            parent_has_granted_access,
+        )
+
+        return parent_has_granted_access(self, "account", user, action)
+
     def get_account_partner(self):
         """
         This method to get edit url

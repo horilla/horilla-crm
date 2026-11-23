@@ -19,7 +19,7 @@ from horilla.contrib.generics.views import (
     HorillaView,
 )
 from horilla.contrib.utils.methods import sanitize_html
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import ValidationError
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse, reverse_lazy
@@ -244,11 +244,7 @@ class MailTemplateCreateUpdateView(LoginRequiredMixin, FormView):
         """Save mail template with company and user audit fields; return success script."""
         try:
             mail_template = form.save(commit=False)
-            mail_template.company = (
-                getattr(_thread_local, "request", None).active_company
-                if hasattr(_thread_local, "request")
-                else self.request.user.company
-            )
+            mail_template.company = get_active_company()
 
             # Set created_by and updated_by before saving
             # This is required by HorillaCoreModel validation
@@ -440,11 +436,7 @@ class SaveAsMailTemplateView(LoginRequiredMixin, View):
                 instance.content_type = HorillaContentType.objects.get(
                     model=model_name.lower()
                 )
-                instance.company = (
-                    getattr(_thread_local, "request", None).active_company
-                    if hasattr(_thread_local, "request")
-                    else self.request.user.company
-                )
+                instance.company = get_active_company()
                 instance.created_by = request.user
                 instance.updated_by = request.user
                 instance.save()

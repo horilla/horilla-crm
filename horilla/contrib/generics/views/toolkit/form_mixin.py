@@ -8,6 +8,7 @@ permission-denied response, object resolution, alternate form URL, and field per
 from django.contrib import messages
 
 from horilla.contrib.core.utils import get_field_permissions_for_model
+from horilla.contrib.utils.middlewares import get_active_company
 
 # First party imports (Horilla)
 from horilla.db import models
@@ -332,7 +333,7 @@ class FormViewCommonMixin:
                 initial_values = {}
                 initial_config = field_config.get("initial", {})
                 if initial_config:
-                    company = getattr(self.request, "active_company", None)
+                    company = get_active_company(self.request)
                     for init_field, init_value in initial_config.items():
                         if callable(init_value):
                             try:

@@ -12,6 +12,7 @@ from horilla.apps import apps
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.models import HorillaContentType
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db.models import Q
 from horilla.utils.decorators import (
     htmx_required,
@@ -172,11 +173,7 @@ class CreateSelectedDefaultReportsView(LoginRequiredMixin, View):
                 Report.objects.create(
                     name=report_name,
                     folder=folder,
-                    company=getattr(
-                        request,
-                        "active_company",
-                        getattr(request.user, "company", None),
-                    ),
+                    company=get_active_company(request),
                     created_by=request.user,
                     updated_by=request.user,
                     report_owner=request.user,
@@ -226,9 +223,7 @@ class CreateSelectedDefaultReportsView(LoginRequiredMixin, View):
         folder, _created = ReportFolder.objects.get_or_create(
             name=folder_name,
             defaults={
-                "company": getattr(
-                    request, "active_company", getattr(request.user, "company", None)
-                ),
+                "company": get_active_company(request),
                 "created_by": request.user,
                 "updated_by": request.user,
                 "report_folder_owner": request.user,

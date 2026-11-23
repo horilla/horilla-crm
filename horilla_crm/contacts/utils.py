@@ -1,6 +1,8 @@
 """Utility functions for the contacts module."""
 
 # Local imports
+from horilla.contrib.utils.middlewares import get_active_company
+
 from .models import Contact
 
 
@@ -15,7 +17,7 @@ def contact_already_exists_for_mail(incoming_mail, request):
     Contact, even if this particular message was never itself converted
     (e.g. a second email from someone already added as a Contact).
     """
-    company = getattr(request, "active_company", None)
+    company = get_active_company(request)
     return find_duplicate_contact(incoming_mail.sender_email, company) is not None
 
 
@@ -30,7 +32,7 @@ def create_contact_from_email(incoming_mail, request, owner=None):
     return convention: (contact, created).
     """
     owner = owner or request.user
-    company = getattr(request, "active_company", None)
+    company = get_active_company(request)
 
     existing_contact = find_duplicate_contact(incoming_mail.sender_email, company)
     if existing_contact:

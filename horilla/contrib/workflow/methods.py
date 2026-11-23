@@ -21,7 +21,7 @@ from horilla.contrib.mail.models import (
 )
 from horilla.contrib.mail.services import HorillaMailManager
 from horilla.contrib.notifications.methods import create_notification
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 from horilla.db import connection, transaction
 
 # First party imports (Horilla)
@@ -477,7 +477,7 @@ def _execute_email(action, instance, user):
         or getattr(instance, "created_by", None)
     )
     request = getattr(_thread_local, "request", None)
-    company = getattr(request, "active_company", None) if request else None
+    company = get_active_company(request) if request else None
     if not company and hasattr(instance, "company"):
         company = instance.company
 
@@ -630,6 +630,11 @@ def _execute_assign_task(action, instance, user):
         due_datetime = base_date + timedelta(days=due_in_days)
     except Exception:
         due_datetime = None
+
+    # ``user`` can be an AnonymousUser when no request is involved (e.g. a data
+    # load); it can't own or create a task.
+    if not (isinstance(user, User) and getattr(user, "is_authenticated", False)):
+        user = None
 
     # Resolve owner: try common owner FK names (OWNER_FIELDS-style) on the instance.
     owner = user
@@ -865,7 +870,7 @@ def _execute_channel(action, channel, instance, user):
         or message.updated_by
         or message.created_by
     )
-    active_company = getattr(request, "active_company", None) or (
+    active_company = get_active_company(request) or (
         getattr(actor, "company", None) if actor else None
     )
     context = {
@@ -1145,7 +1150,7 @@ def active_workflow_rules(instance):
     if not company:
         request = getattr(_thread_local, "request", None)
         if request:
-            company = getattr(request, "active_company", None)
+            company = get_active_company(request)
 
     filter_kwargs = {"model": content_type, "is_active": True}
     if company:

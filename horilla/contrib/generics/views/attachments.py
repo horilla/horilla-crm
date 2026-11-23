@@ -1,55 +1,47 @@
 """
-Views for managing notes and attachments in Horilla, including listing, detail view, creation, and deletion of attachments.
+Views for managing notes and attachments in Horilla: the notes stream, in-place create and edit, pinning, and deletion.
 These views handle permissions, rendering, and interactions for attachments related to various models in Horilla.
 """
 
 # Standard library imports
 import logging
+from datetime import timedelta
 
 # Third-party imports (Django)
 from django.contrib import messages
+from django.utils import timezone
+from django.utils.formats import date_format
 
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.models import HorillaAttachment, HorillaContentType
 from horilla.contrib.core.utils import get_allowed_user_ids
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import htmx_required, method_decorator
 from horilla.utils.translation import gettext_lazy as _
-from horilla.views.generic import DetailView, FormView
-from horilla.web import Http404, HttpResponse, HxTriggerResponse, ScriptResponse
+from horilla.views.generic import DetailView, FormView, View
+from horilla.web import HttpResponse, HxTriggerResponse, ScriptResponse
 
 from ..forms import HorillaAttachmentForm
 
 # Local imports
 from ..history import (
-    guard_foreign_row_action,
     history_q,
+    is_foreign_row,
     is_record_locked,
+    parent_key,
     remember_history_parent,
 )
 from .delete import HorillaSingleDeleteView
 from .details import (
-    HorillaModalDetailView,
     check_record_access,
     check_record_change_access,
     check_record_delete_access,
 )
-from .list import HorillaListView
 
 logger = logging.getLogger(__name__)
-
-
-class AttachmentListView(HorillaListView):
-    """List view for displaying horilla attachments."""
-
-    model = HorillaAttachment
-    columns = ["title", "created_by", "created_at"]
-    bulk_select_option = False
-    list_column_visibility = False
-    no_record_fit_height = False
-    table_auto = True
 
 
 @method_decorator(htmx_required, name="dispatch")
@@ -59,134 +51,16 @@ class HorillaNotesAttachementSectionView(DetailView):
     template_name = "notes_attachments.html"
     context_object_name = "obj"
 
-    def get_actions(
-        self,
-        can_change_parent=False,
-        can_delete_parent=False,
-        has_global_change=False,
-        has_global_delete=False,
-    ):
-        """
-        Return actions for attachments based on parent record permissions.
-        - Edit shown when user can change parent; hidden_if restricts to own/subordinate rows for Change Own users.
-        - Delete shown when user can delete parent; same hidden_if restriction for Delete Own users.
-        """
-        actions = []
-
-        locked = is_record_locked(self.object)
-        if can_change_parent or can_delete_parent or locked:
-            allowed_ids = get_allowed_user_ids(self.request.user)
-
-            def _hidden_if_not_allowed(attachment):
-                created_by = getattr(attachment, "created_by", None)
-                if not created_by:
-                    return False
-                return created_by.pk not in allowed_ids
-
-        if can_change_parent or locked:
-            actions.append(
-                {
-                    "action": "Edit",
-                    "src": "assets/icons/edit.svg",
-                    "img_class": "w-4 h-4",
-                    **(
-                        {"hidden_if": _hidden_if_not_allowed}
-                        if not has_global_change
-                        else {}
-                    ),
-                    "attrs": """
-                            hx-get="{get_edit_url}"
-                            hx-target="#modalBox"
-                            hx-swap="innerHTML"
-                            hx-on:click="openModal();"
-                            """,
-                }
-            )
-
-        if can_delete_parent or locked:
-            actions.append(
-                {
-                    "action": "Delete",
-                    "src": "assets/icons/a4.svg",
-                    "img_class": "w-4 h-4",
-                    **(
-                        {"hidden_if": _hidden_if_not_allowed}
-                        if not has_global_delete
-                        else {}
-                    ),
-                    "attrs": """
-                            hx-post="{get_delete_url}"
-                            hx-target="#deleteModeBox"
-                            hx-swap="innerHTML"
-                            hx-trigger="click"
-                            hx-vals='{{"check_dependencies": "true"}}'
-                            onclick="openDeleteModeModal()"
-                            """,
-                }
-            )
-
-        return [
-            (
-                guard_foreign_row_action(a, self.object)
-                if a["action"] in ("Edit", "Delete")
-                else a
-            )
-            for a in actions
-        ]
-
-    def check_attachment_add_permission(self):
-        """
-        Check if user has permission to add attachments to the related object.
-
-        Allowed when the user can change the parent record (change or change_own+owner).
-        """
-        return check_record_change_access(self.request.user, self.get_object())
-
     def get(self, request, *args, **kwargs):
         """Load attachment list for the detail object and render with add-permission flag."""
         self.object = self.get_object()
         if not check_record_access(request.user, self.object):
             return render(request, "403.html", status=403)
-        object_id = self.kwargs.get("pk")
-
-        try:
-            content_type = HorillaContentType.objects.get_for_model(model=self.model)
-        except HorillaContentType.DoesNotExist:
-            from horilla.web import HttpResponseNotFound
-
-            return HttpResponseNotFound("Model not found")
-
         queryset = HorillaAttachment.objects.filter(
             history_q(self.object, request.user)
         )
         remember_history_parent(request, self.object)
 
-        # Store instance_ids in session for navigation
-        ordered_ids_key = "ordered_ids_horillaattachment"
-        ordered_ids = list(queryset.values_list("pk", flat=True))
-        self.request.session[ordered_ids_key] = ordered_ids
-
-        list_view = AttachmentListView()
-        if queryset.exclude(content_type=content_type, object_id=object_id).exists():
-            list_view.columns = [
-                *list_view.columns,
-                (str(_("Related To")), "history_source_col"),
-            ]
-        list_view.col_attrs = [
-            {
-                "title": {
-                    "hx-get": "{get_detail_view_url}",
-                    "hx-target": "#contentModalBox",
-                    "hx-swap": "innerHTML",
-                    "onclick": "openContentModal()",
-                }
-            }
-        ]
-        list_view.request = self.request
-        list_view.queryset = queryset
-        list_view.object_list = queryset
-        list_view.view_id = f"attachments_{content_type.model}_{object_id}"
-        list_view.main_session_id = list_view.view_id
         user = request.user
         app = self.object._meta.app_label
         model_name = self.object._meta.model_name
@@ -203,83 +77,85 @@ class HorillaNotesAttachementSectionView(DetailView):
         can_delete_parent = has_global_delete or check_record_delete_access(
             user, self.object
         )
-        list_view.actions = self.get_actions(
-            can_change_parent=can_change_parent,
-            can_delete_parent=can_delete_parent,
-            has_global_change=has_global_change,
-            has_global_delete=has_global_delete,
-        )
-        sorted_queryset = list_view.get_queryset()
-        list_view.object_list = sorted_queryset
-        context = list_view.get_context_data()
-        context.update(super().get_context_data())
+        allowed_ids = get_allowed_user_ids(user)
+
+        def _owned(att):
+            created_by = getattr(att, "created_by", None)
+            return not created_by or created_by.pk in allowed_ids
+
+        today = timezone.localdate()
+
+        def _day_label(att):
+            day = timezone.localtime(att.created_at).date()
+            if day == today:
+                return _("Today")
+            if day == today - timedelta(days=1):
+                return _("Yesterday")
+            return date_format(day, "M d, Y")
+
+        pinned, groups, total = [], [], 0
+        for att in queryset.select_related("created_by").order_by("-created_at"):
+            foreign = is_foreign_row(att, parent_key(self.object))
+            writable = not locked and not foreign
+            card = {
+                "obj": att,
+                "foreign": foreign,
+                "can_edit": writable
+                and can_change_parent
+                and (has_global_change or _owned(att)),
+                "can_delete": writable
+                and can_delete_parent
+                and (has_global_delete or _owned(att)),
+                "can_pin": writable
+                and can_change_parent
+                and (has_global_change or _owned(att)),
+                "kind": "file" if att.file else "note",
+            }
+            total += 1
+            if att.is_pinned:
+                pinned.append(card)
+                continue
+            label = _day_label(att)
+            if not groups or groups[-1]["label"] != label:
+                groups.append({"label": label, "cards": []})
+            groups[-1]["cards"].append(card)
+        if pinned:
+            groups.insert(0, {"label": _("Pinned"), "cards": pinned, "pinned": True})
+
+        context = super().get_context_data()
+        context["attachment_groups"] = groups
+        context["attachment_total"] = total
         context["can_add_attachment"] = can_change_parent
+        if can_change_parent:
+            context["form"] = HorillaAttachmentForm(inline=True)
+            context["form_url"] = reverse_lazy("generics:notes_attachment_create")
+            context["composer_query"] = (
+                f"model_name={self.object.__class__.__name__}"
+                f"&object_id={self.object.pk}&inline=1"
+            )
         return render(request, self.template_name, context)
-
-
-@method_decorator(htmx_required, name="dispatch")
-class HorillaNotesAttachementDetailView(HorillaModalDetailView):
-    """Detail view for displaying individual notes and attachments."""
-
-    template_name = "notes_attachments_detail.html"
-    model = HorillaAttachment
-    title = _("Notes and Attachment")
-
-    def get(self, request, *args, **kwargs):
-        """Load attachment detail or return error script if not found."""
-        try:
-            self.object = self.get_object()
-        except Http404:
-            self.object = None
-
-        if not self.object:
-            messages.error(self.request, _("The requested attachment does not exist."))
-            return ScriptResponse(reload=True, msgs=True, extra="closeContentModal();")
-
-        related_obj = self.object.related_object
-        if related_obj and not check_record_access(request.user, related_obj):
-            return render(request, "403.html", status=403)
-
-        user = request.user
-        can_change = can_delete = False
-        if related_obj:
-            app = related_obj._meta.app_label
-            model_name = related_obj._meta.model_name
-            locked = is_record_locked(related_obj)
-            has_global_change = not locked and (
-                user.is_superuser or user.has_perm(f"{app}.change_{model_name}")
-            )
-            has_global_delete = not locked and (
-                user.is_superuser or user.has_perm(f"{app}.delete_{model_name}")
-            )
-            allowed_ids = get_allowed_user_ids(user)
-            created_by = getattr(self.object, "created_by", None)
-            note_owner_allowed = not created_by or created_by.pk in allowed_ids
-            can_change = has_global_change or (
-                check_record_change_access(user, related_obj) and note_owner_allowed
-            )
-            can_delete = has_global_delete or (
-                check_record_delete_access(user, related_obj) and note_owner_allowed
-            )
-
-        context = self.get_context_data()
-        context["can_change_attachment"] = can_change
-        context["can_delete_attachment"] = can_delete
-        return self.render_to_response(context)
 
 
 @method_decorator(htmx_required, name="dispatch")
 class HorillaNotesAttachmentCreateView(LoginRequiredMixin, FormView):
     """View for creating new notes and attachments."""
 
-    template_name = "forms/notes_attachment_form.html"
+    template_name = "forms/notes_attachment_composer.html"
+    edit_template_name = "forms/notes_attachment_inline_edit.html"
     form_class = HorillaAttachmentForm
     model = HorillaAttachment
+
+    def get_template_names(self):
+        """Composer for new entries, the in-place editor for existing ones."""
+        return [
+            self.edit_template_name if self.kwargs.get("pk") else self.template_name
+        ]
 
     def get_context_data(self, **kwargs):
         """Set form_url for create or edit based on pk."""
         context = super().get_context_data(**kwargs)
         context["form_url"] = reverse_lazy("generics:notes_attachment_create")
+        context["composer_query"] = self.request.GET.urlencode()
         pk = self.kwargs.get("pk")
         if pk:
             context["form_url"] = reverse_lazy(
@@ -299,7 +175,11 @@ class HorillaNotesAttachmentCreateView(LoginRequiredMixin, FormView):
         """Bind instance if editing."""
         form_class = self.get_form_class()
         obj = self.get_object()
-        return form_class(instance=obj, **self.get_form_kwargs())
+        kwargs = self.get_form_kwargs()
+        if obj:
+            # Distinct ids so the in-place editor never clashes with the composer.
+            kwargs["auto_id"] = f"edit_{obj.pk}_%s"
+        return form_class(instance=obj, inline=True, **kwargs)
 
     def check_related_object_permission(self, related_object, permission_type="add"):
         """
@@ -389,26 +269,61 @@ class HorillaNotesAttachmentCreateView(LoginRequiredMixin, FormView):
             attachment.created_by = self.request.user
             attachment.object_id = self.request.GET.get("object_id")
             attachment.content_type = content_type
-            attachment.company = self.request.active_company
-            messages.success(self.request, f"{attachment.title} created successfully")
-        else:
-            messages.success(self.request, f"{attachment.title} updated successfully")
+            attachment.company = get_active_company(self.request)
         attachment.save()
-        return HttpResponse(
-            "<script>$('#tab-notes-attachments').click();closeModal();$('#detailReloadButton').click();</script>"
-        )
+        if pk:
+            # Update only this entry so the stream keeps its scroll position.
+            return render(
+                self.request,
+                "partials/notes_entry_bubble.html",
+                {"att": attachment},
+            )
+        return HttpResponse("<script>$('#tab-notes-attachments').click();</script>")
 
     def get(self, request, *args, **kwargs):
         """Validate attachment pk when editing; then delegate to parent get."""
         pk = kwargs.get("pk")
         if pk:
             try:
-                self.model.objects.get(pk=pk)
+                attachment = self.model.objects.get(pk=pk)
             except self.model.DoesNotExist:
                 messages.error(request, _("The requested attachment does not exist."))
                 return ScriptResponse(reload=True, msgs=True, close=True)
+            if request.GET.get("view"):
+                # Cancel in-place edit: show the entry again unchanged.
+                return render(
+                    request, "partials/notes_entry_bubble.html", {"att": attachment}
+                )
 
         return super().get(request, *args, **kwargs)
+
+
+@method_decorator(htmx_required, name="dispatch")
+class HorillaNotesAttachmentPinView(LoginRequiredMixin, View):
+    """Toggle the pinned flag of a note or attachment."""
+
+    def post(self, request, pk):
+        """Flip is_pinned when the user may change the entry, then reload the tab."""
+        attachment = get_object_or_404(HorillaAttachment, pk=pk)
+        related = attachment.related_object
+        user = request.user
+        allowed = False
+        if related is not None and not is_record_locked(related):
+            app = related._meta.app_label
+            model = related._meta.model_name
+            if user.is_superuser or user.has_perm(f"{app}.change_{model}"):
+                allowed = True
+            elif check_record_change_access(user, related):
+                created_by = getattr(attachment, "created_by", None)
+                allowed = not created_by or created_by.pk in get_allowed_user_ids(user)
+        if not allowed:
+            messages.error(
+                request, _("You don't have permission to pin this attachment.")
+            )
+            return ScriptResponse(reload=True, msgs=True)
+        attachment.is_pinned = not attachment.is_pinned
+        attachment.save(update_fields=["is_pinned"])
+        return HttpResponse("<script>$('#tab-notes-attachments').click();</script>")
 
 
 @method_decorator(htmx_required, name="dispatch")

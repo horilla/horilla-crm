@@ -19,6 +19,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
     HorillaView,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
@@ -249,11 +250,7 @@ class WhatsAppAccountTestConnectionView(LoginRequiredMixin, View):
     @staticmethod
     def test_text(account, request):
         """Fixed test message, signed with the company's own name."""
-        company = (
-            account.company
-            or getattr(request, "active_company", None)
-            or getattr(request.user, "company", None)
-        )
+        company = account.company or get_active_company(request)
         name = str(company) if company else str(_("your CRM"))
         return str(
             _("Test message from %(company)s. Your WhatsApp connection is working.")

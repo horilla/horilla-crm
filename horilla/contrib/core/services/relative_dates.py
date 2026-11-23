@@ -11,6 +11,7 @@ from datetime import date, timedelta
 
 from django.apps import apps
 
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.utils import timezone
 
 FISCAL_DATE_OPERATORS = (
@@ -38,13 +39,6 @@ _MONTH_NUMBER = {
         start=1,
     )
 }
-
-
-def _get_company():
-    from horilla.contrib.utils.middlewares import get_current_request
-
-    request = get_current_request()
-    return getattr(request, "active_company", None) if request else None
 
 
 def _get_config(company):
@@ -120,7 +114,7 @@ def get_relative_date_bounds(operator, company=None):
 
     # Empty range (start > end) so nothing matches when no fiscal data exists.
     no_match = (date(9999, 12, 31), date(1, 1, 1))
-    config = _get_config(company or _get_company())
+    config = _get_config(company or get_active_company())
     if config is None:
         return no_match
     if operator == "this_fiscal_year":

@@ -13,6 +13,7 @@ from django import forms
 from django.templatetags.static import static
 
 from horilla.auth.models import User
+from horilla.contrib.utils.middlewares import get_active_company
 
 # First party imports (Horilla)
 from horilla.db import models
@@ -683,7 +684,7 @@ class HorillaModelForm(HorillaFormMixin, forms.ModelForm):
         ):
             company = instance.company
         elif self.request:
-            company = getattr(self.request, "active_company", None)
+            company = get_active_company(self.request)
             if not company:
                 company = getattr(self.request.user, "company", None)
 

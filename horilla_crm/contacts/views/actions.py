@@ -18,6 +18,7 @@ from horilla.contrib.generics.views.details import (
     check_record_change_access,
     check_record_delete_access,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import ValidationError
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse_lazy
@@ -185,7 +186,7 @@ class RelatedContactFormView(
             account_id = self.request.GET.get("id")
             if account_id:
                 set_contact_account_id(
-                    account_id=account_id, company=self.request.active_company
+                    account_id=account_id, company=get_active_company(self.request)
                 )
             super().form_valid(form)
             return ScriptResponse(
@@ -240,7 +241,7 @@ class RelatedContactSingleFormView(
         account_id = self.request.GET.get("id")
         if account_id:
             set_contact_account_id(
-                account_id=account_id, company=self.request.active_company
+                account_id=account_id, company=get_active_company(self.request)
             )
         super().form_valid(form)
         return ScriptResponse(
@@ -382,7 +383,7 @@ class AddChildContactFormView(LoginRequiredMixin, FormView):
             try:
                 parent_contact = Contact.objects.get(pk=parent_id)
                 initial["parent_contact"] = parent_contact.id
-                company = getattr(self.request, "active_company", None)
+                company = get_active_company(self.request)
                 initial["company"] = company
             except Contact.DoesNotExist:
                 logger.error("Parent contact with ID %s not found", parent_id)

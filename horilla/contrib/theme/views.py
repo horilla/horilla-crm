@@ -6,6 +6,7 @@ from django.template.loader import render_to_string
 
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db import transaction
 from horilla.shortcuts import get_object_or_404
 from horilla.utils.decorators import method_decorator, permission_required_or_denied
@@ -31,7 +32,7 @@ class ThemeView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         """Add themes, active theme, and company theme context for the settings page."""
         context = super().get_context_data(**kwargs)
-        active_company = getattr(self.request, "active_company", None)
+        active_company = get_active_company(self.request)
         context["themes"] = HorillaColorTheme.objects.all()
         context["active_theme"] = self._get_active_theme()
         context["active_company"] = active_company
@@ -52,7 +53,7 @@ class ThemeView(LoginRequiredMixin, TemplateView):
 
     def _get_active_theme(self):
         """Get the active theme for the current company"""
-        active_company = getattr(self.request, "active_company", None)
+        active_company = get_active_company(self.request)
         return CompanyTheme.get_theme_for_company(active_company)
 
 
@@ -75,7 +76,7 @@ class ChangeThemeView(LoginRequiredMixin, View):
         if not theme_id:
             return self._error_response(request, _("Theme ID is required"), 400)
 
-        active_company = getattr(request, "active_company", None)
+        active_company = get_active_company(request)
         if not active_company:
             return self._error_response(request, _("No active company found"), 400)
 
@@ -115,14 +116,14 @@ class ChangeThemeView(LoginRequiredMixin, View):
     def _render_themes(self, request, active_theme=None, status=200):
         """Render the theme cards HTML."""
         if active_theme is None:
-            active_company = getattr(request, "active_company", None)
+            active_company = get_active_company(request)
             if active_company:
                 active_theme = CompanyTheme.get_theme_for_company(active_company)
             else:
                 active_theme = CompanyTheme.get_default_theme()
 
         themes = HorillaColorTheme.objects.all()
-        active_company = getattr(request, "active_company", None)
+        active_company = get_active_company(request)
 
         # Get current company theme to check if it's default
         current_company_theme = None
@@ -168,7 +169,7 @@ class SetDefaultThemeView(LoginRequiredMixin, View):
         if not theme_id:
             return self._error_response(request, _("Theme ID is required"), 400)
 
-        active_company = getattr(request, "active_company", None)
+        active_company = get_active_company(request)
         if not active_company:
             return self._error_response(request, _("No active company found"), 400)
 
@@ -201,7 +202,7 @@ class SetDefaultThemeView(LoginRequiredMixin, View):
 
     def _render_themes(self, request, status=200):
         """Render the theme cards HTML."""
-        active_company = getattr(request, "active_company", None)
+        active_company = get_active_company(request)
         active_theme = None
         current_company_theme = None
 

@@ -28,6 +28,7 @@ from horilla.contrib.generics.views import (
     HorillaView,
     resolves_within_settings_shell,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse, reverse_lazy
 from horilla.utils.choices import get_allowed_language_choices
@@ -64,7 +65,7 @@ def filter_users_by_active_company(view, queryset):
         queryset = queryset.filter(is_active=True)
     if view.request.session.get("show_all_companies", False):
         return queryset
-    company = getattr(view.request, "active_company", None)
+    company = get_active_company(view.request)
     return queryset.filter(company=company)
 
 

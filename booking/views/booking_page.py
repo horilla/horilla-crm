@@ -17,6 +17,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
 )
 from horilla.contrib.mail.models import HorillaMailConfiguration
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse_lazy
 from horilla.utils.choices import DAY_LABELS, WEEK_ORDER
@@ -56,9 +57,7 @@ class GoToWorkingHoursView(LoginRequiredMixin, View):
 
         tab_path = "/company-tab-view/"
         tab_target = "tab-business-hour-view-content"
-        company = getattr(request, "active_company", None) or getattr(
-            request.user, "company", None
-        )
+        company = get_active_company(request)
 
         ActiveTab.objects.filter(created_by=request.user, path=tab_path).delete()
         ActiveTab.objects.create(
@@ -77,7 +76,7 @@ class BookingSettingsView(LoginRequiredMixin, View):
         """Render the booking settings page with nav and list URLs."""
         from horilla.contrib.core.models.business_hours import BusinessHour
 
-        active_company = getattr(request, "active_company", None)
+        active_company = get_active_company(request)
         has_business_hour = (
             BusinessHour.objects.filter(company=active_company).exists()
             if active_company

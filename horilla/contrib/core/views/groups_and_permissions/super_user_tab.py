@@ -18,6 +18,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
     HorillaView,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
@@ -138,9 +139,7 @@ class SuperUserTab(LoginRequiredMixin, HorillaListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        company = (
-            getattr(self.request, "active_company", None) or self.request.user.company
-        )
+        company = get_active_company(self.request)
         queryset = queryset.filter(is_superuser=True, company=company)
         return queryset
 

@@ -7,6 +7,7 @@ from django import forms
 
 # Horilla imports
 from horilla.contrib.generics.forms import HorillaModelForm
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.urls import reverse_lazy
 from horilla.utils.html import format_html
 from horilla.utils.text import slugify
@@ -222,7 +223,7 @@ class BookingPageForm(HorillaModelForm):
             from horilla.contrib.utils.middlewares import _thread_local
 
             request = getattr(_thread_local, "request", None)
-            company = getattr(request, "active_company", None) if request else None
+            company = get_active_company(request) if request else None
             user = getattr(request, "user", None) if request else None
             bh = (
                 BusinessHour.objects.filter(company=company).first()

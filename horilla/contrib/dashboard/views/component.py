@@ -17,7 +17,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
 )
 from horilla.contrib.reports.models import Report
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db import transaction
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse, reverse_lazy
@@ -156,11 +156,7 @@ class DashboardComponentFormView(LoginRequiredMixin, HorillaSingleFormView):
         if dashboard_id:
             dashboard = Dashboard.objects.get(id=dashboard_id)
             initial["dashboard"] = dashboard
-        company = (
-            getattr(_thread_local, "request", None).active_company
-            if hasattr(_thread_local, "request")
-            else self.request.user.company
-        )
+        company = get_active_company()
         initial["company"] = company
         initial["component_owner"] = self.request.user
 

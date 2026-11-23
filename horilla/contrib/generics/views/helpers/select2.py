@@ -16,6 +16,7 @@ from horilla.apps import apps
 
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import render
 from horilla.views.generic import View
 from horilla.web import HttpNotFound, JsonResponse
@@ -155,7 +156,7 @@ class HorillaSelect2DataView(LoginRequiredMixin, View):
                     parent_model = form_class._meta.model
                     try:
                         instance_qs = parent_model.all_objects.all()
-                        active_company = getattr(request, "active_company", None)
+                        active_company = get_active_company(request)
                         try:
                             parent_model._meta.get_field("company")
                             instance_qs = instance_qs.filter(company=active_company)
@@ -197,7 +198,7 @@ class HorillaSelect2DataView(LoginRequiredMixin, View):
                 queryset = filter_viewable_queryset(request.user, model, queryset)
 
         # Company scope always comes from the logged-in user's active company.
-        company = getattr(request, "active_company", None)
+        company = get_active_company(request)
         if company:
             try:
                 model._meta.get_field("company")

@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 
 # First party imports (Horilla)
 from horilla.auth.models import User
+from horilla.contrib.utils.middlewares import get_active_company
 
 
 class FiscalYearCalendarMixin:
@@ -413,7 +414,7 @@ class OwnerQuerysetMixin:
         ):
             company = instance.company
         elif request:
-            company = getattr(request, "active_company", None)
+            company = get_active_company(request)
             if not company and hasattr(request.user, "company"):
                 company = request.user.company
 

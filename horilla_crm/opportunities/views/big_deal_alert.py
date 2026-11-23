@@ -15,7 +15,7 @@ from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.generics.forms.form_class_mixin import WIDGET_INPUT_CSS_CLASS_NO_PR
 from horilla.contrib.generics.views import HorillaNavView, HorillaView
 from horilla.contrib.mail.models import HorillaMailConfiguration, HorillaMailTemplate
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import render
 from horilla.urls import reverse_lazy
 from horilla.utils import timezone
@@ -230,11 +230,7 @@ class BigDealAutomationFormView(HorillaAutomationFormView):
                 cleaned_data["delivery_channel"] = "mail"
 
             if cleaned_data.get("delivery_channel") == "mail":
-                company = (
-                    getattr(_thread_local, "request", None).active_company
-                    if hasattr(_thread_local, "request")
-                    else self.request.user.company
-                )
+                company = get_active_company()
                 if not cleaned_data.get("mail_template"):
                     opportunity_content_type = HorillaContentType.objects.filter(
                         model="opportunity"
@@ -320,11 +316,7 @@ class BigDealAutomationFormView(HorillaAutomationFormView):
             self.object.created_by = self.request.user
             self.object.updated_at = timezone.now()
             self.object.updated_by = self.request.user
-        self.object.company = form.cleaned_data.get("company") or (
-            getattr(_thread_local, "request", None).active_company
-            if hasattr(_thread_local, "request")
-            else self.request.user.company
-        )
+        self.object.company = form.cleaned_data.get("company") or get_active_company()
 
         # Delivery channel, mail template and mail server are hidden from the
         # user - auto-provision a per-company "Big Deal Alert" mail template

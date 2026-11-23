@@ -24,16 +24,17 @@ from django.utils.dates import WEEKDAYS
 # First party imports (Horilla)
 from horilla.apps import apps
 from horilla.auth.models import User
-from horilla.db.models import Q
-from horilla.urls import NoReverseMatch, reverse
-from horilla.utils.translation import gettext_lazy as _
-from horilla.utils.translation import pgettext_lazy
-from horilla.views.generic import TemplateView
 from horilla.contrib.activity.models import Activity
 from horilla.contrib.core.utils import get_allowed_user_ids
 from horilla.contrib.generics.views.helpers.queryset_utils import (
     get_granted_access_filter,
 )
+from horilla.contrib.utils.middlewares import get_active_company
+from horilla.db.models import Q
+from horilla.urls import NoReverseMatch, reverse
+from horilla.utils.translation import gettext_lazy as _
+from horilla.utils.translation import pgettext_lazy
+from horilla.views.generic import TemplateView
 
 # Local imports
 from .access import can_add_activity, can_edit_activity, scope_queryset
@@ -157,7 +158,7 @@ def team_members(request):
     if not team_available(user):
         return User.objects.none()
     if user.has_perm("activity.view_activity"):
-        company = getattr(request, "active_company", None) or user.company
+        company = get_active_company(request)
         members = User.objects.filter(company=company)
     else:
         members = User.objects.filter(pk__in=get_allowed_user_ids(user))

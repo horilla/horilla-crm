@@ -5,6 +5,8 @@ import secrets
 
 from requests_oauthlib import OAuth2Session
 
+from horilla.contrib.utils.middlewares import get_active_company
+
 MS_AUTH_BASE = "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize"
 MS_TOKEN_BASE = "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"
 MS_GRAPH_BASE = "https://graph.microsoft.com/v1.0"
@@ -36,7 +38,7 @@ def get_or_create_config(user, company=None):
 
 def start_oauth(request):
     """Return authorization_url. Saves state to config."""
-    company = getattr(request, "active_company", None) or request.user.company
+    company = get_active_company(request)
     config = get_or_create_config(request.user, company=company)
     if os.environ.get("OAUTHLIB_INSECURE_TRANSPORT") is None:
         os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"

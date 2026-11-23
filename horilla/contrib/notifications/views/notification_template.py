@@ -15,7 +15,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleDeleteView,
     HorillaView,
 )
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import ValidationError
 from horilla.shortcuts import get_object_or_404
 from horilla.urls import reverse, reverse_lazy
@@ -232,11 +232,7 @@ class NotificationTemplateCreateUpdateView(LoginRequiredMixin, FormView):
         """Save template with company, show success message, and return modal-close script."""
         try:
             mail_template = form.save(commit=False)
-            mail_template.company = (
-                getattr(_thread_local, "request", None).active_company
-                if hasattr(_thread_local, "request")
-                else self.request.user.company
-            )
+            mail_template.company = get_active_company()
             if not self.object:
                 mail_template.created_by = self.request.user
             mail_template.updated_by = self.request.user

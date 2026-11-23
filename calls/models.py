@@ -8,6 +8,7 @@ from horilla.apps import apps
 from horilla.contrib.core.models import HorillaCoreModel, Role
 from horilla.contrib.mail.fields import EncryptedCharField
 from horilla.contrib.utils.methods import render_template
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db import models
 from horilla.urls import reverse_lazy
 from horilla.utils.translation import gettext_lazy as _
@@ -123,9 +124,7 @@ class CallIntegrationSetting(HorillaCoreModel):
             request = getattr(_thread_local, "request", None)
         if request is None:
             return False
-        company = getattr(request, "active_company", None) or getattr(
-            request.user, "company", None
-        )
+        company = get_active_company(request)
         if not company:
             return False
         setting = cls._get_cached_setting(request, company)
@@ -143,9 +142,7 @@ class CallIntegrationSetting(HorillaCoreModel):
         user = getattr(request, "user", None)
         if not user or not user.is_authenticated:
             return False
-        company = getattr(request, "active_company", None) or getattr(
-            user, "company", None
-        )
+        company = get_active_company(request)
         if not company:
             return False
         return cls.user_can_access(user, company, request=request)

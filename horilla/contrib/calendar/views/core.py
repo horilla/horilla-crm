@@ -14,6 +14,7 @@ from horilla.contrib.core.utils import get_user_field_permission
 from horilla.contrib.generics.templatetags.horilla_tags.display_tags import (
     render_user_chip,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import render
 from horilla.utils.decorators import (
     htmx_required,
@@ -94,9 +95,7 @@ class CalendarView(LoginRequiredMixin, TemplateView):
         ]
 
         display_only = self.request.GET.get("display_only")
-        company = (
-            getattr(self.request, "active_company", None) or self.request.user.company
-        )
+        company = get_active_company(self.request)
         custom_calendars = CustomCalendar.objects.filter(
             user=self.request.user, is_active=True
         ).order_by("name")
@@ -165,7 +164,7 @@ class SaveCalendarPreferencesView(LoginRequiredMixin, View):
             calendar_type = data.get("calendar_type")
             color = data.get("color")
             valid_types = {"task", "event", "meeting", "unavailability"}
-            company = getattr(request, "active_company", None) or request.user.company
+            company = get_active_company(request)
 
             if calendar_type and color:
                 if calendar_type in valid_types:

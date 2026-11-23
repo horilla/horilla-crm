@@ -22,6 +22,7 @@ from horilla.api.permissions import (
 
 # First party imports (Horilla)
 from horilla.auth.models import User
+from horilla.contrib.utils.middlewares import get_active_company
 
 # Local imports
 from ..models import (
@@ -170,9 +171,7 @@ class HorillaUserViewSet(SearchFilterMixin, BulkOperationsMixin, viewsets.ModelV
         user = self.request.user
         if user.is_superuser:
             return queryset
-        company = getattr(self.request, "active_company", None) or getattr(
-            user, "company", None
-        )
+        company = get_active_company(self.request)
         if company is None:
             return queryset.none()
         return queryset.filter(company=company)

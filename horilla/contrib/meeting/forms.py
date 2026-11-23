@@ -7,6 +7,7 @@ from django import forms
 from horilla.auth.models import User
 from horilla.contrib.core.models import Role
 from horilla.contrib.generics.forms import HorillaModelForm
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.urls import reverse_lazy
 from horilla.utils.translation import gettext_lazy as _
 
@@ -116,9 +117,7 @@ class MeetingAccessUsersForm(forms.Form):
         _pop_single_form_view_kwargs(self, kwargs)
         super().__init__(*args, **kwargs)
         if request is not None:
-            from horilla.contrib.meeting.views import _get_active_company
-
-            company = _get_active_company(request)
+            company = get_active_company(request)
             self.fields["allowed_users"].queryset = User.objects.filter(
                 company=company, is_active=True
             )

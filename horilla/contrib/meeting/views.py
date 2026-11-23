@@ -16,6 +16,7 @@ from horilla.contrib.generics.templatetags.horilla_tags.display_tags import (
     render_user_chip,
 )
 from horilla.contrib.generics.views.single_form import HorillaSingleFormView
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import redirect, render
 from horilla.urls import reverse, reverse_lazy
 from horilla.utils.decorators import (
@@ -47,10 +48,6 @@ from .models import (
 
 _ADMIN_SETTINGS_TEMPLATE = "meeting/meeting_integration_settings.html"
 _USER_SETTINGS_TEMPLATE = "meeting/meeting_user_settings.html"
-
-
-def _get_active_company(request):
-    return getattr(request, "active_company", None) or request.user.company
 
 
 def _clear_meeting_credentials(users_qs):
@@ -86,7 +83,7 @@ class MeetingIntegrationSettingsView(LoginRequiredMixin, View):
     def _render(self, request, form=None):
         from horilla.contrib.core.models import Role
 
-        company = _get_active_company(request)
+        company = get_active_company(request)
         setting = MeetingIntegrationSetting.get_for_company(company)
         if form is None:
             form = MeetingIntegrationSettingForm(instance=setting)
@@ -115,7 +112,7 @@ class MeetingIntegrationSettingsView(LoginRequiredMixin, View):
         if request.GET.get("check"):
             # Pre-check before an access change confirmation on a stale page.
             setting = MeetingIntegrationSetting.get_for_company(
-                _get_active_company(request)
+                get_active_company(request)
             )
             if setting and setting.is_enabled:
                 return HttpResponse(status=204)
@@ -127,7 +124,7 @@ class MeetingIntegrationSettingsView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         """Toggle integration, update access type, or persist related admin actions."""
-        company = _get_active_company(request)
+        company = get_active_company(request)
         setting = MeetingIntegrationSetting.get_for_company(company)
         if setting is None:
             messages.error(request, _("No active company found.Cannot save settings."))
@@ -195,7 +192,7 @@ class _MeetingAllowedAccessModalView(LoginRequiredMixin, View):
         """Require meeting integration settings change permission before dispatch."""
         if request.user.is_authenticated:
             setting = MeetingIntegrationSetting.get_for_company(
-                _get_active_company(request)
+                get_active_company(request)
             )
             if setting and not setting.is_enabled:
                 messages.warning(
@@ -211,7 +208,7 @@ class _MeetingAllowedAccessModalView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         """Render the modal, or only the pill list when the search box asks for it."""
-        company = _get_active_company(request)
+        company = get_active_company(request)
         setting = MeetingIntegrationSetting.get_for_company(company)
         items = self.get_items(request, setting, company) if setting else []
         total = len(items)
@@ -305,12 +302,12 @@ class MeetingAccessRolesView(LoginRequiredMixin, HorillaSingleFormView):
     def dispatch(self, request, *args, **kwargs):
         """Require meeting integration settings change permission before dispatch."""
         if request.user.is_authenticated:
-            if not _get_active_company(request):
+            if not get_active_company(request):
                 return RedirectResponse(
                     request, redirect_to=reverse("meeting:meeting_integration_settings")
                 )
             setting = MeetingIntegrationSetting.get_for_company(
-                _get_active_company(request)
+                get_active_company(request)
             )
             if setting and not setting.is_enabled:
                 messages.warning(
@@ -326,7 +323,7 @@ class MeetingAccessRolesView(LoginRequiredMixin, HorillaSingleFormView):
     def get_form(self, form_class=None):
         """Scope allowed_roles queryset and initial values to the active company."""
         form = super().get_form(form_class)
-        company = _get_active_company(self.request)
+        company = get_active_company(self.request)
         setting = MeetingIntegrationSetting.get_for_company(company)
         from horilla.contrib.core.models import Role
 
@@ -335,7 +332,7 @@ class MeetingAccessRolesView(LoginRequiredMixin, HorillaSingleFormView):
         return form
 
     def form_valid(self, form):
-        company = _get_active_company(self.request)
+        company = get_active_company(self.request)
         setting = MeetingIntegrationSetting.get_for_company(company)
         if not setting.is_enabled:
             messages.warning(
@@ -382,12 +379,12 @@ class MeetingAccessUsersView(LoginRequiredMixin, HorillaSingleFormView):
     def dispatch(self, request, *args, **kwargs):
         """Require meeting integration settings change permission before dispatch."""
         if request.user.is_authenticated:
-            if not _get_active_company(request):
+            if not get_active_company(request):
                 return RedirectResponse(
                     request, redirect_to=reverse("meeting:meeting_integration_settings")
                 )
             setting = MeetingIntegrationSetting.get_for_company(
-                _get_active_company(request)
+                get_active_company(request)
             )
             if setting and not setting.is_enabled:
                 messages.warning(
@@ -400,7 +397,7 @@ class MeetingAccessUsersView(LoginRequiredMixin, HorillaSingleFormView):
     def get_form(self, form_class=None):
         """Scope allowed_users queryset and initial values to the active company."""
         form = super().get_form(form_class)
-        company = _get_active_company(self.request)
+        company = get_active_company(self.request)
         setting = MeetingIntegrationSetting.get_for_company(company)
 
         form.fields["allowed_users"].queryset = User.objects.filter(
@@ -410,7 +407,7 @@ class MeetingAccessUsersView(LoginRequiredMixin, HorillaSingleFormView):
         return form
 
     def form_valid(self, form):
-        company = _get_active_company(self.request)
+        company = get_active_company(self.request)
         setting = MeetingIntegrationSetting.get_for_company(company)
         if not setting.is_enabled:
             messages.warning(

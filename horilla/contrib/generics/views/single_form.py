@@ -16,7 +16,7 @@ from django.contrib import messages
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.db import IntegrityError, transaction
 
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import FieldDoesNotExist
 
 # First party imports (Horilla)
@@ -583,11 +583,7 @@ class HorillaSingleFormView(FormViewCommonMixin, FormView):
 
                 # Add standard fields if they exist
                 if hasattr(self.model, "company"):
-                    create_kwargs["company"] = (
-                        getattr(_thread_local, "request", None).active_company
-                        if hasattr(_thread_local, "request")
-                        else self.request.user.company
-                    )
+                    create_kwargs["company"] = get_active_company()
 
                 if hasattr(self.model, "created_by"):
                     create_kwargs["created_by"] = self.request.user
@@ -686,11 +682,7 @@ class HorillaSingleFormView(FormViewCommonMixin, FormView):
         else:
             self.object.created_by = self.request.user
             self.object.updated_by = self.request.user
-        self.object.company = form.cleaned_data.get("company") or (
-            getattr(_thread_local, "request", None).active_company
-            if hasattr(_thread_local, "request")
-            else self.request.user.company
-        )
+        self.object.company = form.cleaned_data.get("company") or get_active_company()
         try:
             with transaction.atomic():
                 self.object.save()

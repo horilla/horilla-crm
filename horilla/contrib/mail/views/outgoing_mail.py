@@ -20,7 +20,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
     HorillaView,
 )
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 from horilla.shortcuts import get_object_or_404
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
@@ -187,7 +187,7 @@ class OutgoingMailServerFormView(LoginRequiredMixin, HorillaSingleFormView):
         """Set initial form data for outgoing mail configuration (company and channel)."""
         initial = super().get_initial()
         pk = self.kwargs.get("pk")
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         if not pk:
             initial["company"] = company
             initial["type"] = "mail"
@@ -282,7 +282,7 @@ class MailServerTestEmailView(LoginRequiredMixin, FormView):
     def send_test_email(self, form):
         """Send the test email with inline images"""
         email_to = form.cleaned_data["to_email"]
-        company = self.request.active_company
+        company = get_active_company(self.request)
         subject = f"Test mail from {company}"
 
         html_content = self.get_html_content(company)

@@ -8,7 +8,7 @@ import logging
 # Third-party imports (Django)
 from django import forms
 
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 
 # First-party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
@@ -32,7 +32,7 @@ class CurrencyForm(forms.Form):
     def __init__(self, *args, company=None, **kwargs):
         super().__init__(*args, **kwargs)
         request = getattr(_thread_local, "request", None)
-        company = getattr(request, "active_company", None)
+        company = get_active_company(request)
         if company:
             self.fields["currency"].queryset = MultipleCurrency.objects.filter(
                 company=company
@@ -52,7 +52,7 @@ class ConversionRateForm(forms.Form):
     def __init__(self, *args, company=None, **kwargs):
         super().__init__(*args, **kwargs)
         request = getattr(_thread_local, "request", None)
-        company = getattr(request, "active_company", None) if request else company
+        company = get_active_company(request) if request else company
         if company:
             current_default = MultipleCurrency.objects.filter(
                 company=company, is_default=True

@@ -12,7 +12,7 @@ from django import forms
 from django.template.loader import render_to_string
 
 from horilla.contrib.core.mixins import OwnerQuerysetMixin
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import FieldDoesNotExist, ValidationError
 
 # First party imports (Horilla)
@@ -729,11 +729,7 @@ def save_conditions(view, form=None):
             if hasattr(view.condition_model, "order"):
                 create_kwargs["order"] = row_data.get("order", order)
             if hasattr(view.condition_model, "company"):
-                create_kwargs["company"] = (
-                    getattr(_thread_local, "request", None).active_company
-                    if hasattr(_thread_local, "request")
-                    else view.request.user.company
-                )
+                create_kwargs["company"] = get_active_company(view.request)
             if hasattr(view.condition_model, "created_by"):
                 create_kwargs["created_by"] = view.request.user
             if hasattr(view.condition_model, "updated_by"):

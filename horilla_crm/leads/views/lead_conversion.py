@@ -9,6 +9,7 @@ from django.contrib import messages
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.utils import get_allowed_user_ids
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 from horilla.db import transaction
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse
@@ -215,7 +216,7 @@ class LeadConversionView(LoginRequiredMixin, FormView):
         with transaction.atomic():
             try:
                 lead_status = LeadStatus.objects.filter(is_final=True).first()
-                company = getattr(self.request, "active_company", None)
+                company = get_active_company(self.request)
                 account = self._process_account(form, company)
                 contact = self._process_contact(form, account, company)
                 opportunity = self._process_opportunity(form, account, contact, company)
@@ -231,7 +232,22 @@ class LeadConversionView(LoginRequiredMixin, FormView):
                 self.lead.converted_opportunity = opportunity
                 self.lead.converted_at = timezone.now()
                 self.lead._skip_conversion_signal = True
-                self.lead.save()
+                # Converting is a system-driven save, not a user edit, so it
+                # must not start an approval on the lead (that would lock the
+                # detail view behind "pending approval" right after converting).
+                previous = (
+                    getattr(_thread_local, "skip_approval_sync", False),
+                    getattr(_thread_local, "skip_approval_edit_guard", False),
+                )
+                _thread_local.skip_approval_sync = True
+                _thread_local.skip_approval_edit_guard = True
+                try:
+                    self.lead.save()
+                finally:
+                    (
+                        _thread_local.skip_approval_sync,
+                        _thread_local.skip_approval_edit_guard,
+                    ) = previous
 
                 messages.success(
                     self.request,

@@ -17,6 +17,7 @@ from horilla.contrib.generics.views.details import (
     check_record_change_access,
     check_record_delete_access,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
@@ -352,7 +353,7 @@ class OpportunityContactRoleFormview(LoginRequiredMixin, HorillaSingleFormView):
                 contact=contact,
                 account=opportunity.account,
                 defaults={"role": role},
-                company=self.request.active_company,
+                company=get_active_company(self.request),
             )
 
         return ScriptResponse(

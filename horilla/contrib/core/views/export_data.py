@@ -34,6 +34,7 @@ from horilla.contrib.generics.views import (
     HorillaModalDetailView,
     HorillaSingleDeleteView,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db.models import ForeignKey, Q
 from horilla.registry.feature import FEATURE_REGISTRY
 from horilla.shortcuts import render
@@ -908,7 +909,7 @@ class ExportScheduleCreateView(LoginRequiredMixin, View):
                     end_date=end_date,
                     created_by=request.user,
                     updated_by=request.user,
-                    company=getattr(self.request, "active_company", None),
+                    company=get_active_company(self.request),
                 )
                 schedule.save()
 

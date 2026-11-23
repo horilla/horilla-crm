@@ -20,13 +20,6 @@ from django.contrib import messages
 
 # First party imports (Horilla)
 from horilla.auth.models import User
-from horilla.shortcuts import redirect, render
-from horilla.urls import reverse
-from horilla.utils import timezone
-from horilla.utils.translation import gettext_lazy as _
-from horilla.utils.translation import pgettext_lazy
-from horilla.views.generic import FormView
-from horilla.web import safe_url
 from horilla.contrib.activity.forms import (
     EventForm,
     LogCallForm,
@@ -38,6 +31,14 @@ from horilla.contrib.activity.views import MeetingsCreateForm
 from horilla.contrib.core.models import HorillaAttachment, HorillaContentType
 from horilla.contrib.generics.forms.generics import HorillaAttachmentForm
 from horilla.contrib.generics.views import HorillaSingleFormView
+from horilla.contrib.utils.middlewares import get_active_company
+from horilla.shortcuts import redirect, render
+from horilla.urls import reverse
+from horilla.utils import timezone
+from horilla.utils.translation import gettext_lazy as _
+from horilla.utils.translation import pgettext_lazy
+from horilla.views.generic import FormView
+from horilla.web import safe_url
 
 # Local imports
 from .access import (
@@ -690,7 +691,7 @@ class MobileNoteView(RecordActionMixin, MobilePageMixin, FormView):
         note.created_by = self.request.user
         note.content_type = HorillaContentType.objects.get_for_model(self.record)
         note.object_id = self.record.pk
-        note.company = self.request.active_company
+        note.company = get_active_company(self.request)
         note.save()
         messages.success(
             self.request,

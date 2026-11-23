@@ -12,13 +12,6 @@ Edit Details save (``save_all_fields``), with its checks and extensions.
 # Third-party imports (Django)
 from django.contrib import messages
 
-# First party imports (Horilla)
-from horilla.core.exceptions import FieldDoesNotExist
-from horilla.db import models
-from horilla.shortcuts import redirect
-from horilla.urls import reverse
-from horilla.utils.translation import gettext_lazy as _
-from horilla.views.generic import TemplateView
 from horilla.contrib.core.utils import get_field_permissions_for_model
 from horilla.contrib.generics.forms.generics import PHONE_COUNTRY_CODES, PhoneWidget
 from horilla.contrib.generics.history import is_record_locked
@@ -28,6 +21,15 @@ from horilla.contrib.generics.views.helpers.edit_field import (
     get_update_all_fields_view,
     save_all_fields,
 )
+from horilla.contrib.utils.middlewares import get_active_company
+
+# First party imports (Horilla)
+from horilla.core.exceptions import FieldDoesNotExist
+from horilla.db import models
+from horilla.shortcuts import redirect
+from horilla.urls import reverse
+from horilla.utils.translation import gettext_lazy as _
+from horilla.views.generic import TemplateView
 
 # Local imports
 from .access import can_open
@@ -46,7 +48,7 @@ def phone_codes(request, obj):
     of the record's company country (or the active company's) moved to the
     top. The phone's list has no search box, unlike the desktop one.
     """
-    company = getattr(obj, "company", None) or getattr(request, "active_company", None)
+    company = getattr(obj, "company", None) or get_active_company(request)
     region = getattr(getattr(company, "country", None), "code", "")
     if not region:
         return PHONE_COUNTRY_CODES

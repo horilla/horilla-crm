@@ -8,7 +8,7 @@ from django.db import transaction
 
 from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.generics.forms import HorillaModelForm, PasswordInputWithEye
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 
 # First party imports (Horilla)
 from horilla.db.models import Q
@@ -25,12 +25,6 @@ from .models import (
     WhatsAppTemplate,
 )
 from .services import WhatsAppAPIError, WhatsAppCloudAPIClient
-
-
-def _active_company():
-    """Return the current request's active company, if any."""
-    request = getattr(_thread_local, "request", None)
-    return getattr(request, "active_company", None)
 
 
 class WhatsAppAccountForm(HorillaModelForm):
@@ -74,7 +68,7 @@ class WhatsAppAccountForm(HorillaModelForm):
         else:
             # No account exists yet to scope by, so offer every inbound-message
             # rule for the active company instead of an empty queryset.
-            company = _active_company()
+            company = get_active_company()
             if company:
                 default_bot_rule_qs = default_bot_rule_qs.filter(company=company)
         self.fields["default_bot_rule"].queryset = default_bot_rule_qs
@@ -110,7 +104,7 @@ class WhatsAppTemplateForm(HorillaModelForm):
         self.fields["content_type"].empty_label = _("General (any model)")
         company = self.instance.company_id and self.instance.company
         if not company:
-            company = _active_company()
+            company = get_active_company()
         if not company:
             from horilla.contrib.core.models import Company
 
@@ -297,7 +291,7 @@ class WhatsAppTemplateForm(HorillaModelForm):
         )
         selected = cleaned_data.get("name")
         company = (self.instance.company_id and self.instance.company) or (
-            _active_company()
+            get_active_company()
         )
         if not (selected and company):
             return cleaned_data
@@ -371,7 +365,7 @@ class WhatsAppFlowForm(HorillaModelForm):
         self.fields["content_type"].empty_label = _("General (any model)")
         company = self.instance.company_id and self.instance.company
         if not company:
-            company = _active_company()
+            company = get_active_company()
         if not company:
             from horilla.contrib.core.models import Company
 

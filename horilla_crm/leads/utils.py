@@ -7,6 +7,8 @@ import re
 # Third-party imports (Django)
 from django.utils.html import format_html
 
+from horilla.contrib.utils.middlewares import get_active_company
+
 # First party imports (Horilla)
 from horilla.utils.translation import gettext as _
 
@@ -36,7 +38,7 @@ def lead_warning_for_mail(incoming_mail, request):
     """
     from horilla_crm.contacts.utils import find_duplicate_contact
 
-    company = getattr(request, "active_company", None)
+    company = get_active_company(request)
     contact = find_duplicate_contact(incoming_mail.sender_email, company)
     if not contact:
         return None
@@ -87,7 +89,7 @@ def create_lead_from_email(
     rules again.
     """
     owner = owner or request.user
-    company = getattr(request, "active_company", None)
+    company = get_active_company(request)
 
     lead = build_lead_from_email(incoming_mail, owner, company)
     if not apply_assignment_rule:

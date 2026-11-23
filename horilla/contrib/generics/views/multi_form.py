@@ -16,7 +16,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.utils.dateparse import parse_date, parse_datetime
 
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 
 # First party imports (Horilla)
 from horilla.db import models
@@ -712,10 +712,8 @@ class HorillaMultiStepFormView(FormViewCommonMixin, FormView):
             if final_form.is_valid():
                 try:
                     instance = final_form.save(commit=False)
-                    instance.company = final_form.cleaned_data.get("company") or (
-                        getattr(_thread_local, "request", None).active_company
-                        if hasattr(_thread_local, "request")
-                        else self.request.user.company
+                    instance.company = (
+                        final_form.cleaned_data.get("company") or get_active_company()
                     )
 
                     # Handle file fields - Django's save(commit=False) doesn't set files on instance

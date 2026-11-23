@@ -16,7 +16,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
     HorillaView,
 )
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
@@ -189,11 +189,7 @@ class CadenceFormView(LoginRequiredMixin, HorillaSingleFormView):
     def get_initial(self):
         """Active company (hidden); preserve module from GET on HTMX reloads."""
         initial = super().get_initial()
-        company = (
-            getattr(_thread_local, "request", None).active_company
-            if hasattr(_thread_local, "request")
-            else self.request.user.company
-        )
+        company = get_active_company()
         initial["company"] = company
         if self.request.method == "GET" and self.request.GET.get("module"):
             initial["module"] = self.request.GET.get("module")

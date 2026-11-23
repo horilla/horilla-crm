@@ -5,6 +5,8 @@ import secrets
 
 from requests_oauthlib import OAuth2Session
 
+from horilla.contrib.utils.middlewares import get_active_company
+
 ZOOM_AUTH_URL = "https://zoom.us/oauth/authorize"
 ZOOM_TOKEN_URL = "https://zoom.us/oauth/token"
 ZOOM_API_BASE = "https://api.zoom.us/v2"
@@ -32,7 +34,7 @@ def get_or_create_config(user, company=None):
 
 def start_oauth(request):
     """Return (authorization_url, state). Saves state to config."""
-    company = getattr(request, "active_company", None) or request.user.company
+    company = get_active_company(request)
     config = get_or_create_config(request.user, company=company)
     if os.environ.get("OAUTHLIB_INSECURE_TRANSPORT") is None:
         os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"

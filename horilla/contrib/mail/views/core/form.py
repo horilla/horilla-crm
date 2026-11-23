@@ -12,7 +12,7 @@ from horilla.apps import apps
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.generics.views.details import check_record_access
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 from horilla.core.exceptions import ValidationError
 from horilla.shortcuts import render
 from horilla.utils.decorators import htmx_required, method_decorator
@@ -75,7 +75,7 @@ class HorillaMailFormView(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         """Render mail form or config-required message; create draft when pk/cancel provided."""
-        company = request.active_company
+        company = get_active_company(request)
         outgoing_mail_exists = HorillaMailConfiguration.objects.filter(
             mail_channel="outgoing", company=company, is_active=True
         ).exists()
@@ -126,7 +126,7 @@ class HorillaMailFormView(LoginRequiredMixin, TemplateView):
             "model_name": model_name,
             "object_id": object_id,
             "pk": pk_value,
-            "company": getattr(request, "active_company", None),
+            "company": get_active_company(request),
         }
 
     def _validate_required_fields(self, form_data):
@@ -242,8 +242,8 @@ class HorillaMailFormView(LoginRequiredMixin, TemplateView):
             "user": request.user,
             "request": request,
         }
-        if hasattr(request, "active_company") and request.active_company:
-            template_context["active_company"] = (request.active_company,)
+        if get_active_company(request):
+            template_context["active_company"] = (get_active_company(request),)
         if content_type and object_id:
             try:
                 model_class = apps.get_model(
@@ -492,7 +492,7 @@ class HorillaMailFormView(LoginRequiredMixin, TemplateView):
                         model=model_name.lower()
                     )
 
-                    company = getattr(self.request, "active_company", None)
+                    company = get_active_company(self.request)
 
                     try:
                         draft_mail = HorillaMail.objects.create(

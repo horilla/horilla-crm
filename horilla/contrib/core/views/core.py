@@ -32,6 +32,7 @@ from horilla import settings
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.generics.views import HorillaInlineEditMixin
 from horilla.contrib.mail.models import HorillaMailConfiguration
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.menu.settings_menu import get_settings_menu
 from horilla.shortcuts import redirect, render
 from horilla.urls import resolve, reverse, reverse_lazy
@@ -176,7 +177,7 @@ class SaveActiveTabView(LoginRequiredMixin, View):
         tab_target = request.POST.get("tab_target")
         path = request.POST.get("path")
         user = request.user if request.user.is_authenticated else None
-        company = getattr(request, "active_company", None)
+        company = get_active_company(request)
 
         if user and tab_target and path:
             ActiveTab.objects.update_or_create(
@@ -477,7 +478,7 @@ def get_or_warm_settings_search_index(request):
     if cache.add(lock_key, True, 60):
         user = request.user
         session = request.session
-        active_company = getattr(request, "active_company", None)
+        active_company = get_active_company(request)
 
         def _warm():
             fake_request = RequestFactory().get("/")
@@ -582,7 +583,7 @@ def render_internal_url(base_request, url):
     internal_request = factory.get(url, HTTP_HX_REQUEST="true")
     internal_request.user = base_request.user
     internal_request.session = base_request.session
-    internal_request.active_company = getattr(base_request, "active_company", None)
+    internal_request.active_company = get_active_company(base_request)
 
     resolver_match = resolve(url)
     response = resolver_match.func(
@@ -730,9 +731,7 @@ class CompanyDetailsTab(LoginRequiredMixin, HorillaInlineEditMixin, TemplateView
 
     def get_object(self):
         """Return the active company, falling back to the user's company."""
-        return (
-            getattr(self.request, "active_company", None) or self.request.user.company
-        )
+        return get_active_company(self.request)
 
     def after_save(self, request, obj):
         """Notify ``company_created`` receivers that the company was updated."""

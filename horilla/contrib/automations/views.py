@@ -25,6 +25,7 @@ from horilla.contrib.generics.views import (
 )
 from horilla.contrib.mail.models import HorillaMailConfiguration, HorillaMailTemplate
 from horilla.contrib.notifications.models import NotificationTemplate
+from horilla.contrib.utils.middlewares import get_active_company
 
 # First party imports (Horilla)
 from horilla.db.models import Q
@@ -616,7 +617,7 @@ class TemplateFieldsView(LoginRequiredMixin, View):
             except HorillaAutomation.DoesNotExist:
                 pass
 
-        company = request.active_company
+        company = get_active_company(request)
 
         if not company:
             company = request.user.company

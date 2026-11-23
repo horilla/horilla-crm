@@ -19,6 +19,7 @@ from horilla.contrib.mail.models import (
     IncomingMail,
 )
 from horilla.contrib.notifications.models import NotificationTemplate
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import ValidationError
 from horilla.db.models import Q
 from horilla.urls import reverse, reverse_lazy
@@ -594,7 +595,7 @@ class InboxAddAsLeadForm(
                 "instance",
                 build_lead_from_email(
                     incoming_mail,
-                    company=getattr(request, "active_company", None),
+                    company=get_active_company(request),
                 ),
             )
         super().__init__(data, *args, **kwargs)

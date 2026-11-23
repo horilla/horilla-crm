@@ -15,6 +15,8 @@
 
 - **`ThreadLocalMiddleware`** — stores `request` on **`_thread_local`** so code running deep inside signals (e.g. **automations**) can recover `request.user` and `request.active_company` without threading the request through every call stack.
 - Must appear in **`MIDDLEWARE`** after auth/company middleware—see [../core/Settings/base.md](../core/Settings/base.md) ordering in project settings.
+- **`get_current_request()`** — the thread-local request, or `None`.
+- **`get_active_company(request=None)`** — the one way Python code reads the active company (company-switcher aware). `ActiveCompanyMiddleware` is the only writer of `request.active_company`. The helper returns it and falls back to the user's own company when the middleware could not resolve one (DRF JWT/Basic auth, `RequestFactory`, fake requests). With no argument it uses the thread-local request, so models, managers, signals and forms can call `get_active_company()`. It returns `None` when there is no request. Templates keep using `{{ request.active_company }}`. `core/tests.py` (`ActiveCompanySingleReaderTests`) fails if Python code reads `request.active_company` or `getattr(request, "active_company", ...)` directly.
 
 ### `methods.py`
 

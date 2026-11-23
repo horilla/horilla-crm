@@ -11,7 +11,7 @@ from datetime import date, datetime, timedelta
 # Third-party imports (Django)
 from django.conf import settings
 
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 from horilla.db import models
 from horilla.urls import reverse_lazy
 
@@ -134,7 +134,7 @@ class RecycleBin(models.Model):
         )
         soft_record.serialize_data(instance)
         request = getattr(_thread_local, "request", None)
-        soft_record.company = getattr(request, "active_company", None)
+        soft_record.company = get_active_company(request)
 
         soft_record.save()
         return soft_record
@@ -169,7 +169,7 @@ class RecycleBinPolicy(models.Model):
     def save(self, *args, **kwargs):
         """Set company from request active_company before saving."""
         request = getattr(_thread_local, "request", None)
-        self.company = getattr(request, "active_company", None)
+        self.company = get_active_company(request)
         super().save(*args, **kwargs)
 
     def __str__(self):

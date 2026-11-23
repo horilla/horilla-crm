@@ -13,6 +13,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleDeleteView,
     HorillaSingleFormView,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
@@ -45,6 +46,8 @@ class ShiftHourListView(LoginRequiredMixin, HorillaListView):
     list_column_visibility = False
     bulk_update_option = False
     header_attrs = [
+        # Wide enough for "Different Hour Per Day", which is otherwise cut to "Different Hour Per D...".
+        {"get_timing_type_display": {"style": "width: 240px;"}},
         {"get_formatted_week_days": {"style": "width: 320px;"}},
     ]
 
@@ -157,7 +160,7 @@ class ShiftHourFormView(LoginRequiredMixin, HorillaSingleFormView):
         """Get initial data for the form, supporting pre-fill from GET parameters when toggled."""
         initial = super().get_initial()
         toggle = self.request.GET.get("toggle_data")
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         initial["company"] = company
         if toggle == "true":
             initial["timing_type"] = self.request.GET.get("timing_type", "")

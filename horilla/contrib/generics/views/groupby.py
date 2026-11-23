@@ -15,6 +15,7 @@ from django.template.loader import render_to_string
 
 from horilla.contrib.core.models import KanbanGroupBy
 from horilla.contrib.core.utils import get_user_field_permission
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import FieldError
 from horilla.db.models import ForeignKey
 from horilla.shortcuts import render
@@ -239,7 +240,7 @@ class HorillaGroupByView(HorillaListView):
 
         related_model = field.related_model
         related_qs = related_model.objects.all()
-        active_company = getattr(self.request, "active_company", None)
+        active_company = get_active_company(self.request)
         if (
             active_company is not None
             and not self.request.session.get("show_all_companies", False)

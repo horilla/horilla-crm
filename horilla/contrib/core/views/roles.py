@@ -21,7 +21,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
 )
 from horilla.contrib.generics.views.core import HorillaView
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 from horilla.shortcuts import get_object_or_404
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
@@ -546,7 +546,7 @@ class RolesHierarchyView(LoginRequiredMixin, TemplateView):
             context["roles_count"] = len(all_roles)
         else:
             # Original behavior: filter by active company
-            company = getattr(self.request, "active_company", None)
+            company = get_active_company(self.request)
             if not company and hasattr(self.request.user, "company"):
                 company = self.request.user.company
             roles = (

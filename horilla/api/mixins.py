@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from horilla.contrib.generics.views.helpers.queryset_utils import (
     get_granted_access_filter,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db import transaction
 from horilla.db.models import Q
 
@@ -85,9 +86,7 @@ class CompanyScopedSerializerMixin:
         attrs = super().validate(attrs)
         request = self.context.get("request")
         if request is not None and hasattr(request, "user"):
-            active_company = getattr(request, "active_company", None) or getattr(
-                request.user, "company", None
-            )
+            active_company = get_active_company(request)
             if active_company is not None:
                 attrs["company"] = active_company
             else:

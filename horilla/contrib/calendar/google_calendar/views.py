@@ -31,6 +31,7 @@ from horilla.contrib.generics.templatetags.horilla_tags.display_tags import (
     render_user_chip,
 )
 from horilla.contrib.generics.views.single_form import HorillaSingleFormView
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import redirect, render
 from horilla.urls import reverse, reverse_lazy
 from horilla.utils import timezone
@@ -94,10 +95,6 @@ def _user_has_google_access(user):
     """True when the company's Google integration is on and ``user`` is allowed."""
     company = getattr(user, "company", None)
     return bool(company and GoogleIntegrationSetting.user_can_access(user, company))
-
-
-def _get_active_company(request):
-    return getattr(request, "active_company", None) or request.user.company
 
 
 class GoogleCalendarAccessMixin(LoginRequiredMixin):
@@ -782,7 +779,7 @@ class GoogleIntegrationSettingsView(LoginRequiredMixin, View):
     """
 
     def _get_or_create_setting(self, request):
-        return GoogleIntegrationSetting.get_for_company(_get_active_company(request))
+        return GoogleIntegrationSetting.get_for_company(get_active_company(request))
 
     def _render(self, request, setting):
         return render(
@@ -844,7 +841,7 @@ class GoogleIntegrationSettingsView(LoginRequiredMixin, View):
                 _("Google Calendar integration has been enabled for users."),
             )
         else:
-            self._disconnect_all_company_users(getattr(request, "active_company", None))
+            self._disconnect_all_company_users(get_active_company(request))
             messages.info(
                 request,
                 _(
@@ -870,7 +867,7 @@ class _GoogleAllowedAccessModalView(LoginRequiredMixin, View):
         """Require Google integration settings change permission before dispatch."""
         if request.user.is_authenticated:
             setting = GoogleIntegrationSetting.get_for_company(
-                _get_active_company(request)
+                get_active_company(request)
             )
             if setting and not setting.is_google_calendar_enabled:
                 messages.warning(request, _DISABLED_MSG)
@@ -883,7 +880,7 @@ class _GoogleAllowedAccessModalView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         """Render the modal, or only the pill list when the search box asks for it."""
-        company = _get_active_company(request)
+        company = get_active_company(request)
         setting = GoogleIntegrationSetting.get_for_company(company)
         items = self.get_items(request, setting, company) if setting else []
         total = len(items)
@@ -973,7 +970,7 @@ class _GoogleAccessFormView(LoginRequiredMixin, HorillaSingleFormView):
         """Require Google integration settings change permission before dispatch."""
         if request.user.is_authenticated:
             setting = GoogleIntegrationSetting.get_for_company(
-                _get_active_company(request)
+                get_active_company(request)
             )
             if setting and not setting.is_google_calendar_enabled:
                 messages.warning(request, _DISABLED_MSG)
@@ -992,7 +989,7 @@ class GoogleAccessRolesView(_GoogleAccessFormView):
 
     def dispatch(self, request, *args, **kwargs):
         """Go back to the settings page when no company is active."""
-        if request.user.is_authenticated and not _get_active_company(request):
+        if request.user.is_authenticated and not get_active_company(request):
             return RedirectResponse(
                 request, redirect_to=reverse("calendar:google_integration_settings")
             )
@@ -1006,14 +1003,14 @@ class GoogleAccessRolesView(_GoogleAccessFormView):
         from horilla.contrib.core.models import Role
 
         form = super().get_form(form_class)
-        company = _get_active_company(self.request)
+        company = get_active_company(self.request)
         setting = GoogleIntegrationSetting.get_for_company(company)
         form.fields["allowed_roles"].queryset = Role.objects.filter(company=company)
         form.fields["allowed_roles"].initial = setting.allowed_roles.all()
         return form
 
     def form_valid(self, form):
-        company = _get_active_company(self.request)
+        company = get_active_company(self.request)
         setting = GoogleIntegrationSetting.get_for_company(company)
         if not setting.is_google_calendar_enabled:
             messages.warning(self.request, _DISABLED_MSG)
@@ -1042,7 +1039,7 @@ class GoogleAccessUsersView(_GoogleAccessFormView):
 
     def dispatch(self, request, *args, **kwargs):
         """Go back to the settings page when no company is active."""
-        if request.user.is_authenticated and not _get_active_company(request):
+        if request.user.is_authenticated and not get_active_company(request):
             return RedirectResponse(
                 request, redirect_to=reverse("calendar:google_integration_settings")
             )
@@ -1051,7 +1048,7 @@ class GoogleAccessUsersView(_GoogleAccessFormView):
     def get_form(self, form_class=None):
         """Scope allowed_users queryset and initial values to the active company."""
         form = super().get_form(form_class)
-        company = _get_active_company(self.request)
+        company = get_active_company(self.request)
         setting = GoogleIntegrationSetting.get_for_company(company)
         form.fields["allowed_users"].queryset = User.objects.filter(
             company=company, is_active=True
@@ -1060,7 +1057,7 @@ class GoogleAccessUsersView(_GoogleAccessFormView):
         return form
 
     def form_valid(self, form):
-        company = _get_active_company(self.request)
+        company = get_active_company(self.request)
         setting = GoogleIntegrationSetting.get_for_company(company)
         if not setting.is_google_calendar_enabled:
             messages.warning(self.request, _DISABLED_MSG)

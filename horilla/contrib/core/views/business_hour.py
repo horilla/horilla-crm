@@ -10,6 +10,7 @@ from django.contrib import messages
 # First-party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.generics.views import HorillaListView, HorillaSingleFormView
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.urls import reverse, reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
@@ -44,7 +45,7 @@ class BusinessHourView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         """Add the active company's business hour for the Working hours tab shell."""
         context = super().get_context_data(**kwargs)
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         context["company_business_hour"] = None
         if company:
             context["company_business_hour"] = (
@@ -67,7 +68,7 @@ class BusinessHourCardView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         """Add the active company's business hour for the summary card."""
         context = super().get_context_data(**kwargs)
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         context["business_hour"] = None
         if company:
             context["business_hour"] = (
@@ -106,7 +107,7 @@ class BusinessHourFormView(LoginRequiredMixin, HorillaSingleFormView):
         """Allow a single business hour per company: block duplicate create."""
         pk = kwargs.get("pk") or request.GET.get("id")
         if not pk:
-            company = getattr(request, "active_company", None)
+            company = get_active_company(request)
             if company and BusinessHour.objects.filter(company_id=company.id).exists():
                 return ScriptResponse(close=True, status=200)
         return super().get(request, *args, **kwargs)
@@ -115,7 +116,7 @@ class BusinessHourFormView(LoginRequiredMixin, HorillaSingleFormView):
         """Get initial data for the business hour form."""
         initial = super().get_initial()
         toggle = self.request.GET.get("toggle_data")
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         initial["company"] = company
         if toggle == "true":
             initial["business_hour_type"] = self.request.GET.get(

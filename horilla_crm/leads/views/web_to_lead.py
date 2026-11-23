@@ -20,6 +20,7 @@ from django.views.generic import CreateView
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.auth.models import User
 from horilla.contrib.generics.views import HorillaNavView
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import FieldDoesNotExist
 from horilla.db import transaction
 from horilla.db.models import QuerySet
@@ -270,7 +271,7 @@ class LeadFormBuilderNavbar(LoginRequiredMixin, HorillaNavView):
     def has_saved_form(self):
         """Whether the active company already has a saved capture form."""
         return LeadCaptureForm.objects.filter(
-            company=self.request.active_company, is_active=True
+            company=get_active_company(self.request), is_active=True
         ).exists()
 
     @cached_property
@@ -332,7 +333,7 @@ class LeadFormBuilderView(LoginRequiredMixin, TemplateView):
         context["lead_owners"] = User.objects.filter(is_active=True)
 
         saved_form = LeadCaptureForm.objects.filter(
-            company=self.request.active_company, is_active=True
+            company=get_active_company(self.request), is_active=True
         ).first()
         if saved_form:
             context["saved_form"] = saved_form
@@ -503,7 +504,7 @@ class SaveLeadFormView(LoginRequiredMixin, FormView):
 
         # Get or create the LeadCaptureForm instance
         obj, _created = LeadCaptureForm.objects.get_or_create(
-            company=self.request.active_company,
+            company=get_active_company(self.request),
             defaults={
                 "created_by": self.request.user,
                 "lead_owner_id": lead_owner,

@@ -17,6 +17,7 @@ from horilla.contrib.generics.templatetags.horilla_tags.display_tags import (
 )
 from horilla.contrib.generics.views import HorillaSingleFormView
 from horilla.contrib.generics.views.core import HorillaTabView
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import render
 from horilla.urls import reverse, reverse_lazy
 from horilla.utils.decorators import (
@@ -47,7 +48,7 @@ class CallIntegrationSettingsView(LoginRequiredMixin, View):
     template_name = "calls/integration_settings.html"
 
     def _render(self, request):
-        company = request.active_company
+        company = get_active_company(request)
         setting = CallIntegrationSetting.get_for_company(company) if company else None
         all_roles = (
             Role.objects.filter(company=company) if company else Role.objects.none()
@@ -84,7 +85,7 @@ class CallIntegrationSettingsView(LoginRequiredMixin, View):
         """Render the main settings page with the current setting values."""
         if request.GET.get("check"):
             # Pre-check before an access change confirmation on a stale page.
-            company = request.active_company
+            company = get_active_company(request)
             setting = CallIntegrationSetting.get_for_company(company)
             if setting and setting.is_enabled:
                 return HttpResponse(status=204)
@@ -96,7 +97,7 @@ class CallIntegrationSettingsView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         """Save the Call Integration settings: enabled and access type."""
-        company = request.active_company
+        company = get_active_company(request)
         setting = CallIntegrationSetting.get_for_company(company)
         if setting is None:
             return self._render(request)
@@ -160,7 +161,7 @@ class CallAccessControlTabContent(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         """Render the Access Control tab with the current setting values."""
-        company = request.active_company
+        company = get_active_company(request)
         setting = CallIntegrationSetting.get_for_company(company) if company else None
         selected_role_ids = (
             list(setting.allowed_roles.values_list("pk", flat=True)) if setting else []
@@ -215,7 +216,7 @@ class CallAccessRolesView(LoginRequiredMixin, HorillaSingleFormView):
     def dispatch(self, request, *args, **kwargs):
         """Go back to the settings page when no company is active."""
         if request.user.is_authenticated:
-            if not request.active_company:
+            if not get_active_company(request):
                 return RedirectResponse(
                     request, redirect_to=reverse("calls:integration_settings")
                 )
@@ -223,7 +224,7 @@ class CallAccessRolesView(LoginRequiredMixin, HorillaSingleFormView):
 
     def get_form(self, form_class=None):
         """Limit allowed roles to this company and set the current selection."""
-        company = self.request.active_company
+        company = get_active_company(self.request)
         setting = CallIntegrationSetting.get_for_company(company)
         form = super().get_form(form_class)
         form.fields["allowed_roles"].queryset = Role.objects.filter(company=company)
@@ -231,7 +232,7 @@ class CallAccessRolesView(LoginRequiredMixin, HorillaSingleFormView):
         return form
 
     def form_valid(self, form):
-        company = self.request.active_company
+        company = get_active_company(self.request)
         setting = CallIntegrationSetting.get_for_company(company)
         setting.access_type = "roles"
         setting.save(update_fields=["access_type"])
@@ -255,7 +256,7 @@ class CallAccessUsersView(LoginRequiredMixin, HorillaSingleFormView):
     def dispatch(self, request, *args, **kwargs):
         """Go back to the settings page when no company is active."""
         if request.user.is_authenticated:
-            if not request.active_company:
+            if not get_active_company(request):
                 return RedirectResponse(
                     request, redirect_to=reverse("calls:integration_settings")
                 )
@@ -263,7 +264,7 @@ class CallAccessUsersView(LoginRequiredMixin, HorillaSingleFormView):
 
     def get_form(self, form_class=None):
         """Limit allowed users to this company's active users and set the current selection."""
-        company = self.request.active_company
+        company = get_active_company(self.request)
         setting = CallIntegrationSetting.get_for_company(company)
         form = super().get_form(form_class)
         form.fields["allowed_users"].queryset = User.objects.filter(
@@ -273,7 +274,7 @@ class CallAccessUsersView(LoginRequiredMixin, HorillaSingleFormView):
         return form
 
     def form_valid(self, form):
-        company = self.request.active_company
+        company = get_active_company(self.request)
         setting = CallIntegrationSetting.get_for_company(company)
         setting.access_type = "users"
         setting.save(update_fields=["access_type"])
@@ -300,7 +301,7 @@ class _CallAccessDetailView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         """Render the modal, or only the pill list when the search box asks for it."""
-        setting = CallIntegrationSetting.get_for_company(request.active_company)
+        setting = CallIntegrationSetting.get_for_company(get_active_company(request))
         items = self.get_items(request, setting) if setting else []
         total = len(items)
         query = request.GET.get("q", "").strip().lower()
@@ -405,7 +406,7 @@ class CallUserSettingsView(LoginRequiredMixin, View):
         Render the user's settings page, with a card for each active provider
         and the current extension or agent ID.
         """
-        company = request.active_company
+        company = get_active_company(request)
         has_access = (
             CallIntegrationSetting.user_can_access(request.user, company)
             if company
@@ -442,7 +443,7 @@ class CallUserSettingsView(LoginRequiredMixin, View):
             )
             return self.get(request, *args, **kwargs)
 
-        company = request.active_company
+        company = get_active_company(request)
         if action == "save":
             mapping, _created = AgentMapping.all_objects.get_or_create(
                 provider=provider,

@@ -94,7 +94,7 @@ Core audit fields are auto-excluded via **`HORILLA_FORM_EXCLUDE`**; do not dupli
 
 ## Views and templates
 
-- **Home** — one template, `home/home.html`, serves both the dynamic default home (`is_default_home=True`) and a dashboard used as home; `default_home.html` no longer exists. The date range control is the shared `components/date_range_filter.html`, with named presets (Created Today, Created Yesterday, Created This Week, Created This Month) and a custom range. Start Date and End Date use `id_date_from` and `id_date_to`. An empty Leads chart on the home page still shows its title. "Set to Default" only shows for a layout that differs from the template default (KPIs by index, then two charts per table); saving an order equal to the default deletes the stored `DefaultHomeLayoutOrder`, and the save response returns `is_custom`.
+- **Home** — one template, `home/home.html`, serves both the dynamic default home (`is_default_home=True`) and a dashboard used as home; `default_home.html` no longer exists. The shipped tiles come from each app's `dashboard.py` (`kpi_func`, charts, and tables on `DefaultDashboardGenerator.extra_models`): Open Pipeline, Won Revenue, Overdue Tasks, Meetings Today, New Leads, the stage funnel, won revenue by month, deals closing soon, open tasks, and tasks due this week. The date range control is the shared `components/date_range_filter.html`, with named presets (Created Today, Created Yesterday, Created This Week, Created This Month), a custom range, and All Time. Start Date and End Date use `id_date_from` and `id_date_to`. An empty chart on the home page still shows its title. "Set to Default" only shows for a layout that differs from the template default (KPIs by index, then two charts per table); saving an order equal to the default deletes the stored `DefaultHomeLayoutOrder`, and the save response returns `is_custom`.
 - **Get started guide** — included in the default home only (`home/onboarding.html`); see below.
 - **Dashboard detail** — `dashboard_detail_view.html` uses the generic navbar (`dashboard_detail_nav_actions.html`). Other partials live under `templates/` / `templates/home/`.
 - **Folder detail** — navigates mixed lists of child folders + dashboards (`get_detail_view_url` on folder model points at `dashboard:dashboard_folder_detail_list`). The folder pages also render `{% breadcrumb_nav breadcrumbs %}`.
@@ -108,7 +108,7 @@ Five focused views handle state mutations for dashboards.
 |------|------|-------------|----------|
 | `DashboardDefaultToggleView` | `View` | POST | Sets `is_default=True` on target; clears `is_default` on all other dashboards for the same user+company pair |
 | `DashboardFavoriteToggleView` | `View` | POST (GET → 403) | Adds or removes the current user from `Dashboard.favourited_by` M2M |
-| `DashboardCreateFormView` | `HorillaSingleFormView` | GET+POST | Create/update `Dashboard`; falls back to `_thread_local` for `active_company` when not on request |
+| `DashboardCreateFormView` | `HorillaSingleFormView` | GET+POST | Create/update `Dashboard`. Initial `company` is `get_active_company()` |
 | `DashboardDeleteView` | `HorillaSingleDeleteView` | POST | Deletes dashboard and redirects |
 | `ResetDashboardLayoutOrderView` | `View` | POST | Clears `DefaultHomeLayoutOrder` rows for the current user, resetting home tile ordering |
 
@@ -154,7 +154,7 @@ All of them swap in place with HTMX (no page reload). Dismissing in one company 
 | Piece | Where |
 |-------|-------|
 | Builder | `horilla/registry/onboarding.py`: `build_onboarding(user, company, skipped)` returns the view-model (`steps`, `total`, `done_count`, `percent`, `next_step`) or `None`. Each step dict has `number`, `title`, `headline`, `description`, `icon`, `url`, `done`, `is_next` |
-| Context | `dashboard/get_started.py`: `get_active_company(request)`, the session helpers for skipped steps, and `get_onboarding_context(request)`, which adds whether the guide is hidden |
+| Context | `dashboard/get_started.py`: the session helpers for skipped steps, and `get_onboarding_context(request)`, which adds whether the guide is hidden |
 | Home view | `HomePageView.get_dynamic_default_context` merges `get_onboarding_context` |
 | Hide / show view | `views/onboarding.py` `OnboardingVisibilityView` (`POST onboarding/hide/` and `onboarding/show/`, names `onboarding_hide` and `onboarding_show`): `LoginRequiredMixin`, HTMX only, superuser only; 400 when there is no company |
 | Banner and show link | `templates/home/onboarding.html`, one template with two parts chosen by `part`: `banner` (`#onboarding`) and `link` (`#onboarding-link`, next to the intro line). `home.html` includes it once for each; the views render `part="both"`, so one HTMX response swaps the banner and the link (`hx-swap-oob`) |
@@ -177,7 +177,7 @@ All of them swap in place with HTMX (no page reload). Dismissing in one company 
 
 ## Field pickers and extension hooks
 
-The component form and the HTMX field-picker views list a model's columns. Fields that aren't model columns are added through one hook:
+The component form and the HTMX field-picker views list a model's columns. `ModuleFieldChoicesView` uses `get_condition_model_fields`, so the list includes editable fields and the audit fields (created and updated, at and by) and leaves out `id`, `pk`, and `additional_info`. Fields that aren't model columns are added through one hook:
 
 | Where | Hook |
 |-------|------|

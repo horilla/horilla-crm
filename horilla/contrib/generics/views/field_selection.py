@@ -8,6 +8,7 @@ from horilla.apps import apps
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.methods import get_template_reverse_models
 from horilla.contrib.core.models import HorillaContentType
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.utils.decorators import (
     htmx_required,
     method_decorator,
@@ -288,7 +289,7 @@ class HorillaFieldSelectionView(LoginRequiredMixin, TemplateView):
 
             elif tab_type == "company":
                 # Get current active company fields
-                company = getattr(self.request, "active_company", None)
+                company = get_active_company(self.request)
 
                 if company:
                     model_fields = []
@@ -306,7 +307,7 @@ class HorillaFieldSelectionView(LoginRequiredMixin, TemplateView):
                                     field, "verbose_name", field.name
                                 ),
                                 "field_type": field.__class__.__name__,
-                                "template_syntax": f"{{{{ request.active_company.{field.name} }}}}",
+                                "template_syntax": f"{{{{ get_active_company(request).{field.name} }}}}",
                                 "is_foreign_key": (
                                     field.many_to_one
                                     if hasattr(field, "many_to_one")

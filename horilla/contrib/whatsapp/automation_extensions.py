@@ -16,6 +16,7 @@ from django.template.loader import render_to_string
 
 # First party imports (Horilla)
 from horilla.contrib.core.models import HorillaContentType
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.extension.forms import FormExtension
 from horilla.extension.view import ViewExtension
 from horilla.utils.translation import gettext_lazy as _
@@ -83,9 +84,7 @@ class AutomationWhatsAppFormExtension(FormExtension):
         request = getattr(self, "request", None)
         company = None
         if request is not None and getattr(request, "user", None):
-            company = getattr(request, "active_company", None) or getattr(
-                request.user, "company", None
-            )
+            company = get_active_company(request)
         content_type = None
         model_name = getattr(self, "model_name", None)
         if model_name:
@@ -240,7 +239,7 @@ class AutomationWhatsAppFieldsExtension(ViewExtension):
                 if account_id is None and automation.whatsapp_account_id:
                     account_id = automation.whatsapp_account_id
 
-        company = getattr(request, "active_company", None) or request.user.company
+        company = get_active_company(request)
 
         field = HorillaAutomation._meta.get_field
         html = render_to_string(

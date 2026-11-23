@@ -9,6 +9,7 @@ from django.conf import settings
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.models import Company
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db import models, transaction
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse_lazy
@@ -144,9 +145,7 @@ class LoadOpportunityStagesView(LoginRequiredMixin, View):
             ):
                 raise HttpNotFound("Company not found.")
         else:
-            active_company = getattr(request, "active_company", None) or getattr(
-                request.user, "company", None
-            )
+            active_company = get_active_company(request)
             is_active_company = active_company and str(active_company.id) == str(
                 company_id
             )

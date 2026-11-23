@@ -30,7 +30,7 @@ from horilla.contrib.generics.views import (
 )
 from horilla.contrib.generics.views.details import check_record_change_access
 from horilla.contrib.meeting.forms import MeetingAccessRolesForm, MeetingAccessUsersForm
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 from horilla.core.exceptions import PermissionDenied
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse, reverse_lazy
@@ -284,11 +284,7 @@ class OpportunityTeamFormView(
             self.object.updated_at = timezone.now()
             self.object.updated_by = self.request.user
         self.object.owner = self.request.user
-        self.object.company = (
-            getattr(_thread_local, "request", None).active_company
-            if hasattr(_thread_local, "request")
-            else self.request.user.company
-        )
+        self.object.company = get_active_company()
         self.object.save()
         form.save_m2m()
 
@@ -307,11 +303,7 @@ class OpportunityTeamFormView(
                     created_by=self.request.user,
                     updated_at=timezone.now(),
                     updated_by=self.request.user,
-                    company=(
-                        getattr(_thread_local, "request", None).active_company
-                        if hasattr(_thread_local, "request")
-                        else self.request.user.company
-                    ),
+                    company=get_active_company(),
                 )
             except Exception as e:
                 messages.error(self.request, f"Failed to save team member: {str(e)}")
@@ -352,9 +344,7 @@ class OpportunityTeamDetailView(DetailView):
         """Validate access and object existence before rendering detail view."""
         if not request.user.is_authenticated:
             return login_redirect(request)
-        if not OpportunitySettings.is_team_selling_enabled(
-            getattr(request, "active_company", None)
-        ):
+        if not OpportunitySettings.is_team_selling_enabled(get_active_company(request)):
             if request.headers.get("HX-Request") == "true":
                 messages.error(request, _("Team Selling is not enabled."))
                 response = HttpResponse(status=204)
@@ -657,7 +647,7 @@ class OpportunityTeamMemberUpdateView(
         condition-field version of this picker already does.
         """
         form = super().get_form(form_class)
-        active_company = getattr(self.request, "active_company", None)
+        active_company = get_active_company(self.request)
         if "user" in form.fields and active_company:
             user_field = form.fields["user"]
             user_qs = User.objects.filter(company=active_company)
@@ -1111,7 +1101,7 @@ class TeamSellingSetupView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         """Build setup page context with current company team-selling settings."""
         context = super().get_context_data(**kwargs)
-        company = self.request.active_company
+        company = get_active_company(self.request)
         settings = OpportunitySettings.get_settings(company)
         if not settings:
             context["settings"] = None
@@ -1127,7 +1117,7 @@ class TeamSellingSetupView(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         """Pre-check (``?check=1``) used before an access change on a stale page."""
         if request.GET.get("check"):
-            settings = OpportunitySettings.get_settings(request.active_company)
+            settings = OpportunitySettings.get_settings(get_active_company(request))
             if settings and settings.team_selling_enabled:
                 return HttpResponse(status=204)
             messages.warning(
@@ -1152,7 +1142,7 @@ class TeamSellingAccessAllView(LoginRequiredMixin, View):
 
     def dispatch(self, request, *args, **kwargs):
         """Go back to the setup page when no company is active."""
-        if request.user.is_authenticated and not request.active_company:
+        if request.user.is_authenticated and not get_active_company(request):
             return RedirectResponse(
                 request, redirect_to=reverse("opportunities:team_selling_setup")
             )
@@ -1160,7 +1150,7 @@ class TeamSellingAccessAllView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         """Switch the access type to all users and reload the setup page."""
-        settings = OpportunitySettings.get_settings(request.active_company)
+        settings = OpportunitySettings.get_settings(get_active_company(request))
         if not settings.team_selling_enabled:
             return _team_selling_disabled_refresh(request)
         settings.team_selling_access_type = "all"
@@ -1181,7 +1171,7 @@ class _TeamSellingAllowedModalView(LoginRequiredMixin, View):
     def dispatch(self, request, *args, **kwargs):
         """Require change permission and an enabled team selling feature."""
         if request.user.is_authenticated:
-            settings = OpportunitySettings.get_settings(request.active_company)
+            settings = OpportunitySettings.get_settings(get_active_company(request))
             if settings and not settings.team_selling_enabled:
                 return _team_selling_disabled_refresh(request)
         return super().dispatch(request, *args, **kwargs)
@@ -1192,7 +1182,7 @@ class _TeamSellingAllowedModalView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         """Render the modal, or only the pill list for the search box."""
-        company = request.active_company
+        company = get_active_company(request)
         settings = OpportunitySettings.get_settings(company)
         items = self.get_items(request, settings, company) if settings else []
         total = len(items)
@@ -1279,7 +1269,7 @@ class _TeamSellingAccessFormView(LoginRequiredMixin, HorillaSingleFormView):
     def dispatch(self, request, *args, **kwargs):
         """Require change permission and an enabled team selling feature."""
         if request.user.is_authenticated:
-            settings = OpportunitySettings.get_settings(request.active_company)
+            settings = OpportunitySettings.get_settings(get_active_company(request))
             if settings and not settings.team_selling_enabled:
                 return _team_selling_disabled_refresh(request)
         return super().dispatch(request, *args, **kwargs)
@@ -1287,15 +1277,15 @@ class _TeamSellingAccessFormView(LoginRequiredMixin, HorillaSingleFormView):
     def get_form(self, form_class=None):
         """Scope the queryset to the company and preselect current values."""
         form = super().get_form(form_class)
-        settings = OpportunitySettings.get_settings(self.request.active_company)
+        settings = OpportunitySettings.get_settings(get_active_company(self.request))
         field = form.fields[self.field_name]
-        field.queryset = self.get_queryset_for_company(self.request.active_company)
+        field.queryset = self.get_queryset_for_company(get_active_company(self.request))
         field.initial = getattr(settings, f"team_selling_{self.field_name}").all()
         return form
 
     def form_valid(self, form):
         """Save the selection and make this the active access type."""
-        settings = OpportunitySettings.get_settings(self.request.active_company)
+        settings = OpportunitySettings.get_settings(get_active_company(self.request))
         if not settings.team_selling_enabled:
             return _team_selling_disabled_refresh(self.request)
         settings.team_selling_access_type = self.access_type
@@ -1321,7 +1311,7 @@ class TeamSellingAccessRolesView(_TeamSellingAccessFormView):
 
     def dispatch(self, request, *args, **kwargs):
         """Go back to the settings page when no company is active."""
-        if request.user.is_authenticated and not request.active_company:
+        if request.user.is_authenticated and not get_active_company(request):
             return RedirectResponse(
                 request, redirect_to=reverse("opportunities:team_selling_setup")
             )
@@ -1351,7 +1341,7 @@ class TeamSellingAccessUsersView(_TeamSellingAccessFormView):
 
     def dispatch(self, request, *args, **kwargs):
         """Go back to the settings page when no company is active."""
-        if request.user.is_authenticated and not request.active_company:
+        if request.user.is_authenticated and not get_active_company(request):
             return RedirectResponse(
                 request, redirect_to=reverse("opportunities:team_selling_setup")
             )
@@ -1373,7 +1363,7 @@ class ToggleTeamSellingView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         """Handle POST request to toggle team selling feature."""
-        company = self.request.active_company
+        company = get_active_company(self.request)
         view_url = reverse_lazy("opportunities:team_selling_setup")
 
         response_html = format_html(

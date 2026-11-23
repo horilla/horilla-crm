@@ -14,6 +14,7 @@ from horilla.contrib.core.models import Role
 from horilla.contrib.generics.forms import condition_fields as condition_fields_module
 from horilla.contrib.mail.models import HorillaMailTemplate
 from horilla.contrib.notifications.models import NotificationTemplate
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import render
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
@@ -75,7 +76,7 @@ class ApprovalProcessRuleActionFormView(LoginRequiredMixin, View):
                 ) | notification_templates.filter(company__isnull=True)
         except Exception:
             pass
-        active_company = getattr(request, "active_company", None)
+        active_company = get_active_company(request)
         users = User.objects.filter(is_active=True)
         if active_company is not None:
             users = users.filter(company=active_company)

@@ -13,6 +13,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
     HorillaView,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
@@ -179,7 +180,7 @@ class IncomingMailServerFormView(LoginRequiredMixin, HorillaSingleFormView):
         """Set initial form data for incoming mail configuration (IMAP defaults)."""
         initial = super().get_initial()
         pk = self.kwargs.get("pk")
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         if not pk:
             initial["company"] = company
             initial["type"] = "mail"

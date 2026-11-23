@@ -16,7 +16,7 @@ from django.template.loader import render_to_string
 # First party imports (Horilla)
 from horilla.apps import apps
 from horilla.contrib.core.models import HorillaContentType
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.urls import reverse
 from horilla.utils.translation import gettext_lazy as _
 from horilla.web import HttpResponse, QueryDict
@@ -86,14 +86,9 @@ def create_form_valid_with_duplicate_check(original_form_valid, is_multi_step=Fa
         instance = form.save(commit=False)
 
         try:
-            if hasattr(self.request, "active_company"):
-                instance.company = self.request.active_company
-            elif hasattr(_thread_local, "request") and hasattr(
-                _thread_local.request, "active_company"
-            ):
-                instance.company = _thread_local.request.active_company
-            elif hasattr(self.request.user, "company"):
-                instance.company = self.request.user.company
+            company = get_active_company(self.request)
+            if company:
+                instance.company = company
         except Exception:
             pass
 

@@ -2,6 +2,7 @@
 
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.registry.onboarding import build_onboarding
 from horilla.shortcuts import render
 from horilla.utils.decorators import htmx_required, method_decorator
@@ -9,7 +10,7 @@ from horilla.views.generic import View
 from horilla.web import HttpResponse
 
 # Local imports
-from ..get_started import get_active_company, get_onboarding_context, skip_step
+from ..get_started import get_onboarding_context, skip_step
 from ..models import OnboardingState
 
 

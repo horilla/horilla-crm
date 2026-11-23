@@ -13,6 +13,7 @@ from django.contrib import messages
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.generics.views import HorillaSingleFormView
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import htmx_required, method_decorator
@@ -40,7 +41,7 @@ class CompanyFiscalYearTab(LoginRequiredMixin, TemplateView):
         Get context data for fiscal year tab.
         """
         context = super().get_context_data(**kwargs)
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         if company:
             cmp = company
         else:
@@ -625,7 +626,7 @@ class FiscalYearCalendarView(LoginRequiredMixin, DetailView, FiscalYearCalendarM
         start_date_month = fiscal_year.start_date_month
         start_date_day = fiscal_year.start_date_day
         week_start_day = fiscal_year.week_start_day
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         fiscal_year_instances = FiscalYearInstance.objects.filter(
             fiscal_year_config=fiscal_year, company=company
         ).order_by("start_date")

@@ -10,7 +10,7 @@ from django.forms import inlineformset_factory
 # First party imports (Horilla)
 from horilla.contrib.core.models import Role
 from horilla.contrib.generics.forms import HorillaModelForm
-from horilla.contrib.utils.middlewares import get_current_request
+from horilla.contrib.utils.middlewares import get_active_company, get_current_request
 
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
@@ -106,7 +106,7 @@ class ApprovalRuleForm(ApprovalBaseForm):
         model = cleaned_data.get("model")
         if is_active and model:
             request = get_current_request()
-            company = getattr(request, "active_company", None) if request else None
+            company = get_active_company(request) if request else None
             qs = ApprovalRule.all_objects.filter(
                 model=model,
                 is_active=True,

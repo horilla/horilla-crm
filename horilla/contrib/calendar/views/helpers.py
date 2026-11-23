@@ -23,6 +23,7 @@ from horilla.contrib.generics.views.helpers.queryset_utils import (
     get_granted_access_filter,
     get_queryset_for_module,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db.models import Q
 from horilla.utils import timezone
 from horilla.utils.translation import gettext as _
@@ -133,7 +134,7 @@ def _team_members(request):
     if not _team_scope_available(user):
         return User.objects.none()
     if user.has_perm("activity.view_activity"):
-        company = getattr(request, "active_company", None) or user.company
+        company = get_active_company(request)
         members = User.objects.filter(company=company)
     else:
         members = User.objects.filter(pk__in=get_allowed_user_ids(user))

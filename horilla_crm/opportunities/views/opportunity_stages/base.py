@@ -16,7 +16,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
     HorillaView,
 )
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db import transaction
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
@@ -233,11 +233,7 @@ class CreateOpportunityStage(LoginRequiredMixin, HorillaSingleFormView):
         """Set initial order for new opportunity stages."""
         initial = super().get_initial()
         if not self.kwargs.get("pk"):  # Only set initial order for new stages
-            company = (
-                getattr(_thread_local, "request", None).active_company
-                if hasattr(_thread_local, "request")
-                else self.request.user.company
-            )
+            company = get_active_company()
             if company:
                 initial["order"] = OpportunityStage.get_next_order_for_company(company)
         return initial
@@ -276,11 +272,7 @@ class OpportynityToggleOrderFieldView(LoginRequiredMixin, TemplateView):
         context["show_order_field"] = is_final != "on"
 
         if context["show_order_field"] and not current_order_value:
-            company = (
-                getattr(_thread_local, "request", None).active_company
-                if hasattr(_thread_local, "request")
-                else self.request.user.company
-            )
+            company = get_active_company()
             if company:
                 current_order_value = OpportunityStage.get_next_order_for_company(
                     company

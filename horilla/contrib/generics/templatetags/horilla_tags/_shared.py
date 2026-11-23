@@ -4,7 +4,7 @@ Used by datetime_filters, field_filters, display_tags, etc.
 """
 
 # First party imports (Horilla)
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 
 
 def _get_request_user_company():
@@ -17,7 +17,7 @@ def _get_request_user_company():
     )
     company = None
     if request:
-        company = getattr(request, "active_company", None)
+        company = get_active_company(request)
     if not company and user:
         company = getattr(user, "company", None)
     return request, user, company

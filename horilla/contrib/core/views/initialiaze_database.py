@@ -26,6 +26,7 @@ from django.template import Context, Template
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.auth.models import User
 from horilla.contrib.generics.views import HorillaSingleFormView
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import redirect, render
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import db_initialization, htmx_required, method_decorator
@@ -327,7 +328,7 @@ class InitializeRoleView(LoginRequiredMixin, View, ProgressStepsMixin):
                     role_name=role_name,
                     description=description,
                     parent_role=parent_role,
-                    company=request.active_company,
+                    company=get_active_company(request),
                 )
 
         if next_step == "true":

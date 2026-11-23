@@ -17,6 +17,7 @@ from horilla.apps import apps
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.auth.models import User
 from horilla.contrib.generics.views import HorillaListView, HorillaTabView
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404, redirect, render
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
@@ -497,9 +498,7 @@ class PermissionTab(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         """Add paginated non-superuser users for current company to context."""
         context = super().get_context_data(**kwargs)
-        company = (
-            getattr(self.request, "active_company", None) or self.request.user.company
-        )
+        company = get_active_company(self.request)
         users = User.objects.filter(is_superuser=False, company=company)
         paginator = Paginator(users, 10)
         page_number = self.request.GET.get("page", 1)

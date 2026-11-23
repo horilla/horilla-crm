@@ -19,6 +19,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleDeleteView,
     HorillaSingleFormView,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db import transaction
 from horilla.shortcuts import render
 from horilla.urls import reverse_lazy
@@ -58,7 +59,7 @@ class CompanyMultipleCurrency(LoginRequiredMixin, TemplateView):
         Get context data for multiple currency view.
         """
         context = super().get_context_data(**kwargs)
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         if company:
             cmp = company
         else:
@@ -189,7 +190,7 @@ class CompanyMultipleCurrency(LoginRequiredMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         """Handle HTMX toggle for multiple currency activation"""
-        company = getattr(request, "active_company", None)
+        company = get_active_company(request)
         if company:
             cmp = company
         else:
@@ -307,9 +308,7 @@ class CurrencyNavbar(LoginRequiredMixin, HorillaNavView):
         """
         Get the configuration for the "Add Currency" button.
         """
-        company = (
-            getattr(self.request, "active_company", None) or self.request.user.company
-        )
+        company = get_active_company(self.request)
         if (
             company
             and company.activate_multiple_currencies
@@ -328,7 +327,7 @@ class CurrencyNavbar(LoginRequiredMixin, HorillaNavView):
         Menu actions for changing the default currency and managing rates.
         """
         user = self.request.user
-        company = getattr(self.request, "active_company", None) or user.company
+        company = get_active_company(self.request)
         if not company or not company.activate_multiple_currencies:
             return []
         modal_attrs = """
@@ -392,7 +391,7 @@ class FetchExchangeRateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         """Handle GET request to fetch exchange rate for selected currency."""
         currency_code = request.GET.get("currency")
-        company = getattr(request, "active_company", None) or request.user.company
+        company = get_active_company(request)
 
         # Auto fetch turned off for this company: let the user type the rate
         if not getattr(company, "auto_fetch_exchange_rate", True):
@@ -464,7 +463,7 @@ class RefreshExchangeRatesView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         """Refresh the rates and reload the currency tab."""
-        company = getattr(request, "active_company", None) or request.user.company
+        company = get_active_company(request)
         if not company or not company.activate_multiple_currencies:
             messages.error(request, _("Multiple currencies are disabled."))
         elif not company.auto_fetch_exchange_rate:
@@ -593,7 +592,7 @@ class ChangeDefaultCurrencyView(LoginRequiredMixin, View):
             return HttpResponseBadRequest("Currency ID is required.")
 
         try:
-            company = getattr(request, "active_company", None) or request.user.company
+            company = get_active_company(request)
             new_default_currency = MultipleCurrency.objects.get(
                 id=currency_id, company=company
             )
@@ -732,16 +731,14 @@ class ChangeDefaultCurrencyFormView(LoginRequiredMixin, FormView):
     def get_form_kwargs(self):
         """Pass the current company to the form."""
         kwargs = super().get_form_kwargs()
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         kwargs["company"] = company if company else self.request.user.company
         return kwargs
 
     def form_valid(self, form):
         """Handle the form submission to update the default currency and conversion rates."""
         currency = form.cleaned_data["currency"]
-        company = (
-            getattr(self.request, "active_company", None) or self.request.user.company
-        )
+        company = get_active_company(self.request)
 
         try:
             new_default_currency = MultipleCurrency.objects.get(
@@ -866,9 +863,7 @@ class ChangeDefaultCurrencyFormView(LoginRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         """Provide context data for the template."""
         context = super().get_context_data(**kwargs)
-        company = (
-            getattr(self.request, "active_company", None) or self.request.user.company
-        )
+        company = get_active_company(self.request)
         currencies = MultipleCurrency.objects.filter(company=company)
         context["currencies"] = currencies.filter(is_default=False)
         context["current_currency"] = currencies.filter(is_default=True).first()
@@ -903,7 +898,7 @@ class AddCurrencyView(LoginRequiredMixin, HorillaSingleFormView):
         """
         pk = self.kwargs.get("pk") or self.request.GET.get("id")
         if not pk:
-            company = getattr(request, "active_company", None) or request.user.company
+            company = get_active_company(request)
             if not company or not company.activate_multiple_currencies:
                 messages.error(
                     request, _("Multiple currencies are disabled for this company.")
@@ -932,9 +927,7 @@ class AddCurrencyView(LoginRequiredMixin, HorillaSingleFormView):
         pk = self.kwargs.get("pk") or self.request.GET.get("id")
 
         # Only add HTMX attributes when adding a new currency (not editing)
-        company = (
-            getattr(self.request, "active_company", None) or self.request.user.company
-        )
+        company = get_active_company(self.request)
         auto_fetch = getattr(company, "auto_fetch_exchange_rate", True)
         if not auto_fetch and "conversion_rate" in form.fields:
             # Don't mention automatic fetching when it is turned off
@@ -970,7 +963,7 @@ class AddCurrencyView(LoginRequiredMixin, HorillaSingleFormView):
     def get_initial(self):
         """Set initial company from request active_company or user company."""
         initial = super().get_initial()
-        initial["company"] = getattr(self.request, "active_company", None)
+        initial["company"] = get_active_company(self.request)
         if not initial["company"]:
             initial["company"] = self.request.user.company
         return initial
@@ -1001,13 +994,13 @@ class ConversionRateFormView(LoginRequiredMixin, FormView):
     def get_form_kwargs(self):
         """Pass current company to the conversion rate form."""
         kwargs = super().get_form_kwargs()
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         kwargs["company"] = company if company else self.request.user.company
         return kwargs
 
     def form_valid(self, form):
         """Update default currency and conversion rates; return tab trigger script."""
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         new_default = form.cleaned_data.get("new_default_currency")
 
         if new_default:
@@ -1044,7 +1037,7 @@ class ConversionRateFormView(LoginRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         """Add current_default and other_currencies for the company to context."""
         context = super().get_context_data(**kwargs)
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         if company:
             context["current_default"] = MultipleCurrency.objects.filter(
                 company=company, is_default=True
@@ -1072,15 +1065,13 @@ class DatedConversionRateFormView(LoginRequiredMixin, FormView):
     def get_form_kwargs(self):
         """Pass current company to the dated conversion rate form."""
         kwargs = super().get_form_kwargs()
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         kwargs["company"] = company if company else self.request.user.company
         return kwargs
 
     def form_valid(self, form):
         """Create DatedConversionRate for each non-default currency; return tab trigger script."""
-        company = (
-            getattr(self.request, "active_company", None) or self.request.user.company
-        )
+        company = get_active_company(self.request)
         start_date = form.cleaned_data["start_date"]
 
         # Save dated conversion rates for each non-default currency
@@ -1110,9 +1101,7 @@ class DatedConversionRateFormView(LoginRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         """Add current_default and other_currencies for the company to context."""
         context = super().get_context_data(**kwargs)
-        company = (
-            getattr(self.request, "active_company", None) or self.request.user.company
-        )
+        company = get_active_company(self.request)
         context["current_default"] = MultipleCurrency.objects.filter(
             company=company, is_default=True
         ).first()

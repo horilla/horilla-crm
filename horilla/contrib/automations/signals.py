@@ -11,7 +11,7 @@ from django.conf import settings
 from django.dispatch import receiver
 
 from horilla.contrib.core.models import HorillaContentType
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 
 # First party imports (Horilla)
 from horilla.db import connection
@@ -91,7 +91,7 @@ def trigger_automations_on_save(sender, instance, created, **kwargs):
         # Get user and company from thread local if available
         request = getattr(_thread_local, "request", None)
         user = getattr(request, "user", None) if request else None
-        company = getattr(request, "active_company", None) if request else None
+        company = get_active_company(request) if request else None
 
         # Prepare request info for background task
         request_info = {}
@@ -184,7 +184,7 @@ def trigger_automations_on_delete(sender, instance, **kwargs):
         # Get user and company from thread local if available
         request = getattr(_thread_local, "request", None)
         user = getattr(request, "user", None) if request else None
-        company = getattr(request, "active_company", None) if request else None
+        company = get_active_company(request) if request else None
 
         # Prepare request info for background task
         request_info = {}

@@ -11,6 +11,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
 )
 from horilla.contrib.generics.views.details import check_record_change_access
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
@@ -54,7 +55,7 @@ class StageProbabilityFieldView(LoginRequiredMixin, View):
         probability = None
         if stage_id:
             queryset = OpportunityStage.objects.filter(pk=stage_id)
-            company = getattr(request, "active_company", None)
+            company = get_active_company(request)
             if company:
                 queryset = queryset.filter(company=company)
             stage = queryset.first()
@@ -268,7 +269,7 @@ class RelatedOpportunityFormView(LoginRequiredMixin, HorillaMultiStepFormView):
             contact_id = self.request.GET.get("id")
             if contact_id:
                 set_opportunity_contact_id(
-                    contact_id=contact_id, company=self.request.active_company
+                    contact_id=contact_id, company=get_active_company(self.request)
                 )
             super().form_valid(form)
             return ScriptResponse(
@@ -347,7 +348,7 @@ class RelatedOpportunitySingleFormView(LoginRequiredMixin, HorillaSingleFormView
         contact_id = self.request.GET.get("id")
         if contact_id:
             set_opportunity_contact_id(
-                contact_id=contact_id, company=self.request.active_company
+                contact_id=contact_id, company=get_active_company(self.request)
             )
         super().form_valid(form)
         return ScriptResponse(

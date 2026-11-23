@@ -20,7 +20,7 @@ from djmoney.settings import CURRENCY_CHOICES
 from multiselectfield import MultiSelectField
 
 from horilla.apps import apps
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 from horilla.db import models
 from horilla.extension import ExtensionModelBase
 from horilla.registry.permission_registry import permission_exempt_model
@@ -381,14 +381,8 @@ class CompanyFilteredManager(models.Manager):
             ):
                 return queryset
 
-            company = getattr(request, "active_company", None)
+            company = get_active_company(request)
             user = getattr(request, "user", None)
-            if not company:
-                # ActiveCompanyMiddleware runs before DRF resolves request.user
-                # for non-session auth (JWT/Basic), so active_company can still
-                # be unset here even though the request is now authenticated.
-                if user is not None and user.is_authenticated:
-                    company = getattr(user, "company", None)
             if company:
                 return queryset.filter(company=company)
             # Authenticated request but no company could be resolved: fail

@@ -9,6 +9,8 @@ import logging
 # Third-party imports (Django)
 from django.contrib import messages
 
+from horilla.contrib.utils.middlewares import get_active_company
+
 # First party imports (Horilla)
 from horilla.utils import timezone
 from horilla.utils.branding import load_branding
@@ -199,9 +201,7 @@ def send_meeting_invites(view_self, activity, emails):
     host_user = activity.meeting_host or view_self.request.user
     host_name = str(host_user)
 
-    company = getattr(view_self.request, "active_company", None) or getattr(
-        view_self.request.user, "company", None
-    )
+    company = get_active_company(view_self.request)
     company_name = str(company) if company else str(load_branding()["TITLE"])
 
     from_email = (

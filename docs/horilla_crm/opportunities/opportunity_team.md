@@ -118,9 +118,9 @@ Both team-level and opportunity-level member views use `check_duplicate_instance
 
 Some HTMX chains can produce malformed query strings (e.g. `?obj=3?obj=3`). Views that read an `obj` query param strip trailing `?…` fragments via `obj.split("?")[0].strip()` before using the value.
 
-### `_thread_local` active company
+### Active company
 
-`OpportunityTeamFormView` and `AddDefaultTeamView` fall back to `_thread_local.active_company` when the company is not set on the form instance. This handles the case where the middleware-populated thread local is the only available company reference during save.
+`OpportunityTeamFormView` and `AddDefaultTeamView` fall back to `get_active_company()` (from `horilla.contrib.utils.middlewares`) when the company is not set on the form instance. It reads the thread-local request, which is the only available company reference during save.
 
 ---
 

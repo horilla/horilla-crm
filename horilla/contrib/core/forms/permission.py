@@ -10,6 +10,7 @@ from django import forms
 
 # First-party imports (Horilla)
 from horilla.auth.models import User
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import ValidationError
 from horilla.urls import reverse_lazy
 from horilla.utils.translation import gettext_lazy as _
@@ -71,9 +72,7 @@ class AddUsersToRoleForm(forms.Form):
         if not isinstance(role, Role):
             role_id = self.data.get("role") or role
             role = Role.objects.filter(pk=role_id).first() if role_id else None
-        company = (role.company if role else None) or getattr(
-            self.request, "active_company", None
-        )
+        company = (role.company if role else None) or get_active_company(self.request)
         if company:
             self.fields["users"].queryset = User.objects.filter(company=company)
 
@@ -153,13 +152,7 @@ class AddSuperUsersForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         # Filter users to only show non-superusers from the same company
-        company = (
-            getattr(self.request, "active_company", None) if self.request else None
-        ) or (
-            self.request.user.company
-            if self.request and self.request.user.is_authenticated
-            else None
-        )
+        company = get_active_company(self.request)
 
         if company:
             self.fields["users"].queryset = User.objects.filter(

@@ -10,7 +10,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleDeleteView,
     HorillaSingleFormView,
 )
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.urls import reverse_lazy
 from horilla.utils import timezone
 from horilla.utils.decorators import (
@@ -52,11 +52,7 @@ class UserAvailabilityFormView(LoginRequiredMixin, HorillaSingleFormView):
     def get_initial(self):
         """Set initial form data (company, user, optional start date/time from request)."""
         initial = super().get_initial()
-        company = (
-            getattr(_thread_local, "request", None).active_company
-            if hasattr(_thread_local, "request")
-            else self.request.user.company
-        )
+        company = get_active_company()
         initial["company"] = company
         initial["user"] = self.request.user
         initial["company"] = company

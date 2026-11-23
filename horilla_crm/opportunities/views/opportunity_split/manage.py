@@ -11,6 +11,7 @@ from horilla.auth.mixins import LoginRequiredMixin
 from horilla.auth.models import User
 from horilla.contrib.generics.views import HorillaTabView
 from horilla.contrib.generics.views.details import check_record_change_access
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import htmx_required, method_decorator
@@ -111,11 +112,7 @@ class OpportunitySplitTabView(
         opportunity_id = None
 
         if self.request and self.request.user.is_authenticated:
-            company = (
-                self.request.active_company
-                if self.request.active_company
-                else self.request.user.company
-            )
+            company = get_active_company(self.request)
             # Get opportunity_id from query parameter
             opportunity_id = self.request.GET.get("id")
 
@@ -188,10 +185,10 @@ class OpportunitySplitTabContentView(
 
         # Check settings
         team_selling_enabled = OpportunitySettings.is_team_selling_enabled(
-            self.request.active_company
+            get_active_company(self.request)
         )
         allow_all_users = OpportunitySettings.allow_all_users_in_splits_enabled(
-            self.request.active_company
+            get_active_company(self.request)
         )
         if existing_splits.exists():
             last_row = existing_splits.count()
@@ -212,7 +209,7 @@ class OpportunitySplitTabContentView(
                 "next_row_index": existing_splits.count() + 1,
                 "team_selling_enabled": team_selling_enabled,
                 "allow_all_users": allow_all_users,
-                "currency": self.request.active_company.currency
+                "currency": get_active_company(self.request).currency
                 or self.request.user.currency,
             }
         )
@@ -228,16 +225,16 @@ class OpportunitySplitTabContentView(
         """
 
         team_selling_enabled = OpportunitySettings.is_team_selling_enabled(
-            self.request.active_company
+            get_active_company(self.request)
         )
         allow_all_users = OpportunitySettings.allow_all_users_in_splits_enabled(
-            self.request.active_company
+            get_active_company(self.request)
         )
 
         # If allow_all_users is True OR team selling is disabled, show all users
         if allow_all_users or not team_selling_enabled:
             users = User.objects.filter(
-                is_active=True, company=self.request.active_company
+                is_active=True, company=get_active_company(self.request)
             ).order_by("first_name", "last_name", "username")
 
             # Mark which users are team members for display purposes
@@ -270,7 +267,7 @@ class OpportunitySplitTabContentView(
 
         # Fallback to all active users if no team members exist
         return User.objects.filter(
-            is_active=True, company=self.request.active_company
+            is_active=True, company=get_active_company(self.request)
         ).order_by("first_name", "last_name", "username")
 
 
@@ -289,7 +286,7 @@ class SaveOpportunitySplitsView(
         """Handle POST request to save opportunity splits."""
         opportunity = get_object_or_404(Opportunity, id=opportunity_id)
         split_type = get_object_or_404(OpportunitySplitType, id=split_type_id)
-        company = request.active_company
+        company = get_active_company(request)
 
         if not OpportunitySettings.is_split_enabled(company):
             messages.error(request, _("Opportunity splits are not enabled."))
@@ -336,7 +333,7 @@ class SaveOpportunitySplitsView(
                 "error": validation_result["error"],
                 "total_percentage": total_percentage,
                 "total_amount": total_amount,
-                "currency": self.request.active_company.currency
+                "currency": get_active_company(self.request).currency
                 or self.request.user.currency,
             }
             return render(request, "opportunity_split/split_tab_content.html", context)
@@ -540,12 +537,12 @@ class AddSplitRowView(
             "split_type": split_type,
             "users": self._get_available_users(request, opportunity),
             "team_selling_enabled": OpportunitySettings.is_team_selling_enabled(
-                request.active_company
+                get_active_company(request)
             ),
             "allow_all_users": OpportunitySettings.allow_all_users_in_splits_enabled(
-                request.active_company
+                get_active_company(request)
             ),
-            "currency": self.request.active_company.currency
+            "currency": get_active_company(self.request).currency
             or self.request.user.currency,
         }
 
@@ -559,16 +556,16 @@ class AddSplitRowView(
             QuerySet of User objects
         """
         team_selling_enabled = OpportunitySettings.is_team_selling_enabled(
-            request.active_company
+            get_active_company(request)
         )
         allow_all_users = OpportunitySettings.allow_all_users_in_splits_enabled(
-            request.active_company
+            get_active_company(request)
         )
 
         # If allow_all_users is True OR team selling is disabled, show all users
         if allow_all_users or not team_selling_enabled:
             users = User.objects.filter(
-                is_active=True, company=request.active_company
+                is_active=True, company=get_active_company(request)
             ).order_by("first_name", "last_name", "username")
 
             # Mark which users are team members for display purposes
@@ -601,7 +598,7 @@ class AddSplitRowView(
 
         # Fallback to all active users if no team members exist
         return User.objects.filter(
-            is_active=True, company=request.active_company
+            is_active=True, company=get_active_company(request)
         ).order_by("first_name", "last_name", "username")
 
 
@@ -620,7 +617,7 @@ class DeleteSplitRowView(
         """Delete the split and return updated form"""
         split = get_object_or_404(OpportunitySplit, id=split_id)
 
-        if split.company != request.active_company:
+        if split.company != get_active_company(request):
             messages.error(
                 request, _("You don't have permission to delete this split.")
             )
@@ -668,7 +665,7 @@ class DeleteSplitRowView(
                 split_type=split_type,
                 user=opportunity.owner,
                 defaults={
-                    "company": request.active_company,
+                    "company": get_active_company(request),
                     "split_percentage": Decimal("0"),
                     "split_amount": Decimal("0"),
                 },
@@ -703,10 +700,10 @@ class DeleteSplitRowView(
 
         users = self._get_available_users(request, opportunity)
         team_selling_enabled = OpportunitySettings.is_team_selling_enabled(
-            request.active_company
+            get_active_company(request)
         )
         allow_all_users = OpportunitySettings.allow_all_users_in_splits_enabled(
-            request.active_company
+            get_active_company(request)
         )
 
         row_index = existing_splits.count() + 1
@@ -722,22 +719,22 @@ class DeleteSplitRowView(
             "next_row_index": row_index,
             "team_selling_enabled": team_selling_enabled,
             "allow_all_users": allow_all_users,
-            "currency": self.request.active_company.currency
+            "currency": get_active_company(self.request).currency
             or self.request.user.currency,
         }
 
     def _get_available_users(self, request, opportunity):
         """Get users available for split assignment based on settings."""
         team_selling_enabled = OpportunitySettings.is_team_selling_enabled(
-            request.active_company
+            get_active_company(request)
         )
         allow_all_users = OpportunitySettings.allow_all_users_in_splits_enabled(
-            request.active_company
+            get_active_company(request)
         )
 
         if allow_all_users or not team_selling_enabled:
             users = User.objects.filter(
-                is_active=True, company=request.active_company
+                is_active=True, company=get_active_company(request)
             ).order_by("first_name", "last_name", "username")
 
             if team_selling_enabled:
@@ -766,7 +763,7 @@ class DeleteSplitRowView(
             return users
 
         return User.objects.filter(
-            is_active=True, company=request.active_company
+            is_active=True, company=get_active_company(request)
         ).order_by("first_name", "last_name", "username")
 
 
@@ -813,7 +810,7 @@ class RecalculateTotalsView(
             "split_type": split_type,
             "total_percentage": total_percentage,
             "total_amount": total_amount,
-            "currency": self.request.active_company.currency
+            "currency": get_active_company(self.request).currency
             or self.request.user.currency,
         }
 
@@ -883,7 +880,7 @@ class RecalculateSplitRowView(
                 "split_type": split_type,
                 "total_percentage": total_percentage,
                 "total_amount": total_amount,
-                "currency": self.request.active_company.currency
+                "currency": get_active_company(self.request).currency
                 or self.request.user.currency,
             }
             return render(
@@ -935,7 +932,7 @@ class RecalculateSplitRowView(
             "split_type": split_type,
             "total_percentage": total_percentage,
             "total_amount": total_amount,
-            "currency": self.request.active_company.currency
+            "currency": get_active_company(self.request).currency
             or self.request.user.currency,
         }
         return render(

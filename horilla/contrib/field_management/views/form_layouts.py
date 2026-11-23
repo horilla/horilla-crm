@@ -25,6 +25,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
     HorillaView,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import render
 from horilla.urls import reverse, reverse_lazy
 from horilla.utils.decorators import (
@@ -202,7 +203,7 @@ class FormLayoutCreateView(LoginRequiredMixin, HorillaSingleFormView):
             visible_names=[
                 entry.name for entry in build_layout_entries(model, self.request)
             ],
-            company=getattr(self.request, "active_company", None),
+            company=get_active_company(self.request),
             request=self.request,
         )
         messages.success(self.request, _("Form layout created."))
@@ -447,7 +448,7 @@ class FormLayoutSaveView(LoginRequiredMixin, FormLayoutEditorMixin, View):
             ordered_names=request.POST.getlist("field_order"),
             visible_names=request.POST.getlist("visible"),
             full_width_names=request.POST.getlist("full_width"),
-            company=getattr(request, "active_company", None),
+            company=get_active_company(request),
             request=request,
         )
         messages.success(request, _("Create form layout saved."))
@@ -465,9 +466,7 @@ class FormLayoutResetView(LoginRequiredMixin, FormLayoutEditorMixin, View):
         if model is None:
             raise Http404
 
-        reset_form_layout(
-            model, getattr(request, "active_company", None), request=request
-        )
+        reset_form_layout(model, get_active_company(request), request=request)
         messages.success(request, _("Create form reset to the default layout."))
         response = HttpResponse()
         response["HX-Redirect"] = reverse("field_management:form_layout_view")

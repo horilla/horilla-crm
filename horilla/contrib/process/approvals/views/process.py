@@ -21,7 +21,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleFormView,
     HorillaView,
 )
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db.models import Max
 from horilla.shortcuts import get_object_or_404
 from horilla.urls import reverse_lazy
@@ -511,11 +511,7 @@ class ApprovalProcessRuleComposeView(LoginRequiredMixin, HorillaSingleFormView):
         self.object.company = (
             getattr(self.object, "company", None)
             or form.cleaned_data.get("company")
-            or (
-                getattr(_thread_local, "request", None).active_company
-                if hasattr(_thread_local, "request")
-                else getattr(self.request.user, "company", None)
-            )
+            or get_active_company()
         )
         try:
             self.object.save()

@@ -14,6 +14,7 @@ from requests_oauthlib import OAuth2Session
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.generics.views import HorillaSingleFormView
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import redirect, render
 from horilla.urls import reverse_lazy
 from horilla.utils import timezone
@@ -51,7 +52,7 @@ class OutlookMailServerFormView(LoginRequiredMixin, HorillaSingleFormView):
         """Set initial form data for Outlook mail configuration (OAuth URLs and channel)."""
         initial = super().get_initial()
         pk = self.kwargs.get("pk")
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         if not pk:
             initial["outlook_authorization_url"] = (
                 "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
@@ -93,7 +94,7 @@ class OutlookLoginView(View):
 
     def get(self, request, *args, pk=None, **kwargs):
         """Get the Outlook login URL."""
-        selected_company = request.active_company
+        selected_company = get_active_company(request)
 
         if pk:
             api = HorillaMailConfiguration.objects.filter(pk=pk).first()
@@ -156,7 +157,7 @@ class OutlookCallbackView(View):
 
     def get(self, request, *args, **kwargs):
         """Handle the OAuth callback and fetch the token."""
-        selected_company = request.active_company
+        selected_company = get_active_company(request)
         pk = self.request.session.get("outlook_pk")
 
         if pk:

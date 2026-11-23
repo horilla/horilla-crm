@@ -17,6 +17,7 @@ from horilla.apps import apps
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.models import ActiveTab
 from horilla.contrib.core.utils import get_field_permissions_for_model
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import ImproperlyConfigured
 from horilla.db import models
 from horilla.shortcuts import render
@@ -262,9 +263,7 @@ class HorillaHistorySectionView(DetailView):
         from horilla.extension.formatting import get_datetime_formatter
 
         user = self.request.user
-        company = getattr(self.request, "active_company", None) or getattr(
-            user, "company", None
-        )
+        company = get_active_company(self.request)
         local_timestamp = get_datetime_formatter()._apply_timezone(
             timestamp, user=user, company=company
         )
@@ -573,7 +572,7 @@ class HorillaDynamicCreateView(LoginRequiredMixin, FormView):
         instance.created_by = self.request.user
         instance.updated_by = self.request.user
         instance.company = form.cleaned_data.get("company") or (
-            getattr(self.request, "active_company", None) or self.request.user.company
+            get_active_company(self.request)
         )
         instance.save()
         form.save_m2m()

@@ -12,6 +12,7 @@ from horilla.apps import apps
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.mail.models import HorillaMailConfiguration, HorillaMailTemplate
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.utils.decorators import (
     htmx_required,
     method_decorator,
@@ -29,17 +30,13 @@ from .models import HorillaAutomation, normalize_delivery_channels
 logger = logging.getLogger(__name__)
 
 
-def _get_company(request):
-    return getattr(request, "active_company", getattr(request.user, "company", None))
-
-
 def _ensure_mail_templates_loaded(request):
     """
     Load mail templates from all apps that define template_files.
     Creates HorillaMailTemplate if not exists (by title + company).
     Returns dict mapping JSON pk -> HorillaMailTemplate instance for current company.
     """
-    company = _get_company(request)
+    company = get_active_company(request)
     template_map = {}  # json pk -> HorillaMailTemplate
 
     for app_config in apps.get_app_configs():
@@ -141,7 +138,7 @@ class LoadAutomationModalView(LoginRequiredMixin, TemplateView):
                         }
                     )
         context["automations"] = all_automations
-        company = _get_company(self.request)
+        company = get_active_company(self.request)
         mail_servers = HorillaMailConfiguration.objects.filter(mail_channel="outgoing")
         if company:
             mail_servers = mail_servers.filter(company=company)
@@ -169,7 +166,7 @@ class CreateSelectedAutomationsView(LoginRequiredMixin, View):
                 status=400,
             )
 
-        company = _get_company(request)
+        company = get_active_company(request)
         try:
             mail_server = HorillaMailConfiguration.objects.get(
                 pk=mail_server_id,

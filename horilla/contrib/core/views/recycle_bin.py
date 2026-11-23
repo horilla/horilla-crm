@@ -12,6 +12,7 @@ from django.contrib import messages
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.generics.views import HorillaListView, HorillaNavView, HorillaView
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
@@ -396,7 +397,7 @@ class BinPolicyView(LoginRequiredMixin, View):
         """
         Handle GET request to display the recycle bin policy.
         """
-        company = request.active_company
+        company = get_active_company(request)
         policy = RecycleBinPolicy.objects.filter(company=company).first()
         context = {
             # 0 retention days means no expiry; show the default days in the field
@@ -413,7 +414,7 @@ class BinPolicyView(LoginRequiredMixin, View):
             messages.error(request, _("You don't have permission to do this change"))
             return render(request, "403.html")
 
-        company = request.active_company
+        company = get_active_company(request)
 
         if request.POST.get("no_expiry") == "on":
             # 0 retention days means records are never deleted automatically

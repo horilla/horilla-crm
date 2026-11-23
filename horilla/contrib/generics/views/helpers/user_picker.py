@@ -18,6 +18,7 @@ from horilla.apps import apps
 
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import render
 from horilla.utils.choices import FIELD_TYPE_MAP
 from horilla.utils.decorators import htmx_required, method_decorator
@@ -304,7 +305,7 @@ class UserPickerListView(LoginRequiredMixin, View):
         """
         field_name = request.GET.get("field_name", "").strip()
         object_id = request.GET.get("object_id", "").strip()
-        active_company = getattr(request, "active_company", None)
+        active_company = get_active_company(request)
         qs = None
 
         if form_class and field_name:

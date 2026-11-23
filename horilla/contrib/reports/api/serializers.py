@@ -8,6 +8,7 @@ from rest_framework import serializers
 # First party imports (Horilla)
 from horilla.api.mixins import CompanyScopedSerializerMixin
 from horilla.contrib.core.api.serializers import HorillaUserSerializer
+from horilla.contrib.utils.middlewares import get_active_company
 
 # Local imports
 from ..models import Report, ReportFolder
@@ -51,9 +52,7 @@ class ReportSerializer(CompanyScopedSerializerMixin, serializers.ModelSerializer
         request = self.context.get("request")
         company = None
         if request is not None and hasattr(request, "user"):
-            company = getattr(request, "active_company", None) or getattr(
-                request.user, "company", None
-            )
+            company = get_active_company(request)
         if company is None:
             company = getattr(self.instance, "company", None)
         if company is not None:

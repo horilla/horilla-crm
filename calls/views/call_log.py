@@ -21,6 +21,7 @@ from horilla.contrib.generics.views.details import (
     HorillaModalDetailView,
     check_record_access,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse, reverse_lazy
 from horilla.utils import timezone
@@ -184,7 +185,7 @@ class ClickToCallView(LoginRequiredMixin, View):
         if not provider:
             return JsonResponse({"error": str(_("Provider not found."))}, status=400)
 
-        company = request.active_company
+        company = get_active_company(request)
         related_object_id = self._validate_related_object(
             related_model_name, related_object_id, company
         )
@@ -344,7 +345,9 @@ class CallStatusView(LoginRequiredMixin, View):
 
     def get(self, request, pk, *args, **kwargs):
         """Refresh call status from timeouts or the provider and return the modal fragment."""
-        call_log = CallLog.objects.filter(pk=pk, company=request.active_company).first()
+        call_log = CallLog.objects.filter(
+            pk=pk, company=get_active_company(request)
+        ).first()
         if not call_log:
             return ScriptResponse(close=True)
 
@@ -408,7 +411,9 @@ class CancelCallView(LoginRequiredMixin, View):
 
     def post(self, request, pk, *args, **kwargs):
         """Cancel the active call via the provider and mark the CallLog as cancelled."""
-        call_log = CallLog.objects.filter(pk=pk, company=request.active_company).first()
+        call_log = CallLog.objects.filter(
+            pk=pk, company=get_active_company(request)
+        ).first()
         if not call_log:
             return ScriptResponse(close=True)
         if call_log.status in CallStatusView.TERMINAL:

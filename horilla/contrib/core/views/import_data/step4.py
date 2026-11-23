@@ -19,6 +19,7 @@ from django.core.files.storage import default_storage
 
 # First party imports (Horilla)
 from horilla.apps import apps
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db import connection, transaction
 from horilla.db.models import CharField, ForeignKey
 from horilla.registry.feature import FEATURE_REGISTRY
@@ -145,7 +146,7 @@ class ImportStep4View(View):
             match_fields=import_data.get("match_fields", []),
             field_mappings=import_data.get("field_mappings", {}),
             created_by=request.user if request.user.is_authenticated else None,
-            company=getattr(request, "active_company", None),
+            company=get_active_company(request),
             status="processing",
         )
 
@@ -328,7 +329,7 @@ class ImportStep4View(View):
         created_count = updated_count = error_count = 0
         current_time = timezone.now()
         user = self.request.user if self.request.user.is_authenticated else None
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
 
         # Preload FK objects referenced in mappings
         fk_cache = {}

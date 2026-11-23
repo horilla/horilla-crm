@@ -14,7 +14,7 @@ from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.generics.views import HorillaSingleDeleteView
 from horilla.contrib.generics.views.details import check_record_access
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 from horilla.shortcuts import get_object_or_404, render
 from horilla.utils import timezone
 from horilla.utils.decorators import (
@@ -313,7 +313,7 @@ class ScheduleMailView(LoginRequiredMixin, View):
         pk = request.GET.get("pk")
         is_reschedule = False
 
-        company = getattr(request, "active_company", None)
+        company = get_active_company(request)
         setattr(_thread_local, "from_mail_id", from_mail_id)
 
         errors = self._validate_form_fields(

@@ -13,6 +13,7 @@ from horilla.contrib.activity.models import Activity
 from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.generics.forms import HorillaModelForm
 from horilla.contrib.mail.models import HorillaMailConfiguration, HorillaMailTemplate
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import ValidationError
 from horilla.db import models as horilla_models
 from horilla.urls import reverse, reverse_lazy
@@ -406,7 +407,7 @@ class CadenceFollowUpForm(HorillaModelForm):
 
     def _company(self):
         """The company whose channels the type picker offers."""
-        company = getattr(getattr(self, "request", None), "active_company", None)
+        company = get_active_company(getattr(self, "request", None))
         if company is None and getattr(self.instance, "cadence_id", None):
             company = self.instance.cadence.company
         return company

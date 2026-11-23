@@ -16,6 +16,7 @@ from horilla.auth.mixins import LoginRequiredMixin
 from horilla.auth.models import User
 from horilla.contrib.mail.models import HorillaMailTemplate
 from horilla.contrib.notifications.models import NotificationTemplate
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import render
 from horilla.utils.decorators import (
     htmx_required,
@@ -209,7 +210,7 @@ def _action_form_context(request, rule, action_type="", current_values=None):
     notification_templates = NotificationTemplate.objects.filter(
         Q(content_type__isnull=True) | Q(content_type=rule_ct)
     )
-    active_company = getattr(request, "active_company", None)
+    active_company = get_active_company(request)
     users = User.objects.filter(is_active=True)
     if active_company is not None:
         users = users.filter(company=active_company)
@@ -272,7 +273,7 @@ class WorkflowActionFieldsView(LoginRequiredMixin, View):
         """Return the appropriate fields for the selected action type, which are rendered in the action configuration popup. The fields differ based on the action type (update_field, assign_task, email, notification) and may include dynamic options based on the rule's model."""
         action = request.GET.get("action_type", "") or request.GET.get("action", "")
         rule_pk = request.GET.get("rule_pk", "")
-        active_company = getattr(request, "active_company", None)
+        active_company = get_active_company(request)
         if not _is_offered_action_type(action, active_company):
             return HttpResponse("")
 
@@ -439,7 +440,7 @@ class WorkflowActionSaveView(LoginRequiredMixin, View):
         if form.is_valid():
             action = form.save(commit=False)
             if not action.pk:
-                action.company = getattr(request, "active_company", None)
+                action.company = get_active_company(request)
             action.save()
             messages.success(request, _("Action saved."))
             return ScriptResponse(
@@ -539,7 +540,7 @@ class WorkflowTimeTriggerSaveView(LoginRequiredMixin, View):
         if form.is_valid():
             tt = form.save(commit=False)
             if not tt.pk:
-                tt.company = getattr(request, "active_company", None)
+                tt.company = get_active_company(request)
             tt.save()
             messages.success(request, _("Time trigger action saved."))
             return ScriptResponse(

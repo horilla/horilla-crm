@@ -9,6 +9,7 @@ Signals for the theme app
 from django.dispatch import receiver
 
 from horilla.contrib.core.signals import pre_login_render_signal, pre_logout_signal
+from horilla.contrib.utils.middlewares import get_active_company
 
 # First party imports (Horilla)
 from horilla.db.models.signals import post_migrate
@@ -58,7 +59,7 @@ def get_theme_data_for_logout(sender, request, **kwargs):
     The data_dict will be JSON stringified and stored.
     """
     if request.user.is_authenticated:
-        active_company = getattr(request, "active_company", None)
+        active_company = get_active_company(request)
         if active_company:
             from .models import CompanyTheme
 

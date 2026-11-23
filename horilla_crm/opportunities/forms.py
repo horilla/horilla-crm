@@ -13,6 +13,7 @@ from horilla.contrib.core.mixins import OwnerQuerysetMixin
 from horilla.contrib.core.models import TeamRole
 from horilla.contrib.generics.forms import HorillaModelForm, HorillaMultiStepForm
 from horilla.contrib.generics.forms.form_class_mixin import WIDGET_INPUT_CSS_CLASS
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import FieldDoesNotExist, ValidationError
 from horilla.db import models
 from horilla.urls import reverse_lazy
@@ -255,12 +256,8 @@ class OpportunityTeamForm(HorillaModelForm):
         try:
             user_choices = [("", "---------")]
             user_qs = User.objects.all()
-            if (
-                request
-                and hasattr(request, "active_company")
-                and request.active_company
-            ):
-                user_qs = user_qs.filter(company=request.active_company)
+            if request and get_active_company(request):
+                user_qs = user_qs.filter(company=get_active_company(request))
             users = user_qs
             user_choices.extend([(user.pk, str(user)) for user in users])
             condition_field_choices["user"] = user_choices
@@ -554,8 +551,8 @@ class OpportunityTeamMemberForm(HorillaModelForm):
         """Scope the user condition field to the active company."""
         user_choices = [("", "---------")]
         user_qs = User.objects.all()
-        if request and getattr(request, "active_company", None):
-            user_qs = user_qs.filter(company=request.active_company)
+        if request and get_active_company(request):
+            user_qs = user_qs.filter(company=get_active_company(request))
         user_choices.extend([(user.pk, str(user)) for user in user_qs])
         return {"user": user_choices}
 
@@ -581,8 +578,8 @@ class OpportunityMemberForm(HorillaModelForm):
         """Scope the user condition field to the active company."""
         user_choices = [("", "---------")]
         user_qs = User.objects.all()
-        if request and getattr(request, "active_company", None):
-            user_qs = user_qs.filter(company=request.active_company)
+        if request and get_active_company(request):
+            user_qs = user_qs.filter(company=get_active_company(request))
         user_choices.extend([(user.pk, str(user)) for user in user_qs])
         return {"user": user_choices}
 

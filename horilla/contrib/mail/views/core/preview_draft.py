@@ -15,6 +15,7 @@ from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.generics.views.details import check_record_access
 from horilla.contrib.utils.methods import has_ssti, has_xss, sanitize_html
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import render
 from horilla.utils.decorators import (
     htmx_required,
@@ -176,7 +177,7 @@ class HorillaMailPreviewView(LoginRequiredMixin, View):
                     logger.error("Error finding draft mail: %s", e)
 
             if not draft_mail:
-                company = getattr(request, "active_company", None)
+                company = get_active_company(request)
                 draft_mail = HorillaMail(
                     content_type=content_type,
                     object_id=object_id or 0,
@@ -218,12 +219,9 @@ class HorillaMailPreviewView(LoginRequiredMixin, View):
                 "user": request.user,
             }
 
-            if hasattr(request, "active_company") and request.active_company:
-                template_context["active_company"] = (
-                    request.active_company
-                    if request.active_company
-                    else request.user.company
-                )
+            active_company = get_active_company(request)
+            if active_company:
+                template_context["active_company"] = active_company
 
             if content_type and object_id:
                 try:
@@ -406,7 +404,7 @@ class SaveDraftView(LoginRequiredMixin, View):
             uploaded_files = request.FILES.getlist("attachments")
             model_name = request.GET.get("model_name")
             object_id = request.GET.get("object_id")
-            company = getattr(request, "active_company", None)
+            company = get_active_company(request)
             pk = request.GET.get("pk")
 
             # Normalize empty HTML content (like <p><br></p> or <p></p>)

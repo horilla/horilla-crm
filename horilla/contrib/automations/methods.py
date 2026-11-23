@@ -11,7 +11,7 @@ from django.utils.dateparse import parse_date, parse_datetime
 from horilla.contrib.core.models import HorillaContentType
 from horilla.contrib.mail.delivery import MailChannel
 from horilla.contrib.notifications.delivery import NotificationChannel
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 
 # First party imports (Horilla)
 from horilla.registry.delivery import get_delivery_channel
@@ -427,7 +427,7 @@ def execute_automation(automation, instance, user=None, trigger_type="on_create"
             or getattr(automation, "updated_by", None)
             or getattr(automation, "created_by", None)
         )
-        active_company = getattr(request, "active_company", None) or (
+        active_company = get_active_company(request) or (
             getattr(actor, "company", None) if actor else None
         )
 
@@ -504,7 +504,7 @@ def trigger_automations(instance, trigger_type="on_create", user=None):
         if not company:
             request = getattr(_thread_local, "request", None)
             if request:
-                company = getattr(request, "active_company", None)
+                company = get_active_company(request)
 
         # Build query filter
         # For 'on_create' or 'on_update', also include 'on_create_or_update' automations

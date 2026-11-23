@@ -12,6 +12,7 @@ from horilla.contrib.core.mixins import OwnerQuerysetMixin
 from horilla.contrib.generics.forms import HorillaModelForm
 from horilla.contrib.generics.forms.condition_fields import get_model_field_choices
 from horilla.contrib.mail.models import HorillaMailConfiguration
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db import models
 from horilla.registry.delivery import get_delivery_channel, get_delivery_channels
 from horilla.urls import reverse_lazy
@@ -220,9 +221,7 @@ class HorillaAutomationForm(OwnerQuerysetMixin, HorillaModelForm):
             if not isinstance(field.widget, forms.HiddenInput):
                 company = None
                 if request and not request.user.is_anonymous:
-                    company = getattr(request, "active_company", None) or getattr(
-                        request.user, "company", None
-                    )
+                    company = get_active_company(request)
                 self.fields["delivery_channel"] = DeliveryChannelsField(
                     company=company,
                     label=field.label,

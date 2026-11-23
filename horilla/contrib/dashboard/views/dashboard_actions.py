@@ -12,7 +12,7 @@ from horilla.contrib.generics.views import (
     HorillaSingleDeleteView,
     HorillaSingleFormView,
 )
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
@@ -122,11 +122,7 @@ class DashboardCreateFormView(LoginRequiredMixin, HorillaSingleFormView):
         """Set initial company and dashboard_owner; merge GET params into initial."""
         initial = super().get_initial()
 
-        company = (
-            getattr(_thread_local, "request", None).active_company
-            if hasattr(_thread_local, "request")
-            else self.request.user.company
-        )
+        company = get_active_company()
         initial["company"] = company
         initial["dashboard_owner"] = self.request.user
 

@@ -12,6 +12,7 @@ from horilla.auth.mixins import LoginRequiredMixin
 from horilla.auth.models import User
 from horilla.contrib.core.models import Company
 from horilla.contrib.core.progress import ProgressStepsMixin
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.db import transaction
 from horilla.shortcuts import get_object_or_404, redirect, render
 from horilla.urls import reverse_lazy
@@ -49,9 +50,7 @@ class CustomOppStagesFormView(LoginRequiredMixin, View):
             ):
                 raise HttpNotFound("Company not found.")
         else:
-            active_company = getattr(request, "active_company", None) or getattr(
-                request.user, "company", None
-            )
+            active_company = get_active_company(request)
             is_active_company = active_company and str(active_company.id) == str(
                 company_id
             )
@@ -229,9 +228,7 @@ class SaveCustomOppStagesView(LoginRequiredMixin, View):
             ):
                 raise HttpNotFound("Company not found.")
         else:
-            active_company = getattr(request, "active_company", None) or getattr(
-                request.user, "company", None
-            )
+            active_company = get_active_company(request)
             is_active_company = active_company and str(active_company.id) == str(
                 company_id
             )
@@ -409,9 +406,7 @@ class CreateOppStageGroupView(LoginRequiredMixin, View):
             ):
                 raise HttpNotFound("Company not found.")
         else:
-            active_company = getattr(request, "active_company", None) or getattr(
-                request.user, "company", None
-            )
+            active_company = get_active_company(request)
             is_active_company = active_company and str(active_company.id) == str(pk)
             newly_created_company_id = request.session.get("newly_created_company_id")
             is_newly_created = str(newly_created_company_id) == str(pk)

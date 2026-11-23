@@ -20,6 +20,7 @@ from horilla.contrib.generics.views.details import (
     check_record_change_access,
     check_record_delete_access,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import ValidationError
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse_lazy
@@ -320,7 +321,7 @@ class AddChildAccountFormView(LoginRequiredMixin, FormView):
                 selected_account.parent_account = parent_account
                 selected_account.updated_at = timezone.now()
                 selected_account.updated_by = self.request.user
-                selected_account.company = self.request.active_company
+                selected_account.company = get_active_company(self.request)
                 selected_account.save()
                 messages.success(
                     self.request, _("Child account assigned successfully.")

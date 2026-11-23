@@ -16,7 +16,7 @@ from horilla.contrib.utils.methods import (
     sanitize_html,
     sanitize_plain_text,
 )
-from horilla.contrib.utils.middlewares import _thread_local
+from horilla.contrib.utils.middlewares import _thread_local, get_active_company
 from horilla.core.exceptions import ValidationError
 
 # First-party imports (Horilla)
@@ -414,7 +414,7 @@ class HorillaMail(HorillaCoreModel):
             context = {
                 "instance": self.related_to,
                 "user": getattr(request, "user", None),
-                "active_company": request.active_company,
+                "active_company": get_active_company(request),
                 "request": request,
             }
         django_engine = engines["django"]
@@ -435,7 +435,7 @@ class HorillaMail(HorillaCoreModel):
             context = {
                 "instance": self.related_to,
                 "user": getattr(request, "user", None),
-                "active_company": request.active_company,
+                "active_company": get_active_company(request),
                 "request": request,
             }
         django_engine = engines["django"]

@@ -5,17 +5,12 @@ in, the steps skipped in the session, and the template context.
 The guide itself is built by ``build_onboarding`` in ``horilla.registry.onboarding``.
 """
 
+from horilla.contrib.utils.middlewares import get_active_company
+
 # First party imports (Horilla)
 from horilla.registry.onboarding import build_onboarding
 
 SKIPPED_SESSION_KEY = "onboarding_skipped"  # session: {company id: [skipped step keys]}
-
-
-def get_active_company(request):
-    """The company the user is working in (company switcher aware)."""
-    return getattr(request, "active_company", None) or getattr(
-        request.user, "company", None
-    )
 
 
 def get_skipped_steps(request, company):

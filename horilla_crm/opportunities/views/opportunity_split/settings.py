@@ -6,6 +6,7 @@ from django.contrib import messages
 # First party imports (Horilla)
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.generics.views import HorillaListView, HorillaNavView
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import render
 from horilla.urls import reverse, reverse_lazy
 from horilla.utils.decorators import (
@@ -94,7 +95,7 @@ class SplitTypeView(LoginRequiredMixin, TeamSellingRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         """Provide team-selling and split toggle state for settings page."""
         context = super().get_context_data(**kwargs)
-        company = self.request.active_company
+        company = get_active_company(self.request)
         settings = OpportunitySettings.get_settings(company)
         context["settings"] = settings
         context["team_selling_enabled"] = settings.team_selling_enabled
@@ -165,7 +166,7 @@ class ToggleOpportunitySplitView(LoginRequiredMixin, TeamSellingRequiredMixin, V
 
     def post(self, request, *args, **kwargs):
         """Handle POST request to toggle opportunity split feature."""
-        company = self.request.active_company
+        company = get_active_company(self.request)
         settings = OpportunitySettings.get_settings(company)
         action = request.POST.get("action")
 
@@ -205,7 +206,7 @@ class ToggleAllowAllUsersSplitView(LoginRequiredMixin, TeamSellingRequiredMixin,
 
     def post(self, request, *args, **kwargs):
         """Handle POST request to toggle allow all users in splits."""
-        company = self.request.active_company
+        company = get_active_company(self.request)
         settings = OpportunitySettings.get_settings(company)
         action = request.POST.get("action")
 

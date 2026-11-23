@@ -17,6 +17,7 @@ from .models import (
     Holiday,
     PartnerRole,
     Role,
+    ShiftHour,
     TeamRole,
 )
 
@@ -128,4 +129,15 @@ class HolidayFilter(HorillaFilterSet):
         model = Holiday
         fields = "__all__"
         exclude = ["additional_info"]
+        search_fields = ["name"]
+
+
+class ShiftHourFilter(HorillaFilterSet):
+    """Filterset for ShiftHour model with search on shift name."""
+
+    class Meta:
+        """Meta options for ShiftHourFilter."""
+
+        model = ShiftHour
+        fields = ["name", "time_zone", "timing_type"]
         search_fields = ["name"]

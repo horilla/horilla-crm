@@ -194,6 +194,13 @@ from horilla.contrib.core.views.user_holidays import (
     UserHolidayDetailView,
 )
 
+from horilla.contrib.core.views.user_shift_hours import (
+    UserShiftHourView,
+    UserShiftHourNavbar,
+    UserShiftHourListView,
+    UserShiftHourDetailView,
+)
+
 from horilla.contrib.core.views.regional_formating import ReginalFormatingView
 
 from horilla.contrib.core.views.team_role import (
@@ -436,6 +443,11 @@ __all__ = [
     "UserHolidayNavbar",
     "UserHolidayListView",
     "UserHolidayDetailView",
+    # user_shift_hours.py
+    "UserShiftHourView",
+    "UserShiftHourNavbar",
+    "UserShiftHourListView",
+    "UserShiftHourDetailView",
     # regional_formating.py
     "ReginalFormatingView",
     # team_role.py

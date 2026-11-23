@@ -1,10 +1,9 @@
 """
-This module registers Floating, Settings, My Settings, and Main Section menus
-for the Horilla Core app.
+This module registers header, settings, and My Settings menus for the Horilla Core app.
 """
 
 from horilla.auth.models import User
-from horilla.menu import my_settings_menu, settings_menu
+from horilla.menu import header_menu, my_settings_menu, settings_menu
 
 # First party imports (Horilla)
 from horilla.urls import reverse_lazy
@@ -12,6 +11,24 @@ from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
 from .models import CustomerRole, Department, PartnerRole, Role, TeamRole
+
+
+@header_menu.register
+class MySettingsLink:
+    """Header account-menu entry for My Settings."""
+
+    title = _("My Settings")
+    url = reverse_lazy("core:my_settings_view")
+    order = 10
+
+
+@header_menu.register
+class LogoutLink:
+    """Header account-menu entry for Logout."""
+
+    title = _("Logout")
+    url = reverse_lazy("core:logout")
+    order = -1
 
 
 @my_settings_menu.register
@@ -100,6 +117,23 @@ class HolidaySettings:
         "hx-target": "#my-settings-content",
         "hx-push-url": "true",
         "hx-select": "#user-holiday-view",
+        "hx-select-oob": "#my-settings-sidebar",
+    }
+
+
+@my_settings_menu.register
+class ShiftHourSettings:
+    """My Settings Menu entry for the shift hours assigned to the user."""
+
+    title = _("Shift Hours")
+    url = reverse_lazy("core:user_shift_hour_view")
+    active_urls = "core:user_shift_hour_view"
+    order = 5
+    attrs = {
+        "hx-boost": "true",
+        "hx-target": "#my-settings-content",
+        "hx-push-url": "true",
+        "hx-select": "#user-shift-hour-view",
         "hx-select-oob": "#my-settings-sidebar",
     }
 

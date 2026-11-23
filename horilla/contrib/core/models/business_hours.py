@@ -533,6 +533,10 @@ class ShiftHour(BusinessHourDayMixin, HorillaCoreModel):
         """Get the URL for shift hour detail view."""
         return reverse_lazy("core:shift_hour_detail_view", kwargs={"pk": self.pk})
 
+    def get_user_detail_url(self):
+        """Get the URL for the read-only shift hour detail shown in My Settings."""
+        return reverse_lazy("core:user_shift_hour_detail", kwargs={"pk": self.pk})
+
     def get_assigned_users_count_display(self):
         """Return the count of assigned users, or "No users assigned" if none."""
         n = self.assigned_users.count()

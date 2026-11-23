@@ -653,6 +653,27 @@ urlpatterns = [
         views.UserHolidayDetailView.as_view(),
         name="user_holiday_detail",
     ),
+    # my settings shift hours urls
+    path(
+        "user-shift-hour-view/",
+        views.UserShiftHourView.as_view(),
+        name="user_shift_hour_view",
+    ),
+    path(
+        "user-shift-hour-nav/",
+        views.UserShiftHourNavbar.as_view(),
+        name="user_shift_hour_nav",
+    ),
+    path(
+        "user-shift-hour-list/",
+        views.UserShiftHourListView.as_view(),
+        name="user_shift_hour_list",
+    ),
+    path(
+        "user-shift-hour-detail/<int:pk>/",
+        views.UserShiftHourDetailView.as_view(),
+        name="user_shift_hour_detail",
+    ),
     # my settings user login history urls
     path(
         "user-login-history-view/",

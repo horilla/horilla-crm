@@ -121,7 +121,7 @@ Two `User` `pre_save` / `post_save` receivers work together to keep `user_permis
 | Shared empty-state partials (activate company, no-data) | [../../../templates/components/empty_state.md](../../../templates/components/empty_state.md) |
 | Base models, `HorillaCoreModel`, managers, `HorillaContentType` | [models.md](models.md) |
 | Custom `HorillaUser` | [user_model.md](user_model.md) |
-| Menus (floating, main, settings, sub-section, my settings) | [Menu/](Menu/floating_menu.md) |
+| Menus (floating, main, settings, sub-section, my settings, header) | [Menu/](Menu/floating_menu.md) · [header menu](../../menu/header_menu.md) |
 | Registry (features, permissions, assets, limiters) | [Registry/feature.md](Registry/feature.md) |
 | URL helpers (`horilla.urls`) | [Urls/urls.md](Urls/urls.md) |
 | Web utilities (`horilla.web`) | [web/web.md](../../web/web.md) |
@@ -257,6 +257,14 @@ class UserHolidayView(View): ...
 `UserHolidayListView.get_queryset` was also fixed: holders of either `view_holiday` **or** `view_own_holiday` now receive the same filtered queryset (user's own holidays plus all-users holidays), instead of the previous branch that silently excluded `view_holiday` holders from the filtered set.
 
 The `HolidaySettings` My Settings menu entry declares `perm = ["core.view_holiday", "core.view_own_holiday"]` to keep menu visibility consistent with the view guard.
+
+`Holiday.clean()` attaches each message to the field it is about. A recurring holiday must have a frequency, and the weekly, monthly, and yearly options are checked on their own fields. A date range that is already a holiday for the same people is refused (`clash_problem`): all users, or the named users.
+
+### Shift Hours (`views/user_shift_hours.py` + `menu.py`)
+
+`ShiftHourSettings` is a My Settings entry (`order = 5`, title **Shift Hours**, `core:user_shift_hour_view`). It has no `perm`, so the link shows for a signed-in user.
+
+`UserShiftHourView` uses `my_settings_list_shell.html` (`view_id = "user-shift-hour-view"`). `UserShiftHourListView` lists the shift hours assigned to the current user. The company Shift Hours form (`forms/shift_hour.py`) checks breaks and a day that is only half filled, and shows each error on that field.
 
 ---
 

@@ -36,6 +36,8 @@ class MySettingsEntry:
 
 **Simple rule:** Every entry in the My Settings sidebar that belongs to a specific app must be defined in that app's `menu.py` and registered with `@my_settings_menu.register`. The sidebar renders whatever passes filtering — apps never need to touch the settings template directly.
 
+The header account dropdown is a separate registry with the same class shape (`title`, `url`, `attrs`). Register those links with `@header_menu.register`. See [header menu](header_menu.md).
+
 ---
 
 ## 📦 Module location
@@ -188,6 +190,7 @@ def menu_context_processor(request):
         "settings_menu": get_settings_menu(request),
         "floating_menu": get_floating_menu(request),
         "my_settings_menu": get_my_settings_menu(request),   # ← injected here
+        "header_menu": get_header_menu(request),
         "current_section": section_param,
         "current_app_label": current_app_label,
     }

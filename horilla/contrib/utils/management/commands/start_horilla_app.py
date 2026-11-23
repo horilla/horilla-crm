@@ -227,6 +227,7 @@ class Command(BaseCommand):
                 "    sub_section_menu,\n"
                 "    settings_menu,\n"
                 "    my_settings_menu,\n"
+                "    header_menu,\n"
                 ")\n\n"
                 "# Define your menu registration logic here\n"
             ),

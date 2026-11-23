@@ -116,5 +116,6 @@ Prerequisite and no-data UI on settings shells often uses [shared empty-state pa
 
 - [`HorillaView`](../generics/views/core.md#-horillaview)
 - [Core app index](core_app.md)
-- [My Settings menu](../menu/my_settings_menu.md)
+- [My Settings menu](../../menu/my_settings_menu.md)
+- [Header account menu](../../menu/header_menu.md)
 - [Empty-state partials](../../../templates/components/empty_state.md)

@@ -180,6 +180,7 @@ def menu_context_processor(request):
         "settings_menu": get_settings_menu(request),
         "floating_menu": get_floating_menu(request),
         "my_settings_menu": get_my_settings_menu(request),
+        "header_menu": get_header_menu(request),
         "current_section": request.GET.get("section"),
         "current_app_label": request.resolver_match.app_name if request.resolver_match else None,
     }

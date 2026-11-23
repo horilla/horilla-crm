@@ -220,6 +220,7 @@ Returns navigation/menu variables for templates:
 - `settings_menu`
 - `floating_menu` (this is `get_floating_menu(request)`)
 - `my_settings_menu`
+- `header_menu` (account dropdown: one class is one link, `title` and `url`, extra HTML in `attrs` — see [header menu](../../menu/header_menu.md))
 - `current_section` (from `request.GET["section"]`)
 - `current_app_label` (from `request.resolver_match.app_name`)
 

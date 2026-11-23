@@ -11,6 +11,8 @@ Registries:
     floating_menu      - Quick-create floating action button entries.
     settings_menu      - Module settings groups (Settings sidebar).
     my_settings_menu   - Per-user 'My Settings' sidebar entries.
+    header_menu        - Account dropdown in the header. One class is one
+        link (title, url). Extra HTML attributes go in attrs.
 
 Shared constants:
     MAIN_CONTENT_HX_ATTRS - HTMX attributes for sub-section links that swap

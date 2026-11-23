@@ -385,38 +385,27 @@
                     </button>
                     <div class="dropdown-content absolute z-10 bg-white border-primary-300 rounded-lg [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_8%)] min-w-[150px] py-2 end-0">
                         <ul class="text-sm">
-                            <li>
-                                <button
-                                    onclick="window.location.href='{% url 'core:my_settings_view' %}'"
-                                    class="px-4 py-1.5 hover:text-primary-600 transition duration-300 text-sm gap-4 items-center flex w-full"
-                                >
-                                    {% trans "My Settings" %}
-                                </button>
-                            </li>
-                            <li>
-                                <button
-                                    type="button"
-                                    id="horilla-tour-launcher"
-                                    aria-haspopup="dialog"
-                                    aria-expanded="false"
-                                    aria-controls="horilla-tour-panel"
-                                    hx-get="{% url 'tour:panel' %}"
-                                    hx-vals='js:{path: window.location.pathname}'
-                                    hx-target="#tour-panel-content"
-                                    hx-indicator="#tour-panel-loading"
-                                    class="px-4 py-1.5 hover:text-primary-600 transition duration-300 text-sm gap-4 items-center flex w-full"
-                                >
-                                    {% trans "Product Tours" %}
-                                </button>
-                            </li>
-                            <li>
-                                <a
-                                    href="{% url 'core:logout' %}"
-                                    class="px-4 py-1.5 hover:text-primary-600 transition duration-300 text-sm gap-4 items-center flex w-full"
-                                >
-                                    {% trans "Logout" %}
-                                </a>
-                            </li>
+                            {% for item in header_menu %}
+                                <li>
+                                    {% if item.url %}
+                                        <a
+                                            href="{{ item.url }}"
+                                            class="px-4 py-1.5 hover:text-primary-600 transition duration-300 text-sm gap-4 items-center flex w-full"
+                                            {% for attr, value in item.attrs.items %}{{ attr }}="{{ value }}" {% endfor %}
+                                        >
+                                            {{ item.title }}
+                                        </a>
+                                    {% else %}
+                                        <button
+                                            type="button"
+                                            class="px-4 py-1.5 hover:text-primary-600 transition duration-300 text-sm gap-4 items-center flex w-full"
+                                            {% for attr, value in item.attrs.items %}{{ attr }}="{{ value }}" {% endfor %}
+                                        >
+                                            {{ item.title }}
+                                        </button>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
                         </ul>
                     </div>
                 </div>

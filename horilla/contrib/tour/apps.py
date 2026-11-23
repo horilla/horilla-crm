@@ -25,5 +25,7 @@ class TourConfig(AppLauncher):
 
     auto_import_modules = [
         "registration",
+        "menu",
         "tour",
+        "settings_tour",
     ]

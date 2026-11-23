@@ -64,6 +64,7 @@ return {
   "settings_menu": get_settings_menu(request),
   "floating_menu": get_floating_menu(request),
   "my_settings_menu": get_my_settings_menu(request),
+  "header_menu": get_header_menu(request),
   ...
 }
 **Registration:** horilla/settings/base.py includes horilla.context_processors.menu_context_processor in the Django TEMPLATES context_processors list, so **floating_menu** is available in templates that extend your base layout (wherever that processor runs).

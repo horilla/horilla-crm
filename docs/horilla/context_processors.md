@@ -91,6 +91,7 @@ Unauthenticated: empty dict.
 | `settings_menu` | From `horilla.menu.settings_menu.get_settings_menu`. |
 | `floating_menu` | From `horilla.menu.floating_menu.get_floating_menu`. |
 | `my_settings_menu` | From `horilla.menu.my_settings_menu.get_my_settings_menu`. |
+| `header_menu` | From `horilla.menu.header_menu.get_header_menu`. One class is one account-dropdown link (`title`, `url`). Extra HTML attributes live in `attrs`. See [header menu](menu/header_menu.md). |
 | `current_section` | `request.GET.get("section")` (URL query). |
 | `current_app_label` | `request.resolver_match.app_name` if a URL resolved, else `None`. |
 

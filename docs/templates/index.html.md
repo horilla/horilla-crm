@@ -13,7 +13,7 @@ Related files:
 
 | File | Role |
 |------|------|
-| `templates/components/header.html` | Top navigation bar |
+| `templates/components/header.html` | Top navigation bar. The account dropdown loops `header_menu`. |
 | `templates/components/sidebar.html` | Left icon sidebar |
 | `templates/components/horilla_modals.html` | Shared modal containers |
 | `templates/components/empty_state.html` | Shared empty-state image + message partial — see [components/empty_state.md](components/empty_state.md) |
@@ -150,7 +150,7 @@ Available in every template that extends `index.html` (via Django context proces
 | `allowed_languages` | `allowed_languages` | Language picker |
 | `recently_viewed_items` | `recently_viewed_items` | Header recents |
 | `unread_notifications` | `unread_notifications` | Notification bell |
-| `main_section_menu`, `floating_menu`, … | `menu_context_processor` | Navigation |
+| `main_section_menu`, `floating_menu`, `header_menu`, … | `menu_context_processor` | Navigation. `header_menu` is the account dropdown. |
 | `user_currency`, `default_currency` | `currency_context` | Money display |
 | Branding keys | `branding` | Logo, login copy, etc. |
 

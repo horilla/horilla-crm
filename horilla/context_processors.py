@@ -13,6 +13,7 @@ from horilla.contrib.core.models import Company, HorillaContentType, RecentlyVie
 from horilla.contrib.notifications.methods import get_user_notifications
 from horilla.contrib.notifications.models import NotificationSoundPreference
 from horilla.menu.floating_menu import get_floating_menu
+from horilla.menu.header_menu import get_header_menu
 from horilla.menu.main_section_menu import get_main_section_menu
 from horilla.menu.my_settings_menu import get_my_settings_menu
 from horilla.menu.settings_menu import get_settings_menu
@@ -128,6 +129,7 @@ def menu_context_processor(request):
         "settings_menu": get_settings_menu(request),
         "floating_menu": get_floating_menu(request),
         "my_settings_menu": get_my_settings_menu(request),
+        "header_menu": get_header_menu(request),
         "current_section": section_param,
         "current_app_label": current_app_label,
     }

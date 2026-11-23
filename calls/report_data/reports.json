@@ -10,18 +10,37 @@
     {
         "model": "reports.report",
         "fields": {
-            "name": "Activity Report",
+            "name": "Calls by Status",
             "module": {
                 "app_label": "calls",
                 "model": "calllog"
             },
             "folder": 6,
-            "selected_columns": "direction,status,from_number,to_number,duration_seconds,started_at,ended_at",
+            "selected_columns": "direction,status,from_number,to_number,duration_seconds,started_at",
             "row_groups": "status",
             "column_groups": "",
             "aggregate_columns": "",
             "filters": "",
-            "chart_type": "column",
+            "chart_type": "donut",
+            "chart_field": null,
+            "chart_field_stacked": null
+        }
+    },
+    {
+        "model": "reports.report",
+        "fields": {
+            "name": "Calls by Agent",
+            "module": {
+                "app_label": "calls",
+                "model": "calllog"
+            },
+            "folder": 6,
+            "selected_columns": "agent,direction,status,duration_seconds,started_at",
+            "row_groups": "agent",
+            "column_groups": "",
+            "aggregate_columns": "[{\"field\": \"duration_seconds\", \"aggfunc\": \"avg\"}]",
+            "filters": "",
+            "chart_type": "bar",
             "chart_field": null,
             "chart_field_stacked": null
         }

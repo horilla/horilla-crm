@@ -24,50 +24,12 @@
                 "model": "lead"
             },
             "folder": 2,
-            "selected_columns": "title,first_name,last_name,lead_company,industry",
+            "selected_columns": "title,first_name,last_name,lead_company,lead_status,annual_revenue",
             "row_groups": "lead_source",
             "column_groups": "",
             "aggregate_columns": "",
-            "filters": "{}",
-            "chart_type": "pie",
-            "chart_field": null,
-            "chart_field_stacked": null
-        }
-    },
-    {
-        "model": "reports.report",
-        "fields": {
-            "name": "Converted Leads",
-            "module": {
-                "app_label": "leads",
-                "model": "lead"
-            },
-            "folder": 2,
-            "selected_columns": "title,first_name,last_name,industry,annual_revenue",
-            "row_groups": "",
-            "column_groups": "",
-            "aggregate_columns": "",
-            "filters": "{\"is_convert\": {\"value\": \"True\", \"operator\": \"exact\", \"logic\": \"and\", \"original_field\": \"is_convert\"}}",
-            "chart_type": "bar",
-            "chart_field": null,
-            "chart_field_stacked": null
-        }
-    },
-    {
-        "model": "reports.report",
-        "fields": {
-            "name": "Leads by Owner",
-            "module": {
-                "app_label": "leads",
-                "model": "lead"
-            },
-            "folder": 2,
-            "selected_columns": "title,first_name,last_name,annual_revenue",
-            "row_groups": "lead_owner",
-            "column_groups": "",
-            "aggregate_columns": "",
             "filters": "",
-            "chart_type": "bar",
+            "chart_type": "pie",
             "chart_field": null,
             "chart_field_stacked": null
         }
@@ -81,7 +43,7 @@
                 "model": "lead"
             },
             "folder": 2,
-            "selected_columns": "title,first_name,last_name,annual_revenue",
+            "selected_columns": "title,first_name,last_name,lead_company,lead_source,annual_revenue",
             "row_groups": "lead_status",
             "column_groups": "",
             "aggregate_columns": "",
@@ -94,16 +56,16 @@
     {
         "model": "reports.report",
         "fields": {
-            "name": "Lead Summary",
+            "name": "Leads by Owner",
             "module": {
                 "app_label": "leads",
                 "model": "lead"
             },
             "folder": 2,
-            "selected_columns": "title,first_name,last_name,lead_company,industry,annual_revenue,lead_source,lead_status",
-            "row_groups": "lead_status",
+            "selected_columns": "title,first_name,last_name,lead_status,lead_source,annual_revenue",
+            "row_groups": "lead_owner",
             "column_groups": "",
-            "aggregate_columns": "",
+            "aggregate_columns": "[{\"field\": \"annual_revenue\", \"aggfunc\": \"sum\"}]",
             "filters": "",
             "chart_type": "bar",
             "chart_field": null,
@@ -113,18 +75,18 @@
     {
         "model": "reports.report",
         "fields": {
-            "name": "Lead Conversion",
+            "name": "Converted Leads by Source",
             "module": {
                 "app_label": "leads",
                 "model": "lead"
             },
             "folder": 2,
-            "selected_columns": "title,first_name,last_name,lead_company,lead_source,is_convert",
+            "selected_columns": "title,first_name,last_name,lead_company,lead_owner,converted_at",
             "row_groups": "lead_source",
             "column_groups": "",
             "aggregate_columns": "",
-            "filters": "",
-            "chart_type": "funnel",
+            "filters": "{\"is_convert\": {\"value\": \"True\", \"operator\": \"exact\", \"logic\": \"and\", \"original_field\": \"is_convert\"}}",
+            "chart_type": "bar",
             "chart_field": null,
             "chart_field_stacked": null
         }

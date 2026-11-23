@@ -16,12 +16,50 @@
                 "model": "campaign"
             },
             "folder": 5,
-            "selected_columns": "campaign_type,budget_cost,actual_cost,value_won_opportunities,roi_percentage",
+            "selected_columns": "campaign_name,budget_cost,actual_cost,value_won_opportunities,roi_percentage",
             "row_groups": "campaign_type",
             "column_groups": "",
             "aggregate_columns": "[{\"field\": \"roi_percentage\", \"aggfunc\": \"avg\"}, {\"field\": \"actual_cost\", \"aggfunc\": \"sum\"}, {\"field\": \"value_won_opportunities\", \"aggfunc\": \"sum\"}]",
             "filters": "",
             "chart_type": "bar",
+            "chart_field": null,
+            "chart_field_stacked": null
+        }
+    },
+    {
+        "model": "reports.report",
+        "fields": {
+            "name": "Budget vs Actual Cost",
+            "module": {
+                "app_label": "campaigns",
+                "model": "campaign"
+            },
+            "folder": 5,
+            "selected_columns": "campaign_name,status,budget_cost,actual_cost",
+            "row_groups": "campaign_name",
+            "column_groups": "",
+            "aggregate_columns": "[{\"field\": \"budget_cost\", \"aggfunc\": \"sum\"}, {\"field\": \"actual_cost\", \"aggfunc\": \"sum\"}]",
+            "filters": "",
+            "chart_type": "column",
+            "chart_field": null,
+            "chart_field_stacked": null
+        }
+    },
+    {
+        "model": "reports.report",
+        "fields": {
+            "name": "Campaign Lead Conversion",
+            "module": {
+                "app_label": "campaigns",
+                "model": "campaign"
+            },
+            "folder": 5,
+            "selected_columns": "campaign_name,leads_in_campaign,converted_leads_in_campaign,opportunities_in_campaign,won_opportunities_in_campaign",
+            "row_groups": "campaign_name",
+            "column_groups": "",
+            "aggregate_columns": "[{\"field\": \"leads_in_campaign\", \"aggfunc\": \"sum\"}, {\"field\": \"converted_leads_in_campaign\", \"aggfunc\": \"sum\"}]",
+            "filters": "",
+            "chart_type": "column",
             "chart_field": null,
             "chart_field_stacked": null
         }

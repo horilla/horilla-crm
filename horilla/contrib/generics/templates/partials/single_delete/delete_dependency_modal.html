@@ -1,18 +1,13 @@
 <div class="bg-white rounded-lg shadow p-5 min-w-[500px]">
-    <div class="flex justify-between items-center mb-2">
-        <h2 class="text-md font-semibold">
-            {% if cannot_delete %}
-                {% blocktrans trimmed with model=model_verbose_name %}Delete {{ model }} with Dependencies{% endblocktrans %}
-            {% else %}
-                {% trans "Confirm Delete" %}
-            {% endif %}
-        </h2>
-        {% if cannot_delete %}
-            <button type="button" onclick="closeModal()" class="text-gray-500 hover:text-red-500 text-xl cursor-pointer">
-                <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-            </button>
-        {% endif %}
-    </div>
+    {% if cannot_delete %}
+        {% trans "Delete" as delete_word %}
+        {% trans model_verbose_name as model_word %}
+        {% trans "with Dependencies" as dependencies_word %}
+        {% modal_header delete_word|concat:" "|concat:model_word|concat:" "|concat:dependencies_word %}
+    {% else %}
+        <h2 class="text-md font-semibold mb-2">{% trans "Confirm Delete" %}</h2>
+    {% endif %}
+    {% include "partials/single_delete/_delete_notice.html" %}
     {% if cannot_delete %}
         <p class="text-sm text-gray-600 mb-2">
             {% blocktrans trimmed with model=model_verbose_name obj=object %}The {{ model }} "{{ obj }}" has dependencies and cannot be deleted directly.{% endblocktrans %}

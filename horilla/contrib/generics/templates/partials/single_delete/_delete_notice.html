@@ -1,0 +1,12 @@
+{% comment %}
+    An optional note about what deleting this record affects. A model opts in by defining
+    get_delete_notice(); for every other record this renders nothing.
+    With as_item it renders a list item, to sit inside an existing notes box.
+{% endcomment %}
+{% with notice=object.get_delete_notice %}
+    {% if notice and as_item %}
+        <li>{{ notice }}</li>
+    {% elif notice %}
+        <div class="mb-3 p-3 bg-yellow-50 border border-[#f3edb0] rounded-lg text-xs text-yellow-800">{{ notice }}</div>
+    {% endif %}
+{% endwith %}

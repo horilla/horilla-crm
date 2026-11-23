@@ -1,13 +1,9 @@
 <div>
     <div class="p-5">
-        <div class="flex justify-between items-center mb-2">
-            <h2 class="text-md font-semibold">
-                {% trans "Share & Embed" %} — {{ page.title }}
-            </h2>
-            <button type="button" onclick="closeModal()" class="text-gray-500 hover:text-red-500 text-xl cursor-pointer">
-                <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-            </button>
-        </div>
+        {% trans "Share & Embed" as share_label %}
+        {% with share_title=share_label|concat:" — "|concat:page.title %}
+            {% modal_header share_title %}
+        {% endwith %}
 
         <!-- Public Link -->
         <div class="mb-5">

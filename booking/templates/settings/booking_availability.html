@@ -1,14 +1,10 @@
 <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-sm w-full max-w-2xl">
     <div class="p-5">
         <!-- Header -->
-        <div class="flex justify-between items-center mb-2">
-            <h2 class="text-md font-semibold">
-                {% trans "Availability" %} &mdash; {{ page.title }}
-            </h2>
-            <button type="button" onclick="closeModal()" class="text-gray-500 hover:text-red-500 text-xl cursor-pointer">
-                <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-            </button>
-        </div>
+        {% trans "Availability" as availability_label %}
+        {% with availability_title=availability_label|concat:" — "|concat:page.title %}
+            {% modal_header availability_title %}
+        {% endwith %}
 
         <!-- Schedule source badge -->
         {% if shift_hour %}

@@ -347,8 +347,6 @@ class ShiftHourForm(HorillaModelForm):
                 legend_prefix=f"{abbr} \u2013 ",
             )
 
-        if "name" in self.fields:
-            self.fields["name"].label = _("Shift name")
         for _fname, field in self.fields.items():
             if (
                 isinstance(field, forms.TimeField)
@@ -456,6 +454,7 @@ class ShiftHourForm(HorillaModelForm):
         self._clean_validate_main_hours(cleaned, week_days)
         self._clean_validate_break("break1", cleaned, week_days, fake_shift)
         self._clean_validate_break("break2", cleaned, week_days, fake_shift)
+        self._clean_breaks_do_not_overlap(cleaned)
 
         return cleaned
 
@@ -505,6 +504,38 @@ class ShiftHourForm(HorillaModelForm):
             setattr(fake, f"{full}_end", cleaned.get(f"{full}_end"))
         return fake
 
+    def _require_time_pair(self, start_name, end_name, cleaned, start_msg, end_msg):
+        """
+        Both times of a pair are needed. The error goes on the field that is empty (on
+        both when both are), so the user sees what is missing. Returns True when the
+        pair is complete.
+        """
+        complete = True
+        for name, message in ((start_name, start_msg), (end_name, end_msg)):
+            if cleaned.get(name) is None:
+                complete = False
+                if name not in self.errors:  # an invalid time already has its message
+                    self.add_error(name, message)
+        return complete
+
+    def _flag_half_filled_day(self, short, start_name, end_name, cleaned):
+        """
+        Error on the empty one of a day's start/end pair when only the other is filled,
+        so the day is not dropped without a word. Returns True when it flagged the day.
+        """
+        if start_name in self.errors or end_name in self.errors:
+            return False  # one of them already has its own error
+        has_start = cleaned.get(start_name) is not None
+        has_end = cleaned.get(end_name) is not None
+        if has_start == has_end:
+            return False
+        self.add_error(
+            end_name if has_start else start_name,
+            _("Enter both start and end for %(day)s, or leave both empty.")
+            % {"day": str(DAY_LABELS.get(short, short))},
+        )
+        return True
+
     def _clean_validate_main_hours(self, cleaned, week_days):
         timing = cleaned.get("timing_type")
         if timing == "same":
@@ -512,38 +543,67 @@ class ShiftHourForm(HorillaModelForm):
                 self.add_error(
                     "week_days", _("Select at least one weekday for the shift.")
                 )
-            if not cleaned.get("default_start_time") or not cleaned.get(
-                "default_end_time"
-            ):
-                self.add_error(
-                    "default_start_time",
-                    _(
-                        "Start and end time are required when using the same hours every day."
-                    ),
-                )
-            elif not _ordered_interval(
+            if self._require_time_pair(
+                "default_start_time",
+                "default_end_time",
+                cleaned,
+                _("Start time is required when using the same hours every day."),
+                _("End time is required when using the same hours every day."),
+            ) and not _ordered_interval(
                 cleaned.get("default_start_time"), cleaned.get("default_end_time")
             ):
                 self.add_error("default_end_time", _MSG_INTERVAL_END_AFTER_START)
 
         if timing == "different":
-            if not week_days:
+            flagged = [
+                self._flag_half_filled_day(
+                    short, f"{full}_start", f"{full}_end", cleaned
+                )
+                for short, full in SHORT_TO_DAY_PREFIX.items()
+            ]
+            if not week_days and not any(flagged):
                 self.add_error(
                     None,
                     _(
                         "Set start and end times for at least one weekday for the shift."
                     ),
                 )
+            # ``week_days`` holds only the days with both times, so each one is a full pair.
             for short in week_days:
                 full = SHORT_TO_DAY_PREFIX[short]
-                s, e = cleaned.get(f"{full}_start"), cleaned.get(f"{full}_end")
-                if not s or not e:
-                    self.add_error(
-                        f"{full}_start",
-                        _("Start and end are required for each selected shift day."),
-                    )
-                elif not _ordered_interval(s, e):
+                if not _ordered_interval(
+                    cleaned.get(f"{full}_start"), cleaned.get(f"{full}_end")
+                ):
                     self.add_error(f"{full}_end", _MSG_INTERVAL_END_AFTER_START)
+
+    def _break_day_field(self, slot, short):
+        """The field an error about ``short`` of break ``slot`` is shown on."""
+        if (self.cleaned_data.get(f"{slot}_mode") or "none") == "different":
+            return f"{slot}_diff_{SHORT_TO_DAY_PREFIX[short]}_start"
+        return f"{slot}_default_start"
+
+    def _clean_break_fits_day(self, slot, short, fake_shift, start, end):
+        """A break must be inside the shift of its day and leave some working time."""
+        bounds = fake_shift.get_shift_bounds_for_day(short)
+        day = {"day": str(DAY_LABELS.get(short, short))}
+        field = self._break_day_field(slot, short)
+        if not _interval_within_shift(bounds, start, end):
+            self.add_error(
+                field,
+                _("Break on %(day)s must fall within the shift hours for that day.")
+                % day,
+            )
+        elif _time_tuple(start) <= _time_tuple(bounds[0]) and _time_tuple(
+            end
+        ) >= _time_tuple(bounds[1]):
+            self.add_error(
+                field,
+                _(
+                    "Break on %(day)s cannot cover the whole shift. "
+                    "Leave some working time."
+                )
+                % day,
+            )
 
     def _clean_validate_break(self, slot, cleaned, week_days, fake_shift):
         mode = cleaned.get(f"{slot}_mode") or "none"
@@ -553,6 +613,17 @@ class ShiftHourForm(HorillaModelForm):
 
         per_day = None
         if mode == "different":
+            flagged = [
+                self._flag_half_filled_day(
+                    short,
+                    f"{slot}_diff_{full}_start",
+                    f"{slot}_diff_{full}_end",
+                    cleaned,
+                )
+                for short, full in SHORT_TO_DAY_PREFIX.items()
+            ]
+            if any(flagged):
+                return
             per_day = pack_break_per_day(slot, cleaned)
             cleaned[f"{slot}_week_days"] = list(per_day.keys()) if per_day else []
 
@@ -569,24 +640,38 @@ class ShiftHourForm(HorillaModelForm):
                 )
             return
 
-        for d in bwd:
-            if d not in week_days:
+        outside = [d for d in bwd if d not in week_days]
+        if outside:
+            if mode == "different":
+                # The weekday picker is hidden in this mode, so say it on the day itself.
+                for d in outside:
+                    self.add_error(
+                        self._break_day_field(slot, d),
+                        _(
+                            "%(day)s is not a working day of the shift, "
+                            "so it cannot have a break."
+                        )
+                        % {"day": str(DAY_LABELS.get(d, d))},
+                    )
+            else:
                 self.add_error(
                     f"{slot}_week_days",
                     _("Break days must be among the shift working days."),
                 )
-                return
+            return
 
         if mode == "same":
             bs, be = (
                 cleaned.get(f"{slot}_default_start"),
                 cleaned.get(f"{slot}_default_end"),
             )
-            if not bs or not be:
-                self.add_error(
-                    f"{slot}_default_start",
-                    _("Break start and end are required for this mode."),
-                )
+            if not self._require_time_pair(
+                f"{slot}_default_start",
+                f"{slot}_default_end",
+                cleaned,
+                _("Break start is required for this mode."),
+                _("Break end is required for this mode."),
+            ):
                 return
             if not _ordered_interval(bs, be):
                 self.add_error(
@@ -598,16 +683,7 @@ class ShiftHourForm(HorillaModelForm):
                 )
                 return
             for d in bwd:
-                bounds = fake_shift.get_shift_bounds_for_day(d)
-                label = DAY_LABELS.get(d, d)
-                if not _interval_within_shift(bounds, bs, be):
-                    self.add_error(
-                        f"{slot}_default_start",
-                        _(
-                            "Break on %(day)s must fall within the shift hours for that day."
-                        )
-                        % {"day": str(label)},
-                    )
+                self._clean_break_fits_day(slot, d, fake_shift, bs, be)
             cleaned[f"{slot}_per_day"] = {}
             return
 
@@ -616,30 +692,48 @@ class ShiftHourForm(HorillaModelForm):
             self.add_error(None, _("Enter start and end for at least one break day."))
             return
 
-        for short in per_day:
-            if short not in bwd:
-                continue
-            pair = per_day[short]
-            try:
-                t0 = (
-                    datetime.strptime(pair[0], "%H:%M:%S").time()
-                    if isinstance(pair[0], str)
-                    else pair[0]
-                )
-                t1 = (
-                    datetime.strptime(pair[1], "%H:%M:%S").time()
-                    if isinstance(pair[1], str)
-                    else pair[1]
-                )
-            except (TypeError, ValueError):
+        for short, pair in per_day.items():
+            start, end = _parse_time_value(pair[0]), _parse_time_value(pair[1])
+            if start is None or end is None:
                 self.add_error(None, _("Invalid break time format."))
                 return
-            bounds = fake_shift.get_shift_bounds_for_day(short)
-            label = DAY_LABELS.get(short, short)
-            if not _interval_within_shift(bounds, t0, t1):
-                self.add_error(
-                    None,
-                    _("Break on %(day)s must fall within the shift hours for that day.")
-                    % {"day": str(label)},
-                )
+            self._clean_break_fits_day(slot, short, fake_shift, start, end)
         cleaned[f"{slot}_per_day"] = per_day
+
+    @staticmethod
+    def _break_intervals(slot, cleaned):
+        """``{day: (start, end)}`` of a break, for the days where it is a valid interval."""
+        mode = cleaned.get(f"{slot}_mode") or "none"
+        if mode == "same":
+            pair = (
+                cleaned.get(f"{slot}_default_start"),
+                cleaned.get(f"{slot}_default_end"),
+            )
+            pairs = {d: pair for d in cleaned.get(f"{slot}_week_days") or []}
+        elif mode == "different":
+            pairs = {
+                d: (_parse_time_value(p[0]), _parse_time_value(p[1]))
+                for d, p in (cleaned.get(f"{slot}_per_day") or {}).items()
+            }
+        else:
+            return {}
+        return {d: pair for d, pair in pairs.items() if _ordered_interval(*pair)}
+
+    def _clean_breaks_do_not_overlap(self, cleaned):
+        """Break 1 and Break 2 must not run at the same time on a day (touching is fine)."""
+        if any(name.startswith(("break1", "break2")) for name in self.errors):
+            return  # the breaks are not valid yet, so there is nothing to compare
+        first = self._break_intervals("break1", cleaned)
+        second = self._break_intervals("break2", cleaned)
+        for short in WEEK_ORDER:
+            if short not in first or short not in second:
+                continue
+            (start1, end1), (start2, end2) = first[short], second[short]
+            if _time_tuple(start1) < _time_tuple(end2) and _time_tuple(
+                start2
+            ) < _time_tuple(end1):
+                self.add_error(
+                    self._break_day_field("break2", short),
+                    _("Break 1 and Break 2 overlap on %(day)s.")
+                    % {"day": str(DAY_LABELS.get(short, short))},
+                )

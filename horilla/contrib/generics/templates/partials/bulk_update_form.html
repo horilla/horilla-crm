@@ -1,10 +1,8 @@
 <div class="relative bg-white rounded-lg shadow-sm p-5">
-    <div class="flex justify-between items-center mb-2">
-        <h2 class="text-md font-semibold">{% trans "Bulk Update Selected" %} {{ model_verbose_name }}</h2>
-        <button type="button" onclick="closeModal()" class="text-gray-500 hover:text-red-500 text-xl cursor-pointer">
-            <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-        </button>
-    </div>
+    {% trans "Bulk Update Selected" as bulk_update_label %}
+    {% with bulk_update_title=bulk_update_label|concat:" "|concat:model_verbose_name %}
+        {% modal_header bulk_update_title %}
+    {% endwith %}
 
     <form id="bulkUpdateForm" hx-post="{{ search_url }}" hx-push-url="false" hx-on::after-request="if (event.target === this) closeModal()">
         {% csrf_token %}

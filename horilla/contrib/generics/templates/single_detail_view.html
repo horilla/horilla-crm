@@ -10,13 +10,7 @@
 </button>
 <div class="modal-box mx-5 bg-white w-full max-w-md md:min-w-[700px] rounded-lg p-0 transition-all duration-300 opacity-100 scale-100">
     <div class="p-5 ps-2" id="detailViewContainer">
-        <!-- Modal Header -->
-        <div class="flex justify-between items-center mb-2">
-            <h2 class="text-md font-semibold" id="genericModalLabel">{{ title }}</h2>
-            <button type="button" onclick="closeDetailModal()" class="text-gray-500 hover:text-red-500 text-xl cursor-pointer">
-                <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-            </button>
-        </div>
+        {% modal_header title on_close="closeDetailModal()" %}
 
         <!-- Profile Header -->
         {% if header %}

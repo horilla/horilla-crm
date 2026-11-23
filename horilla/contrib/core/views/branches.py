@@ -23,6 +23,7 @@ from horilla.contrib.generics.views import (
     HorillaTabView,
     HorillaView,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
@@ -444,17 +445,6 @@ class CompanyInformationTabView(LoginRequiredMixin, HorillaTabView):
                 }
             )
 
-        # Business hours & shift hours tab
-        if self.request.user.has_perm("core.view_businesshour"):
-            tabs.append(
-                {
-                    "title": _("Working hours"),
-                    "url": reverse_lazy("core:business_hour_view"),
-                    "target": "business-hour-content",
-                    "id": "business-hour-view",
-                }
-            )
-
         # Holidays Tab
         if self.request.user.has_perm("core.view_holiday"):
             tabs.append(
@@ -463,6 +453,17 @@ class CompanyInformationTabView(LoginRequiredMixin, HorillaTabView):
                     "url": reverse_lazy("core:holiday_view"),
                     "target": "holidays-view-content",
                     "id": "holidays-view",
+                }
+            )
+
+        # Business hours & shift hours tab
+        if self.request.user.has_perm("core.view_businesshour"):
+            tabs.append(
+                {
+                    "title": _("Working Hours"),
+                    "url": reverse_lazy("core:business_hour_view"),
+                    "target": "business-hour-content",
+                    "id": "business-hour-view",
                 }
             )
 
@@ -507,7 +508,7 @@ class CompanyInformationView(LoginRequiredMixin, TemplateView):
         Get context data for company information view.
         """
         context = super().get_context_data(**kwargs)
-        company = getattr(self.request, "active_company", None)
+        company = get_active_company(self.request)
         context["has_company"] = bool(company)
         return context
 

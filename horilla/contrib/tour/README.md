@@ -21,7 +21,7 @@ Outside `horilla/contrib/tour/` the app needs the `"horilla.contrib.tour"` entry
 
 | Piece | Where | Role |
 |---|---|---|
-| Tour definitions | `<app>/tour.py` in each app | Declare that app's tours and steps (today `horilla_crm/leads/tour.py` and `horilla/contrib/dashboard/tour.py`, the Home page only). The one tour that belongs to no app, `app_shell`, lives in this app's own `tour.py`. |
+| Tour definitions | `<app>/tour.py` in each app | Declare that app's tours and steps (today the Home page in `horilla/contrib/dashboard/tour.py`, the list and detail tours of Leads, Opportunities, Campaigns, Accounts and Contacts in each CRM app's `tour.py`, the Forecast page, the Reports list and report pages, the Dashboards list and dashboard pages, and the Calendar). The one tour that belongs to no app, `app_shell`, lives in this app's own `tour.py`. The Settings and My Settings tours also live in this app, in `settings_tour.py`: the core app owns those pages but must not depend on the tour app, so core has no `tour.py` and never imports `horilla.contrib.tour`. The tour app may depend on core, not the other way round. |
 | Registry | `registry.py` | `Tour` / `Step` classes, validation at import time, permission filtering, URL-name matching. |
 | Presets | `presets.py` | Ready-made step lists for the screens every CRM app shares: `list_page_steps` and `detail_page_steps`. An app passes its own ids, so adding a CRM app takes a few lines. |
 | Launcher | `registration.py` + `templates/tour/slots/launcher.html` | Renders the panel container and the popover and message templates into the framework's `body_end` slot (`horilla.registry.asset_registry.register_html`). |
@@ -29,14 +29,17 @@ Outside `horilla/contrib/tour/` the app needs the `"horilla.contrib.tour"` entry
 | Engine | `static/tour/assets/js/tour.js` | Loaded on every page through `js_files`. Runs tours with a vendored [driver.js](https://driverjs.com) (MIT, v1.3.1, `static/tour/assets/vendor/driver/`). |
 | Memory | `models.py` | `TourSeen`: one row per user and automatic tour, so it starts by itself only once. |
 
-The app was scaffolded with `python manage.py start_horilla_app`. `admin.py`, `filters.py`,
-`forms.py`, `menu.py`, `signals.py`, `__version__.py`, `templatetags/` and `locale/` are
-that command's standard (still empty) files; the tour app does not use them yet.
+The app was scaffolded with `python manage.py start_horilla_app`; the scaffold files it
+does not need (`filters.py`, `forms.py`, `signals.py`, `templatetags/`) were removed.
+`admin.py` registers `TourSeen` and `menu.py` adds the Product Tours row to the header
+menu. Version metadata is in `__version__.py` (`0.1.0`).
 
 The engine only uses public htmx events (`htmx:afterSettle`), `querySelector`
 and `.click()`. It resolves each step's element lazily, so tours survive htmx
 swapping `#mainContent`, `#navBar` and `#mainSession`. A step whose element is
-missing (no permission, different layout, small screen) is skipped.
+missing (no permission, different layout, small screen) is skipped. A table
+step is skipped on an empty list. The last-step button follows the steps
+that are still shown.
 
 ## Adding a tour to an app
 
@@ -81,8 +84,18 @@ it targets change together.
 
 `Step` fields: `title`, `body`, `target` (CSS selector, comma list picks the first
 *visible* match; omit for a centred card), `side`, `only_if` (skip at once unless
-this is visible), `before` / `after` (click actions, e.g. open and
-close a dropdown: `{"click": "#btn", "if_hidden": "#menu"}`).
+this is visible; a step that has it waits up to 10 s for its target, so a slow pop-up is
+not mistaken for a missing one), `before` / `after` (click actions, e.g. open and
+close a dropdown: `{"click": "#btn", "if_hidden": "#menu"}`). Use `{"mousedown": "#box"}`
+for a select2 box, which opens on mousedown and ignores a click.
+
+Pop-ups that hold several steps (a chart modal, a list of deals): only the first step
+opens it (`before`), the next ones just point at their element, and the last one closes
+it (`after`). Steps that open something cost the time the pop-up itself takes to load.
+
+`detail_page_steps(related_lists=[(name, title, body), ...])` adds one step per list of
+the Related Lists tab. `name` is the list's key in the app's related list config (the
+button is `#tab-<name>-btn`); a list the user cannot see is skipped.
 
 Use `open_with={"from": "app:list_view", "click": "<selector>"}` for a tour that
 lives on a screen reached by a click (the first record, the create form).

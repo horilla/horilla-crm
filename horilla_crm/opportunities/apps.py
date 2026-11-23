@@ -24,15 +24,18 @@ class OpportunitiesConfig(AppLauncher):
         "menu",
         "dashboard",
         "onboarding",
+        "tour",
     ]
 
     demo_data = [
         {
             "files": [
                 (8, "load_data/opportunity_stage.json"),
-                (9, "load_data/opportunity.json"),
+                (12, "load_data/opportunity.json"),
             ],
             "order": 3,
+            "options": [100, 250, 500, 1000],
+            "default": 250,
         },
         {
             "files": [

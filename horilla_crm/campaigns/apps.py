@@ -23,13 +23,19 @@ class CampaignsConfig(AppLauncher):
         "signals",
         "menu",
         "dashboard",
+        "tour",
     ]
 
+    # The file alternates between the two demo companies, so any even count is split
+    # evenly between them (20 gives 10 and 10). Company 2 has 50 campaigns, so 100 is the
+    # largest count that is still even.
     demo_data = {
         "files": [
             (6, "load_data/campaign.json"),
         ],
         "order": 4,
+        "options": [10, 20, 50, 100],
+        "default": 20,
     }
 
     report_files = [

@@ -28,6 +28,7 @@ class ReportsConfig(AppLauncher):
         "registration",
         "signals",
         "menu",
+        "tour",
     ]
 
     def get_api_paths(self):

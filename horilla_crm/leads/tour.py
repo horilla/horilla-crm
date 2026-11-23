@@ -21,7 +21,7 @@ class LeadsListTour(Tour):
     """The Leads list page."""
 
     key = "leads_list"
-    title = _("Working with the Leads list")
+    title = _("Working with the Leads List")
     description = _(
         "Search, filter, switch layouts, select rows and take actions on your leads."
     )
@@ -33,7 +33,10 @@ class LeadsListTour(Tour):
     permission = LEAD_VIEW_PERMS
     auto_start = True
     steps = list_page_steps(
-        view_id="leads-list", create_id="lead-create", record_plural=_("leads")
+        view_id="leads-list",
+        create_id="lead-create",
+        record_plural=_("leads"),
+        intro=_("A lead is a person or company that might become a customer."),
     )
 
 
@@ -41,7 +44,7 @@ class LeadsDetailTour(Tour):
     """A single lead."""
 
     key = "leads_detail"
-    title = _("Inside a lead")
+    title = _("Inside a Lead")
     description = _(
         "The summary, stages and tabs of a lead: activity, related "
         "records, notes and history."
@@ -55,4 +58,13 @@ class LeadsDetailTour(Tour):
     ready = "#detailViewport"
     permission = LEAD_VIEW_PERMS
     auto_start = True
-    steps = detail_page_steps()
+    steps = detail_page_steps(
+        intro=_("One lead in full: who they are and everything done with them."),
+        related_lists=[
+            (
+                "campaigns",
+                _("Campaigns"),
+                _("Campaigns this lead is part of."),
+            ),
+        ],
+    )

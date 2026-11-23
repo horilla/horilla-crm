@@ -12,10 +12,11 @@
     var PENDING_KEY = "horilla_tour_pending";   // "start this tour once you get there"
     var PENDING_TTL = 10 * 60 * 1000;
     var STEP_TIMEOUT = 4000;
+    var EXPECTED_TIMEOUT = 10000; // a step with `only_if`: its element is known to come, a slow pop-up is not a missing one
     var READY_TIMEOUT = 8000;
     var OPEN_TIMEOUT = 20000;     // lists can be slow, and the user asked for this tour
     var STABLE_QUIET = 350;       // a step that loads content is lit once still this long
-    var STABLE_MAX = 3500;
+    var STABLE_MAX = 2000;
     var AUTO_START_DELAY = 800;
     var AUTO_NEXT_DELAY = 500;
     var POLL_MS = 100;
@@ -34,6 +35,8 @@
         autoKey: null,
         endResolve: null,
         driver: null,
+        proxy: null,
+        pausing: false,
         assets: null,
         token: 0,
         checking: false,
@@ -243,23 +246,74 @@
 
     /* ---------------------------------------------------------------- actions */
 
-    /** Click `action.click`, optionally only when another element is hidden / visible. */
+    /**
+     * Press an element the way a mouse does: press, move a pixel, release, click, all at
+     * the middle of the element. A calendar finds the day that was clicked from the mouse
+     * position, and ignores a press and release that never moved.
+     */
+    function tapAt(target) {
+        var box = target.getBoundingClientRect();
+        var x = box.left + box.width / 2;
+        var y = box.top + box.height / 2;
+        [["mousedown", 0], ["mousemove", 1], ["mouseup", 1], ["click", 1]].forEach(function (step) {
+            target.dispatchEvent(new MouseEvent(step[0], {
+                bubbles: true, cancelable: true, button: 0, view: window,
+                clientX: x + step[1], clientY: y + step[1]
+            }));
+        });
+    }
+
+    /**
+     * Run the `before` / `after` actions of a step. An action is `{<kind>: selector}`, with
+     * an optional `if_hidden` / `if_visible` selector that says when it applies. The kinds:
+     *   click      a plain click
+     *   mousedown  a press only: a select2 box opens on mousedown and ignores a click
+     *   tap        a full mouse press at the middle of the element (a calendar day)
+     */
     async function runActions(actions) {
-        for (var i = 0; i < (actions || []).length; i++) {
-            var action = actions[i];
-            var target = findVisible(action.click);
+        var list = actions || [];
+        if (!list.length) { return; }
+        // Let the click that got us here (Next, Back) finish first: a dropdown opened
+        // while it is still being delivered would see it as a click outside and close.
+        await sleep(0);
+        if (list.some(function (action) { return action.tap; })) { suspendDriver(); }
+        for (var i = 0; i < list.length; i++) {
+            var action = list[i];
+            var kind = action.tap ? "tap" : (action.click ? "click" : "mousedown");
+            var target = findVisible(action[kind]);
             if (!target) { continue; }
             if (action.if_hidden && findVisible(action.if_hidden)) { continue; }
             if (action.if_visible && !findVisible(action.if_visible)) { continue; }
-            target.click();
+            if (kind === "tap") {
+                tapAt(target);
+            } else if (kind === "mousedown") {
+                target.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, button: 0 }));
+            } else {
+                target.click();
+            }
             await sleep(250);
         }
     }
 
     /* ----------------------------------------------------------------- driver */
 
+    /**
+     * Take the dark overlay and the popover off the page, without ending the tour. While
+     * they are up the page ignores the pointer and an overlay covers it, so a calendar
+     * cannot tell which day a scripted tap hit. The next step brings them back.
+     */
+    function suspendDriver() {
+        if (!state.driver) { return; }
+        state.pausing = true;   // cleared when the next driver is made
+        try { state.driver.destroy(); } catch (e) { /* already gone */ }
+        state.driver = null;
+        state.currentEl = null;
+        removeProxy();
+    }
+
     function getDriver() {
         if (!state.driver) {
+            state.pausing = false;
             state.driver = window.driver.js.driver({
                 // A tour only explains what it points at: a click on the highlighted
                 // button must not run it. The tour's own scripted clicks still work.
@@ -270,7 +324,7 @@
                 popoverOffset: 12,
                 // A click on the dark overlay destroys the driver: treat it as "close".
                 onDestroyed: function () {
-                    if (state.running && !state.finishing) { endTour(); }
+                    if (state.running && !state.finishing && !state.pausing) { endTour(); }
                 }
             });
         }
@@ -296,6 +350,9 @@
             return !required || findVisible(required);
         });
         var side = ["top", "bottom", "left", "right", "over"].indexOf(step.side) !== -1 ? step.side : "bottom";
+        // A step with nothing to point at is a card in the middle of the screen. Placed
+        // beside the invisible dot driver.js uses, it ends up in a corner in a short window.
+        if (!step.target) { side = "over"; }
         var align = ["start", "center", "end"].indexOf(step.align) !== -1
             ? step.align
             : (side === "over" ? "center" : "start");
@@ -325,9 +382,39 @@
         };
     }
 
+    /** Remove the invisible box that lights two elements as one area. */
+    function removeProxy() {
+        if (state.proxy && state.proxy.parentNode) { state.proxy.parentNode.removeChild(state.proxy); }
+        state.proxy = null;
+    }
+
+    /**
+     * What to light for a step. Usually `el`. With `also` (a button and the pop-up it
+     * opens, say) it is an invisible box over both, so they are lit together: a step
+     * can only light one element, and the pop-up often sits outside the button.
+     */
+    function litElement(el, also) {
+        removeProxy();
+        var extra = also ? findVisible(also) : null;
+        if (!el || !extra) { return el; }
+        var a = el.getBoundingClientRect();
+        var b = extra.getBoundingClientRect();
+        var left = Math.min(a.left, b.left);
+        var top = Math.min(a.top, b.top);
+        var box = document.createElement("div");
+        box.setAttribute("data-tour-proxy", "");
+        box.style.cssText = "position:fixed;pointer-events:none;visibility:hidden;left:" + left +
+            "px;top:" + top + "px;width:" + (Math.max(a.right, b.right) - left) +
+            "px;height:" + (Math.max(a.bottom, b.bottom) - top) + "px";
+        document.body.appendChild(box);
+        state.proxy = box;
+        return box;
+    }
+
     function highlight(index, step, el) {
         var spec = { popover: popoverFor(index, step) };
-        if (el) { spec.element = el; }
+        var lit = litElement(el, step.also);
+        if (lit) { spec.element = lit; }
         state.currentEl = el || null;
         getDriver().highlight(spec);
     }
@@ -335,9 +422,23 @@
     /* ------------------------------------------------------------------ steps */
 
     /** Show step `index`, skipping steps whose element is not there. */
+    /**
+     * While the next step loads, fade the Back / Next buttons and show a busy cursor, so a
+     * click does not look ignored. The popover itself stays solid and readable.
+     */
+    function setLoading(on) {
+        var popover = document.querySelector(".driver-popover");
+        if (!popover) { return; }
+        popover.style.cursor = on ? "progress" : "";
+        popover.querySelectorAll("[data-tour-prev], [data-tour-next], [data-tour-skip]").forEach(function (button) {
+            button.style.opacity = on ? "0.5" : "";
+        });
+    }
+
     async function goto(index, dir) {
         var token = state.token;
         state.busy = true;
+        setLoading(true);
         try {
             for (var guard = 0; guard < 100; guard++) {
                 if (token !== state.token) { return; }
@@ -353,7 +454,7 @@
 
                 var el = null;
                 if (step.target) {
-                    el = await waitFor(step.target, STEP_TIMEOUT, token);
+                    el = await waitFor(step.target, step.only_if ? EXPECTED_TIMEOUT : STEP_TIMEOUT, token);
                     if (token !== state.token) { return; }
                     if (!el) {
                         await runActions(step.after);   // undo what the step opened, then move on
@@ -377,6 +478,7 @@
             }
         } finally {
             state.busy = false;
+            setLoading(false);
         }
     }
 
@@ -407,6 +509,7 @@
         try { if (state.driver) { state.driver.destroy(); } } catch (e) { /* already gone */ }
         state.driver = null;
         state.currentEl = null;
+        removeProxy();
         state.autoKey = null;
         clearPending();
         state.finishing = false;
@@ -614,7 +717,7 @@
         var step = state.steps[state.index];
         if (!step || !step.target) { return; }
         var el = findVisible(step.target);
-        if (el && el === state.currentEl) {
+        if (el && el === state.currentEl && !step.also) {
             if (state.driver) { state.driver.refresh(); }
         } else if (el) {
             highlight(state.index, step, el);

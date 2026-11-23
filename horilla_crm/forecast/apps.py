@@ -22,6 +22,7 @@ class ForecastConfig(AppLauncher):
         "registration",
         "signals",
         "menu",
+        "tour",
     ]
 
     demo_data = {
@@ -29,6 +30,7 @@ class ForecastConfig(AppLauncher):
             (7, "load_data/forecast_type.json"),
         ],
         "order": 4,
+        "configurable": False,
     }
 
     def get_api_paths(self):

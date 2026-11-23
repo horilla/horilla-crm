@@ -17,49 +17,84 @@ from horilla.utils.translation import gettext_lazy as _
 from .registry import Step
 
 
-def if_hidden(selector):
-    """Condition: the element is currently hidden."""
-    return {"if_hidden": selector}
+def _condition(kind, doc):
+    """Build a condition helper: ``kind`` is the key the browser engine reads."""
+
+    def build(selector):
+        return {kind: selector}
+
+    build.__name__, build.__doc__ = kind, doc
+    return build
 
 
-def if_visible(selector):
-    """Condition: the element is currently visible."""
-    return {"if_visible": selector}
+def _action(kind, doc):
+    """Build an action helper: ``kind`` is the key the browser engine reads."""
+
+    def build(selector, condition=None):
+        return {kind: selector, **(condition or {})}
+
+    build.__name__, build.__doc__ = kind, doc
+    return build
 
 
-def click(selector, condition=None):
-    """Action: click ``selector``, only when the optional ``condition`` holds."""
-    return {"click": selector, **(condition or {})}
+if_hidden = _condition("if_hidden", "Condition: the element is currently hidden.")
+if_visible = _condition("if_visible", "Condition: the element is currently visible.")
+click = _action(
+    "click", "Action: click ``selector``, only when the optional ``condition`` holds."
+)
+mousedown = _action(
+    "mousedown",
+    "Action: press ``selector`` (for a select2 box, which opens on mousedown).",
+)
+tap = _action(
+    "tap",
+    "Action: tap ``selector`` at its centre (a calendar day needs the mouse position).",
+)
 
 
-def list_page_steps(view_id, create_id, record_plural):
+def _popup(button, panel):
+    """
+    ``before`` / ``after`` of a step that explains a pop-up: open it from ``button``
+    when it is closed, and close it again when the step is left.
+    """
+    return {
+        "before": (click(button, if_hidden(panel)),),
+        "after": (click(button, if_visible(panel)),),
+    }
+
+
+def list_page_steps(view_id, create_id, record_plural, intro=None, create_body=None):
     """
     Steps for a generic list page.
 
     Args:
         view_id: The list view's ``view_id``.
-        create_id: The id of the page's create button .
-        record_plural: Lower-case plural noun used in the copy .
+        create_id: The id of the page's create button.
+        record_plural: Lower-case plural noun used in the copy.
+        intro: Optional text for the first step, to say what the records are
+            for. The generic text is used when it is left out.
+        create_body: Optional text for the Create step, to say how to add one.
     """
     first_row = f"#data-container-{view_id} tr:first-child"
     sort_headers = f"#table-container-{view_id} th[data-field], #tableview-{view_id} th[data-field]"
     select_all = f"#table-container-{view_id} th input[data-role='select-all']"
     return [
         Step(
-            title=format_lazy(_("Welcome to your {records}"), records=record_plural),
-            body=_(
+            title=format_lazy(_("Welcome to Your {records}"), records=record_plural),
+            body=intro
+            or _(
                 "This quick tour shows the main controls on this page. "
                 "You can close it at any time and restart it later from "
                 "Product Tours in your profile menu."
             ),
         ),
         Step(
-            title=_("Where you are"),
+            title=_("Where You Are"),
             body=_("The title tells you which list you are looking at."),
             target="#navBar h3",
         ),
         Step(
-            title=_("Saved views"),
+            title=_("Saved Views"),
             body=_(
                 "Switch between saved views of this list, such as 'All' or "
                 "your own filtered lists."
@@ -67,7 +102,7 @@ def list_page_steps(view_id, create_id, record_plural):
             target="#viewTypeSelect ~ .select2-container, #viewTypeSelect",
         ),
         Step(
-            title=_("Pin a view"),
+            title=_("Pin a View"),
             body=_(
                 "Pin the view you have open to make it the one this list "
                 "opens with every time. Click the pin again to unpin it."
@@ -101,15 +136,14 @@ def list_page_steps(view_id, create_id, record_plural):
             target="#filterToggleWrapper",
         ),
         Step(
-            title=_("Build a filter"),
+            title=_("Build a Filter"),
             body=_(
                 "Pick a field, an operator and a value, add more rows to "
                 "combine conditions, then apply."
             ),
             target="#filterpanel",
             side="left",
-            before=(click("#filterToggleWrapper", if_hidden("#filterpanel")),),
-            after=(click("#filterToggleWrapper", if_visible("#filterpanel")),),
+            **_popup("#filterToggleWrapper", "#filterpanel"),
         ),
         Step(
             title=_("Layouts"),
@@ -120,15 +154,14 @@ def list_page_steps(view_id, create_id, record_plural):
             target="#layoutDropdownButton",
         ),
         Step(
-            title=_("Pick a layout"),
+            title=_("Pick a Layout"),
             body=_(
                 "List, Kanban, Card, Timeline, Group by, Split view and "
                 "Chart are available. Your choice is remembered."
             ),
             target="#layoutDropdown",
             side="left",
-            before=(click("#layoutDropdownButton", if_hidden("#layoutDropdown")),),
-            after=(click("#layoutDropdownButton", if_visible("#layoutDropdown")),),
+            **_popup("#layoutDropdownButton", "#layoutDropdown"),
         ),
         Step(
             title=_("Actions"),
@@ -140,16 +173,15 @@ def list_page_steps(view_id, create_id, record_plural):
             side="left",
         ),
         Step(
-            title=_("Action menu"),
+            title=_("Action Menu"),
             body=_("Here is everything available for this layout."),
             target="#dropdown",
             side="left",
-            before=(click("#dropdownDefaultButton", if_hidden("#dropdown")),),
-            after=(click("#dropdownDefaultButton", if_visible("#dropdown")),),
+            **_popup("#dropdownDefaultButton", "#dropdown"),
         ),
         Step(
             title=_("Create"),
-            body=_("Add a new record from here."),
+            body=create_body or _("Add a new record from here."),
             target=f"#{create_id}",
             side="left",
         ),
@@ -160,12 +192,12 @@ def list_page_steps(view_id, create_id, record_plural):
             side="bottom",
         ),
         Step(
-            title=_("Select rows"),
+            title=_("Select Rows"),
             body=_("Tick rows, or use the box in the header to select them all."),
             target=select_all,
         ),
         Step(
-            title=_("Bulk actions"),
+            title=_("Bulk Actions"),
             body=_(
                 "With rows selected, these buttons act on all of them at once: "
                 "export, update a field, or delete, depending on your "
@@ -188,13 +220,13 @@ def list_page_steps(view_id, create_id, record_plural):
             ),
         ),
         Step(
-            title=_("Open a record"),
+            title=_("Open a Record"),
             body=_("Click a name in a row to open its detail page."),
             target=f"{first_row} td[hx-get]",
             side="bottom",
         ),
         Step(
-            title=_("Row actions"),
+            title=_("Row Actions"),
             body=_("Edit or act on a single record without leaving the list."),
             target=f"{first_row} .tablebtn",
             side="left",
@@ -202,57 +234,63 @@ def list_page_steps(view_id, create_id, record_plural):
     ]
 
 
-def detail_page_steps():
-    """Steps for a generic record detail page."""
+def detail_page_steps(intro=None, stages_body=None, related_lists=()):
+    """
+    Steps for a generic record detail page.
+
+    Args:
+        intro: Optional text for the first step, to say what this record is.
+        stages_body: Optional text for the Stages step, to say what the stages
+            of this kind of record mean.
+        related_lists: Optional ``(name, title, body)`` entries, one per list on
+            the Related Lists tab, in the order the tab shows them. ``name`` is
+            the list's key in the app's related list config (the button id is
+            ``tab-<name>-btn``). Each one gets a step that opens the list and
+            says what it holds. A list the user cannot see is skipped.
+    """
+    # (tab id, title, what it holds)
     tabs = (
-        {
-            "id": "details",
-            "title": _("Details"),
-            "body": _("All fields of the record. Edit them in place from here."),
-        },
-        {
-            "id": "activity",
-            "title": _("Activity"),
-            "body": _(
-                "Plan and log calls, meetings, emails and tasks for this record."
-            ),
-        },
-        {
-            "id": "cadence",
-            "title": _("Cadence"),
-            "body": _(
+        (
+            "details",
+            _("Details"),
+            _("All fields of the record. Edit them in place from here."),
+        ),
+        (
+            "activity",
+            _("Activity"),
+            _("Plan and log calls, meetings, emails and tasks for this record."),
+        ),
+        (
+            "cadence",
+            _("Cadence"),
+            _(
                 "Follow-ups lined up for this record by a cadence: a set "
                 "sequence of tasks, calls and emails."
             ),
-        },
-        {
-            "id": "related-lists",
-            "title": _("Related Lists"),
-            "body": _("Records linked to this current record."),
-        },
-        {
-            "id": "notes-attachments",
-            "title": _("Notes & attachments"),
-            "body": _("Keep notes and files together with the record."),
-        },
-        {
-            "id": "history",
-            "title": _("History"),
-            "body": _("A timeline of every change made to this record, and by whom."),
-        },
-        {
-            "id": "potential-duplicates",
-            "title": _("Potential duplicates"),
-            "body": _(
-                "Other records that look like this one, so you can spot duplicates."
-            ),
-        },
+        ),
+        ("related-lists", _("Related Lists"), _("Records linked to this one.")),
+        (
+            "notes-attachments",
+            _("Notes & Attachments"),
+            _("Keep notes and files together with the record."),
+        ),
+        (
+            "history",
+            _("History"),
+            _("A timeline of every change made to this record, and by whom."),
+        ),
+        (
+            "potential-duplicates",
+            _("Potential Duplicates"),
+            _("Other records that look like this one, so you can spot duplicates."),
+        ),
     )
 
     steps = [
         Step(
-            title=_("Record page"),
-            body=_(
+            title=_("Record Page"),
+            body=intro
+            or _(
                 "This is the full view of one record. Let's look at the "
                 "parts that matter most."
             ),
@@ -291,7 +329,8 @@ def detail_page_steps():
         ),
         Step(
             title=_("Stages"),
-            body=_("Click a stage to move the record forward in your pipeline."),
+            body=stages_body
+            or _("Click a stage to move the record forward in your pipeline."),
             target="#pipeline-choices",
             side="bottom",
         ),
@@ -305,15 +344,34 @@ def detail_page_steps():
             side="left",
         ),
     ]
-    for tab in tabs:
+    for tab_id, title, body in tabs:
         steps.append(
             Step(
-                title=tab["title"],
-                body=tab["body"],
-                target=f"#tab-{tab['id']}-content",
-                only_if=f"#tab-{tab['id']}",
+                title=title,
+                body=body,
+                target=f"#tab-{tab_id}-content",
+                only_if=f"#tab-{tab_id}",
                 side="over",
-                before=(click(f"#tab-{tab['id']}"),),
+                before=(click(f"#tab-{tab_id}"),),
             )
         )
+        if tab_id != "related-lists":
+            continue
+        for name, list_title, list_body in related_lists:
+            button = f"#tab-{name}-btn"
+            steps.append(
+                Step(
+                    title=list_title,
+                    body=list_body,
+                    target=button,
+                    # The buttons are only on screen while the tab is open, so a list
+                    # the user cannot see is skipped at once, without waiting.
+                    only_if=button,
+                    side="right",
+                    before=(
+                        click("#tab-related-lists", if_hidden("#related-tabs")),
+                        click(button),
+                    ),
+                )
+            )
     return steps

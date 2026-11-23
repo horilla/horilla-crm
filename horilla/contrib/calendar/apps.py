@@ -23,6 +23,7 @@ class CalendarConfig(AppLauncher):
         "registration",
         "menu",
         "signals",
+        "tour",
     ]
 
     def get_api_paths(self):

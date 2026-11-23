@@ -24,15 +24,17 @@ class ActivityConfig(AppLauncher):
     auto_import_modules = [
         "registration",
         "methods",
+        "dashboard",
         "menu",
         "signals",
+        "tour",
     ]
 
     celery_schedule_module = "celery_schedules"
 
     demo_data = {
         "files": [
-            (29, "load_data/activity.json"),
+            (32, "load_data/activity.json"),
         ],
         "order": 7,
         "configurable": False,

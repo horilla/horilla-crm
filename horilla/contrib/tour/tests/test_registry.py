@@ -1,5 +1,8 @@
 """
 Tests for the tour registry: validation, permission filtering and URL helpers.
+
+They use fake tours and the tour app's own pages only. The tours of the other apps are
+tested in those apps, next to their ``tour.py``.
 """
 
 # Third-party imports (Django)
@@ -9,26 +12,15 @@ from django.test import SimpleTestCase
 # Local imports
 from ..presets import list_page_steps
 from ..registry import Step, Tour, _registry, get_tours_for, resolve_view_name
-
-
-class FakeUser:
-    """Minimal user object for permission checks."""
-
-    is_authenticated = True
-
-    def __init__(self, perms=()):
-        self._perms = set(perms)
-
-    def has_perm(self, perm):
-        """Has perm."""
-        return perm in self._perms
+from ..testing import FakeUser, TourOwnershipTestsMixin
+from .support import RESTRICTED_PERMISSION, FakeToursMixin
 
 
 def _valid_attrs(**overrides):
     attrs = {
         "key": "test_tour",
         "title": "Test",
-        "match": ("dashboard:home_view",),
+        "match": ("tour:panel",),
         "steps": [Step(title="One", body="Body")],
     }
     attrs.update(overrides)
@@ -93,12 +85,12 @@ class TourValidationTests(SimpleTestCase):
     def test_match_must_be_a_list(self):
         """Match must be a list."""
         with self.assertRaises(ImproperlyConfigured):
-            self.make(match="dashboard:home_view")
+            self.make(match="tour:panel")
 
     def test_open_with_needs_both_entries(self):
         """Open with needs both entries."""
         with self.assertRaises(ImproperlyConfigured):
-            self.make(open_with={"from": "dashboard:home_view"})
+            self.make(open_with={"from": "tour:panel"})
 
     def test_abstract_subclass_not_registered(self):
         """Abstract subclass not registered."""
@@ -106,13 +98,8 @@ class TourValidationTests(SimpleTestCase):
         self.assertNotIn("abstract_tour", _registry)
 
 
-class TourBehaviourTests(SimpleTestCase):
+class TourBehaviourTests(FakeToursMixin, SimpleTestCase):
     """Permission filtering, matching and start links."""
-
-    def test_shipped_tours_are_registered(self):
-        """Shipped tours are registered."""
-        for key in ("app_shell", "dashboard_home", "leads_list", "leads_detail"):
-            self.assertIn(key, _registry)
 
     def test_every_tour_builds_a_start_link(self):
         """Every tour builds a start link."""
@@ -124,10 +111,25 @@ class TourBehaviourTests(SimpleTestCase):
     def test_permission_filters_tours(self):
         """Permission filters tours."""
         everyone = FakeUser()
-        sales = FakeUser(["leads.view_lead"])
-        self.assertNotIn(_registry["leads_list"], get_tours_for(everyone))
-        self.assertIn(_registry["leads_list"], get_tours_for(sales))
-        self.assertIn(_registry["app_shell"], get_tours_for(everyone))
+        privileged = FakeUser([RESTRICTED_PERMISSION])
+        restricted = self.tours["restricted_tour"]
+        self.assertNotIn(restricted, get_tours_for(everyone))
+        self.assertIn(restricted, get_tours_for(privileged))
+        self.assertIn(self.tours["page_tour"], get_tours_for(everyone))
+
+    def test_tours_are_listed_by_order_then_title(self):
+        """The display order is ``order``, then the title."""
+        keys = [tour.key for tour in get_tours_for(FakeUser([RESTRICTED_PERMISSION]))]
+        self.assertEqual(
+            keys,
+            [
+                "other_page_tour",
+                "restricted_tour",
+                "page_tour",
+                "second_page_tour",
+                "manual_tour",
+            ],
+        )
 
     def test_anonymous_user_sees_nothing(self):
         """Anonymous user sees nothing."""
@@ -137,37 +139,35 @@ class TourBehaviourTests(SimpleTestCase):
 
     def test_to_dict_is_json_ready(self):
         """To dict is json ready."""
-        data = _registry["leads_list"].to_dict(FakeUser(["leads.view_lead"]))
-        self.assertEqual(data["key"], "leads_list")
+        data = self.tours["page_tour"].to_dict()
+        self.assertEqual(data["key"], "page_tour")
         self.assertNotIn("next_tour", data)
         for step in data["steps"]:
             self.assertIsInstance(step["title"], str)
             self.assertIsInstance(step["body"], str)
 
+    def test_a_tour_matches_only_its_own_pages(self):
+        """``matches`` is true for the URL names in ``match`` and nothing else."""
+        tour = self.tours["page_tour"]
+        self.assertTrue(tour.matches("tour:panel"))
+        self.assertFalse(tour.matches("tour:current"))
+        self.assertFalse(tour.matches(None))
+
     def test_resolve_view_name_handles_arguments(self):
         """Resolve view name handles arguments."""
         self.assertEqual(
-            resolve_view_name("/crm/leads/leads-detail/5/"), "leads:leads_detail"
+            resolve_view_name("/tour/definition/some_tour/"), "tour:definition"
         )
-        self.assertEqual(
-            resolve_view_name("/crm/leads/leads-view/"), "leads:leads_view"
-        )
+        self.assertEqual(resolve_view_name("/tour/"), "tour:panel")
+        self.assertEqual(resolve_view_name("/tour/current/"), "tour:current")
         self.assertIsNone(resolve_view_name("/definitely/not/a/page/"))
 
 
-class TourTextTests(SimpleTestCase):
-    """The product name must not appear in anything a user reads in a tour."""
+class AppShellOwnershipTests(TourOwnershipTestsMixin, SimpleTestCase):
+    """The shell tour belongs to no app: it lives in the tour app's own ``tour.py``."""
 
-    BRAND = "horilla"
-
-    def test_no_tour_text_mentions_the_company_name(self):
-        """No tour text mentions the company name."""
-        for key, tour in _registry.items():
-            texts = [str(tour.title), str(tour.description), str(tour.group)]
-            for step in tour.steps:
-                texts += [str(step.title), str(step.body)]
-            for text in texts:
-                self.assertNotIn(self.BRAND, text.lower(), f"{key}: {text!r}")
+    MODULE = "horilla.contrib.tour.tour"
+    KEYS = ("app_shell",)
 
 
 class ShellTourTests(SimpleTestCase):
@@ -184,11 +184,11 @@ class ShellTourTests(SimpleTestCase):
             "Global Search",
             "Toggle Theme",
             "Settings",
-            "Recently viewed",
+            "Recently Viewed",
             "Language",
-            "Switch company",
+            "Switch Company",
             "Notifications",
-            "Your profile",
+            "Your Profile",
         ):
             self.assertIn(expected, titles)
 
@@ -201,11 +201,11 @@ class ShellTourTests(SimpleTestCase):
                 "Global Search",
                 "Toggle Theme",
                 "Settings",
-                "Recently viewed",
+                "Recently Viewed",
                 "Language",
-                "Switch company",
+                "Switch Company",
                 "Notifications",
-                "Your profile",
+                "Your Profile",
             )
         ]
         self.assertEqual(order, sorted(order))
@@ -226,40 +226,30 @@ class ShellTourTests(SimpleTestCase):
                 self.assertNotIn("title=", step.target)
 
 
-class TourOwnershipTests(SimpleTestCase):
-    """Each app's tours are loaded from its own ``tour.py``."""
-
-    def test_every_shipped_tour_starts_by_itself_once(self):
-        """Every shipped tour starts by itself once."""
-        for key in ("app_shell", "dashboard_home", "leads_list", "leads_detail"):
-            self.assertTrue(_registry[key].auto_start, key)
-
-    def test_tours_come_from_the_apps_that_own_them(self):
-        """Tours come from the apps that own them."""
-        expected = {
-            "dashboard_home": "horilla.contrib.dashboard.tour",
-            "leads_list": "horilla_crm.leads.tour",
-            "leads_detail": "horilla_crm.leads.tour",
-            "app_shell": "horilla.contrib.tour.tour",
-        }
-        for key, module in expected.items():
-            self.assertEqual(_registry[key].__module__, module, key)
-
-
 class ListPresetTests(SimpleTestCase):
     """Steps that point at table rows must skip at once when the list is empty."""
 
     def test_table_steps_skip_when_there_are_no_records(self):
         steps = {
             str(step.title): step
-            for step in list_page_steps("leads-list", "lead-create", "leads")
+            for step in list_page_steps("item-list", "item-create", "items")
         }
         for title in (
             "Sort",
-            "Select rows",
-            "Bulk actions",
-            "Open a record",
-            "Row actions",
+            "Select Rows",
+            "Bulk Actions",
+            "Open a Record",
+            "Row Actions",
         ):
             step = steps[title]
             self.assertTrue(step.only_if or (step.target and not step.before), title)
+
+
+class LitTogetherTests(SimpleTestCase):
+    """A step can light a control and the pop-up it opens as one area."""
+
+    def test_also_is_sent_to_the_browser(self):
+        """The ``also`` selector is part of the step's JSON, empty when unused."""
+        self.assertIsNone(Step(title="One", body="Body").to_dict()["also"])
+        step = Step(title="One", body="Body", target="#a", also="#b")
+        self.assertEqual(step.to_dict()["also"], "#b")

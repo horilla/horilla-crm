@@ -24,6 +24,7 @@ class ContactsConfig(AppLauncher):
         "signals",
         "menu",
         "dashboard",
+        "tour",
     ]
 
     demo_data = [
@@ -32,6 +33,8 @@ class ContactsConfig(AppLauncher):
                 (11, "load_data/contact.json"),
             ],
             "order": 6,
+            "options": [100, 200, 500, 1000],
+            "default": 200,
         },
         {
             "files": [

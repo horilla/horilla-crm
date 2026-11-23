@@ -7,7 +7,7 @@ steps in the browser and skips any step whose element is missing.
 """
 
 # Standard library imports
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Optional, Tuple
 
 # Third-party imports (Django)
@@ -33,9 +33,14 @@ class Step:  # pylint: disable=too-many-instance-attributes
     side, align    where the popover sits; use ``align="end"`` at the right edge
     only_if        only for a step with ``before`` clicks, or one that needs a different
                    element than ``target``: the selector that must be visible, otherwise the
-                   step is skipped. Without it the step is skipped when ``target`` is missing
-    before, after  clicks run when entering / leaving the step, for example to
-                   open and close a menu: ``{"click": "#btn", "if_hidden": "#menu"}``
+                   step is skipped. Without it the step is skipped when ``target`` is missing.
+                   A step that has it waits longer for its target (a pop-up can be slow)
+    also           a second element to light together with ``target``, for a button
+                   and the pop-up it opens when the pop-up sits outside the button
+    before, after  actions run when entering / leaving the step, for example to open
+                   and close a menu: ``{"click": "#btn", "if_hidden": "#menu"}``. The kinds
+                   are ``click``, ``mousedown`` (a select2 box) and ``tap`` (a calendar day);
+                   build them with the helpers in ``presets``
     """
 
     title: str
@@ -44,21 +49,20 @@ class Step:  # pylint: disable=too-many-instance-attributes
     side: str = "bottom"
     align: Optional[str] = None
     only_if: Optional[str] = None
+    also: Optional[str] = None
     before: Tuple[dict, ...] = ()
     after: Tuple[dict, ...] = ()
 
     def to_dict(self):
         """Return the JSON-serialisable form sent to the browser."""
-        return {
-            "title": str(self.title),
-            "body": str(self.body),
-            "target": self.target,
-            "side": self.side,
-            "align": self.align,
-            "only_if": self.only_if,
-            "before": [dict(action) for action in self.before],
-            "after": [dict(action) for action in self.after],
-        }
+        data = asdict(self)
+        data.update(
+            title=str(self.title),
+            body=str(self.body),
+            before=list(data["before"]),
+            after=list(data["after"]),
+        )
+        return data
 
 
 class Tour:
@@ -133,6 +137,21 @@ class Tour:
                 )
 
     @classmethod
+    def match_names(cls):
+        """
+        URL names of the pages the tour belongs to.
+
+        ``match`` unless a tour overrides this for a page whose URL changes while
+        it is used, such as Settings, which opens its pages in place.
+        """
+        return list(cls.match)
+
+    @classmethod
+    def matches(cls, view_name):
+        """Whether the page called ``view_name`` belongs to this tour."""
+        return bool(view_name) and view_name in cls.match_names()
+
+    @classmethod
     def is_visible_to(cls, user):
         """Whether ``user`` may see this tour (permission check)."""
         if not (user and user.is_authenticated):
@@ -154,13 +173,13 @@ class Tour:
             return None
 
     @classmethod
-    def to_dict(cls, user):
+    def to_dict(cls):
         """Full definition (including steps) sent to the browser."""
         return {
             "key": cls.key,
             "title": str(cls.title),
             "description": str(cls.description),
-            "match": list(cls.match),
+            "match": cls.match_names(),
             "open_with": dict(cls.open_with) if cls.open_with else None,
             "start_url": cls.start_link(),
             "ready": cls.ready,

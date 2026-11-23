@@ -23,6 +23,7 @@ class AccountsConfig(AppLauncher):
         "signals",
         "menu",
         "dashboard",
+        "tour",
     ]
 
     demo_data = {
@@ -30,6 +31,8 @@ class AccountsConfig(AppLauncher):
             (10, "load_data/account.json"),
         ],
         "order": 5,
+        "options": [100, 250, 500, 1000],
+        "default": 250,
     }
 
     report_files = [

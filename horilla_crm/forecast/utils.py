@@ -17,6 +17,7 @@ Features:
 # First party imports (Horilla)
 from horilla.auth.models import User
 from horilla.contrib.core.models import FiscalYearInstance, Period
+from horilla.contrib.core.utils import get_allowed_user_ids
 from horilla.contrib.generics.forms.condition_fields import get_extension_condition_q
 from horilla.db.models import Q, Sum
 
@@ -708,3 +709,164 @@ class ForecastCalculator:
             for forecast_type in forecast_types:
                 for period in periods:
                     self.create_or_update_period_forecast(user, forecast_type, period)
+
+
+def get_forecast_owner_scope(user):
+    """
+    Return the set of owner ids whose forecasts ``user`` may see.
+
+    ``None`` means unrestricted (``view_opportunity``, which superusers hold).
+    With only ``view_own_opportunity`` the scope is the user plus everyone in
+    subordinate roles, resolved by ``get_allowed_user_ids``. A user with no
+    subordinates therefore sees exactly their own forecast, as before.
+    No forecast permission gives an empty set.
+    """
+    if user.has_perm("opportunities.view_opportunity"):
+        return None
+    if user.has_perm("opportunities.view_own_opportunity"):
+        return set(get_allowed_user_ids(user))
+    return set()
+
+
+def resolve_forecast_scope(user, user_id=None):
+    """
+    Validate a requested ``user_id`` against the user's forecast scope.
+
+    Returns ``(owner_ids, user_id, allowed)``:
+    - ``owner_ids``: scope set, or ``None`` when unrestricted.
+    - ``user_id``: the id to filter on as a string, or ``None`` for the
+      combined view over ``owner_ids``.
+    - ``allowed``: ``False`` when the request must be rejected (403).
+    """
+    scope = get_forecast_owner_scope(user)
+    if scope is None:
+        return None, (str(user_id) if user_id else None), True
+    if not scope:
+        return scope, None, False
+    if user_id:
+        try:
+            requested = int(user_id)
+        except (TypeError, ValueError):
+            return scope, None, False
+        if requested not in scope:
+            return scope, None, False
+        return scope, str(requested), True
+    if len(scope) == 1:
+        return scope, str(user.pk), True
+    return scope, None, True
+
+
+def get_assignable_target_user_ids(user):
+    """
+    Return the user ids ``user`` may set forecast targets for.
+
+    ``None`` means no restriction: superusers, anyone with
+    ``view_opportunity`` (who already see every forecast), and users with
+    no forecast permission at all, such as a settings admin, so existing
+    setups keep working. Only a user holding just ``view_own_opportunity``
+    is limited to users in subordinate roles, never themselves: a manager
+    sets their reports' targets, and their own comes from the manager above.
+    """
+    if (
+        user.is_superuser
+        or user.has_perm("opportunities.view_opportunity")
+        or not user.has_perm("opportunities.view_own_opportunity")
+    ):
+        return None
+    return set(get_allowed_user_ids(user)) - {user.pk}
+
+
+def build_forecast_role_tree(roles, user_counts):
+    """
+    Lay out the role hierarchy for the forecast table.
+
+    ``roles`` is an iterable of ``(id, name, parent_id)``; ``user_counts`` maps a
+    role id (``None`` for users with no role) to the number of in-scope users in it.
+
+    Returns a depth-first list of nodes, each a dict with ``id``, ``name``,
+    ``parent_id`` (the nearest shown ancestor), ``depth``, ``subtree_ids`` (the role
+    and every role below it), ``own_users`` (users in the role itself),
+    ``user_count`` (users in the subtree) and ``has_children``. A role is shown when it has users of its own or branches into
+    two or more populated roles; others are skipped, so a manager sees their own role
+    as the top row instead of the empty roles above it.
+    """
+    names, parent_of, children = {}, {}, {}
+    for role_id, name, parent_id in roles:
+        names[role_id] = name
+        parent_of[role_id] = parent_id
+    for role_id in sorted(names, key=lambda r: (str(names[r]).lower(), r)):
+        children.setdefault(parent_of[role_id], []).append(role_id)
+
+    def descendants(role_id, seen):
+        ids = [role_id]
+        for child in children.get(role_id, []):
+            if child not in seen:
+                seen.add(child)
+                ids.extend(descendants(child, seen))
+        return ids
+
+    populated = {}
+
+    def has_users(role_id, seen=()):
+        if role_id in populated:
+            return populated[role_id]
+        if role_id in seen:  # a role cycle must not recurse forever
+            return False
+        found = user_counts.get(role_id, 0) > 0
+        for child in children.get(role_id, []):
+            found = has_users(child, seen + (role_id,)) or found
+        populated[role_id] = found
+        return found
+
+    nodes = []
+
+    def walk(role_id, depth, shown_parent, visited):
+        if role_id in visited or not has_users(role_id):
+            return
+        visited = visited | {role_id}
+        populated_children = [c for c in children.get(role_id, []) if has_users(c)]
+        show = user_counts.get(role_id, 0) > 0 or len(populated_children) >= 2
+        if show:
+            subtree = descendants(role_id, {role_id})
+            nodes.append(
+                {
+                    "id": role_id,
+                    "name": names[role_id],
+                    "parent_id": shown_parent,
+                    "depth": depth,
+                    "subtree_ids": subtree,
+                    "own_users": user_counts.get(role_id, 0),
+                    "user_count": sum(user_counts.get(r, 0) for r in subtree),
+                }
+            )
+            depth, shown_parent = depth + 1, role_id
+        for child in children.get(role_id, []):
+            walk(child, depth, shown_parent, visited)
+
+    roots = [
+        r
+        for r in sorted(names, key=lambda r: (str(names[r]).lower(), r))
+        if parent_of[r] is None or parent_of[r] not in names
+    ]
+    for root in roots:
+        walk(root, 0, None, frozenset())
+
+    if user_counts.get(None, 0) > 0:
+        nodes.append(
+            {
+                "id": None,
+                "name": None,
+                "parent_id": None,
+                "depth": 0,
+                "subtree_ids": [None],
+                "own_users": user_counts[None],
+                "user_count": user_counts[None],
+            }
+        )
+    for node in nodes:
+        node["has_children"] = any(
+            other["parent_id"] == node["id"] and other is not node
+            for other in nodes
+            if node["id"] is not None
+        )
+    return nodes

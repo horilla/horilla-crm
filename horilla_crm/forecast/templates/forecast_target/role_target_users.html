@@ -1,0 +1,86 @@
+{% comment %}
+    The users behind one role total. Page 1 is a full-width row holding a nested table under
+    the role total's row; later pages are just more rows, replacing the "Load More Users" row.
+{% endcomment %}
+{% if page_number == 1 %}
+    <tr class="rt-users-row bg-gray-50" data-batch="{{ batch }}">
+        <td colspan="6" class="p-0 border-t border-dark-50">
+            <div class="custom-scroll overflow-x-auto overflow-y-auto max-h-96">
+            <table class="w-full text-[13px]">
+                <thead class="sticky top-0 bg-gray-50 text-gray-500 z-10">
+                    <tr>
+                        <th class="text-start py-2 pe-3 font-semibold" style="padding-inline-start: 1rem;">{% trans "Assigned User" %}</th>
+                        <th class="text-start py-2 px-3 font-semibold">{% trans "Role" %}</th>
+                        <th class="text-start py-2 px-3 font-semibold">{% trans "Target" %}</th>
+                        <th class="text-start py-2 px-3 font-semibold w-[180px]">{% trans "Actions" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+{% endif %}
+{% for row in rows %}{% with t=row.target %}
+    {% if row.new_role %}
+    <tr class="bg-primary-100/40 border-t border-dark-50">
+        <td colspan="2" class="py-1.5 pe-3 font-semibold text-primary-600" style="padding-inline-start: {{ row.indent|stringformat:'.2f' }}rem;">
+            {{ t.assigned_to.role|default:"-" }}
+            <span class="font-normal text-gray-500">&middot; {{ row.role_total.users }} {% trans "users" %}</span>
+        </td>
+        <td class="py-1.5 px-3 font-semibold text-primary-600">{{ row.role_total.total|floatformat:"-2g" }}</td>
+        <td class="py-1.5 px-3">
+            {% if can_edit_total %}
+                <div class="flex tablebtn">
+                    <button
+                        type="button"
+                        class="w-10 h-7 bg-dark-25 flex-1 flex justify-center hover:bg-dark-50 transition duration-300 items-center"
+                        title="{% trans 'Edit Role Target' %}"
+                        aria-label="{% trans 'Edit Role Target' %}"
+                        hx-get="{% url 'forecast:forecast_role_total_edit' %}?batch={{ batch }}&role={{ t.assigned_to.role_id }}"
+                        hx-target="#modalBox"
+                        hx-swap="innerHTML"
+                        onclick="openModal()"
+                    ><img src="{% static 'assets/icons/edit.svg' %}" alt="" width="16"></button>
+                </div>
+            {% endif %}
+        </td>
+    </tr>
+    {% endif %}
+    <tr class="border-t border-dark-50">
+        <td class="py-2 pe-3" style="padding-inline-start: {{ row.user_indent|stringformat:'.2f' }}rem;">
+            <div class="flex items-center gap-1.5">
+                <img src="{{ t.assigned_to.get_avatar }}" alt="" class="w-5 h-5 shrink-0 rounded-full object-cover">
+                <span>{{ t.assigned_to.get_full_name|default:t.assigned_to.username }}</span>
+            </div>
+        </td>
+        <td class="py-2 px-3 text-gray-600">{{ t.assigned_to.role|default:"-" }}</td>
+        <td class="py-2 px-3">{{ t.target_amount|floatformat:"-2g" }}</td>
+        <td class="py-2 px-3">
+            {% filter_actions_by_permission actions t as allowed_actions %}
+            <div class="flex tablebtn">
+                {% for action in allowed_actions %}
+                    {{ action|render_action_button:t }}
+                {% endfor %}
+            </div>
+        </td>
+    </tr>
+{% endwith %}{% empty %}
+    {% if page_number == 1 %}
+        <tr><td colspan="4" class="py-3 text-center text-gray-500" style="padding-inline-start: 1rem;">{% trans "No users to show for this role total." %}</td></tr>
+    {% endif %}
+{% endfor %}
+{% if has_next %}
+    {# loads the next page by itself when scrolled into view, like the list view #}
+    <tr
+        class="rt-more-row"
+        hx-get="{% url 'forecast:forecast_role_target_users' %}?batch={{ batch }}&page={{ next_page }}&prev={{ last_role }}"
+        hx-trigger="intersect once"
+        hx-swap="outerHTML"
+    >
+        <td colspan="4" class="py-3 text-center text-[13px] text-gray-500">{% trans "Loading more users..." %}</td>
+    </tr>
+{% endif %}
+{% if page_number == 1 %}
+                </tbody>
+            </table>
+            </div>
+        </td>
+    </tr>
+{% endif %}

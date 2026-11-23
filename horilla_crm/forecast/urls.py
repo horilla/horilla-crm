@@ -26,6 +26,21 @@ urlpatterns = [
         name="forecast_type_tab_view",
     ),
     path(
+        "forecast-role-users/",
+        views.ForecastRoleUsersView.as_view(),
+        name="forecast_role_users",
+    ),
+    path(
+        "forecast-role-target-users/",
+        views.ForecastRoleTargetUsersView.as_view(),
+        name="forecast_role_target_users",
+    ),
+    path(
+        "forecast-role-total-edit/",
+        views.ForecastRoleTotalEditView.as_view(),
+        name="forecast_role_total_edit",
+    ),
+    path(
         "forecast-charts-modal/",
         views.ForecastChartsModalView.as_view(),
         name="forecast_charts_modal",

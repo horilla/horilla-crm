@@ -1,0 +1,16 @@
+{% comment %}
+    One Yes/No control for a boolean form field, in the same design as the generic
+    single form (partials/boolean_segmented.html), with its errors.
+    Params: field (bound field); same_toggle (optional: one of the "Same ... for All"
+    controls, hidden while the whole-role split is on).
+{% endcomment %}
+<div {% if same_toggle %}data-same-toggle{% endif %} class="text-sm flex flex-col gap-2 relative{% if same_toggle and is_whole_role %} hidden{% endif %}">
+    {% include "partials/boolean_segmented.html" with field=field %}
+    {% if field.errors %}
+        <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
+            {% for error in field.errors %}
+                {{ error }}
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

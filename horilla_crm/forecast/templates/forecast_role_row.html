@@ -1,0 +1,121 @@
+{% comment %}
+    Team total for one role in an expanded period: the role plus every role below it.
+    Params: role_row (from build_period_role_rows), forecast (the period row), currency_symbol.
+    Role rows use their own class so the user pagination (which selects tr.user-details-row)
+    never reloads them.
+{% endcomment %}
+<tr
+    class="role-subtotal-row bg-primary-100 font-semibold"
+    data-key="{{ forecast.view_id }}-{{ role_row.role_id|default_if_none:'none' }}"
+    {% if role_row.parent_role_id is not None %}data-parent="{{ forecast.view_id }}-{{ role_row.parent_role_id }}"{% endif %}
+>
+    <td
+        class="sticky start-0 z-10 bg-primary-100 text-[13px] border border-[#dddddd] text-start p-3 w-[200px] min-w-[200px] whitespace-nowrap"
+        style="padding-inline-start: calc(0.75rem + {{ role_row.depth }} * 1rem);"
+    >
+        {# same layout as the period row: arrow on the first text line, name above a small grey line #}
+        <div class="flex items-start gap-2">
+            {% if role_row.has_children %}
+                <button
+                    type="button"
+                    class="role-toggle shrink-0 p-1 rounded hover:bg-white"
+                    aria-expanded="true"
+                    aria-label="{% trans 'Show or hide the roles below' %}"
+                    onclick="toggleRoleRows(this)"
+                >
+                    <svg class="w-3 h-3 mt-0.5 transform transition-transform duration-200" style="transform: rotate(90deg)" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            {% else %}
+                <span class="w-5 shrink-0"></span>
+            {% endif %}
+            <div class="flex flex-col gap-0.5 py-1">
+                <span class="font-medium">{{ role_row.role_name|default:_("No Role") }}</span>
+                <span class="flex items-center gap-1.5 text-[11px] font-normal text-gray-500">
+                    {% if role_row.own_users %}
+                        {# a person icon marks this as the role's users (not another expand arrow) #}
+                        <button
+                            type="button"
+                            class="role-users-toggle inline-flex items-center gap-1 px-1.5 py-px rounded-full border border-dark-50 bg-white text-blue-700 hover:border-blue-600"
+                            aria-expanded="false"
+                            title="{% trans 'Show or hide the users in this role' %}"
+                            hx-get="{% url 'forecast:forecast_role_users' %}?forecast_type_id={{ forecast_type.id }}&fiscal_year_id={{ fiscal_year.id }}&period_id={{ forecast.period.id }}&role_id={{ role_row.role_id|default_if_none:'none' }}&depth={{ role_row.depth }}"
+                            hx-trigger="click once"
+                            hx-target="closest tr"
+                            hx-swap="afterend"
+                            onclick="toggleRoleUsers(this)"
+                        >
+                            <svg class="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                            </svg>
+                            {% blocktrans count counter=role_row.own_users %}{{ counter }} user{% plural %}{{ counter }} users{% endblocktrans %}
+                        </button>
+                    {% endif %}
+                    {% if role_row.has_children %}
+                        <span>{% blocktrans with count=role_row.user_count %}{{ count }} in team{% endblocktrans %}</span>
+                    {% endif %}
+                </span>
+                {% if role_row.role_target %}
+                    {# the role total that was entered, and whether its targets still add up to it #}
+                    {% if role_row.role_target.matches %}
+                        <span class="text-[11px] font-normal text-gray-500">{% blocktrans with total=role_row.role_target.total|floatformat:"-2g" %}Role target {{ total }}{% endblocktrans %}</span>
+                    {% else %}
+                        <span
+                            class="inline-flex w-fit text-[11px] font-medium px-1.5 py-px rounded-full bg-red-100 text-red-700"
+                            title="{% trans 'The targets of this role no longer add up to the role target that was set.' %}"
+                        >{% blocktrans with total=role_row.role_target.total|floatformat:"-2g" now=role_row.role_target.current|floatformat:"-2g" %}Role target {{ total }} &middot; now {{ now }}{% endblocktrans %}</span>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </td>
+    <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] text-start p-3">
+        {% if role_row.forecast_type.is_quantity_based %}
+            {{ role_row.target_quantity|floatformat:0 }} {% trans "deals" %}
+        {% else %}
+            {{ role_row.target_amount|floatformat:0 }} {{ currency_symbol }}
+        {% endif %}
+    </td>
+    <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] p-3 text-center">
+        {% if role_row.forecast_type.is_quantity_based %}
+            <p class="mb-2">{{ role_row.actual_quantity }} / {{ role_row.target_quantity|floatformat:0 }} {% trans "deals" %}</p>
+        {% else %}
+            <p class="mb-2">{{ role_row.actual_amount|floatformat:0 }} / {{ role_row.target_amount|floatformat:0 }} {{ currency_symbol }}</p>
+        {% endif %}
+        <div class="w-full bg-gray-200 rounded-full h-1.5">
+            {% if role_row.performance_percentage < 100 %}
+                <div class="bg-red-500 h-1.5 rounded-full" style="width: {{ role_row.performance_percentage|floatformat:0 }}%;"></div>
+            {% elif role_row.performance_percentage == 100 %}
+                <div class="bg-green-500 h-1.5 rounded-full" style="width: 100%"></div>
+            {% else %}
+                <div class="bg-blue-700 h-1.5 rounded-full" style="width: 100%"></div>
+            {% endif %}
+        </div>
+        {% if role_row.performance_percentage < 100 %}
+            <p class="mt-2 text-red-600 font-medium">{{ role_row.performance_percentage|floatformat:0 }}%</p>
+        {% elif role_row.performance_percentage == 100 %}
+            <p class="mt-2 text-green-600 font-medium">{{ role_row.performance_percentage|floatformat:0 }}%</p>
+        {% else %}
+            <p class="mt-2 text-blue-700 font-medium">{{ role_row.performance_percentage|floatformat:0 }}%</p>
+        {% endif %}
+    </td>
+    <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] text-start p-3">
+        {% if role_row.forecast_type.is_quantity_based %}
+            {{ role_row.gap_quantity|floatformat:0 }} {% trans "deals" %} ({{ role_row.gap_percentage|floatformat:0 }}%)
+        {% else %}
+            {{ role_row.gap_amount|floatformat:0 }} {{ currency_symbol }} ({{ role_row.gap_percentage|floatformat:0 }}%)
+        {% endif %}
+    </td>
+    {% if role_row.forecast_type.is_quantity_based %}
+        <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] p-3 text-start">{{ role_row.closed_quantity|floatformat:0 }} {% trans "deals" %}</td>
+        <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] p-3 text-start">{{ role_row.commit_quantity|floatformat:0 }} {% trans "deals" %}</td>
+        <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] p-3 text-start">{{ role_row.best_case_quantity|floatformat:0 }} {% trans "deals" %}</td>
+        <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] p-3 text-start">{{ role_row.pipeline_quantity|floatformat:0 }} {% trans "deals" %}</td>
+    {% else %}
+        <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] p-3 text-start">{{ role_row.closed_amount|floatformat:0 }} {{ currency_symbol }}</td>
+        <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] p-3 text-start">{{ role_row.commit_amount|floatformat:0 }} {{ currency_symbol }}</td>
+        <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] p-3 text-start">{{ role_row.best_case_amount|floatformat:0 }} {{ currency_symbol }}</td>
+        <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] p-3 text-start">{{ role_row.pipeline_amount|floatformat:0 }} {{ currency_symbol }}</td>
+    {% endif %}
+</tr>

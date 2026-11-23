@@ -1,0 +1,300 @@
+<div id="whole-role-section" class="flex flex-col gap-3" data-total="{{ wr_total }}">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+            <div class="flex justify-between items-center mb-2">
+                <label for="id_wr_period" class="text-xs font-semibold text-color-600 flex-1 min-w-0">{% trans "Period" %}</label>
+            </div>
+            <select
+                name="wr_period"
+                id="id_wr_period"
+                class="js-example-basic-single headselect {% if form_submitted and not wr_period %}border-red-500{% endif %}"
+            >
+                <option value="">{% trans "Select Period" %}</option>
+                {% for choice in period_choices %}
+                    <option value="{{ choice.0 }}" {% if wr_period == choice.0|stringformat:"s" %}selected{% endif %}>{{ choice.1 }}</option>
+                {% endfor %}
+            </select>
+            {% if form_submitted and not wr_period %}
+                <p class="text-red-500 text-xs mt-1">{% trans "This field is required." %}</p>
+            {% endif %}
+        </div>
+        <div>
+            <div class="flex justify-between items-center mb-2">
+                <label for="id_wr_type" class="text-xs font-semibold text-color-600 flex-1 min-w-0">{% trans "Forecast Type" %}</label>
+            </div>
+            <select
+                name="wr_type"
+                id="id_wr_type"
+                class="js-example-basic-single headselect {% if form_submitted and not wr_type %}border-red-500{% endif %}"
+            >
+                <option value="">{% trans "Select Forecast Type" %}</option>
+                {% for choice in forecast_type_choices %}
+                    <option value="{{ choice.0 }}" {% if wr_type == choice.0|stringformat:"s" %}selected{% endif %}>{{ choice.1 }}</option>
+                {% endfor %}
+            </select>
+            {% if form_submitted and not wr_type %}
+                <p class="text-red-500 text-xs mt-1">{% trans "This field is required." %}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if wr_rows or wr_role_rows %}
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+            {% if wr_mode == "roles" %}
+                {% trans "Each role's share is divided equally among its users and saved as a normal target for each. Shares start equal per user, so a role with more users gets more. They must add up to the role target." as split_help %}
+            {% else %}
+                {% trans "Each share is saved as a normal target for that user. The shares must add up to the role target." as split_help %}
+            {% endif %}
+            <div class="flex items-center">
+                <span class="text-xs font-semibold text-color-600">{% if wr_mode == "roles" %}{% trans "Split By Role" %}{% else %}{% trans "Split By User" %}{% endif %}</span>
+                {% include "forecast_target/_help_icon.html" with text=split_help %}
+            </div>
+            <div class="flex items-center gap-2">
+                {# Both states are in the markup so Tailwind generates their colours; the script only shows one #}
+                <span id="wr-full" class="hidden text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">{% trans "Fully Split" %}</span>
+                <span id="wr-remaining" class="hidden text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700"></span>
+                <button
+                    type="button"
+                    id="wr-equal"
+                    class="text-primary-600 hover:text-primary-800 text-xs font-semibold px-2 py-1 bg-primary-300 rounded border border-primary-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >{% trans "Split Equally" %}</button>
+            </div>
+        </div>
+        <div class="border border-dark-50 rounded-md max-h-[18rem] overflow-y-auto custom-scroll">
+            <table class="w-full text-[13px]">
+                <thead class="bg-primary-100 text-primary-600 sticky top-0 z-10">
+                    <tr>
+                        {% if wr_mode == "roles" %}
+                            <th class="text-start p-2 font-bold">{% trans "Role" %}</th>
+                            <th class="text-start p-2 font-bold">{% trans "Users" %}</th>
+                            <th class="text-start p-2 font-bold">{% trans "Share" %}</th>
+                            <th class="text-start p-2 font-bold">{% trans "Per User" %}</th>
+                            <th class="text-start p-2 font-bold">%</th>
+                        {% else %}
+                            <th class="text-start p-2 font-bold">{% trans "User" %}</th>
+                            <th class="text-start p-2 font-bold">{% trans "Share" %}</th>
+                            <th class="text-start p-2 font-bold">%</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if wr_mode == "roles" %}
+                        {% for row in wr_role_rows %}
+                            <tr class="border-t border-dark-50 bg-primary-100 wr-role-row" data-role="{{ row.role_id }}">
+                                <td class="p-2" style="padding-inline-start: calc(0.5rem + {{ row.depth }} * 1rem);">
+                                    <div class="flex items-center gap-1">
+                                        <button
+                                            type="button"
+                                            class="wr-expand shrink-0 p-1 rounded hover:bg-white"
+                                            aria-expanded="false"
+                                            title="{% trans 'Show or hide the users in this role' %}"
+                                        >
+                                            <svg class="w-3 h-3 transform transition-transform duration-200" style="transform: rotate(0deg)" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                        <span class="font-medium">{{ row.name }}</span>
+                                    </div>
+                                </td>
+                                <td class="p-2 text-gray-500">{{ row.user_count }}</td>
+                                <td class="p-2">
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        class="wr-role-share text-color-600 p-1.5 w-36 border border-dark-50 rounded-md focus-visible:outline-0 text-sm [transition:.3s] focus:border-primary-600"
+                                        name="share_role_{{ row.role_id }}"
+                                        value="{{ row.share }}"
+                                        data-equal="{{ row.equal }}"
+                                        data-users="{{ row.user_count }}"
+                                        aria-label="{% trans 'Share for role' %} {{ row.name }}"
+                                    >
+                                </td>
+                                <td class="p-2 text-gray-500 wr-each"></td>
+                                <td class="p-2 wr-pct"></td>
+                            </tr>
+                            {% for user_row in row.user_rows %}
+                                <tr class="hidden border-t border-dark-50 wr-user-row" data-role="{{ row.role_id }}">
+                                    <td class="p-2" style="padding-inline-start: calc(0.5rem + {{ row.depth }} * 1rem + 1.75rem);">
+                                        <div class="flex items-center gap-1.5">
+                                            <img src="{{ user_row.user.get_avatar }}" alt="" class="w-5 h-5 shrink-0 rounded-full object-cover">
+                                            <span>{{ user_row.user.get_full_name|default:user_row.user.username }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="p-2"></td>
+                                    <td class="p-2">
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            class="wr-user-share text-color-600 p-1.5 w-36 border border-dark-50 rounded-md focus-visible:outline-0 text-sm [transition:.3s] focus:border-primary-600"
+                                            name="share_user_{{ user_row.user.pk }}"
+                                            value="{{ user_row.share }}"
+                                            data-equal="{{ user_row.equal }}"
+                                            aria-label="{% trans 'Share for' %} {{ user_row.user.get_full_name|default:user_row.user.username }}"
+                                        >
+                                    </td>
+                                    <td class="p-2"></td>
+                                    <td class="p-2 wr-pct"></td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                        <tr class="border-t border-dark-50 bg-gray-50 font-bold sticky bottom-0">
+                            <td class="p-2">{% trans "Total" %}</td>
+                            <td class="p-2">{{ wr_user_count }}</td>
+                            <td class="p-2" id="wr-sum"></td>
+                            <td class="p-2"></td>
+                            <td class="p-2" id="wr-sum-pct"></td>
+                        </tr>
+                    {% else %}
+                        {% for row in wr_rows %}
+                            <tr class="border-t border-dark-50">
+                                <td class="p-2">{{ row.user.get_full_name|default:row.user.username }}</td>
+                                <td class="p-2">
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        class="wr-share text-color-600 p-1.5 w-36 border border-dark-50 rounded-md focus-visible:outline-0 text-sm [transition:.3s] focus:border-primary-600"
+                                        name="share_{{ row.user.pk }}"
+                                        value="{{ row.share }}"
+                                        data-equal="{{ row.equal }}"
+                                        aria-label="{% trans 'Share for' %} {{ row.user.get_full_name|default:row.user.username }}"
+                                    >
+                                </td>
+                                <td class="p-2 wr-pct"></td>
+                            </tr>
+                        {% endfor %}
+                        <tr class="border-t border-dark-50 bg-gray-50 font-bold sticky bottom-0">
+                            <td class="p-2">{% trans "Total" %}</td>
+                            <td class="p-2" id="wr-sum"></td>
+                            <td class="p-2" id="wr-sum-pct"></td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        <input type="hidden" name="wr_manual" id="wr-manual" value="{{ wr_manual }}">
+    {% else %}
+        <div class="bg-yellow-50 text-yellow-800 px-4 py-3 rounded-lg text-sm">
+            {% if wr_role_selected %}
+                {% if wr_mode == "roles" %}
+                    {% trans "No users in this role or the roles below it are available to you." %}
+                {% else %}
+                    {% trans "No users in this role are available to you." %}
+                {% endif %}
+            {% else %}
+                {% trans "Select a role to split the target among its users." %}
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+<script>
+    (function () {
+      var root = document.getElementById('whole-role-section');
+      if (!root) return;
+      document.querySelectorAll('[data-same-toggle]').forEach(function (el) {
+        el.classList.add('hidden');
+      });
+      var total = parseFloat(root.dataset.total) || 0;
+      // by role: the role rows' totals are what add up to the role target; their users'
+      // shares sit underneath. By user: every row is a user's share.
+      var byRole = root.querySelectorAll('tr.wr-role-row').length > 0;
+      var inputs = root.querySelectorAll(byRole ? '.wr-role-share' : '.wr-share');
+      var manual = document.getElementById('wr-manual');
+      var remaining = document.getElementById('wr-remaining');
+      var full = document.getElementById('wr-full');
+      var sum = document.getElementById('wr-sum');
+      var sumPct = document.getElementById('wr-sum-pct');
+      var equalBtn = document.getElementById('wr-equal');
+      if (!inputs.length) return;
+
+      function fmt(n) {
+        return n.toLocaleString(undefined, {maximumFractionDigits: 2});
+      }
+      function cents(value) {
+        return Math.round((parseFloat(value) || 0) * 100);
+      }
+      function usersOf(roleId) {
+        return root.querySelectorAll('tr.wr-user-row[data-role="' + roleId + '"] .wr-user-share');
+      }
+      // divide an amount equally among a role's users; the last takes the odd cent
+      function distribute(roleRow, amount) {
+        var users = usersOf(roleRow.dataset.role);
+        var n = users.length, c = cents(amount);
+        if (!n) return;
+        var base = Math.floor(c / n);
+        users.forEach(function (input, i) {
+          input.value = ((i === n - 1 ? c - base * (n - 1) : base) / 100).toFixed(2);
+        });
+      }
+      function roleTotalFromUsers(roleRow) {
+        var c = 0;
+        usersOf(roleRow.dataset.role).forEach(function (input) { c += cents(input.value); });
+        roleRow.querySelector('.wr-role-share').value = (c / 100).toFixed(2);
+      }
+      function recalc() {
+        var s = 0;
+        inputs.forEach(function (input) {
+          var v = parseFloat(input.value) || 0;
+          var row = input.closest('tr');
+          s += v;
+          row.querySelector('.wr-pct').textContent = total ? Math.round(v / total * 100) + '%' : '0%';
+          var each = row.querySelector('.wr-each');
+          if (each) {
+            each.textContent = fmt(v / (parseFloat(input.dataset.users) || 1));
+          }
+        });
+        root.querySelectorAll('tr.wr-user-row').forEach(function (row) {
+          var v = parseFloat(row.querySelector('.wr-user-share').value) || 0;
+          row.querySelector('.wr-pct').textContent = total ? Math.round(v / total * 100) + '%' : '0%';
+        });
+        s = Math.round(s * 100) / 100;
+        var rem = Math.round((total - s) * 100) / 100;
+        sum.textContent = fmt(s);
+        sumPct.textContent = total ? Math.round(s / total * 100) + '%' : '0%';
+        full.classList.toggle('hidden', !(total && rem === 0));
+        remaining.classList.toggle('hidden', !(total && rem !== 0));
+        if (total && rem !== 0) {
+          remaining.textContent = (rem > 0 ? '{% trans "Remaining" %} ' : '{% trans "Over By" %} ') + fmt(Math.abs(rem));
+        }
+        equalBtn.disabled = manual.value !== '1';
+      }
+      root.addEventListener('input', function (e) {
+        var field = e.target;
+        if (field.classList.contains('wr-role-share')) {
+          // a new role total: divide it equally among that role's users
+          distribute(field.closest('tr'), field.value);
+        } else if (field.classList.contains('wr-user-share')) {
+          // a user's own figure: the role's total follows it
+          roleTotalFromUsers(
+            root.querySelector('tr.wr-role-row[data-role="' + field.closest('tr').dataset.role + '"]')
+          );
+        } else if (!field.classList.contains('wr-share')) {
+          return;
+        }
+        manual.value = '1';
+        recalc();
+      });
+      // show or hide the users of a role
+      root.addEventListener('click', function (e) {
+        var button = e.target.closest('.wr-expand');
+        if (!button) return;
+        var open = button.getAttribute('aria-expanded') !== 'true';
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        button.querySelector('svg').style.transform = open ? 'rotate(90deg)' : 'rotate(0deg)';
+        var roleId = button.closest('tr').dataset.role;
+        root.querySelectorAll('tr.wr-user-row[data-role="' + roleId + '"]').forEach(function (row) {
+          row.classList.toggle('hidden', !open);
+        });
+      });
+      equalBtn.addEventListener('click', function () {
+        root.querySelectorAll('.wr-role-share, .wr-user-share, .wr-share').forEach(function (input) {
+          input.value = input.dataset.equal;
+        });
+        manual.value = '0';
+        recalc();
+      });
+      recalc();
+    })();
+</script>

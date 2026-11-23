@@ -561,6 +561,38 @@ class ForecastTarget(HorillaCoreModel):
         """Check if this is a quantity-based target"""
         return self.forcasts_type.is_quantity_based
 
+    def role_target_col(self):
+        """List column: the role total this target was split from, and any drift."""
+        from django.template.loader import render_to_string
+
+        from horilla_crm.forecast import role_targets
+
+        return render_to_string(
+            "forecast_target/role_target_col.html",
+            {"status": role_targets.status_of(self)},
+        )
+
+    def get_delete_notice(self):
+        """
+        A note for the delete confirmation when this target is part of a role total:
+        what the role's targets will add up to once it is gone. Empty for any other
+        target. The generic delete modals show it when it is not empty.
+        """
+        from horilla_crm.forecast import role_targets
+
+        status = role_targets.status_of(self)
+        if not status:
+            return ""
+        after = status["current"] - (self.target_amount or 0)
+        return _(
+            "This target is part of the %(role)s role target of %(total)s. "
+            "After deleting it, the role's targets will add up to %(after)s."
+        ) % {
+            "role": status["role_name"],
+            "total": role_targets.money(status["total"]),
+            "after": role_targets.money(after),
+        }
+
     def get_edit_url(self):
         """
         This method to get edit url

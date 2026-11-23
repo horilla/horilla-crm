@@ -1,0 +1,20 @@
+{% comment %}
+    The "Role Target" list column: the role total a target was split from. When the
+    targets of that split no longer add up to it, a small red note says what they add
+    up to now. Targets with no note show a dash.
+{% endcomment %}
+{% if status %}
+    <div class="flex flex-col gap-0.5 leading-tight">
+        <span class="text-[13px]">{{ status.role_name }} &middot; {{ status.total|floatformat:"-2g" }}</span>
+        {% if status.matches %}
+            <span class="text-[11px] text-gray-500">{% blocktrans with count=status.members %}Split among {{ count }} users{% endblocktrans %}</span>
+        {% else %}
+            <span
+                class="inline-flex w-fit text-[11px] font-medium px-1.5 py-px rounded-full bg-red-100 text-red-700"
+                title="{% trans 'The targets of this role total no longer add up to the role target that was set.' %}"
+            >{% blocktrans with now=status.current|floatformat:"-2g" %}Now adds up to {{ now }}{% endblocktrans %}</span>
+        {% endif %}
+    </div>
+{% else %}
+    <span class="text-gray-400">-</span>
+{% endif %}

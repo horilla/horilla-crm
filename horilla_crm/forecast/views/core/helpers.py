@@ -741,6 +741,79 @@ class ForecastTypeTabHelpersMixin:
         aggregated_forecast.user_forecasts = []
         return aggregated_forecast
 
+    def build_period_role_rows(
+        self,
+        period,
+        forecast_type,
+        currency_symbol,
+        role_nodes,
+        role_sums,
+        role_targets,
+        role_drift=None,
+    ):
+        """
+        Team totals per role for one period.
+
+        ``role_nodes`` comes from ``build_forecast_role_tree``. ``role_sums`` maps
+        ``(period_id, role_id)`` to that role's own summed measures and
+        ``role_targets`` to its summed targets. A node's row adds up its whole subtree,
+        so a manager's role includes the roles below it. ``role_drift`` maps
+        ``(period_id, role_id)`` to the role total that was entered for that role and
+        what its targets add up to now, so a row can flag when they differ.
+        """
+        suffix = "quantity" if forecast_type.is_quantity_based else "amount"
+        measures = ("pipeline", "best_case", "commit", "closed", "actual")
+
+        class AggregatedTarget:
+            """Summed target for a role's subtree."""
+
+            def __init__(self, target_amount):
+                self.target_amount = target_amount
+
+        class _Totals:
+            """Summed measures for a role's subtree."""
+
+        rows = []
+        for node in role_nodes:
+            totals = _Totals()
+            for measure in measures:
+                setattr(
+                    totals,
+                    f"{measure}_{suffix}",
+                    sum(
+                        (
+                            role_sums.get((period.id, role_id), {}).get(measure) or 0
+                            for role_id in node["subtree_ids"]
+                        ),
+                        0,
+                    ),
+                )
+            target = sum(
+                (
+                    role_targets.get((period.id, role_id)) or 0
+                    for role_id in node["subtree_ids"]
+                ),
+                0,
+            )
+            row = self.create_aggregated_forecast(
+                period,
+                forecast_type,
+                [totals],
+                currency_symbol,
+                None,
+                AggregatedTarget(target) if target > 0 else None,
+            )
+            row.role_id = node["id"]
+            row.role_name = node["name"]
+            row.depth = node["depth"]
+            row.parent_role_id = node["parent_id"]
+            row.user_count = node["user_count"]
+            row.own_users = node["own_users"]
+            row.role_target = (role_drift or {}).get((period.id, node["id"]))
+            row.has_children = node["has_children"]
+            rows.append(row)
+        return rows
+
     def create_aggregated_forecast(
         self,
         period,
@@ -780,6 +853,7 @@ class ForecastTypeTabHelpersMixin:
                 self.next_page = None
                 self.view_id = None
                 self.user_forecasts = []
+                self.role_rows = []
 
                 if target and forecast_type.is_quantity_based:
                     self.target_quantity = (

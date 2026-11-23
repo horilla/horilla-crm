@@ -1,0 +1,107 @@
+{% comment %}
+    The role totals above the target list: one row per role total instead of one row per
+    user. An arrow opens the users behind it (loaded 20 at a time). Targets set one user at
+    a time are not here; they stay in the list below.
+{% endcomment %}
+<div id="role-targets-section" class="mb-4">
+    <div class="flex items-center justify-between gap-2 flex-wrap mb-2">
+        <h4 class="text-sm font-semibold">{% trans "Role Targets" %}</h4>
+        <span class="text-xs text-gray-500">{% trans "One row per role total. Open a row to see its users." %}</span>
+    </div>
+    <div class="custom-scroll relative overflow-x-auto overflow-y-auto max-h-[32rem] bg-white rounded-lg [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_5%)] z-0">
+        <table class="w-full text-[13px]">
+            <thead class="sticky top-0 bg-primary-100 text-primary-600 z-50">
+                <tr>
+                    <th class="text-start p-3 font-bold">{% trans "Role" %}</th>
+                    <th class="text-start p-3 font-bold">{% trans "Role Target" %}</th>
+                    <th class="text-start p-3 font-bold">{% trans "Adds Up To" %}</th>
+                    <th class="text-start p-3 font-bold">{% trans "Users" %}</th>
+                    <th class="text-start p-3 font-bold">{% trans "Set On" %}</th>
+                    <th class="text-start p-3 font-bold w-[180px]">{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in batches %}
+                    <tr class="border-t border-dark-50 rt-batch-row" data-batch="{{ b.batch }}">
+                        <td class="p-3">
+                            <div class="flex items-start gap-2">
+                                <button
+                                    type="button"
+                                    class="rt-expand shrink-0 p-1 rounded hover:bg-gray-100"
+                                    aria-expanded="false"
+                                    aria-label="{% trans 'Show or hide the users of this role target' %}"
+                                    hx-get="{% url 'forecast:forecast_role_target_users' %}?batch={{ b.batch }}"
+                                    hx-trigger="click once"
+                                    hx-target="closest tr"
+                                    hx-swap="afterend"
+                                    onclick="toggleRoleTargetUsers(this)"
+                                >
+                                    <svg class="w-3 h-3 mt-0.5 transform transition-transform duration-200" style="transform: rotate(0deg)" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <div class="flex flex-col gap-0.5 py-1">
+                                    <span class="font-medium">{{ b.role_name }}</span>
+                                    {% if b.include_below %}
+                                        <span class="text-[11px] text-gray-500">{% trans "Includes roles below" %}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-3 font-medium">{{ b.total|floatformat:"-2g" }}</td>
+                        <td class="p-3">
+                            {% if b.complete %}
+                                {{ b.current|floatformat:"-2g" }}
+                                {% if not b.matches %}
+                                    <span
+                                        class="ms-1 inline-flex text-[11px] font-medium px-1.5 py-px rounded-full bg-red-100 text-red-700"
+                                        title="{% trans 'The targets of this role total no longer add up to the role target that was set.' %}"
+                                    >{% trans "Does not match" %}</span>
+                                {% else %}
+                                    <span class="ms-1 inline-flex text-[11px] font-medium px-1.5 py-px rounded-full bg-green-100 text-green-700">{% trans "Matches" %}</span>
+                                {% endif %}
+                            {% else %}
+                                {{ b.visible_current|floatformat:"-2g" }}
+                                <span class="text-[11px] text-gray-500">{% trans "your users only" %}</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-3 text-gray-600">
+                            {{ b.members }}
+                            {% if not b.complete %}<span class="text-[11px] text-gray-500">({{ b.visible_members }} {% trans "visible" %})</span>{% endif %}
+                        </td>
+                        <td class="p-3 text-gray-500">{{ b.set_at|date:"d M Y" }}</td>
+                        <td class="p-3">
+                            {% if b.can_edit %}
+                                <div class="flex tablebtn">
+                                    <button
+                                        type="button"
+                                        class="w-10 h-7 bg-dark-25 flex-1 flex justify-center hover:bg-dark-50 transition duration-300 items-center"
+                                        title="{% trans 'Edit Role Target' %}"
+                                        aria-label="{% trans 'Edit Role Target' %}"
+                                        hx-get="{% url 'forecast:forecast_role_total_edit' %}?batch={{ b.batch }}"
+                                        hx-target="#modalBox"
+                                        hx-swap="innerHTML"
+                                        onclick="openModal()"
+                                    ><img src="{% static 'assets/icons/edit.svg' %}" alt="" width="16"></button>
+                                </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if has_individual %}<h4 class="text-sm font-semibold mt-5 mb-2">{% trans "Individual Targets" %}</h4>{% endif %}
+</div>
+<script>
+    // Show or hide the users under a role total. The first click loads them (htmx, "click
+    // once"); later clicks only hide and show the rows that are already there.
+    window.toggleRoleTargetUsers = function (button) {
+        var open = button.getAttribute('aria-expanded') !== 'true';
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        button.querySelector('svg').style.transform = open ? 'rotate(90deg)' : 'rotate(0deg)';
+        var row = button.closest('tr');
+        var users = document.querySelector('tr.rt-users-row[data-batch="' + row.dataset.batch + '"]');
+        if (users) users.classList.toggle('hidden', !open);
+    };
+</script>

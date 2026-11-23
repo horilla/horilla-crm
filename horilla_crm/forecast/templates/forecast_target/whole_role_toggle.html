@@ -1,0 +1,35 @@
+{% comment %}
+    The whole-role controls. The wrapper in the form uses "display: contents", so these
+    items flow in the form's own two-column grid beside the other switches and never
+    leave an empty cell: Whole Role next to Include Roles Below, then the Role Target
+    across the full width.
+{% endcomment %}
+{% if is_role_based and not form.instance.pk %}
+    {% if is_whole_role %}
+        <div class="flex flex-col">
+            {% trans "Divided equally among the users in this role. You can change each share below." as role_target_help %}
+            <div class="flex justify-between items-center mb-1">
+                <label for="id_wr_amount" class="text-xs font-semibold text-color-600 flex-1 min-w-0">{% trans "Role Target" %}</label>
+                {% include "forecast_target/_help_icon.html" with text=role_target_help %}
+            </div>
+            <input
+                type="number"
+                name="wr_amount"
+                id="id_wr_amount"
+                step="0.01"
+                min="0"
+                value="{{ wr_amount }}"
+                placeholder="{% trans 'Enter total for the role' %}"
+                class="text-color-600 p-2 placeholder:text-xs w-full border rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600 {% if form_submitted and not wr_amount %}border-red-500{% else %}border-dark-50{% endif %}"
+                hx-post="{% url 'forecast:toggle_role_based' %}"
+                hx-target="#condition-fields-container"
+                hx-swap="innerHTML"
+                hx-include="[name='role'],[name='is_role_based'],[name='is_whole_role'],[name='include_below'],[name='wr_period'],[name='wr_type']"
+                hx-trigger="change"
+            >
+            {% if form_submitted and not wr_amount %}
+                <p class="text-red-500 text-xs mt-1">{% trans "This field is required." %}</p>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endif %}

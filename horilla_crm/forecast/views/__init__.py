@@ -3,6 +3,7 @@
 # Local imports
 from horilla_crm.forecast.views.core import (
     ForecastChartsModalView,
+    ForecastRoleUsersView,
     ForecastView,
     ForecastNavbarView,
     ForecastTabView,
@@ -21,6 +22,8 @@ from horilla_crm.forecast.views.forecast_target import (
     UpdateTargetHelpTextView,
     UpdateForecastTarget,
     ForecastTargetDeleteView,
+    ForecastRoleTargetUsersView,
+    ForecastRoleTotalEditView,
 )
 
 from horilla_crm.forecast.views.forecast_type import (
@@ -39,6 +42,7 @@ __all__ = [
     "ForecastTypeTabView",
     "ForecastChartsModalView",
     "ForecastOpportunitiesView",
+    "ForecastRoleUsersView",
     # forecast_target
     "ForecastTargetView",
     "ForecastTargetFiltersView",
@@ -50,6 +54,8 @@ __all__ = [
     "UpdateTargetHelpTextView",
     "UpdateForecastTarget",
     "ForecastTargetDeleteView",
+    "ForecastRoleTargetUsersView",
+    "ForecastRoleTotalEditView",
     # forecast_type
     "ForecastTypeView",
     "ForecastTypeNavbar",

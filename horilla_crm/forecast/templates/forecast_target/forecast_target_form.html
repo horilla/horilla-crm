@@ -1,190 +1,125 @@
-<div id="{{ view_id|safe }}-container" class="relative bg-white rounded-lg shadow-sm">
-    <form
-        hx-post="{{ form_url }}"
-        id="{{ view_id|safe }}"
-        hx-swap="outerHTML"
-        hx-target="#{{ view_id|safe }}-container"
-        enctype="multipart/form-data"
-    >
-        {% csrf_token %}
-        {% for field in form %}
-            {% if field.is_hidden %}
-                {{ field }}
-            {% endif %}
-        {% endfor %}
-        <div class="p-5">
-            {% modal_header form_title %}
-
-            {% if form.non_field_errors %}
-                <div class="bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm mb-4">
-                    {% for error in form.non_field_errors %}
-                        {{ error }}<br>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-            <div class="{% if modal_height %}h-[500px]{% endif %} overflow-hidden overflow-y-auto pe-2">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-3">
-                    <!-- is_role_based -->
-                    <div class="text-sm flex items-center gap-2 relative">
-                        <label class="inline-flex items-center cursor-pointer w-full justify-between">
-                            <span class="text-xs text-color-600">{{ form.is_role_based.label }}</span>
-                            {{ form.is_role_based }}
-                            <div class="relative w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5">
-                            </div>
-                        </label>
-                        {% if form.is_role_based.errors %}
-                            <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
-                                {% for error in form.is_role_based.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- role_container -->
-                    <div id="role_container">
-                        {% if form.is_role_based.value %}
-                            <div class="flex flex-col">
-                                <label
-                                    for="{{ form.role.id_for_label }}"
-                                    class="text-xs font-semibold text-color-600"
-                                >{{ form.role.label }}</label>
-                                {{ form.role }}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- is_period_same -->
-                    <div class="text-sm flex items-center gap-2 relative">
-                        <label class="inline-flex items-center cursor-pointer w-full justify-between">
-                            <span class="text-xs text-color-600">{{ form.is_period_same.label }}</span>
-                            {{ form.is_period_same }}
-                            <div class="relative w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5">
-                            </div>
-                        </label>
-                        {% if form.is_period_same.errors %}
-                            <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
-                                {% for error in form.is_period_same.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- period_container -->
-                    <div id="period_container">
-                        {% if form.is_period_same.value %}
-                            <div class="flex flex-col">
-                                <label
-                                    for="{{ form.period.id_for_label }}"
-                                    class="text-xs font-semibold text-color-600"
-                                >{{ form.period.label }}</label>
-                                {{ form.period }}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- is_forecast_type_same -->
-                    <div class="text-sm flex items-center gap-2 relative">
-                        <label class="inline-flex items-center cursor-pointer w-full justify-between">
-                            <span class="text-xs text-color-600">{{ form.is_forecast_type_same.label }}</span>
-                            {{ form.is_forecast_type_same }}
-                            <div class="relative w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5">
-                            </div>
-                        </label>
-                        {% if form.is_forecast_type_same.errors %}
-                            <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
-                                {% for error in form.is_forecast_type_same.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- forecast_type_container -->
-                    <div id="forecast_type_container">
-                        {% if form.is_forecast_type_same.value %}
-                            <div class="flex flex-col">
-                                <label
-                                    for="{{ form.forcasts_type.id_for_label }}"
-                                    class="text-xs font-semibold text-color-600"
-                                >{{ form.forcasts_type.label }}</label>
-                                {{ form.forcasts_type }}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- is_target_same -->
-                    <div class="text-sm flex items-center gap-2 relative">
-                        <label class="inline-flex items-center cursor-pointer w-full justify-between">
-                            <span class="text-xs text-color-600">{{ form.is_target_same.label }}</span>
-                            {{ form.is_target_same }}
-                            <div class="relative w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5">
-                            </div>
-                        </label>
-                        {% if form.is_target_same.errors %}
-                            <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
-                                {% for error in form.is_target_same.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- target_container -->
-                    <div id="target_container">
-                        {% if form.is_target_same.value %}
-                            <div class="flex flex-col">
-                                <label
-                                    for="{{ form.target_amount.id_for_label }}"
-                                    class="text-xs font-semibold text-color-600"
-                                >{{ form.target_amount.label }}</label>
-                                {{ form.target_amount }}
-                            </div>
-                            <div id="target_amount_help_text" class="text-xs text-gray-500 mt-1">
-                                {{ form.target_amount.help_text }}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Condition Fields Section -->
-                {% if condition_fields %}
-                    <label class="text-xs font-semibold text-color-600 pb-2">{% if condition_fields_tiltle %}
-                            {{ condition_fields_tiltle }}
-                        {% else %}
-                            {% trans "Conditions" %}
-                        {% endif %}</label>
-                    <div id="condition-fields-container">
-                        {% include 'forecast_target/condition_fields.html' %}
-                    </div>
-
-                    {% if add_condition_url %}
-                        <button
-                            type="button"
-                            class="text-primary-600 hover:text-primary-800 text-xs font-semibold px-2 py-1 bg-primary-300 rounded border border-primary-200 transition-colors"
-                            hx-get="{{ add_condition_url }}&row_id=next"
-                            hx-include="[name='role'], [name='is_role_based'], [name='is_period_same'], [name='is_target_same'], [name='is_forecast_type_same']"
-                            hx-target="#condition-fields-container"
-                            hx-swap="beforeend"
-                        >
-                            + Add More
-                        </button>
-                    {% endif %}
-                {% endif %}
+{% extends "single_form_view.html" %}
+{% comment %}
+    Create/edit Forecast Target. The form shell (form tag, CSRF, hidden fields, header,
+    errors, scroll area, save button) comes from the generic single form; this template
+    only supplies what is specific to targets: the on/off switches with their fields, and
+    the condition rows (or, in whole-role mode, the split table).
+{% endcomment %}
+{% block form_fields %}
+    {% comment %}
+        One choice decides what the target is for. The role and "Same ... for All" switches
+        still exist as hidden state, because the rest of the form (and the server) read
+        them, but nobody has to see or understand them.
+    {% endcomment %}
+    {% trans "User: set a target for one or more users. Role: enter one total and divide it among the users in that role. Role Hierarchy: divide the total across the role and every role under it." as set_for_help %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-3">
+        <div class="flex flex-col md:col-span-2">
+            <div class="flex justify-between items-center mb-1">
+                <label for="id_set_for" class="text-xs font-semibold text-color-600 flex-1 min-w-0">{% trans "Set Target For" %}</label>
+                {% include "forecast_target/_help_icon.html" with text=set_for_help %}
             </div>
+            <select id="id_set_for" data-mode="{% if form.include_below.value and form.is_whole_role.value %}below{% elif form.is_whole_role.value %}role{% else %}user{% endif %}" name="set_for" class="js-example-basic-single headselect w-full" onchange="forecastSetFor(this)">
+                <option value="user" {% if not form.is_whole_role.value %}selected{% endif %}>{% trans "User" %}</option>
+                <option value="role" {% if form.is_whole_role.value and not form.include_below.value %}selected{% endif %}>{% trans "Role" %}</option>
+                <option value="below" {% if form.is_whole_role.value and form.include_below.value %}selected{% endif %}>{% trans "Role Hierarchy" %}</option>
+            </select>
         </div>
-        <div class="flex justify-end p-5 pt-0">
-            {% btn type="submit" %}
+
+        <div class="hidden" aria-hidden="true">
+            {{ form.is_role_based }}
+            {{ form.is_whole_role }}
+            {{ form.include_below }}
+            {{ form.is_period_same }}
+            {{ form.is_target_same }}
+            {{ form.is_forecast_type_same }}
         </div>
-    </form>
-</div>
-<script>
-    $(document).on("htmx:afterSettle", function () {
-        initializeSelect2Pagination();
-        $("select").on("select2:select", function (e) {
-            $(this).closest("select")[0].dispatchEvent(new Event("change"));
+
+        <!-- role_container -->
+        <div id="role_container" class="[&:not(:has(*))]:hidden">
+            {% include "forecast_target/_field_block.html" with field=form.role show=form.is_role_based.value %}
+        </div>
+
+        <!-- whole role: the role total -->
+        <div id="whole_role_container" class="contents">
+            {% include "forecast_target/whole_role_toggle.html" %}
+        </div>
+
+        <!-- period_container -->
+        <div id="period_container" data-same-toggle class="[&:not(:has(*))]:hidden {% if is_whole_role %}hidden{% endif %}">
+            {% include "forecast_target/_field_block.html" with field=form.period show=form.is_period_same.value %}
+        </div>
+
+        <!-- forecast_type_container -->
+        <div id="forecast_type_container" data-same-toggle class="[&:not(:has(*))]:hidden {% if is_whole_role %}hidden{% endif %}">
+            {% include "forecast_target/_field_block.html" with field=form.forcasts_type show=form.is_forecast_type_same.value %}
+        </div>
+
+        <!-- target_container (only when one target is shared by every user) -->
+        <div id="target_container" data-same-toggle class="[&:not(:has(*))]:hidden {% if is_whole_role %}hidden{% endif %}">
+            {% include "forecast_target/_field_block.html" with field=form.target_amount show=form.is_target_same.value help=True %}
+        </div>
+    </div>
+    <script>
+        // Turn the one choice into the switches the rest of the form works with, then let
+        // the form redraw itself the way it does when one of those switches is flipped.
+        window.forecastSetFor = function (select) {
+            var mode = select.value;
+            if (select.dataset.mode === mode) return;  // select2 reports one change twice
+            select.dataset.mode = mode;
+            var set = function (name, on) {
+                var box = document.querySelector('input[type="checkbox"][name="' + name + '"]');
+                if (box) box.checked = on;
+            };
+            set('is_role_based', mode !== 'user');
+            set('is_whole_role', mode !== 'user');
+            set('include_below', mode === 'below');
+            set('is_period_same', true);
+            set('is_forecast_type_same', true);
+            set('is_target_same', false);
+            var trigger = document.querySelector('input[type="checkbox"][name="is_whole_role"]');
+            if (trigger) trigger.dispatchEvent(new Event('change', {bubbles: true}));
+        };
+    </script>
+{% endblock form_fields %}
+
+{% block condition_section %}
+    {% if condition_fields %}
+        <label id="condition-fields-label" class="text-xs font-semibold text-color-600 pb-2 {% if is_whole_role %}hidden{% endif %}">{% if condition_fields_tiltle %}
+                {{ condition_fields_tiltle }}
+            {% else %}
+                {% trans "Conditions" %}
+            {% endif %}</label>
+        <div id="condition-fields-container">
+            {% if is_whole_role %}
+                {% include "forecast_target/whole_role_section.html" %}
+            {% else %}
+                {% include 'forecast_target/condition_fields.html' %}
+            {% endif %}
+        </div>
+
+        {% if add_condition_url %}
+            <button
+                type="button"
+                id="add-condition-row-btn"
+                class="text-primary-600 hover:text-primary-800 text-xs font-semibold px-2 py-1 bg-primary-300 rounded border border-primary-200 transition-colors {% if is_whole_role %}hidden{% endif %}"
+                hx-get="{{ add_condition_url }}&row_id=next"
+                hx-include="[name='role'], [name='is_role_based'], [name='is_period_same'], [name='is_target_same'], [name='is_forecast_type_same']"
+                hx-target="#condition-fields-container"
+                hx-swap="beforeend"
+            >
+                + {% trans "Add More" %}
+            </button>
+        {% endif %}
+    {% endif %}
+{% endblock condition_section %}
+
+{% block extra_form_content_after_conditions %}
+    <script>
+        $(document).on("htmx:afterSettle", function () {
+            initializeSelect2Pagination();
+            $("select").on("select2:select", function (e) {
+                $(this).closest("select")[0].dispatchEvent(new Event("change"));
+            });
         });
-    });
-</script>
+    </script>
+{% endblock extra_form_content_after_conditions %}

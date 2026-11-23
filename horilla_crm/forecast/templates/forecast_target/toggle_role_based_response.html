@@ -1,4 +1,23 @@
-{% include "forecast_target/condition_fields.html" %}
+{% if is_whole_role %}
+    {% include "forecast_target/whole_role_section.html" %}
+{% else %}
+    {% include "forecast_target/condition_fields.html" %}
+{% endif %}
 <div id="role_container" hx-swap-oob="innerHTML">
-    {% include "forecast_target/role_field.html" %}
+    {% include "forecast_target/_field_block.html" with field=form.role show=is_role_based %}
 </div>
+<div id="whole_role_container" hx-swap-oob="innerHTML">
+    {% include "forecast_target/whole_role_toggle.html" %}
+</div>
+<script>
+    (function () {
+      var whole = {% if is_whole_role %}true{% else %}false{% endif %};
+      var addBtn = document.getElementById('add-condition-row-btn');
+      var label = document.getElementById('condition-fields-label');
+      if (addBtn) addBtn.classList.toggle('hidden', whole);
+      if (label) label.classList.toggle('hidden', whole);
+      document.querySelectorAll('[data-same-toggle]').forEach(function (el) {
+        el.classList.toggle('hidden', whole);
+      });
+    })();
+</script>

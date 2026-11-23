@@ -1,0 +1,43 @@
+{% comment %}
+    Change a role total from its row in the target list. Saving scales every user's target by
+    the same factor, so the targets keep adding up to the new total.
+{% endcomment %}
+<div class="p-5">
+    {% modal_header _('Edit Role Target') on_close="closeModal()" %}
+    <form
+        hx-post="{% url 'forecast:forecast_role_total_edit' %}"
+        hx-target="#modalBox"
+        hx-swap="innerHTML"
+        hx-push-url="false"
+        class="mt-3"
+    >
+        {% csrf_token %}
+        <input type="hidden" name="batch" value="{{ b.batch }}">
+        {% if b.single_role %}<input type="hidden" name="role" value="{{ b.role_id }}">{% endif %}
+        <label for="id_role_total" class="block font-medium text-sm mb-1">
+            {% blocktrans with role=b.role_name %}{{ role }} Role Target{% endblocktrans %}
+            <span class="text-primary-600">*</span>
+        </label>
+        <input
+            id="id_role_total"
+            type="number"
+            name="total"
+            step="0.01"
+            min="0.01"
+            value="{{ b.total|stringformat:'.2f' }}"
+            class="w-full border border-dark-50 rounded-md px-3 py-2 text-sm"
+            required
+        >
+        {% if error %}<p class="text-xs text-red-600 mt-1">{{ error }}</p>{% endif %}
+        <div class="mt-3 p-3 bg-yellow-50 border border-[#f3edb0] rounded-lg text-xs text-yellow-800">
+            {% if b.single_role %}
+                {% blocktrans with count=b.members current=b.current|floatformat:"-2g" %}Only the {{ count }} users in this role are changed, each by the same proportion, so they add up to the new figure. They now add up to {{ current }}. The role target above it follows if it matched before.{% endblocktrans %}
+            {% else %}
+                {% blocktrans with count=b.members current=b.current|floatformat:"-2g" %}Every one of the {{ count }} users' targets is changed by the same proportion, so they add up to the new role target. They now add up to {{ current }}.{% endblocktrans %}
+            {% endif %}
+        </div>
+        <div class="flex justify-end mt-4">
+            <button type="submit" class="text-sm px-6 py-2 bg-primary-600 text-white rounded-md">{% trans "Save" %}</button>
+        </div>
+    </form>
+</div>

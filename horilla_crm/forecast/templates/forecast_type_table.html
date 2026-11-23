@@ -500,245 +500,12 @@
                             id="data-container-{{ forecast_type.id }}-{{ forecast.view_id }}"
                             class="user-details-tbody hidden"
                         >
+                            {% for role_row in forecast.role_rows %}
+                                {% include "forecast_role_row.html" %}
+                            {% endfor %}
+                            {% if not forecast.role_rows %}
                             {% for user_forecast in forecast.user_forecasts %}
-                                <tr
-                                    class="user-details-row {% if forloop.last and forecast.has_next %}htmx-sentinel{% endif %}"
-                                    {% if forloop.last and forecast.has_next %}
-                                        hx-get="{{ search_url }}?{{ search_params }}&page={{ forecast.next_page }}&view_id={{ forecast.view_id }}"
-                                        hx-trigger="intersect once"
-                                        hx-select="#data-container-{{ forecast_type.id }}-{{ forecast.view_id }} tr.user-details-row"
-                                        hx-swap="beforebegin"
-                                        hx-target="#scrollHint-{{ forecast_type.id }}-{{ forecast.view_id }}"
-                                        hx-indicator="#loadingIndicator-{{ forecast_type.id }}-{{ forecast.view_id }}"
-                                    {% endif %}
-                                >
-                                    <td class="sticky start-0 z-10 bg-gray-50 text-[13px] border border-[#dddddd] text-start p-3 ps-8 w-[200px] min-w-[200px] whitespace-nowrap">
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-6 h-6 rounded-full flex items-center justify-center">
-                                                <svg
-                                                    class="w-3 h-3 text-blue-600"
-                                                    fill="currentColor"
-                                                    viewBox="0 0 20 20"
-                                                >
-                                                    <path
-                                                        fill-rule="evenodd"
-                                                        d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                                                        clip-rule="evenodd"
-                                                    />
-                                                </svg>
-                                            </div>
-                                            <span
-                                                class="font-medium"
-                                            >{{ user_forecast.owner.get_full_name|default:user_forecast.owner.username }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] text-start p-3 bg-gray-50">
-                                        {% if user_forecast.forecast_type.is_quantity_based %}
-                                            {{ user_forecast.target_quantity|floatformat:0 }} {% trans "deals" %}
-                                        {% else %}
-                                            {{ user_forecast.target_amount|floatformat:0 }} {{ currency_symbol }}
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] p-3 text-center bg-gray-50">
-                                        <div class="cursor-pointer">
-                                            {% if user_forecast.forecast_type.is_quantity_based %}
-                                                <p class="mb-2">
-                                                    {{ user_forecast.actual_quantity }} /
-                                                    {{ user_forecast.target_quantity|floatformat:0 }} deals
-                                                </p>
-                                            {% else %}
-                                                <p class="mb-2">
-                                                    {{ user_forecast.actual_amount|floatformat:0 }} /
-                                                    {{ user_forecast.target_amount|floatformat:0 }}
-                                                    {{ currency_symbol }}
-                                                </p>
-                                            {% endif %}
-                                            <div class="w-full bg-gray-200 rounded-full h-1.5">
-                                                {% if user_forecast.performance_percentage < 100 %}
-                                                    <div
-                                                        class="bg-red-500 h-1.5 rounded-full"
-                                                        style="width: {{ user_forecast.performance_percentage|floatformat:0 }}%;"
-                                                    >
-                                                    </div>
-                                                {% elif user_forecast.performance_percentage == 100 %}
-                                                    <div class="bg-green-500 h-1.5 rounded-full" style="width: 100%">
-                                                    </div>
-                                                {% else %}
-                                                    <div class="bg-blue-600 h-1.5 rounded-full" style="width: 100%">
-                                                    </div>
-                                                {% endif %}
-                                            </div>
-                                            {% if user_forecast.performance_percentage < 100 %}
-                                                <p class="mt-2 text-red-600 font-medium">
-                                                    {{ user_forecast.performance_percentage|floatformat:0 }}%
-                                                </p>
-                                            {% elif user_forecast.performance_percentage == 100 %}
-                                                <p class="mt-2 text-green-600 font-medium">
-                                                    {{ user_forecast.performance_percentage|floatformat:0 }}%
-                                                </p>
-                                            {% else %}
-                                                <p class="mt-2 text-blue-600 font-medium">
-                                                    {{ user_forecast.performance_percentage|floatformat:0 }}%
-                                                </p>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                    <td class="text-[13px] border-[1px] border-[solid] border-[#dddddd] text-start p-3 bg-gray-50">
-                                        {% if user_forecast.forecast_type.is_quantity_based %}
-                                            {{ user_forecast.gap_quantity|floatformat:0 }} {% trans "deals" %}
-                                        {% else %}
-                                            {{ user_forecast.gap_amount|floatformat:0 }} {{ currency_symbol }}
-                                        {% endif %}
-                                    </td>
-                                    <td
-                                        class="text-[13px] border-[1px] border-[solid] border-[#dddddd] text-start p-3 bg-gray-50 cursor-pointer"
-                                        hx-get="{% url 'forecast:forecast_opportunities' forecast_id=user_forecast.id opportunity_type='closed' %}?forecast_type_id={{ forecast_type.id }}{% if request.GET.fiscal_year_id %}&fiscal_year_id={{ request.GET.fiscal_year_id }}{% endif %}"
-                                        hx-target="#contentModalBox"
-                                        hx-trigger="click"
-                                        onclick="openContentModal()"
-                                    >
-                                        <div
-                                            class="relative"
-                                            {% if user_forecast.closed_change_text %}
-                                                title="{{ user_forecast.closed_change_text }}"
-                                            {% endif %}
-                                        >
-                                            <button class="flex gap-2 items-center justify-center">
-                                                {% if user_forecast.forecast_type.is_quantity_based %}
-                                                    <p class="mb-0">
-                                                        {{ user_forecast.closed_quantity }} {% trans "deals" %}
-                                                    </p>
-                                                {% else %}
-                                                    <p class="mb-0">
-                                                        {{ user_forecast.closed_amount|floatformat:0 }}
-                                                        {{ currency_symbol }}
-                                                    </p>
-                                                {% endif %}
-                                                {% if user_forecast.closed_trend == 'up' %}
-                                                    <img
-                                                        src="{% static 'assets/icons/up-arrow.svg' %}"
-                                                        alt="{% trans 'Up trend' %}"
-                                                        width="15"
-                                                    >
-                                                {% elif user_forecast.closed_trend == 'down' %}
-                                                    <img
-                                                        src="{% static 'assets/icons/down-arrow.svg' %}"
-                                                        alt="{% trans 'Down trend' %}"
-                                                        width="15"
-                                                    >
-                                                {% endif %}
-                                            </button>
-                                        </div>
-                                    </td>
-                                    <td
-                                        class="text-[13px] border-[1px] border-[solid] border-[#dddddd] text-start p-3 bg-gray-50 cursor-pointer"
-                                        hx-get="{% url 'forecast:forecast_opportunities' forecast_id=user_forecast.id opportunity_type='committed' %}?forecast_type_id={{ forecast_type.id }}{% if request.GET.fiscal_year_id %}&fiscal_year_id={{ request.GET.fiscal_year_id }}{% endif %}"
-                                        hx-target="#contentModalBox"
-                                        hx-trigger="click"
-                                        onclick="openContentModal()"
-                                    >
-                                        <div
-                                            class="relative"
-                                            {% if user_forecast.commit_change_text %}
-                                                title="{{ user_forecast.commit_change_text }}"
-                                            {% endif %}
-                                        >
-                                            <button class="flex gap-2">
-                                                {% if user_forecast.forecast_type.is_quantity_based %}
-                                                    {{ user_forecast.commit_quantity }} {% trans "deals" %}
-                                                {% else %}
-                                                    {{ user_forecast.commit_amount|floatformat:0 }}
-                                                    {{ currency_symbol }}
-                                                {% endif %}
-                                                {% if user_forecast.commit_trend == 'up' %}
-                                                    <img
-                                                        src="{% static 'assets/icons/up-arrow.svg' %}"
-                                                        alt="{% trans 'Up trend' %}"
-                                                        width="15"
-                                                    >
-                                                {% elif user_forecast.commit_trend == 'down' %}
-                                                    <img
-                                                        src="{% static 'assets/icons/down-arrow.svg' %}"
-                                                        alt="{% trans 'Down trend' %}"
-                                                        width="15"
-                                                    >
-                                                {% endif %}
-                                            </button>
-                                        </div>
-                                    </td>
-                                    <td
-                                        class="text-[13px] border-[1px] border-[solid] border-[#dddddd] text-start p-3 bg-gray-50 cursor-pointer"
-                                        hx-get="{% url 'forecast:forecast_opportunities' forecast_id=user_forecast.id opportunity_type='best_case' %}?forecast_type_id={{ forecast_type.id }}{% if request.GET.fiscal_year_id %}&fiscal_year_id={{ request.GET.fiscal_year_id }}{% endif %}"
-                                        hx-target="#contentModalBox"
-                                        hx-trigger="click"
-                                        onclick="openContentModal()"
-                                    >
-                                        <div
-                                            class="relative"
-                                            {% if user_forecast.best_case_change_text %}
-                                                title="{{ user_forecast.best_case_change_text }}"
-                                            {% endif %}
-                                        >
-                                            <button class="flex gap-2">
-                                                {% if user_forecast.forecast_type.is_quantity_based %}
-                                                    {{ user_forecast.best_case_quantity }} {% trans "deals" %}
-                                                {% else %}
-                                                    {{ user_forecast.best_case_amount|floatformat:0 }}
-                                                    {{ currency_symbol }}
-                                                {% endif %}
-                                                {% if user_forecast.best_case_trend == 'up' %}
-                                                    <img
-                                                        src="{% static 'assets/icons/up-arrow.svg' %}"
-                                                        alt="{% trans 'Up trend' %}"
-                                                        width="15"
-                                                    >
-                                                {% elif user_forecast.best_case_trend == 'down' %}
-                                                    <img
-                                                        src="{% static 'assets/icons/down-arrow.svg' %}"
-                                                        alt="{% trans 'Down trend' %}"
-                                                        width="15"
-                                                    >
-                                                {% endif %}
-                                            </button>
-                                        </div>
-                                    </td>
-                                    <td
-                                        class="text-[13px] border-[1px] border-[solid] border-[#dddddd] text-start p-3 bg-gray-50 cursor-pointer"
-                                        hx-get="{% url 'forecast:forecast_opportunities' forecast_id=user_forecast.id opportunity_type='open_pipeline' %}?forecast_type_id={{ forecast_type.id }}{% if request.GET.fiscal_year_id %}&fiscal_year_id={{ request.GET.fiscal_year_id }}{% endif %}"
-                                        hx-target="#contentModalBox"
-                                        hx-trigger="click"
-                                        onclick="openContentModal()"
-                                    >
-                                        <div
-                                            class="relative"
-                                            {% if user_forecast.pipeline_change_text %}
-                                                title="{{ user_forecast.pipeline_change_text }}"
-                                            {% endif %}
-                                        >
-                                            <button class="flex gap-2">
-                                                {% if user_forecast.forecast_type.is_quantity_based %}
-                                                    {{ user_forecast.pipeline_quantity }} {% trans "deals" %}
-                                                {% else %}
-                                                    {{ user_forecast.pipeline_amount|floatformat:0 }}
-                                                    {{ currency_symbol }}
-                                                {% endif %}
-                                                {% if user_forecast.pipeline_trend == 'up' %}
-                                                    <img
-                                                        src="{% static 'assets/icons/up-arrow.svg' %}"
-                                                        alt="{% trans 'Up trend' %}"
-                                                        width="15"
-                                                    >
-                                                {% elif user_forecast.pipeline_trend == 'down' %}
-                                                    <img
-                                                        src="{% static 'assets/icons/down-arrow.svg' %}"
-                                                        alt="{% trans 'Down trend' %}"
-                                                        width="15"
-                                                    >
-                                                {% endif %}
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                {% include "forecast_user_row.html" with last=forloop.last has_next=forecast.has_next %}
                             {% endfor %}
                             {% if forecast.has_next %}
                                 <tr id="scrollHint-{{ forecast_type.id }}-{{ forecast.view_id }}" class="bg-gray-50">
@@ -768,6 +535,7 @@
                                     </td>
                                 </tr>
                             {% endif %}
+                            {% endif %}
                         </tbody>
                     {% endif %}
                 {% empty %}
@@ -786,6 +554,10 @@
 </div>
 
 <!-- Display forecast type information -->
+<style>
+    /* while a role's next page loads, show the spinner instead of the button */
+    tr[data-hint-of]:has(.htmx-request) .role-load-more { display: none; }
+</style>
 
 <script>
     function togglePeriod(periodId) {
@@ -803,6 +575,86 @@
             }
         }
     }
+
+    // Roles and the users loaded under them share one visibility rule, recomputed
+    // from the toggles after every click: a role row is hidden when an ancestor role
+    // is collapsed; a user row is hidden when its own role row is hidden or its
+    // "N users" list is closed.
+    function refreshRoleRows(tbody) {
+        const roleRows = Array.from(tbody.querySelectorAll('tr.role-subtotal-row'));
+        const byKey = {};
+        roleRows.forEach(function (row) { byKey[row.dataset.key] = row; });
+        roleRows.forEach(function (row) {
+            let hide = false;
+            let parentKey = row.dataset.parent;
+            while (parentKey && byKey[parentKey]) {
+                const parentRow = byKey[parentKey];
+                const toggle = parentRow.querySelector('.role-toggle');
+                if (toggle && toggle.getAttribute('aria-expanded') === 'false') {
+                    hide = true;
+                    break;
+                }
+                parentKey = parentRow.dataset.parent;
+            }
+            row.classList.toggle('hidden', hide);
+        });
+        tbody.querySelectorAll('tr[data-users-of]').forEach(function (row) {
+            const owner = byKey[row.dataset.usersOf];
+            const usersToggle = owner && owner.querySelector('.role-users-toggle');
+            const closed = usersToggle && usersToggle.getAttribute('aria-expanded') === 'false';
+            row.classList.toggle('hidden', !owner || owner.classList.contains('hidden') || closed);
+        });
+    }
+
+    function toggleRoleRows(button) {
+        const expanded = button.getAttribute('aria-expanded') !== 'false';
+        button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        // same arrow behaviour as the period row: right when closed, down when open
+        const arrow = button.querySelector('svg');
+        if (arrow) arrow.style.transform = expanded ? 'rotate(0deg)' : 'rotate(90deg)';
+        refreshRoleRows(button.closest('tbody'));
+    }
+
+    // First click opens the list (htmx loads it, "click once"); later clicks hide and
+    // show the rows that are already there.
+    function toggleRoleUsers(button) {
+        const open = button.getAttribute('aria-expanded') !== 'true';
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        // filled while the list is open, so it is clear which roles show their users
+        button.style.backgroundColor = open ? '#e6efff' : '';
+        button.style.borderColor = open ? '#2563eb' : '';
+        refreshRoleRows(button.closest('tbody'));
+    }
+
+    // A sentinel row loads the next page once. Mark it as used as soon as it fires, so
+    // "is there another page waiting?" only counts the rows that have not fired yet.
+    document.addEventListener('htmx:beforeRequest', function (event) {
+        const row = event.detail.elt;
+        if (row && row.matches && row.matches('tr.htmx-sentinel[data-users-of]')) {
+            row.classList.remove('htmx-sentinel');
+        }
+    });
+
+    // "Load More Users" fires the newest sentinel of that role: the same request the
+    // scroll trigger makes, so a page can never be loaded twice.
+    function loadMoreRoleUsers(button) {
+        const waiting = document.querySelectorAll(
+            'tr.htmx-sentinel[data-users-of="' + button.dataset.roleKey + '"]'
+        );
+        const next = waiting[waiting.length - 1];
+        if (next) htmx.trigger(next, 'intersect');
+    }
+
+    // Drop a role's "loading more" row once its last page has arrived
+    document.addEventListener('htmx:afterSwap', function (event) {
+        const hint = event.detail.target;
+        if (hint && hint.dataset && hint.dataset.hintOf) {
+            const more = document.querySelector(
+                'tr.htmx-sentinel[data-users-of="' + hint.dataset.hintOf + '"]'
+            );
+            if (!more) hint.remove();
+        }
+    });
 
     // HTMX event listener to handle pagination completion
     document.addEventListener('htmx:afterSwap', function(event) {

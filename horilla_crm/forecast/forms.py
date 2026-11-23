@@ -18,6 +18,7 @@ from horilla.urls import reverse_lazy
 from horilla.utils.translation import gettext_lazy as _
 
 # Local imports
+from . import role_targets
 from .models import ForecastCondition, ForecastTarget, ForecastType
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,8 @@ class ForecastTargetForm(HorillaModelForm):
         "forcasts_type",
         "target_amount",
         "is_role_based",
+        "is_whole_role",
+        "include_below",
         "is_period_same",
         "is_target_same",
         "is_forecast_type_same",
@@ -48,7 +51,41 @@ class ForecastTargetForm(HorillaModelForm):
                 "hx-post": reverse_lazy("forecast:toggle_role_based"),
                 "hx-target": "#condition-fields-container",
                 "hx-swap": "innerHTML",
-                "hx-include": '[name="role"],[name="is_role_based"],[name="is_period_same"],[name="is_target_same"],[name="is_forecast_type_same"],[name="period"],[name="target_amount"],[name="forcasts_type"]',
+                "hx-include": '[name="role"],[name="is_role_based"],[name="is_period_same"],[name="is_target_same"],[name="is_forecast_type_same"],[name="period"],[name="target_amount"],[name="forcasts_type"],[name="is_whole_role"],[name="include_below"]',
+                "hx-trigger": "change",
+            }
+        ),
+    )
+
+    is_whole_role = forms.BooleanField(
+        required=False,
+        label=_("Target Is for the Whole Role"),
+        help_text=_("Enter one total and divide it among the users in the role"),
+        widget=forms.CheckboxInput(
+            attrs={
+                "class": "sr-only peer",
+                "hx-post": reverse_lazy("forecast:toggle_role_based"),
+                "hx-target": "#condition-fields-container",
+                "hx-swap": "innerHTML",
+                "hx-include": '[name="role"],[name="is_role_based"],[name="is_whole_role"],[name="include_below"],[name="is_period_same"],[name="is_target_same"],[name="is_forecast_type_same"],[name="period"],[name="target_amount"],[name="forcasts_type"],[name="wr_amount"],[name="wr_period"],[name="wr_type"]',
+                "hx-trigger": "change",
+            }
+        ),
+    )
+
+    include_below = forms.BooleanField(
+        required=False,
+        label=_("Include Roles Below"),
+        help_text=_(
+            "Divide the total across this role and every role below it, by role"
+        ),
+        widget=forms.CheckboxInput(
+            attrs={
+                "class": "sr-only peer",
+                "hx-post": reverse_lazy("forecast:toggle_role_based"),
+                "hx-target": "#condition-fields-container",
+                "hx-swap": "innerHTML",
+                "hx-include": '[name="role"],[name="is_role_based"],[name="is_whole_role"],[name="include_below"],[name="wr_amount"],[name="wr_period"],[name="wr_type"]',
                 "hx-trigger": "change",
             }
         ),
@@ -64,7 +101,7 @@ class ForecastTargetForm(HorillaModelForm):
                 "hx-post": reverse_lazy("forecast:toggle_condition_fields"),
                 "hx-target": "#condition-fields-container",
                 "hx-swap": "innerHTML",
-                "hx-include": '[name="is_period_same"],[name="is_target_same"],[name="is_forecast_type_same"],[name="period"],[name="target_amount"],[name="forcasts_type"],[name="role"],[name="is_role_based"]',
+                "hx-include": '[name="is_period_same"],[name="is_target_same"],[name="is_forecast_type_same"],[name="period"],[name="target_amount"],[name="forcasts_type"],[name="role"],[name="is_role_based"],[name="is_whole_role"],[name="include_below"]',
                 "hx-trigger": "change",
             }
         ),
@@ -80,7 +117,7 @@ class ForecastTargetForm(HorillaModelForm):
                 "hx-post": reverse_lazy("forecast:toggle_condition_fields"),
                 "hx-target": "#condition-fields-container",
                 "hx-swap": "innerHTML",
-                "hx-include": '[name="is_period_same"],[name="is_target_same"],[name="is_forecast_type_same"],[name="period"],[name="target_amount"],[name="forcasts_type"],[name="role"],[name="is_role_based"]',
+                "hx-include": '[name="is_period_same"],[name="is_target_same"],[name="is_forecast_type_same"],[name="period"],[name="target_amount"],[name="forcasts_type"],[name="role"],[name="is_role_based"],[name="is_whole_role"],[name="include_below"]',
                 "hx-trigger": "change",
             }
         ),
@@ -96,7 +133,7 @@ class ForecastTargetForm(HorillaModelForm):
                 "hx-post": reverse_lazy("forecast:toggle_condition_fields"),
                 "hx-target": "#condition-fields-container",
                 "hx-swap": "innerHTML",
-                "hx-include": '[name="is_period_same"],[name="is_target_same"],[name="is_forecast_type_same"],[name="period"],[name="target_amount"],[name="forcasts_type"],[name="role"],[name="is_role_based"]',
+                "hx-include": '[name="is_period_same"],[name="is_target_same"],[name="is_forecast_type_same"],[name="period"],[name="target_amount"],[name="forcasts_type"],[name="role"],[name="is_role_based"],[name="is_whole_role"],[name="include_below"]',
                 "hx-trigger": "change",
             }
         ),
@@ -121,6 +158,13 @@ class ForecastTargetForm(HorillaModelForm):
         # Set is_role_based initial value if instance has role
         if self.instance and self.instance.role:
             self.fields["is_role_based"].initial = True
+
+        # A new target is set for users, with one period and one forecast type chosen
+        # once for all of them (each user keeps their own target). The "Same ... for All"
+        # and role switches are kept as hidden state behind the "Set Target For" choice.
+        if not self.instance.pk:
+            self.fields["is_period_same"].initial = True
+            self.fields["is_forecast_type_same"].initial = True
 
         # Set main form fields (not condition fields) to not required
         # Condition fields are automatically set to required=False by base class
@@ -147,7 +191,7 @@ class ForecastTargetForm(HorillaModelForm):
                     "hx-post": reverse_lazy("forecast:toggle_role_based"),
                     "hx-target": "#condition-fields-container",
                     "hx-swap": "innerHTML",
-                    "hx-include": '[name="role"],[name="is_role_based"],[name="is_period_same"],[name="is_target_same"],[name="is_forecast_type_same"],[name="period"],[name="target_amount"],[name="forcasts_type"]',
+                    "hx-include": '[name="role"],[name="is_role_based"],[name="is_period_same"],[name="is_target_same"],[name="is_forecast_type_same"],[name="period"],[name="target_amount"],[name="forcasts_type"],[name="is_whole_role"],[name="include_below"]',
                     "hx-trigger": "change",
                 }
             )
@@ -187,6 +231,47 @@ class ForecastTargetForm(HorillaModelForm):
                 )
 
         return cleaned_data
+
+
+class ForecastTargetAmountForm(HorillaModelForm):
+    """
+    Edit one target's amount.
+
+    A target that belongs to a role total also offers "Also Change the Role Total",
+    so the person editing decides on purpose whether the role total follows the new
+    sum or stays as it was (and keeps showing the difference). The switch is only
+    offered to someone who could set a target for every user in that role total.
+    """
+
+    update_role_total = forms.BooleanField(
+        required=False,
+        label=_("Also Change the Role Total"),
+        widget=forms.CheckboxInput(
+            attrs={
+                "data_help": _(
+                    "Make the role target equal to what its targets add up to after "
+                    "this change. Leave off to keep the role target as it was."
+                )
+            }
+        ),
+    )
+
+    class Meta:
+        """Meta settings for ForecastTargetAmountForm."""
+
+        model = ForecastTarget
+        fields = ["target_amount"]
+
+    def __init__(self, *args, request=None, **kwargs):
+        super().__init__(*args, request=request, **kwargs)
+        note = role_targets.note_of(self.instance) if self.instance.pk else None
+        user = getattr(request, "user", None)
+        if (
+            not note
+            or user is None
+            or not role_targets.can_change_total(user, ForecastTarget, note["batch"])
+        ):
+            self.fields.pop("update_role_total", None)
 
 
 class ForecastTypeForm(HorillaModelForm):

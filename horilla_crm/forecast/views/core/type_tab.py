@@ -6,6 +6,7 @@ from django.core.cache import cache
 
 from horilla.contrib.core.models import FiscalYearInstance, Period
 from horilla.contrib.core.services.fiscal_year_service import FiscalYearService
+from horilla.contrib.utils.middlewares import get_active_company
 
 # First party imports (Horilla)
 from horilla.db.models import Sum
@@ -20,6 +21,7 @@ from horilla.web import ScriptResponse
 
 # Local imports
 from horilla_crm.forecast.models import Forecast, ForecastType
+from horilla_crm.forecast.utils import resolve_forecast_scope
 from horilla_crm.forecast.views.core.helpers import (
     ForecastTypeTabHelpersMixin,
     get_forecast_chart_data,
@@ -47,16 +49,15 @@ class ForecastTypeTabView(
 
     def get(self, request, *args, **kwargs):
         """Enforce ownership permissions and render forecast type tab content."""
-        user_id = request.GET.get("user_id")
-        has_view_all = request.user.has_perm("opportunities.view_opportunity")
-        has_view_own = request.user.has_perm("opportunities.view_own_opportunity")
-
-        if has_view_own and not has_view_all:
-            if user_id and user_id != str(request.user.pk):
-                return render(request, "403.html")
-            if not user_id:
-                request.GET = request.GET.copy()
-                request.GET["user_id"] = str(request.user.pk)
+        owner_ids, user_id, allowed = resolve_forecast_scope(
+            request.user, request.GET.get("user_id")
+        )
+        if not allowed:
+            return render(request, "403.html")
+        if owner_ids is not None and user_id and not request.GET.get("user_id"):
+            # No team to combine: default to the user's own forecast
+            request.GET = request.GET.copy()
+            request.GET["user_id"] = user_id
 
         context = self.get_context_data(**kwargs)
         if context.get("error"):
@@ -86,15 +87,7 @@ class ForecastTypeTabView(
         _t1 = time.perf_counter()
 
         # Automatically check and update fiscal years before displaying
-        company = (
-            self.request.active_company
-            if hasattr(self.request, "active_company") and self.request.active_company
-            else (
-                self.request.user.company
-                if hasattr(self.request.user, "company")
-                else None
-            )
-        )
+        company = get_active_company(self.request)
         if company:
             fy_cache_key = f"fy_check_{getattr(company, 'id', 0)}"
             if not cache.get(fy_cache_key):
@@ -119,17 +112,12 @@ class ForecastTypeTabView(
         _log.debug("PERF ensure_forecasts_exist: %.3fs", time.perf_counter() - _t1)
         _t1 = time.perf_counter()
 
-        # Get user_id - this will be current user if they only have view_own permission
-        user_id = self.request.GET.get("user_id")
-
-        # Additional permission check
         has_view_all = self.request.user.has_perm("opportunities.view_opportunity")
         has_view_own = self.request.user.has_perm("opportunities.view_own_opportunity")
-
-        # If user only has view_own, ensure they can only see their own data
-        if has_view_own and not has_view_all:
-            if not user_id or user_id != str(self.request.user.pk):
-                user_id = str(self.request.user.pk)
+        # Narrow to the user's forecast scope (self plus subordinates for view_own)
+        owner_ids, user_id, _allowed = resolve_forecast_scope(
+            self.request.user, self.request.GET.get("user_id")
+        )
 
         page = self.request.GET.get("page", 1)
         beginning_period_id = self.request.GET.get("beginning_period_id") or None
@@ -141,6 +129,7 @@ class ForecastTypeTabView(
             page,
             beginning_period_id=beginning_period_id,
             ending_period_id=ending_period_id,
+            owner_ids=owner_ids,
         )
         _log.debug("PERF get_forecast_data: %.3fs", time.perf_counter() - _t1)
         _t1 = time.perf_counter()
@@ -325,25 +314,18 @@ class ForecastChartsModalView(
                 context["currency_symbol"] = company.currency
             return context
 
-        company = (
-            self.request.active_company
-            if hasattr(self.request, "active_company") and self.request.active_company
-            else (
-                self.request.user.company
-                if hasattr(self.request.user, "company")
-                else None
-            )
-        )
+        company = get_active_company(self.request)
         if company:
             fy_cache_key = f"fy_check_{getattr(company, 'id', 0)}"
             if not cache.get(fy_cache_key):
                 FiscalYearService.check_and_update_fiscal_years(company=company)
                 cache.set(fy_cache_key, True, 600)
 
-        has_view_all = self.request.user.has_perm("opportunities.view_opportunity")
-        has_view_own = self.request.user.has_perm("opportunities.view_own_opportunity")
-        if has_view_own and not has_view_all:
-            user_id = str(self.request.user.pk)
+        owner_ids, user_id, allowed = resolve_forecast_scope(self.request.user, user_id)
+        if not allowed:
+            context["forecast_chart_data"] = None
+            context["currency_symbol"] = "USD"
+            return context
 
         beginning_period_id = self.request.GET.get("beginning_period_id") or None
         ending_period_id = self.request.GET.get("ending_period_id") or None
@@ -384,6 +366,8 @@ class ForecastChartsModalView(
             company=company,
             owner__is_active=True,
         )
+        if owner_ids is not None:
+            fq = fq.filter(owner_id__in=owner_ids)
         if user_id:
             fq = fq.filter(owner_id=user_id)
 
@@ -426,4 +410,101 @@ class ForecastChartsModalView(
 
         context["forecast_chart_data"] = forecast_chart_data
         context["currency_symbol"] = currency_symbol
+        return context
+
+
+@method_decorator(htmx_required, name="dispatch")
+@method_decorator(
+    permission_required_or_denied(
+        ["opportunities.view_opportunity", "opportunities.view_own_opportunity"]
+    ),
+    name="dispatch",
+)
+class ForecastRoleUsersView(
+    ForecastTypeTabMixin, ForecastTypeTabHelpersMixin, TemplateView
+):
+    """
+    HTMX view returning one page of user rows for a role in one period.
+
+    Opened from a role row of the forecast table; the rows are inserted right under
+    that role, and the last row loads the next page as it scrolls into view. The same
+    scope rules apply as for the table: a view-own user only gets users in their
+    hierarchy.
+    """
+
+    template_name = "forecast_role_users.html"
+    USERS_PER_PAGE = 10
+
+    def get(self, request, *args, **kwargs):
+        """Refuse users with no forecast scope, then render the page of users."""
+        owner_ids, _user_id, allowed = resolve_forecast_scope(request.user, None)
+        if not allowed and owner_ids is not None and not owner_ids:
+            return render(request, "403.html")
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        """Load the role's users for the requested period and page."""
+        context = super().get_context_data(**kwargs)
+        params = self.request.GET
+        role_id = params.get("role_id") or ""
+        period_id = params.get("period_id") or ""
+        context["forecast"] = None
+        if not (
+            period_id.isdigit()
+            and (role_id == "none" or role_id.isdigit())
+            and params.get("forecast_type_id")
+        ):
+            return context
+
+        forecast_type = ForecastType.objects.filter(
+            id=params.get("forecast_type_id"), is_active=True
+        ).first()
+        fiscal_year = (
+            FiscalYearInstance.objects.filter(id=params.get("fiscal_year_id")).first()
+            if str(params.get("fiscal_year_id") or "").isdigit()
+            else None
+        ) or self.current_fiscal_year()
+        if not forecast_type or not fiscal_year:
+            return context
+
+        try:
+            page = max(int(params.get("page", 1)), 1)
+            depth = min(max(int(params.get("depth", 0)), 0), 20)
+        except ValueError:
+            page, depth = 1, 0
+
+        owner_ids, _user_id, _allowed = resolve_forecast_scope(self.request.user, None)
+        forecasts = self.get_forecast_data(
+            forecast_type,
+            fiscal_year,
+            None,
+            page,
+            beginning_period_id=period_id,
+            ending_period_id=period_id,
+            owner_ids=owner_ids,
+            role_filter=role_id,
+        )
+        if not forecasts:
+            return context
+
+        forecast = forecasts[0]
+        role_key = f"period_{period_id}-{role_id}"
+        next_params = params.copy()
+        next_params["page"] = forecast.next_page or page + 1
+        context.update(
+            {
+                "forecast": forecast,
+                "forecast_type": forecast_type,
+                "currency_symbol": forecast.currency_symbol,
+                "role_key": role_key,
+                "next_url": f"{self.request.path}?{next_params.urlencode()}",
+                "hint_id": f"#role-hint-{role_key}",
+                "indicator_id": f"#role-loading-{role_key}",
+                # the user's icon lines up under the role's name: the role's own
+                # indent plus its arrow (1.25rem) and the gap after it (0.5rem)
+                "indent_style": (
+                    f"padding-inline-start: calc(0.75rem + {depth} * 1rem + 1.75rem);"
+                ),
+            }
+        )
         return context

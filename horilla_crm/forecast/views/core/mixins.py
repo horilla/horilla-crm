@@ -3,21 +3,24 @@
 # Standard library imports
 import logging
 import time
+from collections import Counter
 
 # Third-party imports (Django)
 from django.core.cache import cache
 from django.core.paginator import Paginator
 
 from horilla.auth.models import User
-from horilla.contrib.core.models import Company, FiscalYearInstance, Period
+from horilla.contrib.core.models import FiscalYearInstance, Period, Role
+from horilla.contrib.utils.middlewares import get_active_company
 
 # First party imports (Horilla)
 from horilla.db.models import Sum
 from horilla.utils.functional import cached_property
+from horilla_crm.forecast import role_targets
 
 # Local imports
 from horilla_crm.forecast.models import Forecast, ForecastTarget
-from horilla_crm.forecast.utils import ForecastCalculator
+from horilla_crm.forecast.utils import ForecastCalculator, build_forecast_role_tree
 from horilla_crm.opportunities.models import Opportunity
 
 
@@ -32,11 +35,7 @@ class ForecastTypeTabMixin:
     @cached_property
     def get_company_for_user(self):
         """Cache the active company for the current user."""
-        return (
-            self.request.active_company
-            if hasattr(self.request, "active_company")
-            else Company.objects.filter(id=self.request.user.company_id).first()
-        )
+        return get_active_company(self.request)
 
     def current_fiscal_year(self):
         """Return the cached current fiscal year."""
@@ -46,7 +45,9 @@ class ForecastTypeTabMixin:
         """Return the cached active company for the current user."""
         return self.get_company_for_user
 
-    def get_target_for_period_bulk(self, periods, forecast_type, user_id=None):
+    def get_target_for_period_bulk(
+        self, periods, forecast_type, user_id=None, owner_ids=None
+    ):
         """
         Get targets for all periods in bulk to avoid N+1 queries
         """
@@ -91,6 +92,9 @@ class ForecastTypeTabMixin:
             .select_related("period", "assigned_to")
             .prefetch_related("role")
         )
+        if owner_ids is not None:
+            # Combined view of a team: only the targets of users in scope
+            all_targets = all_targets.filter(assigned_to_id__in=owner_ids)
 
         targets_by_period = {}
         for target in all_targets:
@@ -186,6 +190,8 @@ class ForecastTypeTabMixin:
         page=1,
         beginning_period_id=None,
         ending_period_id=None,
+        owner_ids=None,
+        role_filter=None,
     ):
         """
         Multi-year aware forecast data loader.
@@ -250,7 +256,7 @@ class ForecastTypeTabMixin:
             return []
 
         targets_data = self.get_target_for_period_bulk(
-            periods_list, forecast_type, user_id
+            periods_list, forecast_type, user_id, owner_ids=owner_ids
         )
         _log.debug("  gfd get_target_for_period_bulk: %.3fs", time.perf_counter() - _t)
         _t = time.perf_counter()
@@ -262,6 +268,9 @@ class ForecastTypeTabMixin:
             period_id__in=_period_id_list,
             company=company,
         )
+        if owner_ids is not None:
+            # view_own users see themselves and their subordinates only
+            _fq_base = _fq_base.filter(owner_id__in=owner_ids)
 
         if user_id:
             # SINGLE USER: fetch only this user's rows (small result set)
@@ -380,6 +389,12 @@ class ForecastTypeTabMixin:
                     is_active=True, company=self.get_company_for_user
                 )
             )
+            if owner_ids is not None:
+                _all_users = [u for u in _all_users if u.id in owner_ids]
+            if role_filter is not None:
+                # Only the users directly in one role ("none" = users with no role)
+                wanted = None if role_filter == "none" else int(role_filter)
+                _all_users = [u for u in _all_users if u.role_id == wanted]
             users_with_data = sorted(
                 [u for u in _all_users if _owner_actual.get(u.id, 0) > 0],
                 key=lambda u: _owner_actual.get(u.id, 0),
@@ -389,6 +404,56 @@ class ForecastTypeTabMixin:
                 u for u in _all_users if _owner_actual.get(u.id, 0) <= 0
             ]
             all_active_users = users_with_data + users_without_data
+
+            # Team totals per role (one grouped query per measure source, no per-user
+            # loops). Shown only when the scope spans more than one role.
+            role_nodes = (
+                []
+                if role_filter is not None
+                else build_forecast_role_tree(
+                    (
+                        Role.objects.filter(company=company)
+                        if company is not None
+                        else Role.objects.all()
+                    ).values_list("id", "role_name", "parent_role_id"),
+                    Counter(u.role_id for u in _all_users),
+                )
+            )
+            role_sums, role_target_sums, role_drift = {}, {}, {}
+            if len(role_nodes) > 1:
+                for row in (
+                    _fq_base.filter(owner__is_active=True)
+                    .values("period_id", "owner__role_id")
+                    .annotate(
+                        pipeline=Sum(f"pipeline_{_suffix}"),
+                        best_case=Sum(f"best_case_{_suffix}"),
+                        commit=Sum(f"commit_{_suffix}"),
+                        closed=Sum(f"closed_{_suffix}"),
+                        actual=Sum(f"actual_{_suffix}"),
+                    )
+                ):
+                    role_sums[(row["period_id"], row["owner__role_id"])] = row
+                scoped_targets = ForecastTarget.objects.filter(
+                    is_active=True,
+                    period_id__in=_period_id_list,
+                    forcasts_type=forecast_type,
+                    assigned_to__is_active=True,
+                )
+                scoped_targets = (
+                    scoped_targets.filter(assigned_to_id__in=owner_ids)
+                    if owner_ids is not None
+                    else scoped_targets.filter(assigned_to__company=company)
+                )
+                for row in scoped_targets.values(
+                    "period_id", "assigned_to__role_id"
+                ).annotate(total=Sum("target_amount")):
+                    role_target_sums[
+                        (row["period_id"], row["assigned_to__role_id"])
+                    ] = row["total"]
+                # role totals that were entered, against what their targets add up to now
+                role_drift = role_targets.drift_by_role(
+                    ForecastTarget, _period_id_list, forecast_type
+                )
 
             # Paginate the user list once (same page applies to all periods)
             paginator = Paginator(all_active_users, self.USERS_PER_PAGE)
@@ -635,6 +700,16 @@ class ForecastTypeTabMixin:
                     else None
                 )
                 aggregated_forecast.view_id = f"period_{period.id}"
+                if len(role_nodes) > 1:
+                    aggregated_forecast.role_rows = self.build_period_role_rows(
+                        period,
+                        forecast_type,
+                        currency_symbol,
+                        role_nodes,
+                        role_sums,
+                        role_target_sums,
+                        role_drift,
+                    )
 
             period_forecasts.append(aggregated_forecast)
 

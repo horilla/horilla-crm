@@ -1,0 +1,22 @@
+{% comment %}
+    A labelled form field that only shows while its switch is on. Used by the first
+    render of the form and by the HTMX responses, so both look the same.
+    Params: field (bound field); show (switch is on); help (optional: also show the
+    field's help text, which the forecast type select updates).
+{% endcomment %}
+{% if show %}
+    <div class="flex flex-col">
+        <div class="flex justify-between items-center {% if 'select' in field.field.widget.attrs.class|lower or field.field.widget.input_type == 'select' %}mb-2{% else %}mb-1{% endif %}">
+            <label
+                for="{{ field.id_for_label }}"
+                class="text-xs font-semibold text-color-600 flex-1 min-w-0"
+            >{{ field.label }}</label>
+        </div>
+        {{ field }}
+    </div>
+    {% if help %}
+        <div id="target_amount_help_text" class="text-xs text-gray-500 mt-1">
+            {{ field.help_text }}
+        </div>
+    {% endif %}
+{% endif %}

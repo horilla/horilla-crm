@@ -2,10 +2,10 @@
     <div class="flex flex-wrap items-center gap-2 justify-between">
         <div class="flex items-center gap-4">
             <h3 class="text-md font-semibold">
-                {% if has_view_own and not has_view_all %}{% trans "My Forecast" %}{% else %}{% trans "Forecast" %}{% endif %}
+                {% if has_view_own and not has_view_all %}{% if show_all_users_option %}{% trans "My Team Forecast" %}{% else %}{% trans "My Forecast" %}{% endif %}{% else %}{% trans "Forecast" %}{% endif %}
             </h3>
             {% if type_count > 0 %}
-                {% if  has_view_all %}
+                {% if has_view_all or show_all_users_option %}
                     <div id="user-data-container" class="w-48">
                         <select
                             id="user-data"
@@ -21,7 +21,7 @@
                             name="user_id"
                         >
                             {% if show_all_users_option %}
-                                <option value="">{% trans "All Users" %}</option>
+                                <option value="">{% if has_view_all %}{% trans "All Users" %}{% else %}{% trans "My Team" %}{% endif %}</option>
                             {% endif %}
 
                             <!-- Always show logged-in user first -->
@@ -35,8 +35,8 @@
                                 {% trans "My Forecast" %}
                             </option>
 
-                            <!-- Show all other users after (only if has_view_all) -->
-                            {% if has_view_all %}
+                            <!-- Show all other users after (scoped by the view: everyone for view all, the team for view own) -->
+                            {% if has_view_all or show_all_users_option %}
                                 {% for user in users %}
                                     {% if user != request.user %}
                                         <option

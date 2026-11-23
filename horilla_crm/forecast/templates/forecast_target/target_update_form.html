@@ -1,0 +1,56 @@
+{% extends "single_form_view.html" %}
+{% comment %}
+    Edit one forecast target. When the target is part of a role total, a note under the
+    amount shows that total, what the other targets add up to, and what the role's
+    targets would add up to with the amount being typed, so the effect of the change is
+    visible before saving.
+{% endcomment %}
+{% block extra_form_content_after_conditions %}
+    {% if role_target_status %}
+        <div
+            id="role-target-note"
+            class="mt-3 rounded-lg border border-[#f3edb0] bg-yellow-50 p-3 text-xs flex flex-col gap-1.5"
+            data-total="{{ role_target_status.total }}"
+            data-others="{{ role_target_others }}"
+        >
+            <p class="text-yellow-800">
+                {% blocktrans with role=role_target_status.role_name total=role_target_status.total|floatformat:"-2g" others=role_target_others|floatformat:"-2g" %}Part of the {{ role }} role target of <b>{{ total }}</b>. The other targets add up to <b>{{ others }}</b>.{% endblocktrans %}
+            </p>
+            {# both states are in the markup so their colours are generated; the script shows one #}
+            <p id="rt-same" class="hidden font-medium text-yellow-800">{% trans "The role's targets will still add up to the role target." %}</p>
+            <p id="rt-follow" class="hidden font-medium text-yellow-800">
+                {% trans "The role target will change to" %} <b id="rt-follow-new"></b>.
+            </p>
+            <p id="rt-differs" class="hidden font-medium text-red-700">
+                {% trans "The role's targets will add up to" %} <b id="rt-new"></b>
+                (<span id="rt-diff"></span> {% trans "from the role target" %}).
+            </p>
+        </div>
+        <script>
+            (function () {
+              var note = document.getElementById('role-target-note');
+              var input = document.getElementById('id_target_amount');
+              // "Also Change the Role Total": offered only when the person may change it
+              var follow = document.querySelector('input[name="update_role_total"]');
+              if (!note || !input) return;
+              var total = parseFloat(note.dataset.total) || 0;
+              var others = parseFloat(note.dataset.others) || 0;
+              function fmt(n) { return n.toLocaleString(undefined, {maximumFractionDigits: 2}); }
+              function update() {
+                var now = Math.round((others + (parseFloat(input.value) || 0)) * 100) / 100;
+                var diff = Math.round((now - total) * 100) / 100;
+                var changing = !!(follow && follow.checked && diff !== 0);
+                document.getElementById('rt-same').classList.toggle('hidden', diff !== 0);
+                document.getElementById('rt-follow').classList.toggle('hidden', !changing);
+                document.getElementById('rt-follow-new').textContent = fmt(now);
+                document.getElementById('rt-differs').classList.toggle('hidden', diff === 0 || changing);
+                document.getElementById('rt-new').textContent = fmt(now);
+                document.getElementById('rt-diff').textContent = (diff > 0 ? '+' : '') + fmt(diff);
+              }
+              input.addEventListener('input', update);
+              if (follow) follow.addEventListener('change', update);
+              update();
+            })();
+        </script>
+    {% endif %}
+{% endblock extra_form_content_after_conditions %}

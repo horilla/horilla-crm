@@ -13,6 +13,7 @@ from horilla.auth.models import User
 from horilla.contrib.core.models import FiscalYearInstance, Period
 from horilla.contrib.core.services.fiscal_year_service import FiscalYearService
 from horilla.contrib.generics.views import HorillaTabView
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
     htmx_required,
@@ -23,6 +24,7 @@ from horilla.views.generic import TemplateView
 
 # Local imports
 from horilla_crm.forecast.models import ForecastType
+from horilla_crm.forecast.utils import resolve_forecast_scope
 
 
 class ForecastView(LoginRequiredMixin, TemplateView):
@@ -34,15 +36,7 @@ class ForecastView(LoginRequiredMixin, TemplateView):
         """Prepare forecast dashboard context with fiscal-year navigation metadata."""
         context = super().get_context_data(**kwargs)
 
-        company = (
-            self.request.active_company
-            if hasattr(self.request, "active_company") and self.request.active_company
-            else (
-                self.request.user.company
-                if hasattr(self.request.user, "company")
-                else None
-            )
-        )
+        company = get_active_company(self.request)
 
         forcast_types = (
             ForecastType.all_objects.filter(company=company)
@@ -117,15 +111,7 @@ class ForecastNavbarView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
 
         # Automatically check and update fiscal years before displaying
-        company = (
-            self.request.active_company
-            if hasattr(self.request, "active_company") and self.request.active_company
-            else (
-                self.request.user.company
-                if hasattr(self.request.user, "company")
-                else None
-            )
-        )
+        company = get_active_company(self.request)
         if company:
             fy_cache_key = f"fy_check_{company.id}"
             if not cache.get(fy_cache_key):
@@ -214,22 +200,20 @@ class ForecastNavbarView(LoginRequiredMixin, TemplateView):
         has_view_all = self.request.user.has_perm("opportunities.view_opportunity")
         has_view_own = self.request.user.has_perm("opportunities.view_own_opportunity")
 
-        # Determine user list and default selection based on permissions
-        if has_view_all:
-            # User can view all opportunities - show all users
+        # Determine user list and default selection from the forecast scope.
+        # view all: every user; view own: self plus subordinate roles.
+        owner_ids, user_id, allowed = resolve_forecast_scope(self.request.user, user_id)
+        if owner_ids is None:
             users = User.objects.filter(is_active=True)
             show_all_users_option = True
-            # If no user_id is specified, don't force one (show all by default)
-            if not user_id:
-                user_id = None
-        elif has_view_own:
-            # User can only view their own opportunities - restrict to current user only
-            users = User.objects.filter(id=self.request.user.id, is_active=True)
-            show_all_users_option = False
-            # Force user_id to be the current user
-            user_id = str(self.request.user.pk)
+        elif owner_ids:
+            users = User.objects.filter(pk__in=owner_ids, is_active=True)
+            # "My Team" only makes sense when there is a team to combine
+            show_all_users_option = len(owner_ids) > 1
+            if not allowed:
+                # A user_id outside the hierarchy falls back to the default view
+                user_id = None if show_all_users_option else str(self.request.user.pk)
         else:
-            # No permission - empty queryset
             users = User.objects.none()
             show_all_users_option = False
             user_id = None
@@ -281,13 +265,11 @@ class ForecastTabView(LoginRequiredMixin, HorillaTabView):
     def get_forecast_tabs(self):
         """Generate tab configuration for each active forecast type with URLs and IDs."""
         tabs = []
-        company = None
-        if self.request.user.is_authenticated:
-            company = (
-                self.request.active_company
-                if self.request.active_company
-                else self.request.user.company
-            )
+        company = (
+            get_active_company(self.request)
+            if self.request.user.is_authenticated
+            else None
+        )
         # Forecast page is always active-company scoped, even if "show all companies" is enabled globally.
         forecast_types = (
             ForecastType.all_objects.filter(is_active=True, company=company).order_by(

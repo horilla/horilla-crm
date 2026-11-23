@@ -10,6 +10,7 @@ from django.template.loader import render_to_string
 from horilla.auth.mixins import LoginRequiredMixin
 from horilla.contrib.core.models import FiscalYearInstance, Period
 from horilla.contrib.generics.views import HorillaListView
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.shortcuts import get_object_or_404, render
 from horilla.urls import reverse_lazy
 from horilla.utils.decorators import (
@@ -23,6 +24,7 @@ from horilla.web import HttpNotFound
 
 # Local imports
 from horilla_crm.forecast.models import Forecast, ForecastType
+from horilla_crm.forecast.utils import get_forecast_owner_scope, resolve_forecast_scope
 from horilla_crm.opportunities.models import Opportunity
 
 
@@ -72,15 +74,13 @@ class ForecastOpportunitiesView(LoginRequiredMixin, View):
         Handle GET requests to display opportunities modal content with categorized
         opportunities and list views.
         """
-        user_id = request.GET.get("user_id")
+        owner_ids, user_id, allowed = resolve_forecast_scope(
+            request.user, request.GET.get("user_id")
+        )
+        if not allowed:
+            return render(request, "403.html")
         has_view_all = request.user.has_perm("opportunities.view_opportunity")
         has_view_own = request.user.has_perm("opportunities.view_own_opportunity")
-
-        if has_view_own and not has_view_all:
-            if user_id and user_id != str(request.user.pk):
-                return render(request, "403.html")
-            if not user_id:
-                user_id = str(request.user.pk)
         try:
             if forecast_id == "total":
                 fiscal_year_id = request.GET.get("fiscal_year_id")
@@ -106,13 +106,13 @@ class ForecastOpportunitiesView(LoginRequiredMixin, View):
             else:
                 forecast = self.get_forecast_object(forecast_id)
 
-                # Additional check: if user has view_own only, verify they own this forecast
-                if has_view_own and not has_view_all:
+                # view_own users may open forecasts owned by themselves or subordinates
+                if owner_ids is not None:
                     if hasattr(forecast, "owner") and forecast.owner:
-                        if forecast.owner.id != request.user.pk:
+                        if forecast.owner.id not in owner_ids:
                             return render(request, "403.html")
 
-            company = request.active_company
+            company = get_active_company(request)
             currency_symbol = company.currency if company else "USD"
 
             opportunity_types = [
@@ -300,9 +300,7 @@ class ForecastOpportunitiesView(LoginRequiredMixin, View):
         """
         Get base queryset for opportunities in this forecast period or all periods for 'total'
         """
-        # Additional permission check in queryset
-        has_view_all = self.request.user.has_perm("opportunities.view_opportunity")
-        has_view_own = self.request.user.has_perm("opportunities.view_own_opportunity")
+        owner_ids = get_forecast_owner_scope(self.request.user)
 
         if forecast.id == "total":
             # For total, include all opportunities in the fiscal year
@@ -316,10 +314,10 @@ class ForecastOpportunitiesView(LoginRequiredMixin, View):
                 close_date__lte=forecast.period.end_date,
             )
 
-        # Enforce view_own permission
-        if has_view_own and not has_view_all:
-            queryset = queryset.filter(owner_id=self.request.user.pk)
-        elif user_id:
+        # Enforce view_own scope (self plus subordinates), then the chosen user
+        if owner_ids is not None:
+            queryset = queryset.filter(owner_id__in=owner_ids)
+        if user_id:
             queryset = queryset.filter(owner_id=user_id)
 
         if (

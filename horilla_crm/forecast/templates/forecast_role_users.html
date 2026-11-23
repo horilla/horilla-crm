@@ -1,0 +1,37 @@
+{% comment %}
+    One page of a role's users, inserted under that role's row of the forecast table.
+    The last row loads the next page as it scrolls into view, and the "Load More Users"
+    button does the same on demand; the loading indicator shows while a page loads and
+    the whole row is removed once everything is loaded.
+{% endcomment %}
+{% if forecast %}
+    {% for user_forecast in forecast.user_forecasts %}
+        {% include "forecast_user_row.html" with last=forloop.last has_next=forecast.has_next users_of=role_key %}
+    {% empty %}
+        <tr data-users-of="{{ role_key }}" class="bg-gray-50">
+            <td colspan="100%" class="p-3 text-center text-[13px] text-gray-500 border border-[#dddddd]">
+                {% trans "No users to show for this role." %}
+            </td>
+        </tr>
+    {% endfor %}
+    {% if forecast.has_next %}
+        <tr id="role-hint-{{ role_key }}" data-users-of="{{ role_key }}" data-hint-of="{{ role_key }}" class="bg-gray-50">
+            <td colspan="100%" class="px-3 py-2 text-center border border-[#dddddd]">
+                <div class="flex justify-center items-center gap-3">
+                    {# shown only while a page is loading (the app hides every .htmx-indicator otherwise) #}
+                    <div id="role-loading-{{ role_key }}" class="flex justify-center items-center gap-3 htmx-indicator">
+                        {% spinner "sm" %}
+                        <span class="text-[13px] text-primary-600 font-medium">{% trans "Loading More Users" %}</span>
+                    </div>
+                    {# pages also load as this row scrolls into view; the button is the dependable way #}
+                    <button
+                        type="button"
+                        class="role-load-more text-[13px] text-primary-600 font-medium hover:underline"
+                        data-role-key="{{ role_key }}"
+                        onclick="loadMoreRoleUsers(this)"
+                    >{% trans "Load More Users" %}</button>
+                </div>
+            </td>
+        </tr>
+    {% endif %}
+{% endif %}

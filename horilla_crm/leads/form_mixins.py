@@ -27,12 +27,21 @@ import json
 
 # Third-party imports (Django)
 from django import forms
+from django.db.models import Q
 
 # First party imports (Horilla)
+from horilla.auth.models import User
+from horilla.contrib.core.availability import format_when, unavailable_until
+from horilla.contrib.core.availability_select import (
+    AvailabilitySelect,
+    unavailable_title,
+)
 from horilla.contrib.generics.forms.condition_fields import (
     get_condition_field_extension,
 )
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.urls import reverse_lazy
+from horilla.utils import timezone
 from horilla.utils.html import format_html
 from horilla.utils.translation import gettext_lazy as _
 
@@ -171,9 +180,7 @@ class LeadAssignmentRuleFormMixin:
         request = getattr(self, "request", None)
         if request is None:
             return None
-        return getattr(request, "active_company", None) or getattr(
-            request.user, "company", None
-        )
+        return get_active_company(request)
 
     def _is_multi_step(self):
         return bool(getattr(self, "step_fields", None))
@@ -282,7 +289,14 @@ class LeadAssignmentRuleFormMixin:
         self._unrestricted_fields = set(getattr(self, "_unrestricted_fields", ())) | {
             OWNER_FIELD
         }
-        owner.queryset = resolution.users
+        # People who are away are kept in the field's queryset on purpose: a
+        # submitted away person then reaches ``_validate_assignment``, which
+        # says who is unavailable until when, instead of a bare "not a valid
+        # choice". Only ``resolution.users`` (the available people) can win.
+        away_ids = [user.pk for user, _back in resolution.unavailable]
+        owner.queryset = User.objects.filter(
+            Q(pk__in=resolution.users.values("pk")) | Q(pk__in=away_ids)
+        )
         if owner.widget.is_hidden:
             # A later step of the multi-step form keeps the owner as a hidden input.
             return
@@ -296,8 +310,19 @@ class LeadAssignmentRuleFormMixin:
                 if user.pk not in seen:
                     seen.add(user.pk)
                     choices.append((user.pk, str(user).strip() or user.username))
-        owner.widget = forms.Select(
+        # People who are away are shown after the available ones, disabled, with
+        # a grey chip and a tooltip saying until when; they can not be picked,
+        # and are rejected on save.
+        unavailable = {}
+        for user, back_at in resolution.unavailable if list_people else ():
+            if user.pk in seen:
+                continue
+            seen.add(user.pk)
+            unavailable[user.pk] = unavailable_title(back_at)
+            choices.append((user.pk, str(user).strip() or user.username))
+        owner.widget = AvailabilitySelect(
             choices=choices,
+            unavailable=unavailable,
             attrs={"class": OWNER_SELECT_CLASS, "id": f"id_{OWNER_FIELD}"},
         )
         current = self.data.get(OWNER_FIELD) if self.data else None
@@ -393,6 +418,34 @@ class LeadAssignmentRuleFormMixin:
                 data[name] = getattr(self.instance, name)
         return data
 
+    def _owner_waits_for_untick(self):
+        """
+        Nobody can be picked while "Assign using rules" is ticked, so the Owner
+        is shown disabled until the box is unticked; offering a choice that the
+        form would refuse is pointless.
+
+        A disabled field is not submitted, so the "required" error it would
+        raise is dropped: the message about the rule is the real reason.
+        """
+        owner = self.fields.get(OWNER_FIELD)
+        if owner is None or owner.widget.is_hidden:
+            return
+        owner.disabled = True
+        # Not validated yet (the preview form): nothing to drop.
+        errors = (self._errors or {}).get(OWNER_FIELD)
+        if errors and all(error.code == "required" for error in errors.as_data()):
+            del self._errors[OWNER_FIELD]
+            # The model would now check the empty owner by itself and report
+            # another error, so the form tells it to leave the owner out.
+            self._owner_not_checked_by_model = True
+
+    def _get_validation_exclusions(self):
+        """Leave the owner out of the model check once its error was dropped."""
+        exclude = super()._get_validation_exclusions()
+        if getattr(self, "_owner_not_checked_by_model", False):
+            exclude.add(OWNER_FIELD)
+        return exclude
+
     def _owner_error(self, message):
         """Attach an owner error to the field when it is shown, else to the form."""
         owner = self.fields.get(OWNER_FIELD)
@@ -427,9 +480,11 @@ class LeadAssignmentRuleFormMixin:
 
         if resolution.state == NO_ASSIGNEES:
             self.add_error(None, resolution.reason)
+            self._owner_waits_for_untick()
             return
         if resolution.state == NO_MATCH:
             self.add_error(None, self._no_match_message(resolution.reason))
+            self._owner_waits_for_untick()
             return
 
         self._enter_pool_mode(
@@ -445,10 +500,23 @@ class LeadAssignmentRuleFormMixin:
         if owner is None:
             return
         if not resolution.users.filter(pk=owner.pk).exists():
-            self._owner_error(
-                _("Choose one of the people rule “%(rule)s” assigns to.")
-                % {"rule": resolution.rule.name}
-            )
+            # Checked again now, at save time: the person may have become
+            # unavailable since the form was opened.
+            back_at = unavailable_until([owner.pk], timezone.now()).get(owner.pk)
+            if back_at is not None:
+                message = _(
+                    "%(user)s is unavailable until %(date)s. Choose another "
+                    "person rule “%(rule)s” assigns to."
+                ) % {
+                    "user": str(owner).strip() or owner.username,
+                    "date": format_when(back_at),
+                    "rule": resolution.rule.name,
+                }
+            else:
+                message = _("Choose one of the people rule “%(rule)s” assigns to.") % {
+                    "rule": resolution.rule.name
+                }
+            self._owner_error(message)
             return
         if final:
             self._assignment_decision = (resolution.condition, owner)
@@ -514,11 +582,13 @@ class LeadAssignmentRuleFormMixin:
             css = "text-red-500"
 
         if resolution.state in (NO_MATCH, NO_ASSIGNEES):
-            # Nobody can be picked from a rule, so show the owner field as it
-            # is, with the checkbox still ticked.
+            # Nobody can be picked from a rule: the owner field is shown
+            # disabled, with the checkbox still ticked. Unticking it brings the
+            # normal owner field back.
             data = self.data.copy()
             data.pop(APPLY_FIELD, None)
             plain = self.__class__(data=data, request=self.request)
+            plain._owner_waits_for_untick()
             plain._checkbox_checked = True
             plain._conditions_cache = self._conditions_cache
             plain._owner_note = format_html(

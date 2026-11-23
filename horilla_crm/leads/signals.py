@@ -40,6 +40,8 @@ from horilla_crm.leads.assignment.notify import (
 from horilla_crm.leads.assignment.owner_lock import may_be_locked, owner_locked
 from horilla_crm.leads.assignment.pool import (
     OWNER_FIELD,
+    REASON_ALL_UNAVAILABLE,
+    SKIPPED_INFO_KEY,
     VIA_AUTO,
     advance_rotation,
     build_assignment_info,
@@ -337,13 +339,16 @@ def _eval_condition_criteria(condition, lead):
     return bool(result)
 
 
-def _resolve_target_users(condition):
+def _resolve_target_users(condition, at=None):
     """
     Return a queryset of candidate User objects for the condition:
     - 'user' type → the explicitly selected users
     - 'role' type → all users whose role FK matches one of the selected roles
+
+    People who are unavailable at ``at`` (default: now) are left out, one by
+    one: a role with some members away still assigns to the others.
     """
-    return condition_users(condition)
+    return condition_users(condition, at=at)
 
 
 def _pick_assignee(condition, users_qs):
@@ -367,8 +372,15 @@ def apply_assignment_rules(lead):
        count or round robin), update the lead's owner,
        then send email / notification / both per the condition's notify_method.
     5. Stop after the first matching condition across all rules.
+
+    Availability is checked at assignment time (now). When the people of a
+    matching condition are all unavailable the next condition is tried; if none
+    assigns the lead, it keeps its owner and the first such condition is noted
+    in ``additional_info["assignment_skipped"]``.
     """
     try:
+        now = timezone.now()
+        skipped = None
         rules = LeadAssignmentRule.objects.filter(is_active=True).order_by("created_at")
         for rule in rules:
             conditions = LeadAssignmentCondition.objects.filter(rule=rule).order_by(
@@ -380,16 +392,26 @@ def apply_assignment_rules(lead):
                     continue
 
                 # Condition matched — resolve target users
-                users_qs = _resolve_target_users(condition)
+                users_qs = _resolve_target_users(condition, at=now)
                 assigned_user = _pick_assignee(condition, users_qs)
                 if not assigned_user:
+                    everyone_away = condition_users(
+                        condition, include_unavailable=True
+                    ).exists()
                     logger.warning(
                         "Assignment rule '%s' condition #%s matched lead %s "
-                        "but no eligible users found.",
+                        "but no eligible users found%s.",
                         rule.name,
                         condition.pk,
                         lead.pk,
+                        " (all unavailable)" if everyone_away else "",
                     )
+                    if everyone_away and skipped is None:
+                        skipped = {
+                            "condition_id": condition.pk,
+                            "rule_name": rule.name,
+                            "reason": REASON_ALL_UNAVAILABLE,
+                        }
                     continue
 
                 # Assign via direct UPDATE to avoid re-triggering post_save.
@@ -415,6 +437,13 @@ def apply_assignment_rules(lead):
 
                 return  # first matching condition wins
 
+        if skipped is not None:
+            # Nothing assigned the lead: say why, for whoever looks at it.
+            info = dict(lead.additional_info or {})
+            info[SKIPPED_INFO_KEY] = skipped
+            Lead.objects.filter(pk=lead.pk).update(additional_info=info)
+            lead.additional_info = info
+
     except Exception as exc:
         logger.error(
             "apply_assignment_rules error for lead %s: %s", lead.pk, exc, exc_info=True
@@ -433,7 +462,8 @@ def handle_lead_assignment(sender, instance, created, **kwargs):
     path (import, API, web-to-lead, booking, form without the option) runs the
     engine as before.
     """
-    if not created:
+    # Fixture loads (demo data) keep the owners they were given.
+    if not created or kwargs.get("raw"):
         return
 
     # Web-to-lead form with "Apply assignment rule" unticked: keep the owner

@@ -13,6 +13,11 @@ from dataclasses import dataclass, field
 
 # First party imports (Horilla)
 from horilla.auth.models import User
+from horilla.contrib.core.availability import (
+    exclude_unavailable,
+    unavailable_until,
+    unavailable_user_ids,
+)
 from horilla.db import transaction
 from horilla.db.models import Count
 from horilla.utils import timezone
@@ -42,6 +47,11 @@ ADDITIONAL_INFO_KEY = "assignment"
 # How many failing conditions are named in an error message.
 MAX_REASONS = 3
 
+# Key of ``Lead.additional_info`` that records why a matching condition could
+# not assign the lead, and the reason stored when its whole pool was away.
+SKIPPED_INFO_KEY = "assignment_skipped"
+REASON_ALL_UNAVAILABLE = "all_unavailable"
+
 
 @dataclass
 class Resolution:
@@ -54,6 +64,9 @@ class Resolution:
     default_owner: object = None
     reason: str = ""
     groups: list = field(default_factory=list)
+    # ``[(user, back_at), ...]``: people of the pool who are away now. They are
+    # not in ``users``; the lead form lists them as disabled options.
+    unavailable: list = field(default_factory=list)
 
     @property
     def rule(self):
@@ -82,12 +95,17 @@ def has_active_rules():
     return LeadAssignmentCondition.objects.filter(rule__is_active=True).exists()
 
 
-def condition_users(condition, company=None):
+def condition_users(condition, company=None, at=None, *, include_unavailable=False):
     """
-    Return the active users a condition can assign to.
+    Return the active, available users a condition can assign to.
 
     * ``role`` type: everyone whose role is one of the condition's roles.
     * ``user`` type: the users picked on the condition.
+
+    The check is made per person, never per role: a role only expands to its
+    members, and those who are unavailable at ``at`` (default: now) are left
+    out. ``include_unavailable=True`` keeps them, to tell "nobody is eligible"
+    from "everybody is away" and to name who is away.
 
     ``company`` narrows the result to one company; the engine does not pass it.
     """
@@ -99,7 +117,28 @@ def condition_users(condition, company=None):
         users = condition.assign_to_users.filter(is_active=True)
     if company is not None:
         users = users.filter(company=company)
+    if not include_unavailable:
+        users = exclude_unavailable(users, at or timezone.now())
     return users
+
+
+def skipped_users(condition, company=None, at=None):
+    """
+    Return ``[(user, back_at), ...]``: the people of the condition left out
+    because they are unavailable at ``at`` (default: now), by name.
+
+    ``back_at`` is the end of their leave, or None if it can not be worked out.
+    """
+    at = at or timezone.now()
+    everyone = condition_users(condition, company, at, include_unavailable=True)
+    away = unavailable_user_ids(at, users=everyone)
+    if not away:
+        return []
+    back = unavailable_until(away, at)
+    people = sorted(
+        everyone.filter(pk__in=away), key=lambda user: (str(user).lower(), user.pk)
+    )
+    return [(user, back.get(user.pk)) for user in people]
 
 
 def pick_least_loaded(users_qs):
@@ -211,11 +250,13 @@ def _pool_groups(conditions, company):
     return groups
 
 
-def condition_users_for_role(role, company=None):
-    """Return the active users of one role (used to label a pool by role)."""
+def condition_users_for_role(role, company=None, at=None, *, include_unavailable=False):
+    """Return the active, available users of one role (used to label a pool by role)."""
     users = User.objects.filter(role=role, is_active=True)
     if company is not None:
         users = users.filter(company=company)
+    if not include_unavailable:
+        users = exclude_unavailable(users, at or timezone.now())
     return users
 
 
@@ -225,6 +266,13 @@ def _build(state, conditions, company, *, condition=None, reason=""):
     for candidate in conditions:
         pks.update(condition_users(candidate, company).values_list("pk", flat=True))
     users = User.objects.filter(pk__in=pks, is_active=True)
+    away = []
+    seen_away = set()
+    for candidate in conditions:
+        for user, back_at in skipped_users(candidate, company):
+            if user.pk not in seen_away:
+                seen_away.add(user.pk)
+                away.append((user, back_at))
     if state == MATCHED and condition is not None:
         # Only a preview: showing a form must not take anyone's turn.
         default_owner = pick_for_condition(condition, users)
@@ -238,6 +286,7 @@ def _build(state, conditions, company, *, condition=None, reason=""):
         default_owner=default_owner,
         reason=reason,
         groups=_pool_groups(conditions, company),
+        unavailable=away,
     )
 
 
@@ -253,10 +302,12 @@ def union_resolution(company=None, conditions=None):
     """
     if conditions is None:
         conditions = active_conditions()
+    # A condition whose people are all away stays in: a submitted away person
+    # then gets "unavailable until ..." instead of "not a valid choice".
     conditions = [
         condition
         for condition in conditions
-        if condition_users(condition, company).exists()
+        if condition_users(condition, company, include_unavailable=True).exists()
     ]
     return _build(UNDETERMINED, conditions, company)
 
@@ -273,6 +324,42 @@ def _failure_reason(failed, data, final):
     return "; ".join(reasons)
 
 
+def _no_assignees_reason(conditions, company):
+    """
+    Say why matching conditions have nobody to assign to.
+
+    When anybody the rules name is away, that is the reason given: "All users
+    selected in the rule are currently unavailable", then what to do (choose the
+    owner by hand). Only when nobody is away is it that nobody is in the pool.
+
+    The message does not list people: with many of them away until different
+    times a list would be long and out of date. Each person's date is shown by
+    the Owner list itself.
+    """
+    away_rules = []
+    empty_rules = []
+    for condition in conditions:
+        target = away_rules if skipped_users(condition, company) else empty_rules
+        if condition.rule.name not in target:
+            target.append(condition.rule.name)
+    if away_rules:
+        messages = [
+            _(
+                "All users selected in the “%(rule)s” assignment rule are "
+                "currently unavailable."
+            )
+            % {"rule": name}
+            for name in away_rules
+        ]
+        messages.append(
+            _("Untick “Assign using rules” and select another user as the owner.")
+        )
+        return " ".join(messages)
+    return _("%(rules)s has no active people to assign to.") % {
+        "rules": ", ".join(sorted(empty_rules))
+    }
+
+
 def resolve_for_data(data, *, final, company=None, conditions=None):
     """
     Decide which condition would assign a lead with the given values.
@@ -286,7 +373,8 @@ def resolve_for_data(data, *, final, company=None, conditions=None):
       on values that are not known yet (``final=False`` only). ``users`` is the
       union of every condition that could still win.
     * ``NO_MATCH``: no condition matches; ``reason`` says why.
-    * ``NO_ASSIGNEES``: a condition matches but nobody is available.
+    * ``NO_ASSIGNEES``: a condition matches but nobody can be assigned: it has no
+      active people, or all of them are unavailable now.
 
     ``conditions`` is the list from ``active_conditions()`` when the caller has
     it already, so it is not loaded again.
@@ -296,6 +384,10 @@ def resolve_for_data(data, *, final, company=None, conditions=None):
     candidates = []
     failed = []
     without_people = []
+    # Conditions that may still apply (a value they look at is not known yet) but
+    # have nobody to assign to: they can not win, and must not be reported as
+    # "everybody is away" before it is known that the rule applies.
+    pending_without_people = []
     winner = None
 
     for condition in conditions:
@@ -304,7 +396,10 @@ def resolve_for_data(data, *, final, company=None, conditions=None):
             failed.append(condition)
             continue
         if not condition_users(condition, company).exists():
-            without_people.append(condition)
+            if result is Match.YES:
+                without_people.append(condition)
+            else:
+                pending_without_people.append(condition)
             continue
         candidates.append(condition)
         if result is Match.YES:
@@ -316,12 +411,14 @@ def resolve_for_data(data, *, final, company=None, conditions=None):
     if candidates:
         return _build(UNDETERMINED, candidates, company)
     if without_people:
-        names = ", ".join(sorted({c.rule.name for c in without_people}))
         return Resolution(
             state=NO_ASSIGNEES,
             users=User.objects.none(),
-            reason=_("%(rules)s has no active people to assign to.") % {"rules": names},
+            reason=_no_assignees_reason(without_people, company),
         )
+    if pending_without_people:
+        # Nothing can be offered yet, and the rule is not known to apply.
+        return _build(UNDETERMINED, pending_without_people, company)
     return Resolution(
         state=NO_MATCH,
         users=User.objects.none(),

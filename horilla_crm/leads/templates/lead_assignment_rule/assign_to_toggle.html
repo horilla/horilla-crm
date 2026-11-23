@@ -1,4 +1,5 @@
 {% get_user_model_meta as user_meta %}
+{% trans "Users on leave are skipped automatically when a lead is assigned." as leave_help %}
 <div
     id="assign_to_users_container"
     class="flex flex-col"
@@ -25,6 +26,19 @@
             </svg>
             {% trans "Filter" %}
         </button>
+        {# Help text, drawn like the (i) next to the other labels of the form. #}
+        <span
+            class="ms-1 inline-flex cursor-pointer text-[#a19e9e] flex-shrink-0"
+            title="{{ leave_help }}"
+            aria-label="{{ leave_help }}"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 20 20">
+                <path
+                    fill="currentColor"
+                    d="M2.93 17.07A10 10 0 1 1 17.07 2.93A10 10 0 0 1 2.93 17.07m12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32M9 11V9h2v6H9zm0-6h2v2H9z"
+                />
+            </svg>
+        </span>
     </div>
     <div class="relative">
         <select
@@ -69,6 +83,19 @@
             </svg>
             {% trans "Filter" %}
         </button>
+        {# Help text, drawn like the (i) next to the other labels of the form. #}
+        <span
+            class="ms-1 inline-flex cursor-pointer text-[#a19e9e] flex-shrink-0"
+            title="{{ leave_help }}"
+            aria-label="{{ leave_help }}"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 20 20">
+                <path
+                    fill="currentColor"
+                    d="M2.93 17.07A10 10 0 1 1 17.07 2.93A10 10 0 0 1 2.93 17.07m12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32M9 11V9h2v6H9zm0-6h2v2H9z"
+                />
+            </svg>
+        </span>
     </div>
     <div class="relative">
         <select

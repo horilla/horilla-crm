@@ -38,6 +38,29 @@ def get_current_request():
     return getattr(_thread_local, "request", None)
 
 
+def get_active_company(request=None):
+    """Return the company the user is working in (company switcher aware).
+
+    ``ActiveCompanyMiddleware`` is the only place that decides the company and
+    stores it on ``request.active_company``; this is the single way for Python
+    code to read it (templates keep using ``request.active_company``).
+
+    Without ``request`` the thread-local request is used, so models, managers,
+    signals and forms can call it with no arguments. Falls back to the user's own
+    company when the middleware could not resolve one (DRF JWT/Basic auth,
+    ``RequestFactory`` and fake requests). Returns ``None`` when there is no
+    request or the user has no company.
+    """
+    request = request or get_current_request()
+    if request is None:
+        return None
+    company = getattr(request, "active_company", None)
+    if company:
+        return company
+    # AnonymousUser has no ``company``, so no authentication check is needed.
+    return getattr(getattr(request, "user", None), "company", None)
+
+
 class LanguageSwitchMiddleware:
     """Middleware that activates a language based on session, user preference, or settings."""
 

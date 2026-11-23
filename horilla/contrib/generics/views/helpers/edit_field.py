@@ -998,6 +998,17 @@ class UpdateAllFieldsView(LoginRequiredMixin, View):
                 cancel_url=request.POST.get("return_url", ""),
                 field_errors=result.errors,
             )
+            # Say so right away too, naming each field by its label.
+            labels = {
+                entry["info"]["name"]: entry["info"]["verbose_name"]
+                for entry in context["fields"]
+            }
+            for field_name, error in result.errors.items():
+                messages.error(
+                    request,
+                    _("%(field)s: %(message)s")
+                    % {"field": labels.get(field_name, field_name), "message": error},
+                )
             return render(request, "partials/edit_all_fields.html", context)
 
         from django.utils.http import url_has_allowed_host_and_scheme

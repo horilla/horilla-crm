@@ -253,37 +253,49 @@ class Lead(HorillaCoreModel):
         ("other", _("Other")),
     ]
 
-    title = models.CharField(max_length=100, blank=True, verbose_name=_("Title"))
-    first_name = models.CharField(max_length=100, verbose_name=_("First Name"))
-    last_name = models.CharField(max_length=100, verbose_name=_("Last Name"))
+    title = models.CharField(max_length=100, verbose_name=_("Title"))
+    first_name = models.CharField(
+        max_length=100, blank=True, verbose_name=_("First Name")
+    )
+    last_name = models.CharField(
+        max_length=100, blank=True, verbose_name=_("Last Name")
+    )
     lead_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         default="",
+        null=True,
+        blank=True,
         verbose_name=_("Lead Owner"),
         related_name="lead",
     )
-    email = models.EmailField(validators=[EmailValidator()], verbose_name=_("Email"))
+    email = models.EmailField(
+        validators=[EmailValidator()], blank=True, verbose_name=_("Email")
+    )
     contact_number = models.CharField(
         max_length=100, blank=True, verbose_name=_("Contact Number")
     )
     fax = models.CharField(max_length=100, blank=True, verbose_name=_("Fax"))
 
     lead_source = models.CharField(
-        max_length=100, choices=LEAD_SOURCES, verbose_name=_("Lead Source")
+        max_length=100, choices=LEAD_SOURCES, blank=True, verbose_name=_("Lead Source")
     )
     lead_status = models.ForeignKey(
         LeadStatus,
         on_delete=models.PROTECT,
+        null=True,
+        blank=True,
         related_name="lead",
         verbose_name=_("Lead Stage"),
     )
-    lead_company = models.CharField(max_length=100, verbose_name=_("Lead Company"))
+    lead_company = models.CharField(
+        max_length=100, blank=True, verbose_name=_("Lead Company")
+    )
     no_of_employees = models.IntegerField(
         null=True, blank=True, verbose_name=_("Number of Employees")
     )
     industry = models.CharField(
-        max_length=100, choices=INDUSTRY_CHOICES, verbose_name=_("Industry")
+        max_length=100, choices=INDUSTRY_CHOICES, blank=True, verbose_name=_("Industry")
     )
     annual_revenue = models.DecimalField(
         max_digits=15,
@@ -292,7 +304,7 @@ class Lead(HorillaCoreModel):
         blank=True,
         verbose_name=_("Annual Revenue"),
     )
-    country = CountryField(verbose_name=_("Country"))
+    country = CountryField(blank=True, verbose_name=_("Country"))
     state = models.CharField(blank=True, max_length=100, verbose_name=_("State"))
     city = models.CharField(blank=True, max_length=100, verbose_name=_("City"))
     zip_code = models.CharField(max_length=100, blank=True, verbose_name=_("Zip"))

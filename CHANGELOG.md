@@ -37,6 +37,70 @@ date and open a fresh Unreleased above it.
 ### Security      — vulnerabilities fixed; link the advisory and credit the reporter
 -->
 
+## [1.18.1] — 2026-11-20
+
+### Breaking
+
+- WhatsApp: an incoming webhook is accepted only when its Meta signature
+  matches the account's **App Secret**. An account with no app secret has its
+  webhooks refused (403), so inbound messages and delivery statuses stop until
+  the secret is entered. Open **Settings → WhatsApp**, edit each account and
+  enter the app secret from Meta's App settings → Basic.
+
+### Added
+
+- Product Tour: guided walkthroughs of the CRM screens, including Home and
+  Leads. A step is skipped when its target is missing, and table steps are
+  skipped on an empty list.
+- Currency Management: pluggable rate sources, a scheduled refresh, and rate
+  history.
+- A company chooses its languages. User language options are limited to those
+  languages.
+- Named date-range presets for history and dashboards (today, yesterday, this
+  week, this month), plus a custom range.
+- Shared status badge, breadcrumb trail, and `hx_anchor` sidebars for
+  dashboards and reports.
+
+### Changed
+
+- Edit Details validates like the form and shows errors under each field. The
+  Edit action is dropped from detail pages.
+- Opportunity Probability and Expected Revenue refresh live in Edit Details.
+  Expected Revenue clears when Amount is empty.
+- Bulk update can link country and state and limit a field's options.
+- Long titles truncate in the detail header, breadcrumbs, and list cells.
+  Field help text shows as an info icon.
+- A new company appears in the header as soon as it is saved.
+- The company switcher fits long names. Page dropdowns stay below the fixed
+  header.
+- WhatsApp inbox empty states use the shared empty state, and the WhatsApp
+  channel stays on automations.
+- Call access-control cards match the other settings cards.
+- Inline edit shows yes/no switches and form-only fields.
+
+### Fixed
+
+- WhatsApp verifies the Meta signature on incoming webhooks, checks access on
+  conversations with no linked record, and enforces API permissions and
+  company scope.
+- Notifications for records outside the active company stay hidden.
+- `CompanyFilteredManager` fails closed when no company can be resolved.
+- Calendar unavailability accepts an end time earlier today. An earlier day
+  is still refused.
+- Dashboard table components load their columns when the type changes to
+  table. Empty Leads charts on the home page keep their titles.
+- A custom field's applied-filter chip shows the field name. A new form
+  layout opens in edit mode.
+- The import popup is fixed, and a user's preferred currency stays in their
+  company.
+
+### Upgrading
+
+Run the migrations. They add the company currency settings, the rate source on
+dated conversion rates, the Product Tour record of which tours a user has seen,
+and the WhatsApp account app secret. Enter the app secret on each WhatsApp
+account (see Breaking).
+
 ## [1.18.0] — 2026-11-13
 
 ### Added

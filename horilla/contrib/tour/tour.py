@@ -13,11 +13,22 @@ from horilla.utils.translation import gettext_lazy as _
 from .registry import Step, Tour
 
 
+def _header_button(title, body, icon=None, target=None):
+    """A step on a header action: found by its icon (the translated text never matters) or by ``target``."""
+    return Step(
+        title=title,
+        body=body,
+        target=target or f"#header button:has(> .{icon})",
+        side="bottom",
+        align="end",
+    )
+
+
 class AppShellTour(Tour):
     """The tour every user is offered first, on the Home page."""
 
     key = "app_shell"
-    title = _("Find your way around")
+    title = _("Find Your Way Around")
     description = _(
         "The sidebar and every action in the header: search, settings, "
         "notifications, your profile and more."
@@ -47,7 +58,7 @@ class AppShellTour(Tour):
             side="right",
         ),
         Step(
-            title=_("Quick actions"),
+            title=_("Quick Actions"),
             body=_(
                 "Create a record from anywhere. Open this button and pick "
                 "what you want to add."
@@ -61,62 +72,46 @@ class AppShellTour(Tour):
             target="#header-search",
             side="bottom",
         ),
-        Step(
-            title=_("Toggle Theme"),
-            body=_("Switch between the light and dark theme."),
+        _header_button(
+            _("Toggle Theme"),
+            _("Switch between the light and dark theme."),
             target="#darkModeToggle",
-            side="bottom",
-            align="end",
         ),
-        Step(
-            title=_("Settings"),
-            body=_(
+        _header_button(
+            _("Settings"),
+            _(
                 "Open the system settings: users, roles, companies, "
                 "integrations and more."
             ),
-            target="#header button:has(> .fa-cog)",
-            side="bottom",
-            align="end",
+            "fa-cog",
         ),
-        Step(
-            title=_("Recently viewed"),
-            body=_("Jump back to the records you opened lately."),
-            target="#header button:has(> .fa-history)",
-            side="bottom",
-            align="end",
+        _header_button(
+            _("Recently Viewed"),
+            _("Jump back to the records you opened lately."),
+            "fa-history",
         ),
-        Step(
-            title=_("Language"),
-            body=_("Change the language of the interface."),
-            target="#header button:has(> .fa-globe)",
-            side="bottom",
-            align="end",
+        _header_button(
+            _("Language"), _("Change the language of the interface."), "fa-globe"
         ),
-        Step(
-            title=_("Switch company"),
-            body=_(
+        _header_button(
+            _("Switch Company"),
+            _(
                 "Change the company you are working in, or see all your "
                 "companies together."
             ),
-            target="#header button:has(> .fa-th-large)",
-            side="bottom",
-            align="end",
+            "fa-th-large",
         ),
-        Step(
-            title=_("Notifications"),
-            body=_("Reminders, assignments and mentions show up here."),
+        _header_button(
+            _("Notifications"),
+            _("Reminders, assignments and mentions show up here."),
             target="#notificationWrapper",
-            side="bottom",
-            align="end",
         ),
-        Step(
-            title=_("Your profile"),
-            body=_(
+        _header_button(
+            _("Your Profile"),
+            _(
                 "Open your settings, take a product tour again or sign out "
                 "from the profile menu."
             ),
             target="#header .dropdown-wrapper:has(img.header-profile-avatar)",
-            side="bottom",
-            align="end",
         ),
     ]

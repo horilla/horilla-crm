@@ -7,7 +7,10 @@ import logging
 from django.utils.encoding import force_str
 
 from horilla.contrib.core.models import HorillaContentType
-from horilla.contrib.generics.forms.condition_fields import _get_related_field_choices
+from horilla.contrib.generics.forms.condition_fields import (
+    _get_related_field_choices,
+    get_condition_model_fields,
+)
 
 # First party imports (Horilla)
 from horilla.shortcuts import render
@@ -105,18 +108,15 @@ class ModuleFieldChoicesView(ExtraFieldChoicesView):
             )
 
         # Same rules as the generic condition field list: forward fields only
-        # (no reverse relations), editable, and without the default excludes.
+        # (no reverse relations), editable or audit (created/updated at/by),
+        # and without the default excludes.
         default_exclude = {
             "id",
             "pk",
             "additional_info",
         }
         model_fields = []
-        for field in list(model._meta.fields) + list(model._meta.many_to_many):
-            if field.name in default_exclude:
-                continue
-            if not getattr(field, "editable", True):
-                continue
+        for field in get_condition_model_fields(model, default_exclude):
             verbose_name = (
                 getattr(field, "verbose_name", None)
                 or field.name.replace("_", " ").title()

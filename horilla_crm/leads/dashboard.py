@@ -1,13 +1,17 @@
 """Dashboard utilities for leads module."""
 
+# Standard library imports
+from datetime import timedelta
+
 # Third-party imports (Django)
 from django.utils.http import urlencode
 
-from horilla.contrib.dashboard.utils import DefaultDashboardGenerator
+from horilla.contrib.dashboard.utils import DefaultDashboardGenerator, filtered_list_url
 from horilla.contrib.utils.methods import get_section_info_for_model
 
 # First party imports (Horilla)
-from horilla.db.models import Count
+from horilla.db.models import Count, Sum
+from horilla.utils import timezone
 from horilla.utils.choices import TABLE_FALLBACK_FIELD_TYPES
 from horilla.utils.translation import gettext_lazy as _
 
@@ -50,7 +54,7 @@ def create_lead_source_charts(self, queryset, model_info):
 
                 return {
                     "title": _("Leads by Source"),
-                    "type": "funnel",
+                    "type": "donut",
                     "data": {
                         "labels": labels,
                         "data": values,
@@ -122,7 +126,7 @@ def create_lead_charts_by_stage(self, queryset, model_info):
         data = (
             queryset.values("lead_status_id", "lead_status__name")
             .annotate(count=Count("id"))
-            .order_by("-count")
+            .order_by("lead_status__order", "lead_status_id")
         )
 
         if not data.exists():
@@ -148,7 +152,7 @@ def create_lead_charts_by_stage(self, queryset, model_info):
 
         return {
             "title": _("Leads by Stage"),
-            "type": "column",
+            "type": "funnel",
             "data": {
                 "labels": labels,
                 "data": values,
@@ -176,11 +180,23 @@ def lead_kpi_cards(generator, model_info):
 
     return [
         {
-            "title": _("Total Leads"),
-            "value": open_count,
-            "icon": "fa-layer-group",
-            "color": "blue",
-            "url": section_info["url"],
+            "title": _("New Leads (7 Days)"),
+            "value": open_qs.filter(
+                created_at__gte=timezone.now() - timedelta(days=7)
+            ).count(),
+            "icon": "fa-user-plus",
+            "color": "green",
+            "url": filtered_list_url(
+                model_class,
+                [
+                    (
+                        "created_at",
+                        "between",
+                        (timezone.localdate() - timedelta(days=7)).isoformat(),
+                        timezone.localdate().isoformat(),
+                    ),
+                ],
+            ),
             "section": section_info["section"],
         },
     ]
@@ -220,35 +236,24 @@ def lead_table_fields(model_class):
     return fields
 
 
-def lead_convert_table_func(generator, model_info):
-    """Generate table context for won leads."""
-    filter_kwargs = (
-        {"is_convert": True} if hasattr(model_info["model"], "is_convert") else {}
-    )
-
+def lead_hot_table_func(generator, model_info):
+    """Open leads with the biggest annual revenue - the ones worth calling first."""
     return generator.build_table_context(
         model_info=model_info,
-        title=_("Won Leads"),
-        filter_kwargs=filter_kwargs,
-        no_found_img="assets/img/not-found-list.svg",
-        no_record_msg=_("No won leads found."),
-        view_id="leads_dashboard_list",
-    )
-
-
-def lead_open_pipeline_table_func(generator, model_info):
-    """Generate table context for leads not yet converted (pipeline)."""
-    filter_kwargs = (
-        {"is_convert": False} if hasattr(model_info["model"], "is_convert") else {}
-    )
-
-    return generator.build_table_context(
-        model_info=model_info,
-        title=_("Open Leads (pipeline)"),
-        filter_kwargs=filter_kwargs,
+        title=_("Hot Leads"),
+        description=_("Highest-revenue open leads that are still in play"),
+        filter_kwargs={"is_convert": False, "lead_status__probability__gt": 0},
         no_found_img="assets/img/not-found-list.svg",
         no_record_msg=_("No open leads found."),
         view_id="leads_dashboard_open_list",
+        order_by=["-annual_revenue"],
+        table_fields=[
+            {"name": "lead_company", "verbose_name": _("Company")},
+            {"name": "annual_revenue", "verbose_name": _("Annual Revenue")},
+            {"name": "lead_source", "verbose_name": _("Source")},
+            {"name": "lead_status", "verbose_name": _("Status")},
+            {"name": "lead_owner", "verbose_name": _("Owner")},
+        ],
     )
 
 
@@ -256,10 +261,15 @@ DefaultDashboardGenerator.extra_models.append(
     {
         "model": Lead,
         "name": _("Leads"),
+        "order": 3,
         "kpi_func": lead_kpi_cards,
+        "chart_descriptions": [
+            _("Where your leads are coming from"),
+            _("How leads are spread across the pipeline"),
+        ],
         "chart_func": [create_lead_source_charts, create_lead_charts_by_stage],
-        "chart_titles": [_("Leads by Status"), _("Leads by Stage")],
-        "table_func": [lead_convert_table_func, lead_open_pipeline_table_func],
+        "chart_titles": [_("Leads by Source"), _("Leads by Stage")],
+        "table_func": lead_hot_table_func,
         "table_fields_func": lead_table_fields,
     }
 )

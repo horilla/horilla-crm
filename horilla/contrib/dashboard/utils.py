@@ -11,10 +11,11 @@ from decimal import Decimal
 # Third-party imports (Django)
 from django.core.paginator import Paginator
 from django.utils.encoding import force_str
+from django.utils.http import urlencode
 
 from horilla.contrib.utils.methods import get_section_info_for_model
 from horilla.contrib.utils.middlewares import _thread_local
-from horilla.db.models import Q
+from horilla.db.models import Count, Q, Sum
 
 # First party imports (Horilla)
 from horilla.utils import timezone
@@ -251,6 +252,99 @@ def apply_request_date_range(queryset, model_class, request):
     )
 
 
+def filtered_list_url(model_class, conditions, extra_params=None):
+    """
+    URL of ``model_class``'s list page with ``conditions`` applied as filters.
+
+    ``conditions`` is a list of tuples: ``(field, operator, value)`` for an
+    ordinary filter, e.g. ``("stage__stage_type", "exact", "open")``, or
+    ``(field, "between", start, end)`` for a date range. Used so a home-page KPI
+    opens the list narrowed to the records it counted.
+    """
+    section_info = get_section_info_for_model(model_class)
+    params = [("section", section_info["section"]), ("apply_filter", "true")]
+    params += list((extra_params or {}).items())
+    has_range = any(len(condition) == 4 for condition in conditions)
+    for condition in conditions:
+        field, operator = condition[0], condition[1]
+        is_range = len(condition) == 4
+        params += [
+            ("field", field),
+            ("operator", operator),
+            ("value", "" if is_range else condition[2]),
+        ]
+        if has_range:
+            # start/end values are matched to filter rows by position
+            params += [
+                ("start_value", condition[2] if is_range else ""),
+                ("end_value", condition[3] if is_range else ""),
+            ]
+    return f"{section_info['url']}?{urlencode(params)}"
+
+
+def format_compact_number(value):
+    """Format a number for a KPI card: 12477385.3 -> "12.48M", 7190 -> "7.19K"."""
+    number = float(value or 0)
+    for limit, suffix in ((1e9, "B"), (1e6, "M"), (1e3, "K")):
+        if abs(number) >= limit:
+            return f"{number / limit:.2f}{suffix}"
+    return f"{number:,.0f}"
+
+
+def build_grouped_chart(
+    queryset,
+    field,
+    title,
+    chart_type,
+    label,
+    value_field=None,
+    extra_params=None,
+    limit=None,
+):
+    """
+    Build a home-page chart dict grouping ``queryset`` by ``field``.
+
+    Counts rows per group, or sums ``value_field`` when given. Each slice links
+    to the list view filtered on that value. ``extra_params`` is an optional
+    callable ``(group_value) -> dict`` adding query parameters to each link (e.g.
+    which tab to open). Returns None when there is no data.
+    """
+    aggregate = Sum(value_field) if value_field else Count("id")
+    rows = queryset.values(field).annotate(total=aggregate).order_by("-total")
+    rows = [row for row in rows if row["total"]]
+    if limit:
+        rows = rows[:limit]
+    if not rows:
+        return None
+    section = get_section_info_for_model(queryset.model)
+    urls = [
+        f"{section['url']}?"
+        + urlencode(
+            {
+                "section": section["section"],
+                "apply_filter": "true",
+                "field": field,
+                "operator": "exact",
+                "value": row[field] or "",
+                **(extra_params(row[field]) if extra_params else {}),
+            }
+        )
+        for row in rows
+    ]
+    return {
+        "title": title,
+        "type": chart_type,
+        "data": {
+            "labels": [row[field] or _("Unknown") for row in rows],
+            "data": [
+                float(row["total"]) if value_field else row["total"] for row in rows
+            ],
+            "urls": urls,
+            "labelField": label,
+        },
+    }
+
+
 class DefaultDashboardGenerator:
     """
     Simple dashboard generator for specific predefined models.
@@ -454,7 +548,7 @@ class DefaultDashboardGenerator:
         """
         Child apps override this to return model list.
         """
-        return self.extra_models
+        return sorted(self.extra_models, key=lambda info: info.get("order", 100))
 
     def get_queryset(self, model_class):
         """Get filtered queryset for a model"""
@@ -553,7 +647,7 @@ class DefaultDashboardGenerator:
         """Generate business-specific filtered charts"""
         charts = []
 
-        for model_info in self.models[:5]:
+        for model_info in self.models[:8]:
             try:
                 model_class = model_info["model"]
 
@@ -572,7 +666,13 @@ class DefaultDashboardGenerator:
                 )
                 multi = len(chart_funcs) > 1
 
+                descriptions = model_info.get("chart_descriptions") or []
                 for idx, chart_func in enumerate(chart_funcs):
+                    description = (
+                        force_str(descriptions[idx])
+                        if idx < len(descriptions) and descriptions[idx]
+                        else ""
+                    )
                     if count == 0:
                         title = base_name
                         titles = model_info.get("chart_titles") or []
@@ -592,6 +692,7 @@ class DefaultDashboardGenerator:
                                 "urls": [],
                                 "labelField": "",
                             },
+                            "description": description,
                             "is_empty": True,
                             "no_record_msg": _("No %(name)s found.")
                             % {"name": base_name.lower()},
@@ -608,6 +709,7 @@ class DefaultDashboardGenerator:
                                 chart, model_class
                             )
                             chart["is_empty"] = False
+                            chart.setdefault("description", description)
                             charts.append(chart)
 
             except Exception as e:
@@ -713,6 +815,8 @@ class DefaultDashboardGenerator:
         request=None,
         table_fields=None,
         no_found_img=None,
+        order_by=None,
+        description=None,
     ):
         """
         Build table context with pagination for infinite scroll
@@ -732,6 +836,8 @@ class DefaultDashboardGenerator:
                     qs = qs.order_by(f"{prefix}{sort_field}")
                 except Exception:
                     qs = qs.order_by("id")
+            elif order_by:
+                qs = qs.order_by(*order_by)
             else:
                 date_field = self.get_date_field(model_info["model"])
                 order_field = f"-{date_field}" if date_field else "-pk"
@@ -787,6 +893,7 @@ class DefaultDashboardGenerator:
             return {
                 "id": f"table_{model_info['model']._meta.model_name}_{uuid.uuid4().hex[:8]}",
                 "title": force_str(title),
+                "description": force_str(description) if description else "",
                 "queryset": page_obj.object_list,
                 "columns": columns,
                 "view_id": view_id,

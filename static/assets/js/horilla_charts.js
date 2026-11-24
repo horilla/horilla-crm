@@ -233,6 +233,23 @@ var EChartsConfig = {
         };
     },
 
+    // Value-axis labels shortened (1,500,000 -> 1.5M) so large amounts do not overlap.
+    getValueAxisLabelStyle: function() {
+        return {
+            ...this.getAxisLabelStyle(),
+            formatter: function(value) {
+                var abs = Math.abs(value);
+                var units = [[1e9, 'B'], [1e6, 'M'], [1e3, 'K']];
+                for (var i = 0; i < units.length; i++) {
+                    if (abs >= units[i][0]) {
+                        return parseFloat((value / units[i][0]).toFixed(1)) + units[i][1];
+                    }
+                }
+                return value;
+            }
+        };
+    },
+
     getAxisLineStyle: function() {
         return {
             lineStyle: {
@@ -415,7 +432,7 @@ var EChartsConfig = {
             },
             yAxis: {
                 type: 'value',
-                axisLabel: this.getAxisLabelStyle(),
+                axisLabel: this.getValueAxisLabelStyle(),
                 axisLine: this.getAxisLineStyle(),
                 splitLine: this.getSplitLineStyle()
             },
@@ -457,7 +474,7 @@ var EChartsConfig = {
             grid: this.getGridConfig(),
             xAxis: {
                 type: 'value',
-                axisLabel: this.getAxisLabelStyle(),
+                axisLabel: this.getValueAxisLabelStyle(),
                 axisLine: this.getAxisLineStyle(),
                 splitLine: this.getSplitLineStyle()
             },
@@ -508,7 +525,7 @@ var EChartsConfig = {
             },
             yAxis: {
                 type: 'value',
-                axisLabel: this.getAxisLabelStyle(),
+                axisLabel: this.getValueAxisLabelStyle(),
                 axisLine: this.getAxisLineStyle(),
                 splitLine: this.getSplitLineStyle()
             },
@@ -558,14 +575,14 @@ var EChartsConfig = {
                 height: '70%',
                 min: 0,
                 max: Math.max(...data),
-                minSize: '0%',
+                minSize: '25%',
                 maxSize: '100%',
-                sort: 'descending',
+                sort: 'none',
                 gap: 2,
                 label: {
                     show: true,
                     position: 'inside',
-                    fontSize: 12,
+                    fontSize: 11,
                     fontFamily: this.commonStyles.fontFamily,
                     color: this.getTextColor()
                 },
@@ -582,7 +599,7 @@ var EChartsConfig = {
                 },
                 emphasis: {
                     label: {
-                        fontSize: 14,
+                        fontSize: 12,
                         color: this.getTextColor()
                     }
                 },

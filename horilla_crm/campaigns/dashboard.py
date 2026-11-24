@@ -6,11 +6,15 @@ import logging
 # Third-party imports (Django)
 from django.utils.http import urlencode
 
-from horilla.contrib.dashboard.utils import DefaultDashboardGenerator
+from horilla.contrib.dashboard.utils import (
+    DefaultDashboardGenerator,
+    build_grouped_chart,
+)
 from horilla.contrib.utils.methods import get_section_info_for_model
 
 # First party imports (Horilla)
-from horilla.db.models import Count
+from horilla.db.models import Count, Sum
+from horilla.utils import timezone
 from horilla.utils.choices import TABLE_FALLBACK_FIELD_TYPES
 from horilla.utils.translation import gettext_lazy as _
 
@@ -143,15 +147,113 @@ def create_campaign_charts(self, queryset, model_info):
     return None
 
 
+def create_campaign_actual_return_chart(self, queryset, model_info):
+    """Revenue actually won per unit spent, for each campaign channel.
+
+    Won revenue is the amount of won opportunities whose source campaign is
+    one of the channel's campaigns; spend is the campaigns' actual cost.
+    """
+    # Lazy import: the opportunities app imports campaigns.
+    from horilla_crm.opportunities.models import Opportunity
+
+    won = {
+        row["primary_campaign_source__campaign_type"]: float(row["won"] or 0)
+        for row in Opportunity.objects.filter(
+            primary_campaign_source__in=queryset, stage__stage_type="won"
+        )
+        .values("primary_campaign_source__campaign_type")
+        .annotate(won=Sum("amount"))
+    }
+    spend = {
+        row["campaign_type"]: float(row["spend"])
+        for row in queryset.filter(actual_cost__gt=0)
+        .values("campaign_type")
+        .annotate(spend=Sum("actual_cost"))
+    }
+    results = sorted(
+        ((name, round(won.get(name, 0) / cost, 2)) for name, cost in spend.items()),
+        key=lambda item: item[1],
+        reverse=True,
+    )
+    if not results or not any(value for _name, value in results):
+        return None
+    section = get_section_info_for_model(queryset.model)
+    type_labels = dict(queryset.model._meta.get_field("campaign_type").choices)
+    return {
+        "title": _("Actual Return by Campaign Type"),
+        "type": "column",
+        "data": {
+            "labels": [str(type_labels.get(name, name)) for name, _value in results],
+            "data": [value for _name, value in results],
+            "urls": [
+                f"{section['url']}?"
+                + urlencode(
+                    {
+                        "section": section["section"],
+                        "apply_filter": "true",
+                        "field": "campaign_type",
+                        "operator": "exact",
+                        "value": name,
+                    }
+                )
+                for name, _value in results
+            ],
+            "labelField": _("Return (won revenue ÷ spend)"),
+        },
+    }
+
+
+def campaign_kpi_cards(generator, model_info):
+    """Running campaigns plus spend and expected return."""
+    model_class = model_info["model"]
+    qs = generator.get_queryset(model_class)
+    section_info = get_section_info_for_model(model_class)
+    base = {"url": section_info["url"], "section": section_info["section"]}
+    return [
+        {
+            "title": _("Running Campaigns"),
+            "value": qs.filter(status="in_progress").count(),
+            "icon": "fa-bullhorn",
+            "color": "orange",
+            **base,
+        },
+        {
+            "title": _("Campaign Spend"),
+            "value": qs.aggregate(total=Sum("actual_cost"))["total"] or 0,
+            "icon": "fa-wallet",
+            "color": "red",
+            **base,
+        },
+        {
+            "title": _("Expected Campaign Revenue"),
+            "value": qs.exclude(status="aborted").aggregate(
+                total=Sum("expected_revenue")
+            )["total"]
+            or 0,
+            "icon": "fa-chart-line",
+            "color": "green",
+            **base,
+        },
+    ]
+
+
 def campaign_table_func(generator, model_info):
-    """Generate table context for all campaigns."""
+    """Campaigns currently running, the ones ending soonest first."""
     return generator.build_table_context(
         model_info=model_info,
-        title=_("Campaigns"),
-        filter_kwargs={},
+        title=_("Running Campaigns"),
+        filter_kwargs={"status": "in_progress"},
         no_found_img="assets/img/not-found-list.svg",
-        no_record_msg=_("No campaigns found."),
+        no_record_msg=_("No campaigns are running."),
         view_id="campaigns_dashboard_list",
+        order_by=["end_date"],
+        table_fields=[
+            {"name": "campaign_name", "verbose_name": _("Campaign")},
+            {"name": "campaign_type", "verbose_name": _("Type")},
+            {"name": "end_date", "verbose_name": _("Ends On")},
+            {"name": "budget_cost", "verbose_name": _("Budget")},
+            {"name": "actual_cost", "verbose_name": _("Spent")},
+        ],
     )
 
 
@@ -161,9 +263,12 @@ DefaultDashboardGenerator.extra_models.append(
         "name": _("Campaigns"),
         "icon": "fa-bullhorn",
         "color": "orange",
-        "include_kpi": True,
-        "chart_func": create_campaign_charts,
-        "table_func": campaign_table_func,
+        "order": 4,
+        "chart_titles": [_("Actual Return by Campaign Type")],
+        "chart_descriptions": [
+            _("Revenue actually won divided by money spent, for each channel"),
+        ],
+        "chart_func": create_campaign_actual_return_chart,
         "table_fields_func": campaign_table_fields,
     }
 )

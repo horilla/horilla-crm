@@ -147,7 +147,6 @@ class HomePageView(LoginRequiredMixin, TemplateView):
         )
 
         kpi_data = generator.generate_kpi_data()
-        kpi_data.sort(key=lambda k: k.get("title", ""))
         for id, data in enumerate(kpi_data):
             data["order"] = id
 

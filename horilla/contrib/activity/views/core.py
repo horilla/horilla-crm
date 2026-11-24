@@ -287,6 +287,14 @@ class AllActivityTabbedView(LoginRequiredMixin, HorillaTabView):
         },
     ]
 
+    def get_context_data(self, **kwargs):
+        """Open the tab named by ``?tab=`` (e.g. from a home-page KPI link)."""
+        context = super().get_context_data(**kwargs)
+        requested = self.request.GET.get("tab")
+        if requested in {tab["id"] for tab in self.tabs}:
+            context["active_target"] = f"tab-{requested}-content"
+        return context
+
 
 @method_decorator(
     permission_required_or_denied(

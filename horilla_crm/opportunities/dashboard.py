@@ -2,15 +2,23 @@
 
 # Standard library imports
 import logging
+from datetime import timedelta
+
+# First party imports (Horilla)
+from django.db.models.functions import TruncMonth
 
 # Third-party imports (Django)
 from django.utils.http import urlencode
 
-from horilla.contrib.dashboard.utils import DefaultDashboardGenerator
+from horilla.contrib.dashboard.utils import (
+    DefaultDashboardGenerator,
+    build_grouped_chart,
+    filtered_list_url,
+    format_compact_number,
+)
 from horilla.contrib.utils.methods import get_section_info_for_model
-
-# First party imports (Horilla)
-from horilla.db.models import Count
+from horilla.db.models import Count, Min, Sum
+from horilla.utils import timezone
 from horilla.utils.choices import TABLE_FALLBACK_FIELD_TYPES
 from horilla.utils.translation import gettext_lazy as _
 
@@ -182,19 +190,155 @@ def opportuntiy_table_fields(model_class):
     return fields
 
 
-def opportunity_table_func(generator, model_info):
-    """Generate table context for won opportunities."""
-    filter_kwargs = (
-        {"stage__name": "Closed Won"} if hasattr(model_info["model"], "stage") else {}
-    )
+def _open_stage_filter():
+    return {"stage__stage_type": "open"}
 
+
+def create_pipeline_by_stage_chart(self, queryset, model_info):
+    """Deal value at every stage, in stage order, ending with closed won and lost."""
+    rows = [
+        row
+        for row in queryset.values("stage", "stage__name")
+        .annotate(total=Sum("amount"), stage_order=Min("stage__order"))
+        .order_by("stage_order", "stage")
+        if row["total"]
+    ]
+    if not rows:
+        return None
+    section = get_section_info_for_model(queryset.model)
+    return {
+        "title": _("Deals by Stage"),
+        "type": "funnel",
+        "data": {
+            "labels": [row["stage__name"] or _("No stage") for row in rows],
+            "data": [float(row["total"]) for row in rows],
+            "urls": [
+                f"{section['url']}?"
+                + urlencode(
+                    {
+                        "section": section["section"],
+                        "apply_filter": "true",
+                        "field": "stage",
+                        "operator": "exact",
+                        "value": row["stage"] or "",
+                    }
+                )
+                for row in rows
+            ],
+            "labelField": _("Stage"),
+        },
+    }
+
+
+def create_won_revenue_trend_chart(self, queryset, model_info):
+    """Won revenue per month over the last 6 months."""
+    today = timezone.localdate()
+    month_start = today.replace(day=1)
+    start = month_start
+    for _i in range(5):
+        start = (start - timedelta(days=1)).replace(day=1)
+    rows = {
+        row["month"].date() if hasattr(row["month"], "date") else row["month"]: row[
+            "total"
+        ]
+        for row in queryset.filter(stage__stage_type="won", close_date__gte=start)
+        .annotate(month=TruncMonth("close_date"))
+        .values("month")
+        .annotate(total=Sum("amount"))
+    }
+    months = []
+    cursor = start
+    for _i in range(6):
+        months.append(cursor)
+        cursor = (cursor + timedelta(days=32)).replace(day=1)
+    if not any(rows.get(m) for m in months):
+        return None
+    section = get_section_info_for_model(queryset.model)
+    return {
+        "title": _("Won Revenue by Month"),
+        "type": "line",
+        "data": {
+            "labels": [m.strftime("%b %Y") for m in months],
+            "data": [float(rows.get(m) or 0) for m in months],
+            "urls": [section["url"]] * len(months),
+            "labelField": _("Won Revenue"),
+        },
+    }
+
+
+def _stage_ids(model_class, stage_type):
+    """Comma-separated ids of the stages of one type, for a Stage filter.
+
+    The list's filter form only knows the model's own fields, so a related path
+    like ``stage__stage_type`` would not show up in the form; ``stage`` does.
+    """
+    stage_model = model_class._meta.get_field("stage").related_model
+    ids = stage_model.objects.filter(stage_type=stage_type).values_list("pk", flat=True)
+    return ",".join(str(pk) for pk in ids)
+
+
+def opportunity_kpi_cards(generator, model_info):
+    """Open pipeline, won revenue and deals about to close."""
+    model_class = model_info["model"]
+    qs = generator.get_queryset(model_class)
+    section_info = get_section_info_for_model(model_class)
+    open_qs = qs.filter(**_open_stage_filter())
+    base = {"url": section_info["url"], "section": section_info["section"]}
+    return [
+        {
+            "title": _("Open Pipeline"),
+            "value": format_compact_number(
+                open_qs.aggregate(total=Sum("amount"))["total"]
+            ),
+            "type": "text",
+            "icon": "fa-filter-circle-dollar",
+            "color": "purple",
+            **base,
+            "url": filtered_list_url(
+                model_class, [("stage", "exact", _stage_ids(model_class, "open"))]
+            ),
+        },
+        {
+            "title": _("Won Revenue"),
+            "value": format_compact_number(
+                qs.filter(stage__stage_type="won").aggregate(total=Sum("amount"))[
+                    "total"
+                ]
+            ),
+            "type": "text",
+            "icon": "fa-trophy",
+            "color": "green",
+            **base,
+            "url": filtered_list_url(
+                model_class, [("stage", "exact", _stage_ids(model_class, "won"))]
+            ),
+        },
+    ]
+
+
+def opportunity_table_func(generator, model_info):
+    """Open deals expected to close within the next 30 days, soonest first."""
+    today = timezone.localdate()
     return generator.build_table_context(
         model_info=model_info,
-        title=_("Closed Won Opportunities"),
-        filter_kwargs=filter_kwargs,
+        title=_("Deals Closing in the Next 30 Days"),
+        description=_("Open deals expected to close soon, earliest first"),
+        filter_kwargs={
+            **_open_stage_filter(),
+            "close_date__gte": today,
+            "close_date__lte": today + timedelta(days=30),
+        },
         no_found_img="assets/img/not-found-list.svg",
-        no_record_msg=_("No closed won opportunities found."),
+        no_record_msg=_("No deals closing in the next 30 days."),
         view_id="opportunities_dashboard_list",
+        order_by=["close_date", "-amount"],
+        table_fields=[
+            {"name": "name", "verbose_name": _("Opportunity")},
+            {"name": "account", "verbose_name": _("Account")},
+            {"name": "amount", "verbose_name": _("Amount")},
+            {"name": "stage", "verbose_name": _("Stage")},
+            {"name": "close_date", "verbose_name": _("Close Date")},
+        ],
     )
 
 
@@ -204,8 +348,14 @@ DefaultDashboardGenerator.extra_models.append(
         "name": _("Opportunities"),
         "icon": "fa-handshake",
         "color": "purple",
-        "include_kpi": True,
-        "chart_func": create_opportunity_charts,
+        "order": 1,
+        "chart_titles": [_("Deals by Stage"), _("Won Revenue by Month")],
+        "kpi_func": opportunity_kpi_cards,
+        "chart_descriptions": [
+            _("Value of deals at each stage, including closed won and lost"),
+            _("Closed-won revenue over the last 6 months"),
+        ],
+        "chart_func": [create_pipeline_by_stage_chart, create_won_revenue_trend_chart],
         "table_func": opportunity_table_func,
         "table_fields_func": opportuntiy_table_fields,
     }

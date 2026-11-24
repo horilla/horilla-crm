@@ -105,7 +105,7 @@
                                 </div>
                                 <div
                                     class="bg-white p-4 sm:p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full"
-                                    hx-get="{{ kpi.url }}?section={{ kpi.section }}"
+                                    hx-get="{{ kpi.url }}{% if '?' not in kpi.url %}?section={{ kpi.section }}{% endif %}"
                                     hx-target="#mainContent"
                                     hx-swap="outerHTML"
                                     hx-push-url="true"
@@ -160,7 +160,8 @@
                             >
                                 <i class="fa-solid fa-grip-vertical"></i>
                             </div>
-                            <h4 class="text-md font-semibold mb-4">{{ block.data.title }}</h4>
+                            <h4 class="text-md font-semibold">{{ block.data.title }}</h4>
+                            <p class="text-xs text-gray-500 mb-4 min-h-[1rem]">{{ block.data.description }}</p>
                             {% if block.data.is_empty %}
                                 <img
                                     src="{% static 'assets/img/not-found-chart.svg' %}"
@@ -194,7 +195,10 @@
                                 {% with ctx=block.data %}
                                     {% unpack_context ctx %}
                                     <div class="flex justify-between mb-3 items-center">
-                                        <h3 class="text-md font-semibold text-gray-700">{{ block.data.title }}</h3>
+                                        <div>
+                                            <h3 class="text-md font-semibold text-gray-700">{{ block.data.title }}</h3>
+                                            {% if block.data.description %}<p class="text-xs text-gray-500">{{ block.data.description }}</p>{% endif %}
+                                        </div>
                                         <p
                                             class="text-xs font-medium rounded-md text-primary-600 w-max"
                                             id="total-data-{{ view_id|safe }}"

@@ -7,7 +7,10 @@ import logging
 from django.utils.http import urlencode
 
 # First party imports (Horilla)
-from horilla.contrib.dashboard.utils import DefaultDashboardGenerator
+from horilla.contrib.dashboard.utils import (
+    DefaultDashboardGenerator,
+    build_grouped_chart,
+)
 from horilla.contrib.utils.methods import get_section_info_for_model
 from horilla.db.models import Count
 from horilla.utils.choices import TABLE_FALLBACK_FIELD_TYPES
@@ -102,15 +105,16 @@ def create_account_charts(self, queryset, model_info):
     return None
 
 
-def account_table_func(generator, model_info):
-    """Generate table context for all accounts."""
-    return generator.build_table_context(
-        model_info=model_info,
-        title=_("Accounts"),
-        filter_kwargs={},
-        no_found_img="assets/img/not-found-list.svg",
-        no_record_msg=_("No accounts found."),
-        view_id="accounts_dashboard_list",
+def create_top_accounts_chart(self, queryset, model_info):
+    """The accounts that bring in the most revenue."""
+    return build_grouped_chart(
+        queryset,
+        "name",
+        _("Top Accounts by Revenue"),
+        "bar",
+        _("Account"),
+        value_field="annual_revenue",
+        limit=8,
     )
 
 
@@ -120,9 +124,10 @@ DefaultDashboardGenerator.extra_models.append(
         "name": _("Accounts"),
         "icon": "fa-building",
         "color": "indigo",
-        "include_kpi": True,
-        "chart_func": create_account_charts,
-        "table_func": account_table_func,
+        "order": 5,
+        "chart_titles": [_("Top Accounts by Revenue")],
+        "chart_descriptions": [_("Accounts with the highest annual revenue")],
+        "chart_func": create_top_accounts_chart,
         "table_fields_func": account_table_fields,
     }
 )

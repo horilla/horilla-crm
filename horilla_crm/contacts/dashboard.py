@@ -41,28 +41,3 @@ def contact_table_fields(model_class):
                     }
                 )
     return fields
-
-
-def contact_table_func(generator, model_info):
-    """Generate table context for all contacts."""
-    return generator.build_table_context(
-        model_info=model_info,
-        title=_("Contacts"),
-        filter_kwargs={},
-        no_found_img="assets/img/not-found-list.svg",
-        no_record_msg=_("No contacts found."),
-        view_id="contacts_dashboard_list",
-    )
-
-
-DefaultDashboardGenerator.extra_models.append(
-    {
-        "model": Contact,
-        "name": _("Contacts"),
-        "icon": "fa-address-book",
-        "color": "green",
-        "include_kpi": True,
-        "table_func": contact_table_func,
-        "table_fields_func": contact_table_fields,
-    }
-)

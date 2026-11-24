@@ -1,0 +1,1027 @@
+[
+  {
+    "model": "booking.booking",
+    "pk": 1,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": 0,
+        "time": "09:27"
+      },
+      "updated_at": {
+        "relative_days": 0,
+        "time": "10:48"
+      },
+      "company": 1,
+      "booking_page": 1,
+      "booker_name": "Lorenzo Baker",
+      "booker_email": "lorenzo.baker@meridianwealthadvi.com",
+      "start_datetime": {
+        "relative_days": 9,
+        "time": "10:00"
+      },
+      "end_datetime": {
+        "relative_days": 9,
+        "time": "10:30"
+      },
+      "status": "pending",
+      "answers": {
+        "company": "Meridian Wealth Advisors",
+        "team_size": "1-10",
+        "topic": "Lead management"
+      },
+      "meeting_url": "https://zoom.us/j/9876543210",
+      "cancellation_token": "5b63c720-caab-47d9-ba44-b62bfdbbb40a",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/London",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 2,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": 0,
+        "time": "16:02"
+      },
+      "updated_at": {
+        "relative_days": 0,
+        "time": "14:46"
+      },
+      "company": 1,
+      "booking_page": 1,
+      "booker_name": "Pablo Becker",
+      "booker_email": "pablo.becker@orioncomponents.com",
+      "start_datetime": {
+        "relative_days": 8,
+        "time": "09:00"
+      },
+      "end_datetime": {
+        "relative_days": 8,
+        "time": "09:30"
+      },
+      "status": "confirmed",
+      "answers": {
+        "company": "Orion Components",
+        "team_size": "51-200",
+        "topic": "Data migration"
+      },
+      "meeting_url": "https://zoom.us/j/9876543210",
+      "cancellation_token": "cfae4b53-2230-4dba-8682-1f8f87f53bd3",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/Paris",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 3,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": 0,
+        "time": "16:37"
+      },
+      "updated_at": {
+        "relative_days": 0,
+        "time": "16:55"
+      },
+      "company": 1,
+      "booking_page": 1,
+      "booker_name": "Oscar Hill",
+      "booker_email": "oscar.hill@harvesteuropaagro.com",
+      "start_datetime": {
+        "relative_days": 21,
+        "time": "10:00"
+      },
+      "end_datetime": {
+        "relative_days": 21,
+        "time": "10:30"
+      },
+      "status": "confirmed",
+      "answers": {
+        "company": "Harvest Europa Agro",
+        "team_size": "51-200",
+        "topic": "Lead management"
+      },
+      "meeting_url": "https://zoom.us/j/9876543210",
+      "cancellation_token": "5b5ae924-8d73-43f0-ac23-25530d4f14ea",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/London",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 4,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": 0,
+        "time": "13:09"
+      },
+      "updated_at": {
+        "relative_days": 0,
+        "time": "15:23"
+      },
+      "company": 1,
+      "booking_page": 1,
+      "booker_name": "Pierre Hill",
+      "booker_email": "pierre.hill@sterlingcapitalpar.com",
+      "start_datetime": {
+        "relative_days": 18,
+        "time": "15:00"
+      },
+      "end_datetime": {
+        "relative_days": 18,
+        "time": "15:30"
+      },
+      "status": "confirmed",
+      "answers": {
+        "company": "Sterling Capital Partners",
+        "team_size": "51-200",
+        "topic": "Data migration"
+      },
+      "meeting_url": "https://zoom.us/j/9876543210",
+      "cancellation_token": "3eb6280a-90b6-41f2-84dd-2505cb447e96",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/London",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 5,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -2,
+        "time": "08:09"
+      },
+      "updated_at": {
+        "relative_days": -2,
+        "time": "10:01"
+      },
+      "company": 1,
+      "booking_page": 2,
+      "booker_name": "Daniel Thompson",
+      "booker_email": "daniel.thompson@orioncomponents.com",
+      "start_datetime": {
+        "relative_days": 4,
+        "time": "15:00"
+      },
+      "end_datetime": {
+        "relative_days": 4,
+        "time": "15:30"
+      },
+      "status": "pending",
+      "answers": {
+        "company": "Orion Components",
+        "team_size": "11-50",
+        "topic": "Data migration"
+      },
+      "meeting_url": "https://meet.google.com/abc-defg-hij",
+      "cancellation_token": "fb671772-abf5-4062-b320-94175c16dbaa",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/Paris",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 6,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -17,
+        "time": "13:12"
+      },
+      "updated_at": {
+        "relative_days": -17,
+        "time": "10:54"
+      },
+      "company": 1,
+      "booking_page": 2,
+      "booker_name": "Anneke Thompson",
+      "booker_email": "anneke.thompson@bluewavetechnologi.com",
+      "start_datetime": {
+        "relative_days": -13,
+        "time": "11:00"
+      },
+      "end_datetime": {
+        "relative_days": -13,
+        "time": "11:30"
+      },
+      "status": "completed",
+      "answers": {
+        "company": "Bluewave Technologies",
+        "team_size": "1-10",
+        "topic": "Reporting and forecasting"
+      },
+      "meeting_url": "https://meet.google.com/abc-defg-hij",
+      "cancellation_token": "e9f7f982-9826-4b13-8653-90d8b539576e",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/London",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 7,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": 0,
+        "time": "09:12"
+      },
+      "updated_at": {
+        "relative_days": 0,
+        "time": "15:51"
+      },
+      "company": 1,
+      "booking_page": 2,
+      "booker_name": "Pablo Adams",
+      "booker_email": "pablo.adams@bluewavetechnologi.com",
+      "start_datetime": {
+        "relative_days": 4,
+        "time": "10:00"
+      },
+      "end_datetime": {
+        "relative_days": 4,
+        "time": "10:30"
+      },
+      "status": "confirmed",
+      "answers": {
+        "company": "Bluewave Technologies",
+        "team_size": "51-200",
+        "topic": "Data migration"
+      },
+      "meeting_url": "https://meet.google.com/abc-defg-hij",
+      "cancellation_token": "cff1e23d-b4c0-404c-a20d-3e2fb82b615e",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/Zurich",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 8,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -24,
+        "time": "17:15"
+      },
+      "updated_at": {
+        "relative_days": -24,
+        "time": "10:12"
+      },
+      "company": 1,
+      "booking_page": 2,
+      "booker_name": "Viktor Lewis",
+      "booker_email": "viktor.lewis@harvesteuropaagro.com",
+      "start_datetime": {
+        "relative_days": -21,
+        "time": "11:00"
+      },
+      "end_datetime": {
+        "relative_days": -21,
+        "time": "11:30"
+      },
+      "status": "cancelled",
+      "answers": {
+        "company": "Harvest Europa Agro",
+        "team_size": "11-50",
+        "topic": "Lead management"
+      },
+      "meeting_url": "",
+      "cancellation_token": "05bd729c-4e70-496f-9eab-1ba961a5749e",
+      "cancellation_reason": "Schedule conflict on our side.",
+      "booker_timezone": "Europe/Zurich",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 9,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": 0,
+        "time": "08:43"
+      },
+      "updated_at": {
+        "relative_days": 0,
+        "time": "08:53"
+      },
+      "company": 1,
+      "booking_page": 3,
+      "booker_name": "Pablo Martinez",
+      "booker_email": "pablo.martinez@meridianwealthadvi.com",
+      "start_datetime": {
+        "relative_days": 8,
+        "time": "14:00"
+      },
+      "end_datetime": {
+        "relative_days": 8,
+        "time": "14:45"
+      },
+      "status": "confirmed",
+      "answers": {
+        "company": "Meridian Wealth Advisors",
+        "team_size": "1-10",
+        "topic": "Reporting and forecasting"
+      },
+      "meeting_url": "https://teams.microsoft.com/l/meetup-join/demo",
+      "cancellation_token": "2c8cd82a-94c9-43a8-a5e7-311608a16517",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/Zurich",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 10,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -27,
+        "time": "14:29"
+      },
+      "updated_at": {
+        "relative_days": -27,
+        "time": "08:59"
+      },
+      "company": 1,
+      "booking_page": 3,
+      "booker_name": "Viktor Harris",
+      "booker_email": "viktor.harris@vertextrustfinanci.com",
+      "start_datetime": {
+        "relative_days": -24,
+        "time": "14:00"
+      },
+      "end_datetime": {
+        "relative_days": -24,
+        "time": "14:45"
+      },
+      "status": "completed",
+      "answers": {
+        "company": "Vertex Trust Financial",
+        "team_size": "51-200",
+        "topic": "Data migration"
+      },
+      "meeting_url": "https://teams.microsoft.com/l/meetup-join/demo",
+      "cancellation_token": "c404a31d-bd0a-4078-9fb2-a52713253762",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/Zurich",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 11,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": 0,
+        "time": "14:27"
+      },
+      "updated_at": {
+        "relative_days": 0,
+        "time": "13:05"
+      },
+      "company": 1,
+      "booking_page": 3,
+      "booker_name": "Jessica Andersson",
+      "booker_email": "jessica.andersson@skylineinfrastruct.com",
+      "start_datetime": {
+        "relative_days": 17,
+        "time": "09:00"
+      },
+      "end_datetime": {
+        "relative_days": 17,
+        "time": "09:45"
+      },
+      "status": "confirmed",
+      "answers": {
+        "company": "Skyline Infrastructure",
+        "team_size": "200+",
+        "topic": "Data migration"
+      },
+      "meeting_url": "https://teams.microsoft.com/l/meetup-join/demo",
+      "cancellation_token": "f0d64541-c320-4141-8ba7-629e139056c8",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/Paris",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 12,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": 0,
+        "time": "13:11"
+      },
+      "updated_at": {
+        "relative_days": 0,
+        "time": "16:04"
+      },
+      "company": 1,
+      "booking_page": 3,
+      "booker_name": "Daniel Scott",
+      "booker_email": "daniel.scott@orioncomponents.com",
+      "start_datetime": {
+        "relative_days": 14,
+        "time": "11:00"
+      },
+      "end_datetime": {
+        "relative_days": 14,
+        "time": "11:45"
+      },
+      "status": "confirmed",
+      "answers": {
+        "company": "Orion Components",
+        "team_size": "11-50",
+        "topic": "Data migration"
+      },
+      "meeting_url": "https://teams.microsoft.com/l/meetup-join/demo",
+      "cancellation_token": "18025fa9-10c3-46d8-930a-4ff394e33b2f",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/Paris",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 13,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -17,
+        "time": "11:37"
+      },
+      "updated_at": {
+        "relative_days": -17,
+        "time": "09:13"
+      },
+      "company": 1,
+      "booking_page": 4,
+      "booker_name": "Sarah Clark",
+      "booker_email": "sarah.clark@brightpathacademy.com",
+      "start_datetime": {
+        "relative_days": -13,
+        "time": "11:00"
+      },
+      "end_datetime": {
+        "relative_days": -13,
+        "time": "12:00"
+      },
+      "status": "completed",
+      "answers": {
+        "company": "Brightpath Academy",
+        "team_size": "11-50",
+        "topic": "Email integration"
+      },
+      "meeting_url": "",
+      "cancellation_token": "3ff17449-1774-41dc-b138-ecfa55c51ee2",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/Paris",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 14,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -8,
+        "time": "15:59"
+      },
+      "updated_at": {
+        "relative_days": -8,
+        "time": "11:42"
+      },
+      "company": 1,
+      "booking_page": 4,
+      "booker_name": "David Dubois",
+      "booker_email": "david.dubois@orioncomponents.com",
+      "start_datetime": {
+        "relative_days": -3,
+        "time": "11:00"
+      },
+      "end_datetime": {
+        "relative_days": -3,
+        "time": "12:00"
+      },
+      "status": "completed",
+      "answers": {
+        "company": "Orion Components",
+        "team_size": "200+",
+        "topic": "Reporting and forecasting"
+      },
+      "meeting_url": "",
+      "cancellation_token": "21f69c9a-cf03-4801-a21a-7cdbc527d7be",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/Zurich",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 15,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -6,
+        "time": "15:24"
+      },
+      "updated_at": {
+        "relative_days": -6,
+        "time": "14:58"
+      },
+      "company": 1,
+      "booking_page": 4,
+      "booker_name": "Anneke Walker",
+      "booker_email": "anneke.walker@skylineinfrastruct.com",
+      "start_datetime": {
+        "relative_days": 0,
+        "time": "16:00"
+      },
+      "end_datetime": {
+        "relative_days": 0,
+        "time": "17:00"
+      },
+      "status": "pending",
+      "answers": {
+        "company": "Skyline Infrastructure",
+        "team_size": "200+",
+        "topic": "Data migration"
+      },
+      "meeting_url": "",
+      "cancellation_token": "df7a1e3f-8e74-4ee2-b563-3c1e4ac79685",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/Paris",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 16,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": 0,
+        "time": "14:44"
+      },
+      "updated_at": {
+        "relative_days": 0,
+        "time": "09:08"
+      },
+      "company": 1,
+      "booking_page": 4,
+      "booker_name": "Giulia Scott",
+      "booker_email": "giulia.scott@atlasindustries.com",
+      "start_datetime": {
+        "relative_days": 15,
+        "time": "14:00"
+      },
+      "end_datetime": {
+        "relative_days": 15,
+        "time": "15:00"
+      },
+      "status": "confirmed",
+      "answers": {
+        "company": "Atlas Industries",
+        "team_size": "200+",
+        "topic": "Reporting and forecasting"
+      },
+      "meeting_url": "",
+      "cancellation_token": "e868a341-1046-466a-a93b-91e146582990",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/Zurich",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 17,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": 0,
+        "time": "14:25"
+      },
+      "updated_at": {
+        "relative_days": 0,
+        "time": "10:47"
+      },
+      "company": 2,
+      "booking_page": 5,
+      "booker_name": "Chloe Andersson",
+      "booker_email": "chloe.andersson@vertextrustfinanci.com",
+      "start_datetime": {
+        "relative_days": 22,
+        "time": "09:00"
+      },
+      "end_datetime": {
+        "relative_days": 22,
+        "time": "09:30"
+      },
+      "status": "confirmed",
+      "answers": {
+        "company": "Vertex Trust Financial",
+        "team_size": "11-50",
+        "topic": "Reporting and forecasting"
+      },
+      "meeting_url": "https://zoom.us/j/9876543210",
+      "cancellation_token": "3698b226-52fb-4a78-b000-183d5232ca3b",
+      "cancellation_reason": "",
+      "booker_timezone": "America/New_York",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 18,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": 0,
+        "time": "15:48"
+      },
+      "updated_at": {
+        "relative_days": 0,
+        "time": "16:54"
+      },
+      "company": 2,
+      "booking_page": 5,
+      "booker_name": "Hannah King",
+      "booker_email": "hannah.king@skylineinfrastruct.com",
+      "start_datetime": {
+        "relative_days": 8,
+        "time": "11:00"
+      },
+      "end_datetime": {
+        "relative_days": 8,
+        "time": "11:30"
+      },
+      "status": "confirmed",
+      "answers": {
+        "company": "Skyline Infrastructure",
+        "team_size": "11-50",
+        "topic": "Data migration"
+      },
+      "meeting_url": "https://zoom.us/j/9876543210",
+      "cancellation_token": "704b790e-71cf-4b16-92e5-37d2bfa065f9",
+      "cancellation_reason": "",
+      "booker_timezone": "America/Chicago",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 19,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -25,
+        "time": "16:41"
+      },
+      "updated_at": {
+        "relative_days": -25,
+        "time": "17:38"
+      },
+      "company": 2,
+      "booking_page": 5,
+      "booker_name": "Hannah Dubois",
+      "booker_email": "hannah.dubois@harvesteuropaagro.com",
+      "start_datetime": {
+        "relative_days": -21,
+        "time": "15:00"
+      },
+      "end_datetime": {
+        "relative_days": -21,
+        "time": "15:30"
+      },
+      "status": "completed",
+      "answers": {
+        "company": "Harvest Europa Agro",
+        "team_size": "1-10",
+        "topic": "Reporting and forecasting"
+      },
+      "meeting_url": "https://zoom.us/j/9876543210",
+      "cancellation_token": "d1d74ab4-df49-4432-b9f4-e0de9d926886",
+      "cancellation_reason": "",
+      "booker_timezone": "America/New_York",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 20,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -2,
+        "time": "17:45"
+      },
+      "updated_at": {
+        "relative_days": -2,
+        "time": "11:13"
+      },
+      "company": 2,
+      "booking_page": 6,
+      "booker_name": "Oscar Andersson",
+      "booker_email": "oscar.andersson@orioncomponents.com",
+      "start_datetime": {
+        "relative_days": 0,
+        "time": "10:00"
+      },
+      "end_datetime": {
+        "relative_days": 0,
+        "time": "10:45"
+      },
+      "status": "confirmed",
+      "answers": {
+        "company": "Orion Components",
+        "team_size": "200+",
+        "topic": "Reporting and forecasting"
+      },
+      "meeting_url": "https://teams.microsoft.com/l/meetup-join/demo",
+      "cancellation_token": "ee316ebb-b35a-4b5a-9a94-8585b03a77af",
+      "cancellation_reason": "",
+      "booker_timezone": "America/Los_Angeles",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 21,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": 0,
+        "time": "11:43"
+      },
+      "updated_at": {
+        "relative_days": 0,
+        "time": "09:38"
+      },
+      "company": 2,
+      "booking_page": 6,
+      "booker_name": "Olivia Young",
+      "booker_email": "olivia.young@brightpathacademy.com",
+      "start_datetime": {
+        "relative_days": 9,
+        "time": "10:00"
+      },
+      "end_datetime": {
+        "relative_days": 9,
+        "time": "10:45"
+      },
+      "status": "pending",
+      "answers": {
+        "company": "Brightpath Academy",
+        "team_size": "11-50",
+        "topic": "Email integration"
+      },
+      "meeting_url": "https://teams.microsoft.com/l/meetup-join/demo",
+      "cancellation_token": "33093a94-86e4-49c3-b316-e9c1135fd2a1",
+      "cancellation_reason": "",
+      "booker_timezone": "America/Chicago",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 22,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -11,
+        "time": "09:53"
+      },
+      "updated_at": {
+        "relative_days": -11,
+        "time": "16:54"
+      },
+      "company": 2,
+      "booking_page": 6,
+      "booker_name": "Giulia Visser",
+      "booker_email": "giulia.visser@brightpathacademy.com",
+      "start_datetime": {
+        "relative_days": -6,
+        "time": "09:00"
+      },
+      "end_datetime": {
+        "relative_days": -6,
+        "time": "09:45"
+      },
+      "status": "completed",
+      "answers": {
+        "company": "Brightpath Academy",
+        "team_size": "200+",
+        "topic": "Lead management"
+      },
+      "meeting_url": "https://teams.microsoft.com/l/meetup-join/demo",
+      "cancellation_token": "140f9ad4-a0cb-4e18-b0df-e8cf8f0f0524",
+      "cancellation_reason": "",
+      "booker_timezone": "America/Chicago",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 23,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -22,
+        "time": "15:25"
+      },
+      "updated_at": {
+        "relative_days": -22,
+        "time": "08:36"
+      },
+      "company": 2,
+      "booking_page": 7,
+      "booker_name": "Niklas Carter",
+      "booker_email": "niklas.carter@brightpathacademy.com",
+      "start_datetime": {
+        "relative_days": -21,
+        "time": "14:00"
+      },
+      "end_datetime": {
+        "relative_days": -21,
+        "time": "15:00"
+      },
+      "status": "completed",
+      "answers": {
+        "company": "Brightpath Academy",
+        "team_size": "51-200",
+        "topic": "Reporting and forecasting"
+      },
+      "meeting_url": "https://meet.google.com/abc-defg-hij",
+      "cancellation_token": "60688fe6-542b-44ae-9c20-d33053a48be1",
+      "cancellation_reason": "",
+      "booker_timezone": "America/New_York",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 24,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": 0,
+        "time": "11:40"
+      },
+      "updated_at": {
+        "relative_days": 0,
+        "time": "09:27"
+      },
+      "company": 2,
+      "booking_page": 7,
+      "booker_name": "James Wright",
+      "booker_email": "james.wright@vertextrustfinanci.com",
+      "start_datetime": {
+        "relative_days": 18,
+        "time": "14:00"
+      },
+      "end_datetime": {
+        "relative_days": 18,
+        "time": "15:00"
+      },
+      "status": "confirmed",
+      "answers": {
+        "company": "Vertex Trust Financial",
+        "team_size": "51-200",
+        "topic": "Lead management"
+      },
+      "meeting_url": "https://meet.google.com/abc-defg-hij",
+      "cancellation_token": "bd74646c-8c8b-4b76-bd80-a541af957a1f",
+      "cancellation_reason": "",
+      "booker_timezone": "Europe/London",
+      "activity": null
+    }
+  },
+  {
+    "model": "booking.booking",
+    "pk": 25,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -9,
+        "time": "10:21"
+      },
+      "updated_at": {
+        "relative_days": -9,
+        "time": "11:05"
+      },
+      "company": 2,
+      "booking_page": 7,
+      "booker_name": "Olivia Scott",
+      "booker_email": "olivia.scott@atlasindustries.com",
+      "start_datetime": {
+        "relative_days": -7,
+        "time": "14:00"
+      },
+      "end_datetime": {
+        "relative_days": -7,
+        "time": "15:00"
+      },
+      "status": "completed",
+      "answers": {
+        "company": "Atlas Industries",
+        "team_size": "200+",
+        "topic": "Email integration"
+      },
+      "meeting_url": "https://meet.google.com/abc-defg-hij",
+      "cancellation_token": "d2351ab1-d038-4831-aec1-c188a1b19742",
+      "cancellation_reason": "",
+      "booker_timezone": "America/New_York",
+      "activity": null
+    }
+  }
+]

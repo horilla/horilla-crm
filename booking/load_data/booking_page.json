@@ -1,0 +1,506 @@
+[
+  {
+    "model": "booking.bookingpage",
+    "pk": 1,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -89,
+        "time": "10:00"
+      },
+      "updated_at": {
+        "relative_days": -89,
+        "time": "17:00"
+      },
+      "company": 1,
+      "business_hour": 1,
+      "shift_hour": null,
+      "slug": "product-demo",
+      "title": "Product Demo",
+      "description": "A 30-minute walkthrough of Horilla CRM tailored to your sales process.",
+      "duration": 30,
+      "is_online": true,
+      "meeting_provider": "zoom",
+      "location": "",
+      "buffer_before": 0,
+      "buffer_after": 5,
+      "max_per_day": 6,
+      "advance_notice": 120,
+      "booking_window": 30,
+      "questions": [
+        {
+          "id": "company",
+          "label": "Company name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "team_size",
+          "label": "How big is your sales team?",
+          "type": "select",
+          "required": false,
+          "choices": [
+            "1-10",
+            "11-50",
+            "51-200",
+            "200+"
+          ]
+        },
+        {
+          "id": "topic",
+          "label": "What would you like to discuss?",
+          "type": "text",
+          "required": false
+        }
+      ],
+      "reminder_hours": 24,
+      "allow_reschedule": true,
+      "reschedule_cutoff_days": 1,
+      "allow_cancel": true,
+      "cancel_cutoff_days": 1,
+      "primary_color": "#e54f38",
+      "host": 1,
+      "participants": [
+        1
+      ],
+      "confirmation_mail_template": null,
+      "cancellation_mail_template": null,
+      "reschedule_mail_template": null
+    }
+  },
+  {
+    "model": "booking.bookingpage",
+    "pk": 2,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -88,
+        "time": "14:54"
+      },
+      "updated_at": {
+        "relative_days": -88,
+        "time": "15:54"
+      },
+      "company": 1,
+      "business_hour": 1,
+      "shift_hour": null,
+      "slug": "sales-discovery-call",
+      "title": "Sales Discovery Call",
+      "description": "Tell us about your goals and we will map them to the right setup.",
+      "duration": 30,
+      "is_online": true,
+      "meeting_provider": "google_meet",
+      "location": "",
+      "buffer_before": 0,
+      "buffer_after": 5,
+      "max_per_day": 6,
+      "advance_notice": 120,
+      "booking_window": 30,
+      "questions": [
+        {
+          "id": "company",
+          "label": "Company name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "team_size",
+          "label": "How big is your sales team?",
+          "type": "select",
+          "required": false,
+          "choices": [
+            "1-10",
+            "11-50",
+            "51-200",
+            "200+"
+          ]
+        },
+        {
+          "id": "topic",
+          "label": "What would you like to discuss?",
+          "type": "text",
+          "required": false
+        }
+      ],
+      "reminder_hours": 24,
+      "allow_reschedule": true,
+      "reschedule_cutoff_days": 1,
+      "allow_cancel": true,
+      "cancel_cutoff_days": 1,
+      "primary_color": "#e54f38",
+      "host": 2,
+      "participants": [
+        2
+      ],
+      "confirmation_mail_template": null,
+      "cancellation_mail_template": null,
+      "reschedule_mail_template": null
+    }
+  },
+  {
+    "model": "booking.bookingpage",
+    "pk": 3,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -87,
+        "time": "16:55"
+      },
+      "updated_at": {
+        "relative_days": -87,
+        "time": "09:37"
+      },
+      "company": 1,
+      "business_hour": 2,
+      "shift_hour": null,
+      "slug": "customer-success-check-in",
+      "title": "Customer Success Check-in",
+      "description": "A check-in for existing customers to review adoption and next steps.",
+      "duration": 45,
+      "is_online": true,
+      "meeting_provider": "ms_teams",
+      "location": "",
+      "buffer_before": 0,
+      "buffer_after": 10,
+      "max_per_day": 6,
+      "advance_notice": 120,
+      "booking_window": 30,
+      "questions": [
+        {
+          "id": "company",
+          "label": "Company name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "team_size",
+          "label": "How big is your sales team?",
+          "type": "select",
+          "required": false,
+          "choices": [
+            "1-10",
+            "11-50",
+            "51-200",
+            "200+"
+          ]
+        },
+        {
+          "id": "topic",
+          "label": "What would you like to discuss?",
+          "type": "text",
+          "required": false
+        }
+      ],
+      "reminder_hours": 24,
+      "allow_reschedule": true,
+      "reschedule_cutoff_days": 1,
+      "allow_cancel": true,
+      "cancel_cutoff_days": 1,
+      "primary_color": "#e54f38",
+      "host": 1,
+      "participants": [
+        1
+      ],
+      "confirmation_mail_template": null,
+      "cancellation_mail_template": null,
+      "reschedule_mail_template": null
+    }
+  },
+  {
+    "model": "booking.bookingpage",
+    "pk": 4,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -86,
+        "time": "10:42"
+      },
+      "updated_at": {
+        "relative_days": -86,
+        "time": "10:57"
+      },
+      "company": 1,
+      "business_hour": 1,
+      "shift_hour": null,
+      "slug": "onsite-consultation",
+      "title": "On-site Consultation",
+      "description": "An in-person working session at our Amsterdam office.",
+      "duration": 60,
+      "is_online": false,
+      "meeting_provider": "",
+      "location": "Horilla Office, Amsterdam, Noord-Holland",
+      "buffer_before": 0,
+      "buffer_after": 10,
+      "max_per_day": 6,
+      "advance_notice": 120,
+      "booking_window": 30,
+      "questions": [
+        {
+          "id": "company",
+          "label": "Company name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "team_size",
+          "label": "How big is your sales team?",
+          "type": "select",
+          "required": false,
+          "choices": [
+            "1-10",
+            "11-50",
+            "51-200",
+            "200+"
+          ]
+        },
+        {
+          "id": "topic",
+          "label": "What would you like to discuss?",
+          "type": "text",
+          "required": false
+        }
+      ],
+      "reminder_hours": 24,
+      "allow_reschedule": true,
+      "reschedule_cutoff_days": 1,
+      "allow_cancel": true,
+      "cancel_cutoff_days": 1,
+      "primary_color": "#e54f38",
+      "host": 2,
+      "participants": [
+        2
+      ],
+      "confirmation_mail_template": null,
+      "cancellation_mail_template": null,
+      "reschedule_mail_template": null
+    }
+  },
+  {
+    "model": "booking.bookingpage",
+    "pk": 5,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -85,
+        "time": "14:29"
+      },
+      "updated_at": {
+        "relative_days": -85,
+        "time": "09:21"
+      },
+      "company": 2,
+      "business_hour": 3,
+      "shift_hour": null,
+      "slug": "request-a-demo",
+      "title": "Request a Demo",
+      "description": "See Horilla CRM in action with a live demo.",
+      "duration": 30,
+      "is_online": true,
+      "meeting_provider": "zoom",
+      "location": "",
+      "buffer_before": 0,
+      "buffer_after": 5,
+      "max_per_day": 6,
+      "advance_notice": 120,
+      "booking_window": 30,
+      "questions": [
+        {
+          "id": "company",
+          "label": "Company name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "team_size",
+          "label": "How big is your sales team?",
+          "type": "select",
+          "required": false,
+          "choices": [
+            "1-10",
+            "11-50",
+            "51-200",
+            "200+"
+          ]
+        },
+        {
+          "id": "topic",
+          "label": "What would you like to discuss?",
+          "type": "text",
+          "required": false
+        }
+      ],
+      "reminder_hours": 24,
+      "allow_reschedule": true,
+      "reschedule_cutoff_days": 1,
+      "allow_cancel": true,
+      "cancel_cutoff_days": 1,
+      "primary_color": "#e54f38",
+      "host": 8,
+      "participants": [
+        8
+      ],
+      "confirmation_mail_template": null,
+      "cancellation_mail_template": null,
+      "reschedule_mail_template": null
+    }
+  },
+  {
+    "model": "booking.bookingpage",
+    "pk": 6,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -84,
+        "time": "08:58"
+      },
+      "updated_at": {
+        "relative_days": -84,
+        "time": "16:54"
+      },
+      "company": 2,
+      "business_hour": 3,
+      "shift_hour": null,
+      "slug": "solution-consultation",
+      "title": "Solution Consultation",
+      "description": "Plan your CRM rollout with our solution team.",
+      "duration": 45,
+      "is_online": true,
+      "meeting_provider": "ms_teams",
+      "location": "",
+      "buffer_before": 0,
+      "buffer_after": 10,
+      "max_per_day": 6,
+      "advance_notice": 120,
+      "booking_window": 30,
+      "questions": [
+        {
+          "id": "company",
+          "label": "Company name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "team_size",
+          "label": "How big is your sales team?",
+          "type": "select",
+          "required": false,
+          "choices": [
+            "1-10",
+            "11-50",
+            "51-200",
+            "200+"
+          ]
+        },
+        {
+          "id": "topic",
+          "label": "What would you like to discuss?",
+          "type": "text",
+          "required": false
+        }
+      ],
+      "reminder_hours": 24,
+      "allow_reschedule": true,
+      "reschedule_cutoff_days": 1,
+      "allow_cancel": true,
+      "cancel_cutoff_days": 1,
+      "primary_color": "#e54f38",
+      "host": 4,
+      "participants": [
+        4
+      ],
+      "confirmation_mail_template": null,
+      "cancellation_mail_template": null,
+      "reschedule_mail_template": null
+    }
+  },
+  {
+    "model": "booking.bookingpage",
+    "pk": 7,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -83,
+        "time": "16:23"
+      },
+      "updated_at": {
+        "relative_days": -83,
+        "time": "12:44"
+      },
+      "company": 2,
+      "business_hour": 4,
+      "shift_hour": null,
+      "slug": "customer-onboarding-session",
+      "title": "Customer Onboarding Session",
+      "description": "Get your team set up and trained on day one.",
+      "duration": 60,
+      "is_online": true,
+      "meeting_provider": "google_meet",
+      "location": "",
+      "buffer_before": 0,
+      "buffer_after": 10,
+      "max_per_day": 6,
+      "advance_notice": 120,
+      "booking_window": 30,
+      "questions": [
+        {
+          "id": "company",
+          "label": "Company name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "team_size",
+          "label": "How big is your sales team?",
+          "type": "select",
+          "required": false,
+          "choices": [
+            "1-10",
+            "11-50",
+            "51-200",
+            "200+"
+          ]
+        },
+        {
+          "id": "topic",
+          "label": "What would you like to discuss?",
+          "type": "text",
+          "required": false
+        }
+      ],
+      "reminder_hours": 24,
+      "allow_reschedule": true,
+      "reschedule_cutoff_days": 1,
+      "allow_cancel": true,
+      "cancel_cutoff_days": 1,
+      "primary_color": "#e54f38",
+      "host": 8,
+      "participants": [
+        8
+      ],
+      "confirmation_mail_template": null,
+      "cancellation_mail_template": null,
+      "reschedule_mail_template": null
+    }
+  }
+]

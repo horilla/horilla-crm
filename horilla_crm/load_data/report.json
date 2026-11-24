@@ -1,0 +1,428 @@
+[
+  {
+    "model": "reports.reportfolder",
+    "pk": 1,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 1,
+      "name": "Lead Folder",
+      "parent": null,
+      "is_favourite": false,
+      "report_folder_owner": 1
+    }
+  },
+  {
+    "model": "reports.reportfolder",
+    "pk": 2,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 1,
+      "name": "Opportunity Folder",
+      "parent": null,
+      "is_favourite": false,
+      "report_folder_owner": 1
+    }
+  },
+  {
+    "model": "reports.reportfolder",
+    "pk": 3,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 1,
+      "name": "Account Folder",
+      "parent": null,
+      "is_favourite": false,
+      "report_folder_owner": 1
+    }
+  },
+  {
+    "model": "reports.reportfolder",
+    "pk": 4,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 1,
+      "name": "Campaign Folder",
+      "parent": null,
+      "is_favourite": false,
+      "report_folder_owner": 1
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 1,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 1,
+      "report_owner": 1,
+      "name": "Leads by Source",
+      "module": {
+        "app_label": "leads",
+        "model": "lead"
+      },
+      "folder": 1,
+      "selected_columns": "title,first_name,last_name,lead_company,lead_status,annual_revenue",
+      "row_groups": "lead_source",
+      "column_groups": "",
+      "aggregate_columns": "",
+      "filters": "",
+      "chart_type": "pie",
+      "chart_field": null,
+      "chart_field_stacked": null,
+      "is_favourite": false
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 2,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 1,
+      "report_owner": 1,
+      "name": "Opportunity Pipeline",
+      "module": {
+        "app_label": "opportunities",
+        "model": "opportunity"
+      },
+      "folder": 2,
+      "selected_columns": "name,account,amount,expected_revenue,probability,close_date,owner",
+      "row_groups": "stage",
+      "column_groups": "",
+      "aggregate_columns": "[{\"field\": \"amount\", \"aggfunc\": \"sum\"}]",
+      "filters": "{\"stage__stage_type\": {\"value\": \"open\", \"operator\": \"exact\", \"logic\": \"and\", \"original_field\": \"stage__stage_type\"}}",
+      "chart_type": "funnel",
+      "chart_field": null,
+      "chart_field_stacked": null,
+      "is_favourite": false
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 3,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 1,
+      "report_owner": 1,
+      "name": "Closed Won Revenue by Month",
+      "module": {
+        "app_label": "opportunities",
+        "model": "opportunity"
+      },
+      "folder": 2,
+      "selected_columns": "name,account,owner,amount,close_date",
+      "row_groups": "close_month",
+      "column_groups": "",
+      "aggregate_columns": "[{\"field\": \"amount\", \"aggfunc\": \"sum\"}]",
+      "filters": "{\"stage__stage_type\": {\"value\": \"won\", \"operator\": \"exact\", \"logic\": \"and\", \"original_field\": \"stage__stage_type\"}}",
+      "chart_type": "line",
+      "chart_field": null,
+      "chart_field_stacked": null,
+      "is_favourite": false
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 4,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 1,
+      "report_owner": 1,
+      "name": "Accounts by Industry",
+      "module": {
+        "app_label": "accounts",
+        "model": "account"
+      },
+      "folder": 3,
+      "selected_columns": "name,account_type,account_owner,annual_revenue,billing_state",
+      "row_groups": "industry",
+      "column_groups": "",
+      "aggregate_columns": "[{\"field\": \"annual_revenue\", \"aggfunc\": \"sum\"}]",
+      "filters": "",
+      "chart_type": "bar",
+      "chart_field": null,
+      "chart_field_stacked": null,
+      "is_favourite": false
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 5,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 1,
+      "report_owner": 1,
+      "name": "Campaign ROI",
+      "module": {
+        "app_label": "campaigns",
+        "model": "campaign"
+      },
+      "folder": 4,
+      "selected_columns": "campaign_name,budget_cost,actual_cost,value_won_opportunities,roi_percentage",
+      "row_groups": "campaign_type",
+      "column_groups": "",
+      "aggregate_columns": "[{\"field\": \"roi_percentage\", \"aggfunc\": \"avg\"}, {\"field\": \"actual_cost\", \"aggfunc\": \"sum\"}, {\"field\": \"value_won_opportunities\", \"aggfunc\": \"sum\"}]",
+      "filters": "",
+      "chart_type": "bar",
+      "chart_field": null,
+      "chart_field_stacked": null,
+      "is_favourite": false
+    }
+  },
+  {
+    "model": "reports.reportfolder",
+    "pk": 5,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 2,
+      "name": "Lead Folder",
+      "parent": null,
+      "is_favourite": false,
+      "report_folder_owner": 8
+    }
+  },
+  {
+    "model": "reports.reportfolder",
+    "pk": 6,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 2,
+      "name": "Opportunity Folder",
+      "parent": null,
+      "is_favourite": false,
+      "report_folder_owner": 8
+    }
+  },
+  {
+    "model": "reports.reportfolder",
+    "pk": 7,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 2,
+      "name": "Account Folder",
+      "parent": null,
+      "is_favourite": false,
+      "report_folder_owner": 8
+    }
+  },
+  {
+    "model": "reports.reportfolder",
+    "pk": 8,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 2,
+      "name": "Campaign Folder",
+      "parent": null,
+      "is_favourite": false,
+      "report_folder_owner": 8
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 6,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 2,
+      "report_owner": 8,
+      "name": "Leads by Source",
+      "module": {
+        "app_label": "leads",
+        "model": "lead"
+      },
+      "folder": 5,
+      "selected_columns": "title,first_name,last_name,lead_company,lead_status,annual_revenue",
+      "row_groups": "lead_source",
+      "column_groups": "",
+      "aggregate_columns": "",
+      "filters": "",
+      "chart_type": "pie",
+      "chart_field": null,
+      "chart_field_stacked": null,
+      "is_favourite": false
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 7,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 2,
+      "report_owner": 8,
+      "name": "Opportunity Pipeline",
+      "module": {
+        "app_label": "opportunities",
+        "model": "opportunity"
+      },
+      "folder": 6,
+      "selected_columns": "name,account,amount,expected_revenue,probability,close_date,owner",
+      "row_groups": "stage",
+      "column_groups": "",
+      "aggregate_columns": "[{\"field\": \"amount\", \"aggfunc\": \"sum\"}]",
+      "filters": "{\"stage__stage_type\": {\"value\": \"open\", \"operator\": \"exact\", \"logic\": \"and\", \"original_field\": \"stage__stage_type\"}}",
+      "chart_type": "funnel",
+      "chart_field": null,
+      "chart_field_stacked": null,
+      "is_favourite": false
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 8,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 2,
+      "report_owner": 8,
+      "name": "Closed Won Revenue by Month",
+      "module": {
+        "app_label": "opportunities",
+        "model": "opportunity"
+      },
+      "folder": 6,
+      "selected_columns": "name,account,owner,amount,close_date",
+      "row_groups": "close_month",
+      "column_groups": "",
+      "aggregate_columns": "[{\"field\": \"amount\", \"aggfunc\": \"sum\"}]",
+      "filters": "{\"stage__stage_type\": {\"value\": \"won\", \"operator\": \"exact\", \"logic\": \"and\", \"original_field\": \"stage__stage_type\"}}",
+      "chart_type": "line",
+      "chart_field": null,
+      "chart_field_stacked": null,
+      "is_favourite": false
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 9,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 2,
+      "report_owner": 8,
+      "name": "Accounts by Industry",
+      "module": {
+        "app_label": "accounts",
+        "model": "account"
+      },
+      "folder": 7,
+      "selected_columns": "name,account_type,account_owner,annual_revenue,billing_state",
+      "row_groups": "industry",
+      "column_groups": "",
+      "aggregate_columns": "[{\"field\": \"annual_revenue\", \"aggfunc\": \"sum\"}]",
+      "filters": "",
+      "chart_type": "bar",
+      "chart_field": null,
+      "chart_field_stacked": null,
+      "is_favourite": false
+    }
+  },
+  {
+    "model": "reports.report",
+    "pk": 10,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_at": "2026-11-23T09:00:00Z",
+      "updated_at": "2026-11-23T09:00:00Z",
+      "created_by": 1,
+      "updated_by": 1,
+      "company": 2,
+      "report_owner": 8,
+      "name": "Campaign ROI",
+      "module": {
+        "app_label": "campaigns",
+        "model": "campaign"
+      },
+      "folder": 8,
+      "selected_columns": "campaign_name,budget_cost,actual_cost,value_won_opportunities,roi_percentage",
+      "row_groups": "campaign_type",
+      "column_groups": "",
+      "aggregate_columns": "[{\"field\": \"roi_percentage\", \"aggfunc\": \"avg\"}, {\"field\": \"actual_cost\", \"aggfunc\": \"sum\"}, {\"field\": \"value_won_opportunities\", \"aggfunc\": \"sum\"}]",
+      "filters": "",
+      "chart_type": "bar",
+      "chart_field": null,
+      "chart_field_stacked": null,
+      "is_favourite": false
+    }
+  }
+]

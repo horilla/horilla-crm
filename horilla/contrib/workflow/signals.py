@@ -92,6 +92,10 @@ def trigger_workflow_rules_on_save(sender, instance, created, **kwargs):
     On an update, a rule with criteria runs only when the pre_save receiver
     found them not met before the save (the record enters the criteria).
     """
+    # Fixture loads (demo data) must not fire rules, e.g. create tasks.
+    if kwargs.get("raw"):
+        return
+
     met_before = instance.__dict__.pop(_MET_BEFORE_ATTR, None)
     if not _is_workflow_save(sender, instance):
         return

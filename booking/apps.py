@@ -27,5 +27,14 @@ class BookingConfig(AppLauncher):
         "menu",
     ]
 
+    demo_data = {
+        "files": [
+            (35, "load_data/booking_page.json"),
+            (36, "load_data/booking.json"),
+        ],
+        "order": 8,
+        "configurable": False,
+    }
+
     celery_schedule_module = "celery_schedules"
     celery_schedule_variable = "HORILLA_BEAT_SCHEDULE"

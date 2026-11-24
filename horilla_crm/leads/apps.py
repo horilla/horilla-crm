@@ -32,11 +32,14 @@ class LeadsConfig(AppLauncher):
         {
             "files": [
                 (4, "load_data/lead_stage.json"),
-                (5, "load_data/leads.json"),
+                (31, "load_data/leads.json"),
                 (22, "load_data/lead_assignment_rule.json"),
                 (23, "load_data/lead_capture_form.json"),
             ],
             "order": 2,
+            "options": [100, 200, 500, 1000],
+            "default": 200,
+            "prepare": "horilla_crm.leads.demo.prepare_demo_rows",
         },
         {
             "files": [
@@ -49,6 +52,11 @@ class LeadsConfig(AppLauncher):
                 (24, "../load_data/approval_rule.json"),
                 (25, "../load_data/review_process.json"),
                 (26, "load_data/duplicate_control.json"),
+                (30, "../load_data/report.json"),
+                # Approval and review jobs reference leads, accounts, contacts
+                # and opportunities, so they load after those.
+                (33, "../load_data/approval_instance.json"),
+                (34, "../load_data/review_job.json"),
             ],
             "order": 7,
             "configurable": False,

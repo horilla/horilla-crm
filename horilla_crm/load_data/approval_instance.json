@@ -1,0 +1,1036 @@
+[
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 1,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -8,
+        "time": "15:28"
+      },
+      "updated_at": {
+        "relative_days": -8,
+        "time": "13:36"
+      },
+      "company": 1,
+      "rule": 3,
+      "content_type": {
+        "app_label": "leads",
+        "model": "lead"
+      },
+      "object_id": "29",
+      "requested_by": 14,
+      "status": "pending",
+      "current_step": 4,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 2,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -15,
+        "time": "17:35"
+      },
+      "updated_at": {
+        "relative_days": -15,
+        "time": "14:38"
+      },
+      "company": 1,
+      "rule": 3,
+      "content_type": {
+        "app_label": "leads",
+        "model": "lead"
+      },
+      "object_id": "35",
+      "requested_by": 19,
+      "status": "pending",
+      "current_step": 4,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 3,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -3,
+        "time": "13:06"
+      },
+      "updated_at": {
+        "relative_days": -3,
+        "time": "08:53"
+      },
+      "company": 1,
+      "rule": 3,
+      "content_type": {
+        "app_label": "leads",
+        "model": "lead"
+      },
+      "object_id": "37",
+      "requested_by": 17,
+      "status": "pending",
+      "current_step": 3,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 4,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -19,
+        "time": "13:18"
+      },
+      "updated_at": {
+        "relative_days": -19,
+        "time": "17:17"
+      },
+      "company": 1,
+      "rule": 3,
+      "content_type": {
+        "app_label": "leads",
+        "model": "lead"
+      },
+      "object_id": "39",
+      "requested_by": 5,
+      "status": "approved",
+      "current_step": 4,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 5,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -20,
+        "time": "10:36"
+      },
+      "updated_at": {
+        "relative_days": -20,
+        "time": "16:04"
+      },
+      "company": 1,
+      "rule": 3,
+      "content_type": {
+        "app_label": "leads",
+        "model": "lead"
+      },
+      "object_id": "41",
+      "requested_by": 5,
+      "status": "pending",
+      "current_step": 4,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 6,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -6,
+        "time": "08:28"
+      },
+      "updated_at": {
+        "relative_days": -6,
+        "time": "12:13"
+      },
+      "company": 1,
+      "rule": 3,
+      "content_type": {
+        "app_label": "leads",
+        "model": "lead"
+      },
+      "object_id": "58",
+      "requested_by": 7,
+      "status": "rejected",
+      "current_step": 4,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 7,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -18,
+        "time": "13:19"
+      },
+      "updated_at": {
+        "relative_days": -18,
+        "time": "11:06"
+      },
+      "company": 2,
+      "rule": 4,
+      "content_type": {
+        "app_label": "leads",
+        "model": "lead"
+      },
+      "object_id": "20",
+      "requested_by": 20,
+      "status": "pending",
+      "current_step": 6,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 8,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -1,
+        "time": "15:37"
+      },
+      "updated_at": {
+        "relative_days": -1,
+        "time": "12:41"
+      },
+      "company": 2,
+      "rule": 4,
+      "content_type": {
+        "app_label": "leads",
+        "model": "lead"
+      },
+      "object_id": "48",
+      "requested_by": 8,
+      "status": "pending",
+      "current_step": 6,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 9,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -16,
+        "time": "14:07"
+      },
+      "updated_at": {
+        "relative_days": -16,
+        "time": "15:52"
+      },
+      "company": 2,
+      "rule": 4,
+      "content_type": {
+        "app_label": "leads",
+        "model": "lead"
+      },
+      "object_id": "56",
+      "requested_by": 4,
+      "status": "pending",
+      "current_step": 5,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 10,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -13,
+        "time": "14:25"
+      },
+      "updated_at": {
+        "relative_days": -13,
+        "time": "15:21"
+      },
+      "company": 1,
+      "rule": 5,
+      "content_type": {
+        "app_label": "accounts",
+        "model": "account"
+      },
+      "object_id": "2",
+      "requested_by": 19,
+      "status": "pending",
+      "current_step": 8,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 11,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -20,
+        "time": "08:56"
+      },
+      "updated_at": {
+        "relative_days": -20,
+        "time": "13:18"
+      },
+      "company": 1,
+      "rule": 5,
+      "content_type": {
+        "app_label": "accounts",
+        "model": "account"
+      },
+      "object_id": "5",
+      "requested_by": 10,
+      "status": "pending",
+      "current_step": 8,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 12,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -16,
+        "time": "14:00"
+      },
+      "updated_at": {
+        "relative_days": -16,
+        "time": "12:31"
+      },
+      "company": 1,
+      "rule": 5,
+      "content_type": {
+        "app_label": "accounts",
+        "model": "account"
+      },
+      "object_id": "7",
+      "requested_by": 22,
+      "status": "pending",
+      "current_step": 7,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 13,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -12,
+        "time": "16:40"
+      },
+      "updated_at": {
+        "relative_days": -12,
+        "time": "15:10"
+      },
+      "company": 1,
+      "rule": 5,
+      "content_type": {
+        "app_label": "accounts",
+        "model": "account"
+      },
+      "object_id": "9",
+      "requested_by": 25,
+      "status": "approved",
+      "current_step": 8,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 14,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -15,
+        "time": "17:10"
+      },
+      "updated_at": {
+        "relative_days": -15,
+        "time": "09:29"
+      },
+      "company": 2,
+      "rule": 6,
+      "content_type": {
+        "app_label": "contacts",
+        "model": "contact"
+      },
+      "object_id": "4",
+      "requested_by": 4,
+      "status": "pending",
+      "current_step": 10,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 15,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -20,
+        "time": "11:39"
+      },
+      "updated_at": {
+        "relative_days": -20,
+        "time": "10:41"
+      },
+      "company": 2,
+      "rule": 6,
+      "content_type": {
+        "app_label": "contacts",
+        "model": "contact"
+      },
+      "object_id": "8",
+      "requested_by": 8,
+      "status": "pending",
+      "current_step": 10,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 16,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -19,
+        "time": "14:34"
+      },
+      "updated_at": {
+        "relative_days": -19,
+        "time": "14:02"
+      },
+      "company": 2,
+      "rule": 6,
+      "content_type": {
+        "app_label": "contacts",
+        "model": "contact"
+      },
+      "object_id": "12",
+      "requested_by": 20,
+      "status": "pending",
+      "current_step": 9,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 17,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -1,
+        "time": "11:58"
+      },
+      "updated_at": {
+        "relative_days": -1,
+        "time": "13:09"
+      },
+      "company": 1,
+      "rule": 1,
+      "content_type": {
+        "app_label": "opportunities",
+        "model": "opportunity"
+      },
+      "object_id": "5",
+      "requested_by": 21,
+      "status": "pending",
+      "current_step": 1,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 18,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -6,
+        "time": "14:31"
+      },
+      "updated_at": {
+        "relative_days": -6,
+        "time": "13:50"
+      },
+      "company": 1,
+      "rule": 1,
+      "content_type": {
+        "app_label": "opportunities",
+        "model": "opportunity"
+      },
+      "object_id": "6",
+      "requested_by": 7,
+      "status": "approved",
+      "current_step": 1,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 19,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -9,
+        "time": "09:21"
+      },
+      "updated_at": {
+        "relative_days": -9,
+        "time": "08:40"
+      },
+      "company": 1,
+      "rule": 1,
+      "content_type": {
+        "app_label": "opportunities",
+        "model": "opportunity"
+      },
+      "object_id": "11",
+      "requested_by": 11,
+      "status": "pending",
+      "current_step": 1,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 20,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -9,
+        "time": "16:01"
+      },
+      "updated_at": {
+        "relative_days": -9,
+        "time": "10:39"
+      },
+      "company": 2,
+      "rule": 2,
+      "content_type": {
+        "app_label": "opportunities",
+        "model": "opportunity"
+      },
+      "object_id": "4",
+      "requested_by": 4,
+      "status": "pending",
+      "current_step": 2,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvalinstance",
+    "pk": 21,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -3,
+        "time": "09:59"
+      },
+      "updated_at": {
+        "relative_days": -3,
+        "time": "17:11"
+      },
+      "company": 2,
+      "rule": 2,
+      "content_type": {
+        "app_label": "opportunities",
+        "model": "opportunity"
+      },
+      "object_id": "56",
+      "requested_by": 20,
+      "status": "approved",
+      "current_step": 2,
+      "delegated_approver": null
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 1,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -8,
+        "time": "13:34"
+      },
+      "updated_at": {
+        "relative_days": -8,
+        "time": "08:59"
+      },
+      "company": 1,
+      "instance": 1,
+      "step": 3,
+      "decided_by": 14,
+      "decision": "approve",
+      "comment": "Reviewed the details, approving.",
+      "decided_at": "2026-11-15T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 2,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -15,
+        "time": "09:59"
+      },
+      "updated_at": {
+        "relative_days": -15,
+        "time": "09:44"
+      },
+      "company": 1,
+      "instance": 2,
+      "step": 3,
+      "decided_by": 19,
+      "decision": "approve",
+      "comment": "Reviewed the details, approving.",
+      "decided_at": "2026-11-08T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 3,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -19,
+        "time": "11:19"
+      },
+      "updated_at": {
+        "relative_days": -19,
+        "time": "16:08"
+      },
+      "company": 1,
+      "instance": 4,
+      "step": 3,
+      "decided_by": 5,
+      "decision": "approve",
+      "comment": "Looks good to me.",
+      "decided_at": "2026-11-04T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 4,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -18,
+        "time": "17:51"
+      },
+      "updated_at": {
+        "relative_days": -18,
+        "time": "08:22"
+      },
+      "company": 1,
+      "instance": 4,
+      "step": 4,
+      "decided_by": 1,
+      "decision": "approve",
+      "comment": "Approved.",
+      "decided_at": "2026-11-05T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 5,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -20,
+        "time": "15:06"
+      },
+      "updated_at": {
+        "relative_days": -20,
+        "time": "16:28"
+      },
+      "company": 1,
+      "instance": 5,
+      "step": 3,
+      "decided_by": 5,
+      "decision": "approve",
+      "comment": "Reviewed the details, approving.",
+      "decided_at": "2026-11-03T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 6,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -6,
+        "time": "09:24"
+      },
+      "updated_at": {
+        "relative_days": -6,
+        "time": "10:51"
+      },
+      "company": 1,
+      "instance": 6,
+      "step": 3,
+      "decided_by": 7,
+      "decision": "approve",
+      "comment": "Approved.",
+      "decided_at": "2026-11-17T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 7,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -5,
+        "time": "09:34"
+      },
+      "updated_at": {
+        "relative_days": -5,
+        "time": "14:56"
+      },
+      "company": 1,
+      "instance": 6,
+      "step": 4,
+      "decided_by": 1,
+      "decision": "reject",
+      "comment": "Rejected - terms not acceptable.",
+      "decided_at": "2026-11-18T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 8,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -18,
+        "time": "09:35"
+      },
+      "updated_at": {
+        "relative_days": -18,
+        "time": "17:02"
+      },
+      "company": 2,
+      "instance": 7,
+      "step": 5,
+      "decided_by": 20,
+      "decision": "approve",
+      "comment": "Approved - within policy.",
+      "decided_at": "2026-11-05T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 9,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -1,
+        "time": "08:10"
+      },
+      "updated_at": {
+        "relative_days": -1,
+        "time": "09:51"
+      },
+      "company": 2,
+      "instance": 8,
+      "step": 5,
+      "decided_by": 8,
+      "decision": "approve",
+      "comment": "Reviewed the details, approving.",
+      "decided_at": "2026-11-22T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 10,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -13,
+        "time": "16:38"
+      },
+      "updated_at": {
+        "relative_days": -13,
+        "time": "16:03"
+      },
+      "company": 1,
+      "instance": 10,
+      "step": 7,
+      "decided_by": 19,
+      "decision": "approve",
+      "comment": "Reviewed the details, approving.",
+      "decided_at": "2026-11-10T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 11,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -20,
+        "time": "10:43"
+      },
+      "updated_at": {
+        "relative_days": -20,
+        "time": "12:45"
+      },
+      "company": 1,
+      "instance": 11,
+      "step": 7,
+      "decided_by": 10,
+      "decision": "approve",
+      "comment": "Approved.",
+      "decided_at": "2026-11-03T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 12,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -12,
+        "time": "13:05"
+      },
+      "updated_at": {
+        "relative_days": -12,
+        "time": "12:17"
+      },
+      "company": 1,
+      "instance": 13,
+      "step": 7,
+      "decided_by": 25,
+      "decision": "approve",
+      "comment": "Approved - within policy.",
+      "decided_at": "2026-11-11T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 13,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -11,
+        "time": "14:10"
+      },
+      "updated_at": {
+        "relative_days": -11,
+        "time": "16:37"
+      },
+      "company": 1,
+      "instance": 13,
+      "step": 8,
+      "decided_by": 1,
+      "decision": "approve",
+      "comment": "Reviewed the details, approving.",
+      "decided_at": "2026-11-12T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 14,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -15,
+        "time": "13:06"
+      },
+      "updated_at": {
+        "relative_days": -15,
+        "time": "14:59"
+      },
+      "company": 2,
+      "instance": 14,
+      "step": 9,
+      "decided_by": 4,
+      "decision": "approve",
+      "comment": "Looks good to me.",
+      "decided_at": "2026-11-08T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 15,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -20,
+        "time": "17:18"
+      },
+      "updated_at": {
+        "relative_days": -20,
+        "time": "15:42"
+      },
+      "company": 2,
+      "instance": 15,
+      "step": 9,
+      "decided_by": 8,
+      "decision": "approve",
+      "comment": "Looks good to me.",
+      "decided_at": "2026-11-03T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 16,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -5,
+        "time": "08:52"
+      },
+      "updated_at": {
+        "relative_days": -5,
+        "time": "14:30"
+      },
+      "company": 1,
+      "instance": 18,
+      "step": 1,
+      "decided_by": 7,
+      "decision": "approve",
+      "comment": "Reviewed the details, approving.",
+      "decided_at": "2026-11-18T14:00:00Z"
+    }
+  },
+  {
+    "model": "approvals.approvaldecision",
+    "pk": 17,
+    "fields": {
+      "is_active": true,
+      "additional_info": null,
+      "created_by": 1,
+      "updated_by": 1,
+      "created_at": {
+        "relative_days": -2,
+        "time": "12:12"
+      },
+      "updated_at": {
+        "relative_days": -2,
+        "time": "12:31"
+      },
+      "company": 2,
+      "instance": 21,
+      "step": 2,
+      "decided_by": 20,
+      "decision": "approve",
+      "comment": "Approved.",
+      "decided_at": "2026-11-21T14:00:00Z"
+    }
+  }
+]

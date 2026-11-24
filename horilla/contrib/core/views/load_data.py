@@ -2,15 +2,16 @@
 
 # Standard library imports
 import json
-import random
 import tempfile
-from datetime import timedelta
+from datetime import datetime, timedelta
+from datetime import timezone as dt_timezone
 from pathlib import Path
 
 # Third-party imports (Django)
 from django.conf import settings
 from django.contrib import messages
 from django.core.management import call_command
+from django.utils.module_loading import import_string
 
 # First party imports (Horilla)
 from horilla.apps import apps
@@ -45,29 +46,64 @@ def apply_product_name_to_companies(data):
                 item["fields"]["name"] = product_name + name[len("Horilla") :]
 
 
-def inject_timestamps_into_fixture_data(data):
+def _is_relative_date(value):
+    """True for a ``{"relative_days": N, "time": "HH:MM"}`` fixture marker."""
+    return (
+        isinstance(value, dict)
+        and "relative_days" in value
+        and set(value) <= {"relative_days", "time"}
+    )
+
+
+def resolve_relative_dates_in_fixture_data(data):
     """
-    Inject current created_at and updated_at into fixture data so that
-    every loaded record gets current timestamps
-    For records with close_date set close_date to
-    created_at + a random number of days (between 8 and 28).
+    Replace relative date markers in fixture field data with real dates.
+
+    Demo fixtures cannot hold fixed dates, they would be stale as soon as the
+    data is loaded a day later. A field value of
+    ``{"relative_days": -3, "time": "09:30"}`` becomes the date three days
+    before the day of loading at 09:30 (UTC), and without ``time`` a plain
+    date. A created / updated time is never later than now.
     """
     if not isinstance(data, list):
         return data
     now = timezone.now()
-    now_iso = now.isoformat()
+    today = timezone.localdate()
+    for item in data:
+        if not (isinstance(item, dict) and "fields" in item):
+            continue
+        for key, value in item["fields"].items():
+            if not _is_relative_date(value):
+                continue
+            day = today + timedelta(days=int(value["relative_days"]))
+            if "time" not in value:
+                item["fields"][key] = day.isoformat()
+                continue
+            hour, minute = (int(part) for part in value["time"].split(":")[:2])
+            moment = datetime(
+                day.year, day.month, day.day, hour, minute, tzinfo=dt_timezone.utc
+            )
+            if key in ("created_at", "updated_at"):
+                moment = min(moment, now)
+            item["fields"][key] = moment.isoformat().replace("+00:00", "Z")
+    return data
+
+
+def inject_timestamps_into_fixture_data(data):
+    """
+    Give fixture rows that carry a fixed created_at / updated_at the current
+    time, so loaded records have up-to-date timestamps. Values that are
+    relative date markers are resolved separately and left alone here.
+    """
+    if not isinstance(data, list):
+        return data
+    now_iso = timezone.now().isoformat()
     for item in data:
         if isinstance(item, dict) and "fields" in item:
             fields = item["fields"]
-            if "created_at" in fields:
-                fields["created_at"] = now_iso
-            if "updated_at" in fields:
-                fields["updated_at"] = now_iso
-            if "close_date" in fields:
-                days_ahead = random.randint(8, 28)
-                fields["close_date"] = (
-                    (now + timedelta(days=days_ahead)).date().isoformat()
-                )
+            for key in ("created_at", "updated_at"):
+                if key in fields and not _is_relative_date(fields[key]):
+                    fields[key] = now_iso
     return data
 
 
@@ -91,6 +127,104 @@ def resolve_content_type_refs_in_fixture_data(data):
                 ).first()
                 fields[key] = content_type.pk if content_type else None
     return data
+
+
+def _content_type_model(ref):
+    """Model class named by a content type reference (app_label/model dict or pk)."""
+    if isinstance(ref, dict):
+        try:
+            return apps.get_model(ref["app_label"], ref["model"])
+        except (LookupError, KeyError):
+            return None
+    content_type = HorillaContentType.objects.filter(pk=ref).first()
+    return content_type.model_class() if content_type else None
+
+
+def drop_rows_with_missing_references(data):
+    """
+    Make a fixture safe to load when the records it points at were not loaded.
+
+    Each module's record count is chosen separately, so a row can point at a
+    record that is not in the database (and not in this file). Looking at the
+    model's own fields:
+
+    - an optional foreign key to a missing record is cleared;
+    - a required foreign key, or a generic (content type + object id) link, to a
+      missing record drops the row, together with the rows that point at it.
+    """
+    # Local import: GenericForeignKey lives in the contenttypes app.
+    from django.contrib.contenttypes.fields import GenericForeignKey
+
+    rows = [
+        item
+        for item in data
+        if isinstance(item, dict) and item.get("model") and "fields" in item
+    ]
+    models = {}
+    for item in rows:
+        if item["model"] not in models:
+            try:
+                models[item["model"]] = apps.get_model(item["model"])
+            except LookupError:
+                models[item["model"]] = None
+
+    in_file = {}
+    for item in rows:
+        if "pk" in item:
+            in_file.setdefault(models[item["model"]], set()).add(str(item["pk"]))
+    dropped = {}  # model class -> pks of rows dropped from this file
+    in_database = {}
+
+    def exists(model_class, pk):
+        pk = str(pk)
+        if pk in dropped.get(model_class, ()):
+            return False
+        if pk in in_file.get(model_class, ()):
+            return True
+        key = (model_class, pk)
+        if key not in in_database:
+            try:
+                in_database[key] = model_class._base_manager.filter(pk=pk).exists()
+            except (ValueError, TypeError):
+                in_database[key] = False
+        return in_database[key]
+
+    removed = set()
+    changed = True
+    while changed:
+        changed = False
+        for index, item in enumerate(rows):
+            model_class = models[item["model"]]
+            if index in removed or model_class is None:
+                continue
+            fields = item["fields"]
+            drop = False
+            for field in model_class._meta.concrete_fields:
+                value = fields.get(field.name)
+                if not field.is_relation or value is None or isinstance(value, dict):
+                    continue
+                if exists(field.related_model, value):
+                    continue
+                if field.null:
+                    fields[field.name] = None
+                else:
+                    drop = True
+            for generic in model_class._meta.private_fields:
+                if drop or not isinstance(generic, GenericForeignKey):
+                    continue
+                ct_ref = fields.get(generic.ct_field)
+                object_id = fields.get(generic.fk_field)
+                if ct_ref is None or object_id in (None, ""):
+                    continue
+                target = _content_type_model(ct_ref)
+                drop = target is None or not exists(target, object_id)
+            if drop:
+                removed.add(index)
+                changed = True
+                if "pk" in item:
+                    dropped.setdefault(model_class, set()).add(str(item["pk"]))
+    dropped_items = [rows[i] for i in removed]
+    data[:] = [item for item in data if not any(item is gone for gone in dropped_items)]
 
 
 class LoadDatabaseConditionView(View):
@@ -275,6 +409,32 @@ class LoadDemoDatabase(View):
 
         return None
 
+    def get_file_config(self, filename):
+        """The demo_data config an app declared for this data file, if any."""
+        filename = Path(filename).name
+        for app_config in apps.get_app_configs():
+            demo_data = getattr(app_config, "demo_data", None)
+            if not demo_data:
+                continue
+            configs = demo_data if isinstance(demo_data, list) else [demo_data]
+            for cfg in configs:
+                if filename in [Path(f[1]).name for f in cfg.get("files", [])]:
+                    return cfg
+        return None
+
+    def run_prepare_hook(self, filename, data):
+        """
+        Let the app that owns a data file adjust its rows before they are loaded.
+
+        An app sets ``"prepare": "dotted.path.to.function"`` in its demo_data
+        config; the function receives the list of fixture rows and edits it in
+        place. This keeps app specific rules out of the core loader.
+        """
+        cfg = self.get_file_config(filename) or {}
+        hook = cfg.get("prepare")
+        if hook:
+            import_string(hook)(data)
+
     def get_model_limit(self, filename, data_config):
         """
         Get the limit for number of records to load based on file type.
@@ -301,7 +461,10 @@ class LoadDemoDatabase(View):
             return
 
         data_to_load = data[:limit] if limit is not None else data
+        drop_rows_with_missing_references(data_to_load)
+        self.run_prepare_hook(filename, data_to_load)
         inject_timestamps_into_fixture_data(data_to_load)
+        resolve_relative_dates_in_fixture_data(data_to_load)
         apply_product_name_to_companies(data_to_load)
         resolve_content_type_refs_in_fixture_data(data_to_load)
 

@@ -12,8 +12,15 @@
             "updated_by": null,
             "title": "Opportunity Field Review",
             "method_title": "opportunity_field_review",
-            "model": {"app_label": "opportunities", "model": "opportunity"},
-            "review_fields": ["amount", "close_date", "stage"],
+            "model": {
+                "app_label": "opportunities",
+                "model": "opportunity"
+            },
+            "review_fields": [
+                "amount",
+                "stage",
+                "probability"
+            ],
             "notify_on_submission": true,
             "notify_on_approval": true,
             "notify_on_rejection": true
@@ -33,7 +40,10 @@
             "reviews": 1,
             "approver_type": "role",
             "approver_users": [],
-            "approver_roles": [7]
+            "approver_roles": [
+                6,
+                7
+            ]
         }
     },
     {
@@ -67,9 +77,9 @@
             "updated_at": "2025-09-18T03:04:11.695Z",
             "updated_by": null,
             "review_rule": 1,
-            "field": "stage",
-            "operator": "exact",
-            "value": "11",
+            "field": "probability",
+            "operator": "gte",
+            "value": "20",
             "logical_operator": "and",
             "order": 0
         }
@@ -87,8 +97,15 @@
             "updated_by": null,
             "title": "Deal Terms Review",
             "method_title": "deal_terms_review",
-            "model": {"app_label": "opportunities", "model": "opportunity"},
-            "review_fields": ["amount", "close_date", "stage"],
+            "model": {
+                "app_label": "opportunities",
+                "model": "opportunity"
+            },
+            "review_fields": [
+                "amount",
+                "stage",
+                "probability"
+            ],
             "notify_on_submission": true,
             "notify_on_approval": true,
             "notify_on_rejection": true
@@ -108,7 +125,10 @@
             "reviews": 2,
             "approver_type": "role",
             "approver_users": [],
-            "approver_roles": [13]
+            "approver_roles": [
+                12,
+                13
+            ]
         }
     },
     {
@@ -142,9 +162,9 @@
             "updated_at": "2025-09-18T03:04:11.695Z",
             "updated_by": null,
             "review_rule": 2,
-            "field": "stage",
-            "operator": "exact",
-            "value": "21",
+            "field": "probability",
+            "operator": "gte",
+            "value": "20",
             "logical_operator": "and",
             "order": 0
         }
@@ -162,8 +182,15 @@
             "updated_by": null,
             "title": "Lead Qualification Review",
             "method_title": "lead_qualification_review",
-            "model": {"app_label": "leads", "model": "lead"},
-            "review_fields": ["lead_status", "lead_source", "annual_revenue"],
+            "model": {
+                "app_label": "leads",
+                "model": "lead"
+            },
+            "review_fields": [
+                "lead_status",
+                "lead_source",
+                "annual_revenue"
+            ],
             "trigger_on_create": true,
             "trigger_on_edit": true,
             "notify_on_submission": true,
@@ -185,7 +212,10 @@
             "reviews": 3,
             "approver_type": "role",
             "approver_users": [],
-            "approver_roles": [7]
+            "approver_roles": [
+                6,
+                7
+            ]
         }
     },
     {
@@ -219,9 +249,9 @@
             "updated_at": "2025-09-18T03:04:11.695Z",
             "updated_by": null,
             "review_rule": 3,
-            "field": "lead_status",
-            "operator": "exact",
-            "value": "3",
+            "field": "annual_revenue",
+            "operator": "gte",
+            "value": "100000",
             "logical_operator": "and",
             "order": 0
         }
@@ -239,8 +269,15 @@
             "updated_by": null,
             "title": "Prospect Quality Review",
             "method_title": "prospect_quality_review",
-            "model": {"app_label": "leads", "model": "lead"},
-            "review_fields": ["lead_status", "lead_source", "annual_revenue"],
+            "model": {
+                "app_label": "leads",
+                "model": "lead"
+            },
+            "review_fields": [
+                "lead_status",
+                "lead_source",
+                "annual_revenue"
+            ],
             "trigger_on_create": true,
             "trigger_on_edit": true,
             "notify_on_submission": true,
@@ -262,7 +299,10 @@
             "reviews": 4,
             "approver_type": "role",
             "approver_users": [],
-            "approver_roles": [13]
+            "approver_roles": [
+                12,
+                13
+            ]
         }
     },
     {
@@ -296,9 +336,9 @@
             "updated_at": "2025-09-18T03:04:11.695Z",
             "updated_by": null,
             "review_rule": 4,
-            "field": "lead_status",
-            "operator": "exact",
-            "value": "9",
+            "field": "annual_revenue",
+            "operator": "gte",
+            "value": "100000",
             "logical_operator": "and",
             "order": 0
         }
@@ -316,8 +356,15 @@
             "updated_by": null,
             "title": "Account Details Review",
             "method_title": "account_details_review",
-            "model": {"app_label": "accounts", "model": "account"},
-            "review_fields": ["name", "annual_revenue", "industry"],
+            "model": {
+                "app_label": "accounts",
+                "model": "account"
+            },
+            "review_fields": [
+                "name",
+                "annual_revenue",
+                "industry"
+            ],
             "trigger_on_create": true,
             "trigger_on_edit": false,
             "notify_on_submission": true,
@@ -339,7 +386,10 @@
             "reviews": 5,
             "approver_type": "role",
             "approver_users": [],
-            "approver_roles": [7]
+            "approver_roles": [
+                6,
+                7
+            ]
         }
     },
     {
@@ -393,8 +443,15 @@
             "updated_by": null,
             "title": "Contact Verification Review",
             "method_title": "contact_verification_review",
-            "model": {"app_label": "contacts", "model": "contact"},
-            "review_fields": ["email", "contact_number", "title"],
+            "model": {
+                "app_label": "contacts",
+                "model": "contact"
+            },
+            "review_fields": [
+                "email",
+                "contact_number",
+                "title"
+            ],
             "trigger_on_create": true,
             "trigger_on_edit": true,
             "notify_on_submission": true,
@@ -416,7 +473,10 @@
             "reviews": 6,
             "approver_type": "role",
             "approver_users": [],
-            "approver_roles": [13]
+            "approver_roles": [
+                12,
+                13
+            ]
         }
     },
     {

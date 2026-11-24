@@ -337,7 +337,7 @@ def _sync_runtime_activities_for_followup(followup):
 @receiver(post_save)
 def cadence_apply_on_record_save(sender, instance, **kwargs):
     """On save of any record, trigger cadence FU1 creation if conditions are met and not already created."""
-    if _is_migrate_command():
+    if _is_migrate_command() or kwargs.get("raw"):
         return
     if sender in {Cadence, Activity}:
         return
@@ -383,7 +383,7 @@ def cadence_progress_on_activity_status(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Cadence)
 def cadence_backfill_existing_records(sender, instance, **kwargs):
     """When cadence is saved/updated, create FU1 runtime activities for matching existing records."""
-    if _is_migrate_command() or not instance.is_active:
+    if _is_migrate_command() or kwargs.get("raw") or not instance.is_active:
         return
     transaction.on_commit(lambda: _trigger_initial_followups_for_cadence(instance))
 
@@ -391,7 +391,7 @@ def cadence_backfill_existing_records(sender, instance, **kwargs):
 @receiver(post_save, sender=CadenceFollowUp)
 def cadence_fu1_backfill_on_followup_save(sender, instance, **kwargs):
     """When FU1 is saved, backfill initial runtime activities for matching existing records."""
-    if _is_migrate_command():
+    if _is_migrate_command() or kwargs.get("raw"):
         return
     if instance.followup_number != 1 or not instance.cadence_id:
         return
@@ -405,7 +405,7 @@ def cadence_fu1_backfill_on_followup_save(sender, instance, **kwargs):
 @receiver(post_save, sender=CadenceFollowUp)
 def cadence_runtime_sync_on_followup_update(sender, instance, **kwargs):
     """Sync existing runtime activities whenever a follow-up is updated."""
-    if _is_migrate_command():
+    if _is_migrate_command() or kwargs.get("raw"):
         return
     try:
         _sync_runtime_activities_for_followup(instance)

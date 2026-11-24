@@ -37,6 +37,8 @@ from horilla_crm.opportunities.models import Opportunity
 class OpportunityView(LoginRequiredMixin, HorillaView):
     """Render the opportunities page."""
 
+    default_layout = "kanban"
+
     nav_url = reverse_lazy("opportunities:opportunities_nav")
     list_url = reverse_lazy("opportunities:opportunities_list")
     kanban_url = reverse_lazy("opportunities:opportunities_kanban")
@@ -56,6 +58,8 @@ class OpportunityView(LoginRequiredMixin, HorillaView):
 )
 class OpportunityNavbar(LoginRequiredMixin, HorillaNavView):
     """Navigation bar view for opportunities."""
+
+    default_layout = "kanban"
 
     search_url = reverse_lazy("opportunities:opportunities_list")
     main_url = reverse_lazy("opportunities:opportunities_view")

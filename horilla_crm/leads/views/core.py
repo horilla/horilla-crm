@@ -122,6 +122,8 @@ class LeadView(LoginRequiredMixin, HorillaView):
     Render the lead page.
     """
 
+    default_layout = "kanban"
+
     nav_url = reverse_lazy("leads:leads_nav")
     list_url = reverse_lazy("leads:leads_list")
     kanban_url = reverse_lazy("leads:leads_kanban")
@@ -158,6 +160,8 @@ class LeadView(LoginRequiredMixin, HorillaView):
 )
 class LeadNavbar(LoginRequiredMixin, HorillaNavView):
     """Lead Navbar"""
+
+    default_layout = "kanban"
 
     search_url = reverse_lazy("leads:leads_list")
     main_url = reverse_lazy("leads:leads_view")

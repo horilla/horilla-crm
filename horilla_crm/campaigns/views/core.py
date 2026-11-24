@@ -53,6 +53,8 @@ class CampaignView(LoginRequiredMixin, HorillaView):
     Render the campaign page
     """
 
+    default_layout = "kanban"
+
     nav_url = reverse_lazy("campaigns:campaign_nav_view")
     list_url = reverse_lazy("campaigns:campaign_list_view")
     kanban_url = reverse_lazy("campaigns:campaign_kanban_view")
@@ -72,6 +74,8 @@ class CampaignNavbar(LoginRequiredMixin, HorillaNavView):
     """
     Navbar View for Campaign page
     """
+
+    default_layout = "kanban"
 
     search_url = reverse_lazy("campaigns:campaign_list_view")
     main_url = reverse_lazy("campaigns:campaign_view")

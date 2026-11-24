@@ -56,7 +56,7 @@ def build_panel_context(user, raw_path=""):
             "start_url": tour.start_link(),
         }
         on_page = bool(view_name) and (
-            view_name in tour.match
+            tour.matches(view_name)
             or bool(tour.open_with and tour.open_with["from"] == view_name)
         )
         groups.setdefault(on_page_name if on_page else str(tour.group), []).append(card)
@@ -105,7 +105,7 @@ class TourCurrentView(LoginRequiredMixin, View):
             auto = [
                 tour.key
                 for tour in get_tours_for(request.user)
-                if tour.auto_start and view_name in tour.match and tour.key not in seen
+                if tour.auto_start and tour.matches(view_name) and tour.key not in seen
             ]
         return JsonResponse(
             {"view_name": view_name, "auto": auto, "labels": ui_labels()}
@@ -120,7 +120,7 @@ class TourDefinitionView(LoginRequiredMixin, View):
         tour = get_visible_tour(key, request.user)
         if tour is None:
             return JsonResponse({"error": "Unknown tour"}, status=404)
-        data = tour.to_dict(request.user)
+        data = tour.to_dict()
         data["labels"] = ui_labels()
         return JsonResponse(data)
 

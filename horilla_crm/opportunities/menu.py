@@ -27,7 +27,7 @@ class OpportunitiesSubSection:
     # Identity / placement
     section = "sales"
     app_label = "opportunities"
-    position = 3
+    position = 2
 
     # Display
     verbose_name = _("Opportunities")

@@ -38,7 +38,7 @@ class CampaignSubSection:
     # Identity / placement
     section = "sales"
     app_label = "campaigns"
-    position = 2
+    position = 3
 
     # Display
     verbose_name = _("Campaigns")

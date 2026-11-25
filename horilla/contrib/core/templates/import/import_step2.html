@@ -1,19 +1,16 @@
 <div id="step2">
     {% if single_import %}
-        <div class="flex justify-between items-center mb-2">
-            <h2 class="text-md font-semibold">
-                {% blocktrans with module=selected_module %}Import {{ module }}{% endblocktrans %}
-            </h2>
-            <button
-                type="button"
-                onclick="closeModal()"
-                class="text-gray-500 hover:text-red-500 text-xl cursor-pointer"
-            >
-                <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-            </button>
-        </div>
+        {% trans "Import" as import_word %}
+        {% trans selected_module as module_word %}
+        {% modal_header import_word|concat:" "|concat:module_word %}
     {% endif %}
     {% include "import/_stepper.html" with current_step=2 %}
+
+    <p class="text-sm text-gray-600 mb-3">
+        {% trans "Match each field to a column from your file. Fields marked" %}
+        <span class="text-red-500">*</span>
+        {% trans "are required. If a column is left empty in your file, the Fallback Value will be used instead." %}
+    </p>
 
     <form hx-post="{% url 'core:import_step2' %}" hx-target="#import-container" hx-swap="innerHTML">
         {% csrf_token %}
@@ -24,13 +21,14 @@
                 <thead class="sticky top-0 bg-primary-300 text-primary-600 z-50">
                     <tr>
                         <th class="text-sm font-bold text-start p-3 bg-primary-300 z-50 rounded-ss-md">
-                            {% trans "Model Field" %}
+                            {% trans "Field" %}
                         </th>
-                        <th class="text-sm font-bold text-start p-3 bg-primary-300 z-50">{% trans "File Header" %}</th>
+                        <th class="text-sm font-bold text-start p-3 bg-primary-300 z-50">{% trans "Column in Your File" %}</th>
                         <th class="text-sm font-bold text-start p-3 bg-primary-300 z-50">
-                            {% trans "Default Values" %}
+                            {% trans "Fallback Value" %}
+                            <span class="block text-xs font-normal">{% trans "Used when the file cell is empty" %}</span>
                         </th>
-                        <th class="text-sm font-bold text-start p-3 bg-primary-300 z-50">{% trans "Sample Data" %}</th>
+                        <th class="text-sm font-bold text-start p-3 bg-primary-300 z-50">{% trans "Example from File" %}</th>
                         <th class="text-sm font-bold text-start p-3 bg-primary-300 z-50">{% trans "Status" %}</th>
                     </tr>
                 </thead>
@@ -56,7 +54,7 @@
                                     hx-trigger="change"
                                     hx-swap="innerHTML"
                                 >
-                                    <option value="">{% trans "Select Header" %}</option>
+                                    <option value="">{% trans "Select Column" %}</option>
                                     {% for header in headers %}
                                         <option
                                             value="{{ header }}"
@@ -82,7 +80,7 @@
                                         name="replace_{{ field.name }}"
                                         class="js-example-basic-single headselect w-full"
                                     >
-                                        <option value="">{% trans "Select Default Value" %}</option>
+                                        <option value="">{% trans "No fallback" %}</option>
                                         {% for choice in field.choices %}
                                             <option
                                                 value="{{ choice.value }}"
@@ -99,7 +97,7 @@
                                         name="replace_{{ field.name }}"
                                         class="js-example-basic-single headselect w-full"
                                     >
-                                        <option value="">{% trans "Select Default Value" %}</option>
+                                        <option value="">{% trans "No fallback" %}</option>
                                         {% for fk_choice in field.foreign_key_choices %}
                                             <option
                                                 value="{{ fk_choice.id }}"
@@ -115,7 +113,7 @@
                                     <input
                                         type="text"
                                         name="replace_{{ field.name }}"
-                                        placeholder='{% trans "Default Value" %}'
+                                        placeholder='{% trans "Fallback value (optional)" %}'
                                         value="{% if replace_values %}{{ replace_values|lookup:field.name|default:'' }}{% endif %}"
                                         class="text-color-600 px-2 py-1 border border-dark-50 rounded-md text-xs w-full"
                                     >
@@ -132,7 +130,7 @@
                                             {% endfor %}
                                         {% endfor %}
                                     {% else %}
-                                        No sample data
+                                        {% trans "No example" %}
                                     {% endif %}
                                 {% endwith %}
                             </td>

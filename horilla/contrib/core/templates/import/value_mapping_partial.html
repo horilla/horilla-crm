@@ -1,10 +1,13 @@
 <div id="value-mapping-{{ field.name }}" class="{% if field.unique_file_values %}block{% else %}hidden{% endif %}">
-    <h4 class="text-sm font-semibold mb-2">{% trans "Map Values for" %} {{ field.verbose_name }}</h4>
+    <h4 class="text-sm font-semibold mb-1">{% trans "Match values for" %} {{ field.verbose_name }}</h4>
+    <p class="text-xs text-gray-500 mb-2">
+        {% trans "These values were found in your file. Choose what each one should become." %}
+    </p>
     <table class="w-full border border-[#efefef]">
         <thead>
             <tr>
-                <th class="text-xs p-2 border border-[#efefef]">{% trans "File Value" %}</th>
-                <th class="text-xs p-2 border border-[#efefef]">{% trans "Replace With" %}</th>
+                <th class="text-xs p-2 border border-[#efefef]">{% trans "Value in Your File" %}</th>
+                <th class="text-xs p-2 border border-[#efefef]">{% trans "Import as" %}</th>
                 <th class="text-xs p-2 border border-[#efefef]">{% trans "Status" %}</th>
             </tr>
         </thead>

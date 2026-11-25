@@ -1,19 +1,10 @@
 {% comment %}A step posts into #import-container and swaps its inner HTML, so re-rendering this page (e.g. on a validation error) must not add a second wrapper, which would double the padding.{% endcomment %}
-{% if request.META.HTTP_HX_TARGET != "import-container" %}<div id="import-container" class="{% if single_import %}p-5{% endif %}">{% endif %}
+{% if request.META.HTTP_HX_TARGET != "import-container" %}{% if single_import %}{% comment %}Sits outside #import-container so the width survives step swaps; it leaves with the content when the modal closes.{% endcomment %}<style>#modalBox:has(#import-container) { max-width: 960px; width: 90vw; }</style>{% endif %}<div id="import-container" class="{% if single_import %}p-5{% endif %}">{% endif %}
     {% include "messages.html" %}
     {% if single_import %}
-        <div class="flex justify-between items-center mb-2">
-            <h2 class="text-md font-semibold">
-                {% blocktrans with module=selected_module %}Import {{ module }}{% endblocktrans %}
-            </h2>
-            <button
-                type="button"
-                onclick="closeModal()"
-                class="text-gray-500 hover:text-red-500 text-xl cursor-pointer"
-            >
-                <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-            </button>
-        </div>
+        {% trans "Import" as import_word %}
+        {% trans selected_module as module_word %}
+        {% modal_header import_word|concat:" "|concat:module_word %}
     {% endif %}
     <div class="{% if not single_import %} max-w-[100%] xl:max-w-[100%] m-auto {% endif %}pt-2" id="styled-task">
         <div id="step1">
@@ -48,7 +39,7 @@
                                 {% endfor %}
                             </select>
                             {% if error_message %}
-                                <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                                <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                                     {{ error_message }}
                                 </div>
                             {% endif %}

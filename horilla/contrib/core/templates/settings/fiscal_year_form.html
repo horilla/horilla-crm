@@ -16,7 +16,7 @@
         <div class="p-5">
             {% modal_header form_title %}
             {% if form.non_field_errors %}
-                <div class="bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm mb-4">
+                <div class="bg-red-50 text-red-500 rounded px-4 py-3 text-sm mb-4">
                     {% for error in form.non_field_errors %}
                         {{ error }}<br>
                     {% endfor %}
@@ -49,6 +49,7 @@
                             hx-trigger="change"
                         >
                             {% for value, label in form.fiscal_year_type.field.choices %}
+                                {% if value %}
                                 <option
                                     value="{{ value }}"
                                     {% if form.fiscal_year_type.value == value %}
@@ -57,10 +58,11 @@
                                 >
                                     {{ label }}
                                 </option>
+                                {% endif %}
                             {% endfor %}
                         </select>
                         {% if form.fiscal_year_type.errors %}
-                            <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                            <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                                 {% for error in form.fiscal_year_type.errors %}
                                     {{ error }}
                                 {% endfor %}

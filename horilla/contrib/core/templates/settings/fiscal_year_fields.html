@@ -17,15 +17,17 @@
                         required
                     {% endif %}
                 >
-                    <option value="">{% blocktrans with label=form.start_date_month.label %}Select {{ label }}{% endblocktrans %}</option>
+                    <option value="" data-hide-in-list>{% blocktrans with label=form.start_date_month.label %}Select {{ label }}{% endblocktrans %}</option>
                     {% for value, label in form.start_date_month.field.choices %}
+                        {% if value %}
                         <option value="{{ value }}" {% if form.start_date_month.value == value %}selected{% endif %}>
                             {{ label }}
                         </option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 {% if form.start_date_month.errors %}
-                    <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                    <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                         {% for error in form.start_date_month.errors %}
                             {{ error }}
                         {% endfor %}
@@ -50,8 +52,9 @@
                         required
                     {% endif %}
                 >
-                    <option value="">{% blocktrans with label=form.display_year_based_on.label %}Select {{ label }}{% endblocktrans %}</option>
+                    <option value="" data-hide-in-list>{% blocktrans with label=form.display_year_based_on.label %}Select {{ label }}{% endblocktrans %}</option>
                     {% for value, label in form.display_year_based_on.field.choices %}
+                        {% if value %}
                         <option
                             value="{{ value }}"
                             {% if form.display_year_based_on.value == value %}
@@ -60,10 +63,11 @@
                         >
                             {{ label }}
                         </option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 {% if form.display_year_based_on.errors %}
-                    <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                    <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                         {% for error in form.display_year_based_on.errors %}
                             {{ error }}
                         {% endfor %}
@@ -92,15 +96,17 @@
                         required
                     {% endif %}
                 >
-                    <option value="">{% blocktrans with label=form.format_type.label %}Select {{ label }}{% endblocktrans %}</option>
+                    <option value="" data-hide-in-list>{% blocktrans with label=form.format_type.label %}Select {{ label }}{% endblocktrans %}</option>
                     {% for value, label in form.format_type.field.choices %}
+                        {% if value %}
                         <option value="{{ value }}" {% if form.format_type.value == value %}selected{% endif %}>
                             {{ label }}
                         </option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 {% if form.format_type.errors %}
-                    <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                    <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                         {% for error in form.format_type.errors %}
                             {{ error }}
                         {% endfor %}
@@ -132,8 +138,9 @@
                             required
                         {% endif %}
                     >
-                        <option value="">{% blocktrans with label=form.year_based_format.label %}Select {{ label }}{% endblocktrans %}</option>
+                        <option value="" data-hide-in-list>{% blocktrans with label=form.year_based_format.label %}Select {{ label }}{% endblocktrans %}</option>
                         {% for value, label in form.year_based_format.field.choices %}
+                            {% if value %}
                             <option
                                 value="{{ value }}"
                                 {% if form.year_based_format.value == value %}
@@ -142,10 +149,11 @@
                             >
                                 {{ label }}
                             </option>
+                            {% endif %}
                         {% endfor %}
                     </select>
                     {% if form.year_based_format.errors %}
-                        <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                        <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                             {% for error in form.year_based_format.errors %}
                                 {{ error }}
                             {% endfor %}
@@ -190,8 +198,9 @@
                             required
                         {% endif %}
                     >
-                        <option value="">{% blocktrans with label=form.quarter_based_format.label %}Select {{ label }}{% endblocktrans %}</option>
+                        <option value="" data-hide-in-list>{% blocktrans with label=form.quarter_based_format.label %}Select {{ label }}{% endblocktrans %}</option>
                         {% for value, label in form.quarter_based_format.field.choices %}
+                            {% if value %}
                             <option
                                 value="{{ value }}"
                                 {% if form.quarter_based_format.value == value %}
@@ -200,10 +209,11 @@
                             >
                                 {{ label }}
                             </option>
+                            {% endif %}
                         {% endfor %}
                     </select>
                     {% if form.quarter_based_format.errors %}
-                        <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                        <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                             {% for error in form.quarter_based_format.errors %}
                                 {{ error }}
                             {% endfor %}
@@ -242,15 +252,17 @@
                         required
                     {% endif %}
                 >
-                    <option value="">{% blocktrans with label=form.start_date_month.label %}Select {{ label }}{% endblocktrans %}</option>
+                    <option value="" data-hide-in-list>{% blocktrans with label=form.start_date_month.label %}Select {{ label }}{% endblocktrans %}</option>
                     {% for value, label in form.start_date_month.field.choices %}
+                        {% if value %}
                         <option value="{{ value }}" {% if form.start_date_month.value == value %}selected{% endif %}>
                             {{ label }}
                         </option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 {% if form.start_date_month.errors %}
-                    <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                    <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                         {% for error in form.start_date_month.errors %}
                             {{ error }}
                         {% endfor %}
@@ -283,15 +295,17 @@
                         required
                     {% endif %}
                 >
-                    <option value="">{% blocktrans with label=form.week_start_day.label %}Select {{ label }}{% endblocktrans %}</option>
+                    <option value="" data-hide-in-list>{% blocktrans with label=form.week_start_day.label %}Select {{ label }}{% endblocktrans %}</option>
                     {% for value, label in form.week_start_day.field.choices %}
+                        {% if value %}
                         <option value="{{ value }}" {% if form.week_start_day.value == value %}selected{% endif %}>
                             {{ label }}
                         </option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 {% if form.week_start_day.errors %}
-                    <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                    <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                         {% for error in form.week_start_day.errors %}
                             {{ error }}
                         {% endfor %}
@@ -317,8 +331,9 @@
                         required
                     {% endif %}
                 >
-                    <option value="">{% blocktrans with label=form.display_year_based_on.label %}Select {{ label }}{% endblocktrans %}</option>
+                    <option value="" data-hide-in-list>{% blocktrans with label=form.display_year_based_on.label %}Select {{ label }}{% endblocktrans %}</option>
                     {% for value, label in form.display_year_based_on.field.choices %}
+                        {% if value %}
                         <option
                             value="{{ value }}"
                             {% if form.display_year_based_on.value == value %}
@@ -327,10 +342,11 @@
                         >
                             {{ label }}
                         </option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 {% if form.display_year_based_on.errors %}
-                    <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                    <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                         {% for error in form.display_year_based_on.errors %}
                             {{ error }}
                         {% endfor %}
@@ -353,15 +369,17 @@
                         required
                     {% endif %}
                 >
-                    <option value="">{% blocktrans with label=form.number_weeks_by.label %}Select {{ label }}{% endblocktrans %}</option>
+                    <option value="" data-hide-in-list>{% blocktrans with label=form.number_weeks_by.label %}Select {{ label }}{% endblocktrans %}</option>
                     {% for value, label in form.number_weeks_by.field.choices %}
+                        {% if value %}
                         <option value="{{ value }}" {% if form.number_weeks_by.value == value %}selected{% endif %}>
                             {{ label }}
                         </option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 {% if form.number_weeks_by.errors %}
-                    <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                    <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                         {% for error in form.number_weeks_by.errors %}
                             {{ error }}
                         {% endfor %}
@@ -392,8 +410,9 @@
                         required
                     {% endif %}
                 >
-                    <option value="">{% blocktrans with label=form.period_display_option.label %}Select {{ label }}{% endblocktrans %}</option>
+                    <option value="" data-hide-in-list>{% blocktrans with label=form.period_display_option.label %}Select {{ label }}{% endblocktrans %}</option>
                     {% for value, label in form.period_display_option.field.choices %}
+                        {% if value %}
                         <option
                             value="{{ value }}"
                             {% if form.period_display_option.value == value %}
@@ -402,6 +421,7 @@
                         >
                             {{ label }}
                         </option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 {% if preview_data.period_display %}
@@ -410,7 +430,7 @@
                     </p>
                 {% endif %}
                 {% if form.period_display_option.errors %}
-                    <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                    <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                         {% for error in form.period_display_option.errors %}
                             {{ error }}
                         {% endfor %}

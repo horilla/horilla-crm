@@ -347,6 +347,13 @@ function doBulkDeleteRequest(element) {
 }
 
 // Select2 formatting
+// Dropdown-list variant: a blank placeholder option marked data-hide-in-list stays as the
+// closed-select text but is not offered as a choice in the opened list.
+function formatResultOption(option) {
+    if (!option.id && $(option.element).is('[data-hide-in-list]')) return null;
+    return formatOption(option);
+}
+
 function formatOption(option) {
     if (!option.id) return option.text;
 
@@ -1814,7 +1821,7 @@ $(document).ready(function () {
 
     // Select2 Basic Initialization
     $('.js-example-basic-single:not(.select2-hidden-accessible)').select2({
-        templateResult: formatOption,
+        templateResult: formatResultOption,
         templateSelection: formatOption,
     });
 
@@ -2221,7 +2228,7 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
     });
 
     target.find(".js-example-basic-single:not(.select2-hidden-accessible)").select2({
-        templateResult: formatOption,
+        templateResult: formatResultOption,
         templateSelection: formatOption,
         width: "100%"
     });

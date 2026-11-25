@@ -33,7 +33,6 @@ class MeetingsCreateForm(
     form_class = MeetingsForm
     template_name = "meeting_create_form.html"
     save_and_new = False
-    modal_height = False
 
     @cached_property
     def form_url(self):

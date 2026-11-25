@@ -12,7 +12,7 @@
             {% modal_header form_title on_close="closeDynamicModal()" %}
 
             {% if form.non_field_errors %}
-                <div class="bg-primary-100 text-primary-600 px-4 py-2 rounded-lg text-sm mb-4">
+                <div class="bg-primary-100 text-primary-600 px-4 py-2 rounded-lg text-sm mb-4" data-form-error>
                     {% for error in form.non_field_errors %}
                         {{ error }}<br>
                     {% endfor %}
@@ -60,7 +60,7 @@
                                     {% endif %}
 
                                     {% if field.errors %}
-                                        <div class="text-red-500 text-xs mt-1">
+                                        <div class="text-red-500 text-xs mt-1" data-field-error>
                                             {% for error in field.errors %}
                                                 {{ error }}
                                             {% endfor %}

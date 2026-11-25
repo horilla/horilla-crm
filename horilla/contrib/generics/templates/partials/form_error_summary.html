@@ -1,0 +1,21 @@
+
+{% load i18n %}
+{% if form.errors %}
+    <div class="hidden has-[a]:flex bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm mb-4 me-2 items-center gap-3" role="alert">
+        <div class="font-semibold whitespace-nowrap">{% if form.errors|length == 1 %}{% trans "Please check this field:" %}{% else %}{% trans "Please check these fields:" %}{% endif %}</div>
+        <div class="flex flex-nowrap items-center gap-2 overflow-x-auto min-w-0">
+            {% for field in form %}
+                {% if not field.is_hidden and field.errors %}
+                    <a
+                        href="#{{ field.id_for_label }}"
+                        class="inline-flex items-center gap-1 pl-3 pr-2 py-0.5 rounded-full bg-white border border-red-200 text-red-700 text-xs font-medium whitespace-nowrap hover:border-red-600 transition-colors"
+                        onclick="var e=document.getElementById('{{ field.id_for_label }}'); if(e){e.scrollIntoView({behavior:'smooth',block:'center'}); e.focus({preventScroll:true});} return false;"
+                    >
+                        {{ field.label }}
+                        <svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4l6 6-6 6"/></svg>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

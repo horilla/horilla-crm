@@ -11,13 +11,38 @@ from zoneinfo import available_timezones
 
 # Third-party imports
 import pycountry
+import pytz
 
 # Third-party imports (Django)
 from django import forms
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
-TIMEZONE_CHOICES = sorted([(tz, tz) for tz in available_timezones()])
+# Legacy prefixes that pytz still lists: each name is an alias of a Region/City name
+# (US/Pacific is America/Los_Angeles) and "GMT" is the old name of UTC.
+_LEGACY_TIMEZONE_PREFIXES = ("US/", "Canada/")
+
+
+def _timezone_choices():
+    """
+    The time zones a user can pick: ``UTC`` and the ``Region/City`` names.
+
+    ``zoneinfo.available_timezones()`` also holds the server's ``localtime``,
+    duplicate aliases of UTC (``Universal``, ``Zulu``, ``UCT``, ``Greenwich``),
+    old abbreviations (``CET``, ``EST``, ``W-SU``), the ``Etc/GMT+n`` offsets and
+    renamed cities (``Asia/Calcutta``). ``pytz.common_timezones`` leaves those out,
+    so only its names that the system also knows are kept, minus the legacy
+    ``US/`` and ``Canada/`` aliases.
+    """
+    known = available_timezones()
+    return sorted(
+        (tz, tz)
+        for tz in pytz.common_timezones
+        if tz in known and tz != "GMT" and not tz.startswith(_LEGACY_TIMEZONE_PREFIXES)
+    )
+
+
+TIMEZONE_CHOICES = _timezone_choices()
 
 
 LANGUAGE_CHOICES = [

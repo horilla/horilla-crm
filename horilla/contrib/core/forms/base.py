@@ -168,40 +168,129 @@ class HolidayForm(HorillaModelForm):
             "weekly_days": CheckboxGridSelectMultiple(),
         }
 
-    FIELD_HELP_TEXTS = {
-        "frequency": _("How often the holiday repeats: weekly, monthly or yearly."),
-        "recurs_every_weeks": _("Repeat every this many weeks. 1 means every week."),
-        "weekly_days": _("Days of the week the holiday falls on in each repeat."),
-        "monthly_repeat_type": _(
-            "On Day repeats on a fixed date each month. On the repeats on a "
-            "weekday, such as the 2nd Monday."
-        ),
-        "monthly_day_of_month": _("Day of the month (1-31) the holiday falls on."),
-        "monthly_interval": _("Repeat every this many months. 1 means every month."),
-        "monthly_day_of_week": _("Weekday the holiday falls on, for example Monday."),
-        "monthly_week_of_month": _(
-            "Which occurrence of that weekday in the month, for example 2 for "
-            "the 2nd Monday."
-        ),
-        "yearly_repeat_type": _(
-            "On every repeats on a fixed date each year. On the repeats on a "
-            "weekday of a month, such as the 2nd Monday of July."
-        ),
-        "yearly_month": _("Month of the year the holiday falls in."),
-        "yearly_day_of_month": _("Day of the month (1-31) the holiday falls on."),
-        "yearly_day_of_week": _("Weekday the holiday falls on, for example Monday."),
-        "yearly_week_of_month": _(
-            "Which occurrence of that weekday in the month, for example 2 for "
-            "the 2nd Monday."
-        ),
+    # The number inputs show their range as a placeholder. They carry no ``min`` or ``max``:
+    # the browser would answer with its own bubble, which looks unlike every other error in
+    # the app and covers the Save button. ``Holiday.clean()`` checks the same limits and its
+    # message appears under the field, like the rest of the CRM's errors.
+    NUMBER_LIMITS = {
+        "recurs_every_weeks": Holiday.WEEKS_INTERVAL_RANGE,
+        "monthly_day_of_month": Holiday.DAY_OF_MONTH_RANGE,
+        "monthly_interval": Holiday.MONTHS_INTERVAL_RANGE,
+        "monthly_week_of_month": Holiday.WEEK_OF_MONTH_RANGE,
+        "yearly_day_of_month": Holiday.DAY_OF_MONTH_RANGE,
+        "yearly_week_of_month": Holiday.WEEK_OF_MONTH_RANGE,
     }
+
+    # Labels that say what the number counts. Placeholders and help are built below.
+    FIELD_LABELS = {
+        "recurs_every_weeks": _("Repeat Every (Weeks)"),
+        "monthly_interval": _("Repeat Every (Months)"),
+    }
+
+    @classmethod
+    def field_help_texts(cls):
+        """
+        What each field means, in plain text (it is shown as a tooltip). The numbers come
+        from ``NUMBER_LIMITS`` and ``Holiday``, the same limits ``Holiday.clean()`` checks.
+        """
+        low_year, high_year = Holiday.YEAR_RANGE
+        day = {
+            "low": Holiday.DAY_OF_MONTH_RANGE[0],
+            "high": Holiday.DAY_OF_MONTH_RANGE[1],
+        }
+        week = {
+            "low": Holiday.WEEK_OF_MONTH_RANGE[0],
+            "high": Holiday.WEEK_OF_MONTH_RANGE[1],
+        }
+        weekday = _("The weekday the holiday falls on, for example Monday.")
+        nth = (
+            _(
+                "Which one in the month, from %(low)s to %(high)s: 1 is the first, 2 the "
+                "second, and so on. A month does not always have a fifth."
+            )
+            % week
+        )
+        return {
+            "name": _("The name of the holiday, for example Independence Day."),
+            "start_date": _(
+                "Date and time the holiday begins, between the years %(low)s and %(high)s. "
+                "For a full day off, start at 00:00."
+            )
+            % {"low": low_year, "high": high_year},
+            "end_date": _(
+                "Date and time the holiday ends. It cannot be before the start or more "
+                "than %(days)s days after it. For a single full day, end at 23:59 of the "
+                "same day."
+            )
+            % {"days": Holiday.MAX_DURATION_DAYS},
+            "all_users": _(
+                "Turn on to give the holiday to every user. Turn off to choose the "
+                "users it applies to. Turning it off also removes the holiday from any "
+                "business hours it was added to."
+            ),
+            "specific_users": _("Only the users picked here get this holiday."),
+            "is_recurring": _(
+                "Turn on to repeat this holiday automatically. Leave it off for a "
+                "one-time holiday."
+            ),
+            "frequency": _(
+                "How often the holiday repeats: every week, every month or every "
+                "year. The fields below change to match."
+            ),
+            "recurs_every_weeks": _(
+                "How many weeks between repeats, from %(low)s to %(high)s. 1 is every "
+                "week and 2 is every other week."
+            )
+            % {
+                "low": Holiday.WEEKS_INTERVAL_RANGE[0],
+                "high": Holiday.WEEKS_INTERVAL_RANGE[1],
+            },
+            "weekly_days": _(
+                "The weekdays that are a holiday in each repeat, for example Saturday "
+                "and Sunday for a weekly off."
+            ),
+            "monthly_repeat_type": _(
+                "On Day: the same date every month, such as the 5th. On the: the same "
+                "weekday every month, such as the 2nd Monday."
+            ),
+            "monthly_day_of_month": _(
+                "The date of the month, from %(low)s to %(high)s. A date above 28 "
+                "does not exist in every month."
+            )
+            % day,
+            "monthly_interval": _(
+                "How many months between repeats, from %(low)s to %(high)s. 1 is every "
+                "month and 3 is every third month. Leave it empty for every month."
+            )
+            % {
+                "low": Holiday.MONTHS_INTERVAL_RANGE[0],
+                "high": Holiday.MONTHS_INTERVAL_RANGE[1],
+            },
+            "monthly_day_of_week": weekday,
+            "monthly_week_of_month": nth,
+            "yearly_repeat_type": _(
+                "On every: the same date every year, such as 14 July. On the: a "
+                "weekday of a month, such as the 2nd Monday of July."
+            ),
+            "yearly_month": _("The month of the year the holiday falls in."),
+            "yearly_day_of_month": _(
+                "The date in that month, from %(low)s to %(high)s. It must exist in the "
+                "month: February allows up to 29 and April up to 30."
+            )
+            % day,
+            "yearly_day_of_week": weekday,
+            "yearly_week_of_month": nth,
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        for name, text in self.FIELD_HELP_TEXTS.items():
+        for name, text in self.field_help_texts().items():
             if name in self.fields and not self.fields[name].help_text:
                 self.fields[name].help_text = text
+        for name, label in self.FIELD_LABELS.items():
+            if name in self.fields:
+                self.fields[name].label = label
 
         instance = self.instance
         initial = self.data or self.initial
@@ -317,6 +406,14 @@ class HolidayForm(HorillaModelForm):
                         ["yearly_day_of_week", "yearly_week_of_month"], nullify=True
                     )
 
+        for name, (low, high) in self.NUMBER_LIMITS.items():
+            widget = self.fields[name].widget
+            if not widget.is_hidden:
+                widget.attrs["placeholder"] = _("%(low)s to %(high)s") % {
+                    "low": low,
+                    "high": high,
+                }
+
     def clean(self):
         cleaned_data = super().clean()
 
@@ -376,6 +473,24 @@ class HolidayForm(HorillaModelForm):
                     clear_fields(["monthly_day_of_week", "monthly_week_of_month"])
                 if not repeat_type:
                     clear_fields(["monthly_day_of_month"])
+
+        # The model checks company holidays; it cannot see the chosen users before they are
+        # saved, so a holiday of specific users is checked here.
+        if not cleaned_data.get("all_users"):
+            users = cleaned_data.get("specific_users")
+            if users and not any(
+                name in self.errors for name in ("start_date", "end_date")
+            ):
+                message = Holiday.clash_problem(
+                    self.instance.company_id,
+                    cleaned_data.get("start_date"),
+                    cleaned_data.get("end_date"),
+                    all_users=False,
+                    user_ids=[user.pk for user in users],
+                    exclude_pk=self.instance.pk,
+                )
+                if message:
+                    self.add_error("start_date", message)
 
         return cleaned_data
 

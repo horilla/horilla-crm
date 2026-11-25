@@ -63,6 +63,32 @@ class HolidayNavbar(LoginRequiredMixin, HorillaNavView):
     filter_option = False
     reload_option = False
     search_push_url = False
+    enable_actions = True
+
+    @cached_property
+    def actions(self):
+        """
+        The gear menu: import holidays from a file. It opens the same single import as the
+        other lists (Leads, Campaigns, ...), with Holiday already chosen. Only this action is
+        offered: the generic ones (columns, quick filters) do not apply to this list.
+        """
+        user = self.request.user
+        if not (
+            user.has_perm("core.add_holiday")
+            and user.has_perm("core.can_view_horilla_import")
+        ):
+            return []
+        return [
+            {
+                "action": _("Import"),
+                "attrs": f"""
+                    hx-get="{reverse_lazy("core:import_data")}?single_import=true&model_name=Holiday&app_label=core"
+                    onclick="openModal()"
+                    hx-target="#modalBox"
+                    hx-swap="innerHTML"
+                """,
+            }
+        ]
 
     @cached_property
     def new_button(self):
@@ -287,7 +313,7 @@ class HolidayDetailView(LoginRequiredMixin, HorillaModalDetailView):
         "start_date",
         "end_date",
         ("specific_users", "specific_users_enable"),
-        ("is_recurring", "is_recurring_holiday"),
+        ("is_recurring", "get_recurrence_description"),
     ]
 
     actions = [

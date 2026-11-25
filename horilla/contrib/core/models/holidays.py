@@ -3,15 +3,20 @@ This module defines the Holiday models for holidays in the Horilla platform.
 """
 
 # Standard library imports
+import calendar
 import logging
 
 # Django imports
 from django.conf import settings
+from django.contrib.humanize.templatetags.humanize import ordinal
+from django.utils import timezone
+from django.utils.text import get_text_list
 
 # Third-party imports (Django)
 from multiselectfield import MultiSelectField
 
 from horilla.contrib.utils.methods import render_template
+from horilla.contrib.utils.middlewares import get_active_company
 from horilla.core.exceptions import ValidationError
 
 # First party imports (Horilla)
@@ -19,11 +24,26 @@ from horilla.db import models
 from horilla.urls import reverse_lazy
 from horilla.utils.choices import DAY_CHOICES, MONTH_CHOICES
 from horilla.utils.translation import gettext_lazy as _
+from horilla.utils.translation import ngettext
 
 # Local imports
 from .base import HorillaCoreModel
 
 logger = logging.getLogger(__name__)
+
+
+def _number_problem(value, bounds, label):
+    """Why ``value`` is not a whole number inside ``bounds``, or ``None`` when it is."""
+    if value is None:
+        return _("%(label)s is required.") % {"label": label}
+    low, high = bounds
+    if not low <= value <= high:
+        return _("%(label)s must be between %(low)s and %(high)s.") % {
+            "label": label,
+            "low": low,
+            "high": high,
+        }
+    return None
 
 
 class Holiday(HorillaCoreModel):
@@ -129,6 +149,14 @@ class Holiday(HorillaCoreModel):
 
     OWNER_FIELDS = ["specific_users"]
 
+    # Limits shared by ``clean()`` and the number inputs of the form.
+    YEAR_RANGE = (1900, 2100)
+    MAX_DURATION_DAYS = 366
+    WEEKS_INTERVAL_RANGE = (1, 52)
+    MONTHS_INTERVAL_RANGE = (1, 12)
+    DAY_OF_MONTH_RANGE = (1, 31)
+    WEEK_OF_MONTH_RANGE = (1, 5)
+
     class Meta:
         """
         Meta options for the Holiday model.
@@ -141,60 +169,237 @@ class Holiday(HorillaCoreModel):
     def __str__(self):
         return str(self.name)
 
+    def _date_problems(self):
+        """``(field, message)`` pairs for the start and end date."""
+        problems = []
+        low_year, high_year = self.YEAR_RANGE
+        for field, label in (
+            ("start_date", _("Start date")),
+            ("end_date", _("End date")),
+        ):
+            value = getattr(self, field)
+            if value and not low_year <= value.year <= high_year:
+                problems.append(
+                    (
+                        field,
+                        _("%(label)s must be in the years %(low)s to %(high)s.")
+                        % {"label": label, "low": low_year, "high": high_year},
+                    )
+                )
+        if problems or not (self.start_date and self.end_date):
+            return problems
+        if self.start_date > self.end_date:
+            problems.append(
+                ("end_date", _("End date cannot be before the start date."))
+            )
+        elif (self.end_date - self.start_date).days > self.MAX_DURATION_DAYS:
+            problems.append(
+                (
+                    "end_date",
+                    _("A holiday cannot last more than %(days)s days.")
+                    % {"days": self.MAX_DURATION_DAYS},
+                )
+            )
+        return problems
+
+    def _weekly_problems(self):
+        """``(field, message)`` pairs for a weekly recurrence."""
+        problems = []
+        if not self.weekly_days:
+            problems.append(
+                ("weekly_days", _("Select at least one day for weekly recurrence."))
+            )
+        problems.append(
+            (
+                "recurs_every_weeks",
+                _number_problem(
+                    self.recurs_every_weeks,
+                    self.WEEKS_INTERVAL_RANGE,
+                    _("Recurs every (weeks)"),
+                ),
+            )
+        )
+        return problems
+
+    def _monthly_problems(self):
+        """``(field, message)`` pairs for a monthly recurrence."""
+        kind = self.monthly_repeat_type
+        if kind == "day_of_month":
+            problems = [
+                (
+                    "monthly_day_of_month",
+                    _number_problem(
+                        self.monthly_day_of_month,
+                        self.DAY_OF_MONTH_RANGE,
+                        _("Day of month"),
+                    ),
+                )
+            ]
+            if self.monthly_interval is not None:  # blank means every month
+                problems.append(
+                    (
+                        "monthly_interval",
+                        _number_problem(
+                            self.monthly_interval,
+                            self.MONTHS_INTERVAL_RANGE,
+                            _("Monthly interval"),
+                        ),
+                    )
+                )
+            return problems
+        if kind == "weekday_of_month":
+            return self._weekday_of_month_problems(
+                "monthly_day_of_week", "monthly_week_of_month"
+            )
+        return [
+            ("monthly_repeat_type", _("Please select a valid monthly repeat type."))
+        ]
+
+    def _yearly_problems(self):
+        """``(field, message)`` pairs for a yearly recurrence."""
+        problems = []
+        if not self.yearly_month:
+            problems.append(
+                ("yearly_month", _("Month is required for yearly recurrence."))
+            )
+        kind = self.yearly_repeat_type
+        if kind == "day_of_month":
+            problem = _number_problem(
+                self.yearly_day_of_month, self.DAY_OF_MONTH_RANGE, _("Day of month")
+            )
+            if not problem and self.yearly_month:
+                number = [name for name, _label in MONTH_CHOICES].index(
+                    self.yearly_month
+                )
+                # 2024 is a leap year: 29 February is a real date, 30 February is not.
+                longest = calendar.monthrange(2024, number + 1)[1]
+                if self.yearly_day_of_month > longest:
+                    problem = _("%(month)s has at most %(days)s days.") % {
+                        "month": dict(MONTH_CHOICES)[self.yearly_month],
+                        "days": longest,
+                    }
+            problems.append(("yearly_day_of_month", problem))
+        elif kind == "weekday_of_month":
+            problems += self._weekday_of_month_problems(
+                "yearly_day_of_week", "yearly_week_of_month"
+            )
+        else:
+            problems.append(
+                ("yearly_repeat_type", _("Please select a valid yearly repeat type."))
+            )
+        return problems
+
+    def _weekday_of_month_problems(self, day_field, week_field):
+        """The weekday and the week of the month of an "On the 2nd Monday" rule."""
+        problems = []
+        if not getattr(self, day_field):
+            problems.append((day_field, _("Day of week is required.")))
+        problems.append(
+            (
+                week_field,
+                _number_problem(
+                    getattr(self, week_field),
+                    self.WEEK_OF_MONTH_RANGE,
+                    _("Week of month"),
+                ),
+            )
+        )
+        return problems
+
     def clean(self):
         """
-        Validate holiday data
+        Validate holiday data. Every message is attached to the field it is about, so a
+        form shows it under that field and the API or admin can tell which one it is.
         """
+        problems = self._date_problems()
 
-        if self.start_date and self.end_date:
-            if self.start_date > self.end_date:
-                raise ValidationError(_("Start date cannot be after end date"))
-
-        if self.is_recurring and not self.frequency:
-            raise ValidationError(_("Frequency is required for recurring holidays"))
-
-        if self.frequency == "weekly":
-            if not self.weekly_days:
-                raise ValidationError(
-                    _("Weekly days must be specified for weekly recurrence")
+        if self.is_recurring:
+            if not self.frequency:
+                problems.append(
+                    (
+                        "frequency",
+                        _("Frequency is required for recurring holidays."),
+                    )
                 )
-            if self.recurs_every_weeks < 1:
-                raise ValidationError(_("Recurs every weeks must be at least 1"))
+            elif self.frequency == "weekly":
+                problems += self._weekly_problems()
+            elif self.frequency == "monthly":
+                problems += self._monthly_problems()
+            elif self.frequency == "yearly":
+                problems += self._yearly_problems()
 
-        if self.frequency == "monthly":
-            if self.monthly_repeat_type == "day_of_month":
-                if not self.monthly_day_of_month:
-                    raise ValidationError(
-                        _("Day of month is required for monthly recurrence")
-                    )
-            elif self.monthly_repeat_type == "weekday_of_month":
-                if not (self.monthly_day_of_week and self.monthly_week_of_month):
-                    raise ValidationError(
-                        _(
-                            "Both day of week and week of month are required for monthly recurrence"
-                        )
-                    )
-            else:
-                raise ValidationError(_("Please select a valid monthly repeat type"))
+        if self.all_users and not any(
+            field.endswith("_date") for field, _m in problems
+        ):
+            problems.append(
+                (
+                    "start_date",
+                    self.clash_problem(
+                        self.company_id,
+                        self.start_date,
+                        self.end_date,
+                        all_users=True,
+                        exclude_pk=self.pk,
+                    ),
+                )
+            )
 
-        if self.frequency == "yearly":
-            if not self.yearly_month:
-                raise ValidationError(_("Month is required for yearly recurrence"))
+        errors = {}
+        for field, message in problems:
+            if message:
+                errors.setdefault(field, []).append(message)
+        if errors:
+            raise ValidationError(errors)
 
-            if self.yearly_repeat_type == "day_of_month":
-                if not self.yearly_day_of_month:
-                    raise ValidationError(
-                        _("Day of month is required for yearly recurrence")
-                    )
-            elif self.yearly_repeat_type == "weekday_of_month":
-                if not (self.yearly_day_of_week and self.yearly_week_of_month):
-                    raise ValidationError(
-                        _(
-                            "Both week of month and day of week are required for yearly recurrence"
-                        )
-                    )
-            else:
-                raise ValidationError(_("Please select a valid yearly repeat type"))
+    @classmethod
+    def clash_problem(
+        cls, company_id, start_date, end_date, all_users, user_ids=(), exclude_pk=None
+    ):
+        """
+        The message to show when another holiday already falls on these dates for the
+        same people, or ``None``. The name does not matter, only the dates do.
+
+        Company holidays (all users) are unique per dates. Holidays of specific users are
+        unique per dates for each user, so two people can still have the same day off.
+        A company holiday and a personal one may share dates. ``user_ids`` is only used
+        for a holiday of specific users, which is why the form and the API call this with
+        the users they were given: a model cannot see them before it is saved.
+        """
+        company_id = company_id or getattr(get_active_company(), "id", None)
+        if not (company_id and start_date and end_date):
+            return None
+        first = (
+            timezone.localtime(start_date)
+            if timezone.is_aware(start_date)
+            else start_date
+        )
+        last = timezone.localtime(end_date) if timezone.is_aware(end_date) else end_date
+        same = cls.all_objects.filter(
+            company_id=company_id,
+            start_date__date=first.date(),
+            end_date__date=last.date(),
+            all_users=all_users,
+        )
+        if exclude_pk:
+            same = same.exclude(pk=exclude_pk)
+        if all_users:
+            clash = same.first()
+            if clash:
+                return _(
+                    "%(name)s is already a holiday for all users on these dates."
+                ) % {"name": clash.name}
+            return None
+        user_ids = list(user_ids)
+        if not user_ids:
+            return None
+        clash = same.filter(specific_users__in=user_ids).distinct().first()
+        if not clash:
+            return None
+        shared = clash.specific_users.filter(pk__in=user_ids)
+        return _("%(name)s is already a holiday on these dates for %(users)s.") % {
+            "name": clash.name,
+            "users": get_text_list([str(user) for user in shared], str(_("and"))),
+        }
 
     def save(self, *args, **kwargs):
         """
@@ -202,6 +407,10 @@ class Holiday(HorillaCoreModel):
         """
         self.full_clean()
         super().save(*args, **kwargs)
+        if not self.all_users:
+            # Business hours only take holidays for all users, so a holiday that was
+            # changed to specific users must not stay linked to them.
+            self.business_hours.clear()
 
     def get_avatar(self):
         """
@@ -294,125 +503,63 @@ class Holiday(HorillaCoreModel):
         return "No Users specified"
 
     def get_ordinal_number(self, number):
-        """
-        Convert number to ordinal (1st, 2nd, 3rd, etc.)
-        """
-        ordinals = {
-            1: _("1st"),
-            2: _("2nd"),
-            3: _("3rd"),
-            4: _("4th"),
-            5: _("5th"),
-        }
-        return ordinals.get(number, f"{number}th")
-
-    def is_recurring_holiday(self):
-        """
-        Return a human-readable string describing the recurring holiday pattern.
-        """
-        if not self.is_recurring or not self.frequency:
-            return "Not a recurring holiday"
-
-        # WEEKLY
-        if self.frequency == "weekly" and self.weekly_days:
-            day_map = dict(DAY_CHOICES)
-            days = ", ".join(day_map[day] for day in self.weekly_days)
-
-            return f"Recur every {self.recurs_every_weeks or 1} week on {days}"
-
-        # MONTHLY
-        if self.frequency == "monthly" and self.monthly_repeat_type:
-            if self.monthly_repeat_type == "day_of_month":
-                return (
-                    f"Recur on {self.get_ordinal_number(self.monthly_day_of_month)} day "
-                    f"of every {self.monthly_interval or 1} month"
-                )
-            if self.monthly_repeat_type == "weekday_of_month":
-                return (
-                    f"Recur on the {self.get_ordinal_number(self.monthly_week_of_month)} "
-                    f"{self.monthly_day_of_week.capitalize()} of every {self.monthly_interval or 1} month"
-                )
-
-        # YEARLY
-        if self.frequency == "yearly" and self.yearly_repeat_type:
-            if self.yearly_repeat_type == "day_of_month":
-                return (
-                    f"Recur on every {self.yearly_month.capitalize()} "
-                    f"{self.get_ordinal_number(self.yearly_day_of_month)}"
-                )
-            if self.yearly_repeat_type == "weekday_of_month":
-                return (
-                    f"Recur on the {self.get_ordinal_number(self.yearly_week_of_month)} "
-                    f"{self.yearly_day_of_week.capitalize()} of {self.yearly_month.capitalize()}"
-                )
-
-        return "Not a recurring holiday"
-
-    def get_eligible_users(self):
-        """
-        Get all users eligible for this holiday
-        """
-        from horilla.auth.models import User
-
-        if self.all_users:
-            return User.objects.filter(is_active=True)
-        return self.specific_users.all()
-
-    def is_user_eligible(self, user):
-        """
-        Check if a specific user is eligible for this holiday
-        """
-        if self.all_users:
-            return user.is_active
-        return self.specific_users.filter(pk=user.pk).exists()
+        """1 -> "1st", 2 -> "2nd", 3 -> "3th", in the active language."""
+        return ordinal(number)
 
     def get_recurrence_description(self):
         """
-        Get human-readable description of recurrence pattern
+        How the holiday repeats, in plain words: "Every 2 weeks on Saturday and Sunday",
+        "On the 22nd of every month", "On the 2nd Monday of July every year".
         """
-        if not self.is_recurring:
-            return _("One-time holiday")
+        if not self.is_recurring or not self.frequency:
+            return _("Not a recurring holiday")
 
-        if self.frequency == "weekly":
-            days = ", ".join([dict(DAY_CHOICES)[day] for day in self.weekly_days])
-            if self.recurs_every_weeks == 1:
-                return _("Weekly on {}").format(days)
+        weekdays, months = dict(DAY_CHOICES), dict(MONTH_CHOICES)
 
-            return _("Every {} weeks on {}").format(self.recurs_every_weeks, days)
+        if self.frequency == "weekly" and self.weekly_days:
+            weeks = self.recurs_every_weeks or 1
+            return ngettext(
+                "Every week on %(days)s", "Every %(count)s weeks on %(days)s", weeks
+            ) % {
+                "count": weeks,
+                "days": get_text_list(
+                    [str(weekdays[day]) for day in self.weekly_days], str(_("and"))
+                ),
+            }
 
         if self.frequency == "monthly":
-            if self.monthly_day_of_month:
-                if self.monthly_interval == 1:
-                    return _("Monthly on day {}").format(self.monthly_day_of_month)
-                return _("Every {} months on day {}").format(
-                    self.monthly_interval, self.monthly_day_of_month
-                )
+            count = self.monthly_interval or 1
+            if self.monthly_repeat_type == "day_of_month" and self.monthly_day_of_month:
+                which = self.get_ordinal_number(self.monthly_day_of_month)
+            elif self.monthly_repeat_type == "weekday_of_month" and (
+                self.monthly_week_of_month and self.monthly_day_of_week
+            ):
+                which = _("%(nth)s %(weekday)s") % {
+                    "nth": self.get_ordinal_number(self.monthly_week_of_month),
+                    "weekday": weekdays[self.monthly_day_of_week],
+                }
+            else:
+                return _("Recurring holiday")
+            return ngettext(
+                "On the %(which)s of every month",
+                "On the %(which)s of every %(count)s months",
+                count,
+            ) % {"which": which, "count": count}
 
-            day_name = dict(DAY_CHOICES)[self.monthly_day_of_week]
-            ordinal = self.get_ordinal_number(self.monthly_week_of_month)
-            if self.monthly_interval == 1:
-                return _("Monthly on {} {} of month").format(ordinal, day_name)
+        if self.frequency == "yearly" and self.yearly_month:
+            month = months[self.yearly_month]
+            if self.yearly_repeat_type == "day_of_month" and self.yearly_day_of_month:
+                return _("Every year on %(day)s %(month)s") % {
+                    "day": self.yearly_day_of_month,
+                    "month": month,
+                }
+            if self.yearly_repeat_type == "weekday_of_month" and (
+                self.yearly_week_of_month and self.yearly_day_of_week
+            ):
+                return _("On the %(nth)s %(weekday)s of %(month)s every year") % {
+                    "nth": self.get_ordinal_number(self.yearly_week_of_month),
+                    "weekday": weekdays[self.yearly_day_of_week],
+                    "month": month,
+                }
 
-            return _("Every {} months on {} {} of month").format(
-                self.monthly_interval, ordinal, day_name
-            )
-
-        if self.frequency == "yearly":
-            month_name = dict(self.MONTH_CHOICES)[self.yearly_month]
-            if self.yearly_day_of_month:
-                return _("Yearly on {} {}").format(month_name, self.yearly_day_of_month)
-
-            day_name = dict(DAY_CHOICES)[self.yearly_day_of_week]
-            ordinal = self.get_ordinal_number(self.yearly_week_of_month)
-            return _("Yearly on {} {} of {}").format(ordinal, day_name, month_name)
-
-        return _("Custom recurrence")
-
-    @property
-    def duration_days(self):
-        """
-        Calculate the duration of the holiday in days
-        """
-        if self.start_date and self.end_date:
-            return (self.end_date - self.start_date).days + 1
-        return 0
+        return _("Recurring holiday")

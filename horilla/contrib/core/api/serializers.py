@@ -2,6 +2,9 @@
 Serializers for core models
 """
 
+# Standard library imports
+import copy
+
 # Third-party imports (Django)
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
@@ -182,3 +185,37 @@ class HolidaySerializer(CompanyScopedSerializerMixin, serializers.ModelSerialize
 
         model = Holiday
         fields = "__all__"
+
+    def validate(self, attrs):
+        """
+        Apply the holiday rules of ``Holiday.clean()`` and the dates rule for specific
+        users, so bad data is a 400 with the field errors and not a server error when
+        the model refuses to save it.
+        """
+        attrs = super().validate(attrs)
+        holiday = copy.copy(self.instance) if self.instance else Holiday()
+        for name, value in attrs.items():
+            if name != "specific_users":
+                setattr(holiday, name, value)
+        try:
+            holiday.clean()
+        except ValidationError as exc:
+            raise serializers.ValidationError(
+                exc.message_dict if hasattr(exc, "error_dict") else exc.messages
+            ) from exc
+
+        if not holiday.all_users:
+            users = attrs.get("specific_users")
+            if users is None and self.instance:
+                users = list(self.instance.specific_users.all())
+            message = Holiday.clash_problem(
+                holiday.company_id,
+                holiday.start_date,
+                holiday.end_date,
+                all_users=False,
+                user_ids=[user.pk for user in users or []],
+                exclude_pk=holiday.pk,
+            )
+            if message:
+                raise serializers.ValidationError({"start_date": [message]})
+        return attrs

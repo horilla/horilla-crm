@@ -51,6 +51,14 @@ register_model_for_feature(
     options={"import_data": {"exclude_fields": ["is_default"]}},
 )
 
+# Let users bulk import holidays, from the Import page and from the gear menu of the
+# Holidays list.
+register_model_for_feature(
+    app_label="core",
+    model_name="Holiday",
+    features=["import_data"],
+)
+
 # What global search looks in and shows for each core model.
 set_feature_options(
     "global_search",

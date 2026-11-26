@@ -89,10 +89,10 @@
                         {% endif %}
                         {% with cell_value=data|get_field:cell.1 %}
                             {% if cell_value|striptags != cell_value %}
-                                <div class="truncate min-w-0 max-w-full whitespace-nowrap" data-truncate-text>{{ cell_value }}</div>
+                                <div class="flex-1 min-w-0 w-full truncate" data-truncate-text>{{ cell_value }}</div>
                             {% else %}
                                 <span
-                                    class="truncate block min-w-0 whitespace-nowrap"
+                                    class="flex-1 min-w-0 w-full truncate"
                                     data-truncate-title="{{ cell_value|escape }}"
                                 >{{ cell_value|escape }}</span>
                             {% endif %}

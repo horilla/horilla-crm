@@ -1,20 +1,10 @@
 <div class="p-5 max-w-full">
     {# ── Header ── #}
-    <div class="flex justify-between items-center mb-4">
-        <div class="flex items-center gap-2">
-            <h3 class="text-sm font-semibold text-gray-800">{{ title }}</h3>
-            {% if total %}
-                <span
-                    class="inline-flex items-center text-xs font-semibold text-white bg-primary-600 px-2 py-0.5 rounded-full"
-                >
-                    {{ total }}
-                </span>
-            {% endif %}
-        </div>
-        <button type="button" onclick="closeModal()" class="text-gray-500 hover:text-red-500 text-xl cursor-pointer">
-            <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-        </button>
-    </div>
+    {% if total %}
+        {% modal_header title badge=total %}
+    {% else %}
+        {% modal_header title %}
+    {% endif %}
 
     {# ── Search ── #}
     {% if total and not compact %}

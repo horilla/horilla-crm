@@ -40,22 +40,7 @@
         onclick="if (event.target === this) this.close()"
     >
         <div class="p-5 max-w-full">
-            <div class="flex justify-between items-center mb-4">
-                <div class="flex items-center gap-2">
-                    <h3 class="text-sm font-semibold text-gray-800">{{ label }}</h3>
-                    <span
-                        class="inline-flex items-center text-xs font-semibold text-white bg-primary-600 px-2 py-0.5 rounded-full"
-                    >{{ items|length }}</span>
-                </div>
-                <button
-                    type="button"
-                    onclick="this.closest('dialog').close()"
-                    aria-label="{% trans "Close" %}"
-                    class="text-gray-500 hover:text-red-500 text-xl cursor-pointer"
-                >
-                    <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans "Close" %}">
-                </button>
-            </div>
+            {% modal_header label on_close="this.closest('dialog').close()" badge=items|length %}
             {% if items|length > 9 %}
                 <div class="relative mb-3">
                     <input

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Leads | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Horilla CRM Leads module: views, lead creation, detail view and the lead conversion process."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Sales</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Leads</span>
+                </nav>
+                <p class="eyebrow">Sales</p>
+                <h1>Leads</h1>
+                <p class="lead">
+                    Capture, track and convert potential customers into opportunities from a single centralised module.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Leads module helps sales teams capture, track and convert potential customers into
+                        opportunities. It centralises lead data, monitors how each lead progresses through the sales
+                        stages, and supports timely follow-ups so that no prospect is lost between contact and
+                        conversion.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="leads-overview">1. Leads Overview</h3>
+                    <p><strong>Purpose:</strong> view and manage every lead recorded in the system from one list.</p>
+                    <ol class="steps">
+                        <li>
+                            Go to <strong>Sales &rarr; Leads</strong>. The page opens on the Kanban view. List, the
+                            tabular view, is on the view toolbar.
+                        </li>
+                        <li>
+                            In List view, use the search box and filters to narrow the leads by criteria such as lead
+                            name or lead source.
+                        </li>
+                        <li>Columns are sortable, and the filters applied to the list can be customised.</li>
+                        <li>
+                            Select leads with the row checkboxes to run bulk actions: <strong>Update</strong>, <strong
+                            >Export</strong> and <strong>Bulk Delete</strong>.
+                        </li>
+                    </ol>
+                    <figure>
+                        <img src="../assets/shots/leads-1.png" alt="Leads list view in Horilla CRM" loading="lazy">
+                        <figcaption>Leads list view.</figcaption>
+                    </figure>
+
+                    <h3 id="kanban-view">2. Kanban View</h3>
+                    <p><strong>Purpose:</strong> follow lead progress visually across the sales stages.</p>
+                    <ul>
+                        <li>
+                            Each column represents a stage of the sales pipeline. Which stages appear, and how leads are
+                            categorised into them, is controlled by the Kanban settings.
+                        </li>
+                        <li>
+                            Drag and drop a lead card from one column to another to move the lead to a different stage.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/leads-2.png" alt="Leads Kanban view" loading="lazy">
+                        <figcaption>Kanban view, with one column per lead stage.</figcaption>
+                    </figure>
+
+                    <h3 id="card-view">3. Card View</h3>
+                    <p><strong>Purpose:</strong> scan leads as compact summary cards.</p>
+                    <ul>
+                        <li>Switch to Card View from the view toolbar.</li>
+                        <li>
+                            Each card shows the key lead details: <strong>Name</strong>, <strong>Lead Source</strong>,
+                            <strong>Stage</strong> and <strong>Lead Owner</strong>.
+                        </li>
+                        <li>The same search and filter options available in List View apply here.</li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/leads-3.png" alt="Leads card view" loading="lazy">
+                        <figcaption>Card view.</figcaption>
+                    </figure>
+
+                    <h3 id="group-by-view">4. Group By View</h3>
+                    <p><strong>Purpose:</strong> organise leads into collapsible groups for comparison.</p>
+                    <ul>
+                        <li>Switch to Group By View from the view toolbar.</li>
+                        <li>
+                            Group leads by <strong>Lead Stage</strong>, <strong>Lead Source</strong>, <strong>Lead
+                                Owner</strong> or <strong>Industry</strong>.
+                        </li>
+                        <li>Each group can be expanded or collapsed, making it easier to compare sets of leads.</li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/leads-4.png" alt="Leads grouped view" loading="lazy">
+                        <figcaption>Group By view.</figcaption>
+                    </figure>
+
+                    <h3 id="chart-view">5. Chart View</h3>
+                    <p><strong>Purpose:</strong> analyse lead data graphically.</p>
+                    <ul>
+                        <li>Switch to Chart View from the view toolbar.</li>
+                        <li>Charts summarise leads by stage, by source and by ownership.</li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/leads-5.png" alt="Leads chart view" loading="lazy">
+                        <figcaption>Chart view.</figcaption>
+                    </figure>
+
+                    <h3 id="split-view">6. Split View</h3>
+                    <p><strong>Purpose:</strong> read lead details without leaving the list.</p>
+                    <ul>
+                        <li>Activate Split View from the view toolbar.</li>
+                        <li>
+                            The left panel holds the lead list; the right panel shows the details of the selected lead.
+                        </li>
+                        <li>
+                            Clicking a lead in the left panel loads its details on the right, so you stay on the same
+                            page.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/leads-6.png" alt="Leads split view" loading="lazy">
+                        <figcaption>Split view: list on the left, details on the right.</figcaption>
+                    </figure>
+
+                    <h3 id="timeline-view">7. Timeline View</h3>
+                    <p><strong>Purpose:</strong> see leads in chronological order.</p>
+                    <ul>
+                        <li>Switch to Timeline View from the view toolbar.</li>
+                        <li>Leads are ordered by creation date or by activity date.</li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/leads-7.png" alt="Leads timeline view" loading="lazy">
+                        <figcaption>Timeline view.</figcaption>
+                    </figure>
+
+                    <h3 id="create-lead">8. Creating a New Lead</h3>
+                    <p><strong>Purpose:</strong> capture and store the information of a new lead.</p>
+                    <p>
+                        Click <strong>New</strong> on the Leads page to open the lead creation form. <strong>Title</strong>
+                        is required. The other lead fields can be left blank. The form offers two entry modes, and you
+                        can switch between them at any time while filling it in.
+                    </p>
+
+                    <h4>Multi-Step Form</h4>
+                    <ol class="steps">
+                        <li>
+                            <strong>Step 1 – Basic Information:</strong> Lead Owner, Name, Email, Lead Source, Industry.
+                        </li>
+                        <li><strong>Step 2 – Company Details:</strong> Title, Contact Number, Lead Currency.</li>
+                        <li><strong>Step 3 – Location.</strong></li>
+                        <li><strong>Step 4 – Requirements.</strong></li>
+                        <li>
+                            Use <strong>Next</strong> and <strong>Previous</strong> to move between the steps, then
+                            click <strong>Save</strong> to create the lead.
+                        </li>
+                    </ol>
+                    <figure>
+                        <img src="../assets/shots/leads-n-multi.png" alt="Multi-step lead creation form" loading="lazy">
+                        <figcaption>Multi-step lead creation form.</figcaption>
+                    </figure>
+
+                    <h4>Single-Step Form</h4>
+                    <ul>
+                        <li>All lead fields are presented on one page for quick data entry.</li>
+                        <li>Use the toggle in the form header to switch to single-step mode.</li>
+                        <li>Click <strong>Save</strong> to create the lead.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/leads-n-single.png"
+                            alt="Single-step lead creation form"
+                            loading="lazy"
+                        >
+                        <figcaption>Single-step lead creation form.</figcaption>
+                    </figure>
+
+                    <h3 id="lead-detail">9. Lead Detailed Information</h3>
+                    <p><strong>Purpose:</strong> work with everything recorded against a single lead.</p>
+                    <ul>
+                        <li>Open the detail view by clicking a lead from any of the views above.</li>
+                        <li>
+                            The detail view brings together related lists, <strong>Activities</strong>, <strong
+                            >Notes and Attachments</strong> and <strong>History</strong>. Notes and files are a stream:
+                            write in the box at the top, edit a note in place, and pin an entry. <strong>All</strong>,
+                            <strong>Notes</strong> and <strong>Files</strong> filter the stream.
+                        </li>
+                        <li>Lead conversion can be started directly from the progress bar on this page.</li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/leads-n-detail.png" alt="Lead detail view" loading="lazy">
+                        <figcaption>
+                            Lead detail view with related lists, activities, notes, attachments and history.
+                        </figcaption>
+                    </figure>
+
+                    <h3 id="lead-conversion">10. Lead Conversion Process</h3>
+                    <p>
+                        <strong>Purpose:</strong> turn a qualified lead into an Account, a Contact and an Opportunity.
+                    </p>
+
+                    <h4>Starting the conversion</h4>
+                    <ul>
+                        <li>
+                            <strong>From the Detail View:</strong> open the lead, then click the final stage in the
+                            progress bar.
+                        </li>
+                        <li>
+                            <strong>From the Actions menu:</strong> in List, Card, Kanban or Group By view, click
+                            <strong>Actions</strong> on the lead and choose <strong>Convert</strong>.
+                        </li>
+                    </ul>
+
+                    <h4>Conversion form</h4>
+                    <ol class="steps">
+                        <li>
+                            Choose which records to create: <strong>Account</strong>, <strong>Contact</strong>, <strong
+                            >Opportunity</strong>.
+                        </li>
+                        <li>
+                            Provide the required details: <strong>Account Name</strong>, <strong>Contact First
+                                Name</strong> and <strong>Last Name</strong>, and <strong>Opportunity Name</strong>.
+                        </li>
+                        <li>Click <strong>Convert</strong> to complete the process.</li>
+                        <li>
+                            A window titled <strong>Your lead has been converted</strong> shows the new account, contact
+                            and opportunity. Conversion does not start an approval.
+                        </li>
+                    </ol>
+                    <figure>
+                        <img src="../assets/shots/leads-n-convert.png" alt="Lead conversion form" loading="lazy">
+                        <figcaption>Lead conversion form.</figcaption>
+                    </figure>
+
+                    <h3 id="current-release">11. Current behaviour</h3>
+                    <ul>
+                        <li>
+                            <strong>Edit Details</strong> on the lead checks the form the same way a normal save does. A
+                            rejected value is shown under that field, and the record is not saved. The separate Edit
+                            action is not shown when Edit Details can edit the record.
+                        </li>
+                        <li>
+                            List views include <strong>Oldest First</strong>. Group By supports the same bulk actions as
+                            the list, and <strong>Expand All</strong> opens the groups in view, then continues as you
+                            scroll.
+                        </li>
+                        <li>
+                            Long titles are shortened in the header, the breadcrumb and list cells. Field help is an
+                            info icon.
+                        </li>
+                        <li>Yes/no fields in inline edit are a two-segment control. File fields stay on the form.</li>
+                        <li>
+                            A <a href="../mysettings/product-tours.html">Product Tour</a> covers the Leads list and the
+                            lead detail. A step is skipped when its target is missing, and a table step is skipped on an
+                            empty list.
+                        </li>
+                        <li>
+                            An assignment rule leaves out a user who is unavailable. The lead is offered to someone
+                            still available in that rule.
+                        </li>
+                        <li>
+                            Create forms can be trimmed by a <a href="../settings/field-management.html"
+                            >form layout</a>, and extra fields come from custom fields and field requirements for this
+                            company.
+                        </li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

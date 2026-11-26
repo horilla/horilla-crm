@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Message Automations | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Message Automations in Horilla CRM: triggers, delivery channels, scheduled messages, conditions, and loading prebuilt rules."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Message Automations</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Message Automations</h1>
+                <p class="lead">
+                    Send mail, in-app notifications, or WhatsApp messages when a CRM record changes, or on a schedule.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        Message Automations send a message when something happens to a record, or at a time calculated
+                        from a date on that record. Open <strong>Settings &rarr; Automations &rarr; Message
+                            Automations</strong>. The page title is <strong>Message Automations</strong>, and the
+                        description under it reads: <q>Automate messages across your delivery channels based on events
+                            in your workflow.</q>
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="overview">1. Message Automations List</h3>
+                    <p><strong>Purpose:</strong> see every message automation for the active company.</p>
+                    <ul>
+                        <li>
+                            Each row shows <strong>Title</strong>, <strong>Trigger</strong>, <strong>Module</strong>,
+                            <strong>Choose Delivery Channel</strong>, and <strong>Actions</strong>.
+                        </li>
+                        <li>The search box filters the list by title.</li>
+                        <li><strong>New</strong> opens the create form.</li>
+                        <li>
+                            The gear menu beside <strong>New</strong> includes <strong>Load Automation</strong> and
+                            <strong>Add Column to List</strong>.
+                        </li>
+                        <li>
+                            When the list is empty, the page shows <q>Nothing to show yet. Please add your Message
+                                Automations.</q> and a <strong>Load Automation</strong> button.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/message-automations-list.png"
+                            alt="Message Automations list with the User Create rule, trigger On Create, module User, and delivery channel Send as Mail"
+                            loading="lazy"
+                        >
+                        <figcaption>The Message Automations list.</figcaption>
+                    </figure>
+
+                    <h3 id="load-automation">2. Load Automation</h3>
+                    <p>
+                        <strong>Purpose:</strong> import a prebuilt rule that uses an outgoing mail server already saved
+                        under Mail.
+                    </p>
+                    <ol class="steps">
+                        <li>
+                            Open the gear menu and choose <strong>Load Automation</strong>. On an empty list, use the
+                            <strong>Load Automation</strong> button instead.
+                        </li>
+                        <li>
+                            Choose a server from <strong>Mail Server</strong>. The field is required. If no outgoing
+                            server exists, add one under Mail before loading rules.
+                        </li>
+                        <li>
+                            Tick <strong>Select All</strong>, or tick an individual rule. The built-in checklist
+                            includes <strong>User Create</strong>.
+                        </li>
+                        <li>Click <strong>Create</strong>. A title that already exists is skipped.</li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/message-automations-load.png"
+                            alt="Load Automation dialog with a Mail Server dropdown, Select All, and the User Create checkbox"
+                            loading="lazy"
+                        >
+                        <figcaption>The Load Automation dialog.</figcaption>
+                    </figure>
+
+                    <h3 id="create-rule">3. Creating a Message Automation</h3>
+                    <p><strong>Purpose:</strong> add a rule for a CRM module.</p>
+                    <ol class="steps">
+                        <li>
+                            Click <strong>New</strong>. The dialog title is <strong>Create Message Automation</strong>.
+                        </li>
+                        <li>
+                            Fill in the required fields. The template and account fields change with the delivery
+                            channels you select.
+                        </li>
+                        <li>Click <strong>Save</strong>.</li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/message-automations-create.png"
+                            alt="Create Message Automation form with Lead selected and Send as Mail as the delivery channel"
+                            loading="lazy"
+                        >
+                        <figcaption>The create form with Send as Mail selected.</figcaption>
+                    </figure>
+
+                    <h4 id="form-fields">Form fields</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Title</td>
+                                    <td>The name shown in the list.</td>
+                                </tr>
+                                <tr>
+                                    <td>Module</td>
+                                    <td>
+                                        The record type the rule watches, such as Lead, User, Contact, or Opportunity.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Choose Delivery Channel</td>
+                                    <td>
+                                        One or more channels. The channels installed in this CRM are <strong>Send as
+                                            Mail</strong>, <strong>Send as Notification</strong>, and <strong>Send as
+                                            WhatsApp Message</strong>. Each selected channel adds its own fields.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Outgoing Mail Server</td>
+                                    <td>Shown for Send as Mail. The outgoing server that sends the email.</td>
+                                </tr>
+                                <tr>
+                                    <td>Mail Template</td>
+                                    <td>
+                                        Shown for Send as Mail. The email body. <strong>+ Add</strong> creates a
+                                        template from this form.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Notification Template</td>
+                                    <td>Shown for Send as Notification. The in-app message.</td>
+                                </tr>
+                                <tr>
+                                    <td>WhatsApp Account</td>
+                                    <td>
+                                        Shown for Send as WhatsApp Message. The WhatsApp account that sends the message.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>WhatsApp Template</td>
+                                    <td>Shown for Send as WhatsApp Message. The approved WhatsApp template.</td>
+                                </tr>
+                                <tr>
+                                    <td>Send To</td>
+                                    <td>
+                                        Who receives the message. Choices follow the selected channels and the module,
+                                        and include <strong>Self (User who triggered)</strong> plus user fields on the
+                                        record.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Also Send To</td>
+                                    <td>
+                                        Extra users who receive a copy. <strong>Filter</strong> narrows the user list.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Trigger</td>
+                                    <td>When the rule runs. See the trigger options below.</td>
+                                </tr>
+                                <tr>
+                                    <td>Target Date Field</td>
+                                    <td>
+                                        Scheduled triggers only. The date or date-time field the schedule is measured
+                                        from.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Timing</td>
+                                    <td>
+                                        Scheduled triggers only. <strong>Before</strong> or <strong>After</strong> the
+                                        target date.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Adjust By</td>
+                                    <td>
+                                        Scheduled triggers only. How far from the target date. Use 0 to send on the same
+                                        day.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Offset Unit</td>
+                                    <td>
+                                        Scheduled triggers only. <strong>Days</strong>, <strong>Weeks</strong>, or
+                                        <strong>Months</strong>.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Run Time</td>
+                                    <td>
+                                        Scheduled triggers only, and optional. The time of day to send. Leave it empty
+                                        to send whenever the scheduler runs.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Condition</td>
+                                    <td>
+                                        Optional. Limits which records fire the rule. <strong>+ Add More</strong> adds
+                                        another row.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 id="trigger-options">Trigger options</h4>
+                    <ul>
+                        <li><strong>On Create</strong> &ndash; a new record is saved.</li>
+                        <li><strong>On Update</strong> &ndash; an existing record is saved.</li>
+                        <li><strong>Both Create and Update</strong> &ndash; either save.</li>
+                        <li><strong>On Delete</strong> &ndash; a record is deleted.</li>
+                        <li>
+                            <strong>Scheduled (time-based)</strong> &ndash; a time measured from a date field. Choosing
+                            this trigger shows Target Date Field, Timing, Adjust By, Offset Unit, and Run Time.
+                        </li>
+                    </ul>
+
+                    <h4 id="conditions">Conditions</h4>
+                    <p>
+                        Each condition row has a field from the selected module, an operator, and a value. Operators are
+                        Equals, Not Equals, Contains, Does Not Contain, Starts With, Ends With, Greater Than, Greater
+                        Than or Equal, Less Than, Less Than or Equal, Is Empty, Is Not Empty, and Between. A logical
+                        operator of <strong>AND</strong> or <strong>OR</strong> joins the next row. With no conditions,
+                        the rule runs for every record that matches the trigger.
+                    </p>
+
+                    <h3 id="managing-rules">4. Managing an Existing Automation</h3>
+                    <p><strong>Purpose:</strong> change or remove a rule from the list.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/message-automations-edit.png?v=2"
+                            alt="Update Message Automation dialog for User Create, with Send as Mail, support@horilla.com, User Template, and Also Send To ready"
+                            loading="lazy"
+                        >
+                        <figcaption>The update form for an existing automation.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>
+                            The pencil icon opens <strong>Update Message Automation</strong> with the saved title,
+                            module, channels, templates, recipients, trigger, and conditions.
+                        </li>
+                        <li>The trash icon opens the delete confirmation and removes the rule.</li>
+                    </ul>
+                </section>
+
+                <section id="best-practices">
+                    <h2>Best Practices</h2>
+                    <ul>
+                        <li>
+                            Name a rule after the module, the trigger, and the recipient, for example "Lead, On Create,
+                            owner".
+                        </li>
+                        <li>
+                            Save and test the outgoing mail server and the mail template before a Send as Mail rule.
+                        </li>
+                        <li>
+                            Select only the channels the message should use. Mail, notification, and WhatsApp each keep
+                            their own template.
+                        </li>
+                        <li>Add conditions so users are not notified on every save.</li>
+                        <li>
+                            For a scheduled rule, confirm the target date field is filled on the records that should
+                            send.
+                        </li>
+                        <li>Try an On Delete rule in a test company before using it on live records.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

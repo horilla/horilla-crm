@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Opportunity Teams | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM Opportunity Teams: creating teams, adding members with roles and access levels, managing the team list and working in the team detail view."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>My Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Opportunity Teams</span>
+                </nav>
+                <p class="eyebrow">My Settings</p>
+                <h1>Opportunity Teams</h1>
+                <p class="lead">
+                    Build collaborative sales teams for your opportunities, with defined roles and access levels for
+                    every member.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Opportunity Teams module lets an organisation form collaborative sales teams around its
+                        opportunities. Every permitted user builds and manages their own teams independently: they
+                        create the team structure, add the members and decide each member's access level. Members are
+                        given a defined role and a Read/Write access level, so responsibilities, accountability and
+                        communication stay clear while opportunity data remains secure.
+                    </p>
+                    <p>
+                        Company setup for team selling and splits is covered in <a
+                            href="../settings/opportunity-teams-split.html"
+                        >Opportunity Teams &amp; Splits</a>.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="accessing-opportunity-teams">Accessing Opportunity Teams</h3>
+                    <p>Open the module from <strong>Settings &rarr; My Settings &rarr; Opportunity Team</strong>.</p>
+                    <div class="note">
+                        <span class="label">Note</span>
+                        <p>
+                            The module is available only when <strong>Team Selling</strong> is enabled for the company.
+                        </p>
+                    </div>
+                    <p>
+                        You can view, create and manage only the teams you created yourself, which keeps each workspace
+                        personal and the data private.
+                    </p>
+
+                    <h3 id="teams-overview">1. Opportunity Teams Overview</h3>
+                    <p>
+                        The page title is <strong>Opportunity Teams</strong>. Saved teams are listed with <strong>Team
+                            Name</strong>, <strong>Description</strong> and <strong>Actions</strong>. <strong
+                        >New</strong> opens the create form. Search filters the list.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/opportunity-teams-list.png"
+                            alt="Opportunity Teams list with Product Specialists, Renewal Desk and Enterprise Pursuit"
+                            loading="lazy"
+                        >
+                        <figcaption>Opportunity Teams with saved teams.</figcaption>
+                    </figure>
+
+                    <h3 id="create-team">2. Create New Opportunity Team</h3>
+                    <ol class="steps">
+                        <li>Click <strong>New</strong> to open <strong>Create Opportunity Team</strong>.</li>
+                        <li>Enter the <strong>Team Name</strong> and the <strong>Description</strong>.</li>
+                        <li>Under <strong>Add Members</strong>, choose a user, a team role and an access level.</li>
+                        <li>Click <strong>+ Add More</strong> to add another member in the same setup.</li>
+                        <li>Click <strong>Save</strong> to create the team.</li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/opportunity-teams-create.png"
+                            alt="Create Opportunity Team for Harbor Expansion with Divya Shah as Account Manager and Read/Write access"
+                            loading="lazy"
+                        >
+                        <figcaption>Create Opportunity Team.</figcaption>
+                    </figure>
+
+                    <h4 id="team-form-fields">Team Creation Form Fields</h4>
+                    <h5>Basic Information</h5>
+                    <dl>
+                        <dt>Team Name</dt>
+                        <dd>A unique, descriptive name for the team.</dd>
+                        <dt>Description</dt>
+                        <dd>The purpose and scope of the team.</dd>
+                    </dl>
+                    <h5>Add Members</h5>
+                    <p>
+                        Each member row has three choices: the user, the team role and the access level. Roles include
+                        Deal Owner, Sales Engineer, Account Manager, Executive Sponsor and Customer Success Manager.
+                        Access levels are Read Only, Read/Write and Owner. <strong>+ Add More</strong> adds another row.
+                    </p>
+
+                    <h3 id="team-management">3. Team Management and List View</h3>
+                    <figure>
+                        <img
+                            src="../assets/shots/opportunity-teams-list.png"
+                            alt="Opportunity Teams list showing Team Name, Description and Actions"
+                            loading="lazy"
+                        >
+                        <figcaption>Team list with edit and delete on each row.</figcaption>
+                    </figure>
+
+                    <h4 id="team-list-columns">Team List Table Columns</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Shows</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Team Name</td>
+                                    <td>The team identifier.</td>
+                                </tr>
+                                <tr>
+                                    <td>Description</td>
+                                    <td>A brief overview of the team's purpose.</td>
+                                </tr>
+                                <tr>
+                                    <td>Actions</td>
+                                    <td>The management options available for that team.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 id="available-actions">Available Actions</h4>
+                    <ul>
+                        <li><strong>Edit</strong> – change the team details, its members or their permissions.</li>
+                        <li><strong>Delete</strong> – remove a team that is no longer needed.</li>
+                    </ul>
+
+                    <h3 id="team-detail-view">4. Team Detail View</h3>
+                    <p>
+                        Click a team name to open its detail page. The header shows the team name and a back arrow.
+                        Search finds a member, and <strong>New</strong> adds one.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/opportunity-teams-detail.png"
+                            alt="Enterprise Pursuit members: Aishwarya Reddy as Sales Engineer with Read Only, and Suresh Thomas as Deal Owner with Read/Write"
+                            loading="lazy"
+                        >
+                        <figcaption>Enterprise Pursuit team members.</figcaption>
+                    </figure>
+
+                    <h4 id="team-information">Team Information Section</h4>
+                    <ul>
+                        <li><strong>Team header</strong> – shows the team name together with back navigation.</li>
+                        <li><strong>Search function</strong> – finds a specific team member.</li>
+                    </ul>
+
+                    <h5 id="new-button">New Button</h5>
+                    <p>
+                        The <strong>New</strong> button opens <strong>Create Default Opportunity Member</strong>. Under
+                        <strong>Add Members</strong>, choose the user, the team role and the access level, then click
+                        <strong>Save</strong>. <strong>+ Add More</strong> adds another member in the same form.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/opportunity-teams-member.png"
+                            alt="Create Default Opportunity Member for Enterprise Pursuit with Divya Shah as Account Manager and Read Only access"
+                            loading="lazy"
+                        >
+                        <figcaption>Adding a member from the team detail view.</figcaption>
+                    </figure>
+
+                    <h4 id="team-member-table">Team Member Table</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Shows</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Team Member</td>
+                                    <td>The names of the assigned users.</td>
+                                </tr>
+                                <tr>
+                                    <td>Member Role</td>
+                                    <td>
+                                        The member's role, for example Deal Owner, Sales Engineer or Account Manager.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Access Level</td>
+                                    <td>Read Only, Read/Write or Owner.</td>
+                                </tr>
+                                <tr>
+                                    <td>Actions</td>
+                                    <td>The management options available for that member.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 id="member-management-actions">Member Management Actions</h4>
+                    <ul>
+                        <li><strong>Edit Member</strong> – change the member's role or access level.</li>
+                        <li><strong>Remove Member</strong> – take the member off the team when necessary.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

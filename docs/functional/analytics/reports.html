@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Reports | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Horilla CRM Reports module: report list, folders, favourites, default reports, report creation, detail and edit views, and report actions."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Analytics</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Reports</span>
+                </nav>
+                <p class="eyebrow">Analytics</p>
+                <h1>Reports</h1>
+                <p class="lead">
+                    Generate, organise and analyse CRM data with pivot tables, charts, configurable columns, filters,
+                    grouping and aggregate functions.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Reports module is used to generate, organise and analyse data from across the CRM. Reports
+                        combine pivot tables and charts with configurable columns, filters, grouping and aggregate
+                        functions.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="report-list-view">1. Report List View</h3>
+                    <p><strong>Purpose:</strong> view, manage and organise every report across the CRM modules.</p>
+                    <ul>
+                        <li>All reports appear together in a consolidated list.</li>
+                        <li>Mark reports as <strong>Favorites</strong> for quick access.</li>
+                        <li>Delete reports that are no longer needed.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/reports-list.png"
+                            alt="Report list view in Horilla CRM"
+                            loading="lazy"
+                        >
+                        <figcaption>Report list view.</figcaption>
+                    </figure>
+
+                    <h3 id="folder-organization">2. Folder Organization</h3>
+                    <p><strong>Purpose:</strong> give reports a structured arrangement so they are easy to find.</p>
+                    <ul>
+                        <li>
+                            Create several folders to group related reports, for example Leads Reports or Opportunity
+                            Reports.
+                        </li>
+                        <li>Rename folders, or delete them when they are no longer needed.</li>
+                        <li>Move folders into other parent folders to build a deeper structure.</li>
+                        <li>Mark folders as <strong>Favorites</strong> for quick access from the sidebar.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/reports-folders.png"
+                            alt="Report folders in Horilla CRM"
+                            loading="lazy"
+                        >
+                        <figcaption>Reports organised into folders.</figcaption>
+                    </figure>
+
+                    <h3 id="favorites-management">3. Favorites Management</h3>
+                    <p><strong>Purpose:</strong> reach frequently used reports and folders quickly.</p>
+                    <ul>
+                        <li>Mark any report or folder as a favourite with the <strong>star icon</strong>.</li>
+                        <li>
+                            Favourited items are collected in the <strong>Favorites</strong> section of the sidebar.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/reports-favourites.png"
+                            alt="Favorites section listing starred reports and folders"
+                            loading="lazy"
+                        >
+                        <figcaption>Favourite reports and folders in the sidebar.</figcaption>
+                    </figure>
+
+                    <h3 id="default-reports">4. Default Reports</h3>
+                    <p><strong>Purpose:</strong> load the pre-built reports supplied by the installed CRM modules.</p>
+                    <ol class="steps">
+                        <li>
+                            Click <strong>Load Default Reports</strong> to open a modal listing the default reports
+                            available across the installed modules.
+                        </li>
+                        <li>Select the reports you want and click <strong>Create</strong> to generate them.</li>
+                    </ol>
+                    <p>Default reports arrive pre-configured with the relevant columns, groupings and filters.</p>
+                    <figure>
+                        <img src="../assets/shots/reports-defaults.png" alt="Load Default Reports modal" loading="lazy">
+                        <figcaption>Loading default reports.</figcaption>
+                    </figure>
+
+                    <h3 id="creating-a-report">5. Creating a Report</h3>
+                    <p><strong>Purpose:</strong> build new custom reports from any CRM module.</p>
+                    <ol class="steps">
+                        <li>Click the <strong>New Report</strong> button.</li>
+                        <li>
+                            Fill in <strong>Name</strong>, <strong>Module</strong>, <strong>Folder</strong> and <strong
+                            >Columns</strong>.
+                        </li>
+                        <li>Save the report.</li>
+                    </ol>
+                    <figure>
+                        <img src="../assets/shots/reports-create.png" alt="New report creation form" loading="lazy">
+                        <figcaption>Creating a new report.</figcaption>
+                    </figure>
+
+                    <h3 id="report-detail-view">6. Report Detail View</h3>
+                    <p><strong>Purpose:</strong> provide detailed insight and interactive exploration of the data.</p>
+
+                    <h4 id="detail-table">Detail Table</h4>
+                    <ul>
+                        <li>Shows record-level data using the selected columns.</li>
+                        <li>
+                            Each column supports aggregate functions: <strong>Sum</strong>, <strong>Count</strong>,
+                            <strong>Average</strong>, <strong>Min</strong> and <strong>Max</strong>.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/reports-table.png"
+                            alt="Report detail table with record-level data"
+                            loading="lazy"
+                        >
+                        <figcaption>Detail table.</figcaption>
+                    </figure>
+
+                    <h4 id="pivot-table">Pivot Table</h4>
+                    <ul>
+                        <li>Summarises the data by grouping rows and columns and showing aggregated values.</li>
+                        <li>Clicking a pivot value filters the detail table down to the related records.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/reports-pivot.png"
+                            alt="Report pivot table with grouped rows and columns"
+                            loading="lazy"
+                        >
+                        <figcaption>Pivot table.</figcaption>
+                    </figure>
+
+                    <h4 id="report-chart">Report Chart</h4>
+                    <ul>
+                        <li>Visualises the data as a Pie, Bar, Line or other chart type.</li>
+                        <li>The chart type and the axis field are configurable from the detail view.</li>
+                        <li>The chart updates dynamically as filters and groupings change.</li>
+                        <li>An interactive legend breaks the data down by category.</li>
+                        <li>The total record count is displayed.</li>
+                        <li>The chart can be exported as PNG or PDF.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/reports-chart.png"
+                            alt="Report chart with legend and record count"
+                            loading="lazy"
+                        >
+                        <figcaption>Report chart.</figcaption>
+                    </figure>
+
+                    <h3 id="report-edit-view">7. Report Edit View</h3>
+                    <p><strong>Purpose:</strong> change a report's configuration after it has been created.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/reports-edit.png"
+                            alt="Report edit view with configuration tabs"
+                            loading="lazy"
+                        >
+                        <figcaption>Report edit view.</figcaption>
+                    </figure>
+                    <p>The edit view is split into three tabs:</p>
+                    <dl>
+                        <dt>Columns</dt>
+                        <dd>
+                            Add, remove or reorder the detail table columns, and switch the aggregate function on or off
+                            for each column.
+                        </dd>
+                        <dt>Grouping</dt>
+                        <dd>Add or remove the pivot row and column grouping fields, up to a maximum of three.</dd>
+                        <dt>Filter</dt>
+                        <dd>Define conditions from a field, an operator and a value, combined with AND/OR logic.</dd>
+                    </dl>
+                    <p>Changes can then be saved or discarded.</p>
+
+                    <h3 id="report-actions-export">8. Report Actions &amp; Export</h3>
+                    <p><strong>Purpose:</strong> share and manage reports outside the CRM.</p>
+                    <figure>
+                        <img src="../assets/shots/reports-actions.png" alt="Report actions menu" loading="lazy">
+                        <figcaption>Report actions.</figcaption>
+                    </figure>
+                    <dl>
+                        <dt>Delete</dt>
+                        <dd>Remove outdated or unnecessary reports.</dd>
+                        <dt>Favorite</dt>
+                        <dd>Mark important reports so they are reachable quickly from the sidebar.</dd>
+                        <dt>Move Report</dt>
+                        <dd>Transfer a report to a different folder.</dd>
+                        <dt>Move Folder</dt>
+                        <dd>Transfer a folder to a different parent folder.</dd>
+                        <dt>Edit Report Name</dt>
+                        <dd>Rename a report.</dd>
+                    </dl>
+                    <div class="note">
+                        <span class="label">Note</span>
+                        <p>
+                            Although this section is titled "Report Actions &amp; Export", the source page lists no
+                            export action here. The only export described is the chart export to PNG or PDF, under
+                            Report Chart.
+                        </p>
+                    </div>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

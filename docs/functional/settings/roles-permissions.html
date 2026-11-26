@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Roles and Permissions | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM roles and permissions: role management, role members, user permissions, bulk assignment, field level permissions and super users."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Roles and Permissions</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Roles and Permissions</h1>
+                <p class="lead">
+                    Manage organisational roles, grant permissions to roles and individual users, and control access
+                    down to the field level.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        Go to <strong>Settings &rarr; Roles and Permissions</strong>. The page title is <strong>Roles
+                            and Permissions</strong>. The description is <q>Control what each role can view, create,
+                            edit, or delete.</q> The note on the page reads <q>To manage field-level permissions, simply
+                            click the name of a model.</q>
+                    </p>
+                    <p>
+                        Three tabs divide the page: <strong>Roles</strong>, <strong>Permissions</strong> and <strong
+                        >Super Users</strong>. Roles hold the shared permissions and the people in that role. The
+                        Permissions tab sets exceptions for one user, or for several users at once. Super Users bypass
+                        these limits.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="roles-overview">1. Roles Overview</h3>
+                    <p><strong>Purpose:</strong> manage each organisational role and the permissions attached to it.</p>
+                    <p><strong>Access:</strong> <strong>Settings &rarr; Roles and Permissions &rarr; Roles</strong>.</p>
+                    <ul>
+                        <li><strong>+ Add Roles</strong> creates a role.</li>
+                        <li>
+                            The list shows every role and the number of members. Selecting a role opens its <strong
+                            >Permissions</strong> and <strong>Members</strong> switches. <strong>Permissions</strong> is
+                            selected by default.
+                        </li>
+                        <li>
+                            <strong>Select All</strong> checks every permission for that role. <strong>Search
+                                Models...</strong> filters the model list.
+                        </li>
+                        <li>
+                            A standard model has two rows: <strong>Create</strong>, <strong>Change</strong>, <strong
+                            >View</strong>, <strong>Delete</strong>, <strong>Export</strong>, then <strong>Create
+                                Own</strong>, <strong>Change Own</strong>, <strong>View Own</strong>, <strong>Delete
+                                Own</strong> and <strong>Export Own</strong>.
+                        </li>
+                        <li>
+                            Some system rows use one permission, such as <strong>Can View About System</strong> or
+                            <strong>Can Change Profile</strong>.
+                        </li>
+                        <li>
+                            A checkbox applies as soon as it changes. The checkbox beside a model name checks every
+                            permission on that row.
+                        </li>
+                        <li>Clicking the model name opens <strong>Field Level Permissions</strong> for that role.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-roles.png"
+                            alt="Roles tab with CEO selected, Select All, Search Models, and permission checkboxes for each model"
+                            loading="lazy"
+                        >
+                        <figcaption>Roles, with CEO selected and its Permissions open.</figcaption>
+                    </figure>
+
+                    <h3 id="role-members">2. Role Members Management</h3>
+                    <p><strong>Purpose:</strong> manage the users that belong to the selected role.</p>
+                    <p>
+                        <strong>Access:</strong> <strong>Roles</strong> tab &rarr; select a role &rarr; <strong
+                        >Members</strong>.
+                    </p>
+                    <ul>
+                        <li><strong>+ Add Member</strong> opens <strong>Add User to Role</strong>.</li>
+                        <li>
+                            The table columns are <strong>Employee</strong>, <strong>Email</strong> and <strong
+                            >Actions</strong>.
+                        </li>
+                        <li>The delete icon asks <q>Are you sure you want to delete the user from this role?</q></li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-role-members.png"
+                            alt="Members of the CEO role, with Add Member, Employee, Email and a delete action"
+                            loading="lazy"
+                        >
+                        <figcaption>Members of the CEO role.</figcaption>
+                    </figure>
+
+                    <h3 id="permissions-overview">3. Permissions Overview</h3>
+                    <p><strong>Purpose:</strong> assign permissions to one user, separately from the role.</p>
+                    <p>
+                        <strong>Access:</strong> <strong>Settings &rarr; Roles and Permissions &rarr;
+                            Permissions</strong>.
+                    </p>
+                    <ul>
+                        <li>The heading is <strong>User Permissions</strong>. Super Users are not listed here.</li>
+                        <li>
+                            <strong>Search Users...</strong> filters the list. <strong>Assign</strong> opens the bulk
+                            dialog in the next section.
+                        </li>
+                        <li>
+                            Each row shows the user's name and role. Opening the row reveals <strong>Select
+                                All</strong>, <strong>Search Models...</strong> and the same permission checkboxes used
+                            on a role.
+                        </li>
+                        <li>
+                            A checkbox applies as soon as it changes. Clicking a model name opens <strong>Field Level
+                                Permissions</strong> for that user.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-user-permissions.png"
+                            alt="Permissions tab with User Permissions and Suresh Thomas expanded to model checkboxes"
+                            loading="lazy"
+                        >
+                        <figcaption>User Permissions, with one user expanded.</figcaption>
+                    </figure>
+
+                    <h3 id="bulk-permissions">4. Bulk Permission Assignment</h3>
+                    <p><strong>Purpose:</strong> assign the same permissions to several users at once.</p>
+                    <p><strong>Access:</strong> <strong>Permissions</strong> tab &rarr; <strong>Assign</strong>.</p>
+                    <ol class="steps">
+                        <li>
+                            The dialog title is <strong>Assign Users</strong>. Under <strong>Users</strong>, choose
+                            people in the <strong>Select Users</strong> field. <strong>Filter</strong> narrows that
+                            list.
+                        </li>
+                        <li>
+                            <strong>Select All</strong> and <strong>Search Models...</strong> work as they do on a role.
+                            Set the checkboxes for the models those users should have.
+                        </li>
+                        <li>Click <strong>Save</strong> to apply those permissions to every selected user.</li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-assign-users.png"
+                            alt="Assign Users dialog with Select Users, Filter, Select All, Search Models and Save"
+                            loading="lazy"
+                        >
+                        <figcaption>Assign Users, opened from the Permissions tab.</figcaption>
+                    </figure>
+
+                    <h3 id="field-level-permissions">5. Field Level Permissions</h3>
+                    <p><strong>Purpose:</strong> choose whether each field is editable, read only, or hidden.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-field-permissions.png"
+                            alt="Field Level Permissions for the CEO role on Account, with Read Only, Read and Write and Don't Show"
+                            loading="lazy"
+                        >
+                        <figcaption>Field Level Permissions for Account on the CEO role.</figcaption>
+                    </figure>
+
+                    <h4 id="field-permission-access">Access</h4>
+                    <ul>
+                        <li>
+                            <strong>For a role:</strong> <strong>Roles</strong> tab, select the role, then click a model
+                            name. Models without field permissions show <q>Field permissions not available for this
+                                model</q> and do not open the dialog.
+                        </li>
+                        <li>
+                            <strong>For a user:</strong> <strong>Permissions</strong> tab, open the user, then click a
+                            model name.
+                        </li>
+                        <li>
+                            <strong>For several users:</strong> open <strong>Assign Users</strong> and click a model
+                            name. With nobody selected, the dialog warns <q>No users selected. Please select atleast one
+                                user.</q>
+                        </li>
+                    </ul>
+
+                    <h4 id="field-permission-types">Permission types</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Permission</th>
+                                    <th>Effect</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Read and Write</td>
+                                    <td>The field is visible and editable.</td>
+                                </tr>
+                                <tr>
+                                    <td>Read Only</td>
+                                    <td>The field is visible but cannot be edited.</td>
+                                </tr>
+                                <tr>
+                                    <td>Don't Show</td>
+                                    <td>The field is hidden completely.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 id="field-permission-modal">Field permission modal</h4>
+                    <p>
+                        The title is <strong>Field Level Permissions</strong>. The header names the <strong
+                        >Role</strong>, the <strong>User</strong>, or the count of <strong>Selected Users</strong>, and
+                        the <strong>Model</strong>.
+                    </p>
+                    <ul>
+                        <li>
+                            Columns are <strong>Fields</strong>, <strong>Read Only</strong>, <strong>Read and
+                                Write</strong> and <strong>Don't Show</strong>. A required field is marked with *.
+                        </li>
+                        <li><strong>Save</strong> stores the choices. Nothing is stored until Save.</li>
+                    </ul>
+                    <div class="note">
+                        <span class="label">Note</span><p>
+                            The dialog says <q>Required fields are always visible when creating or duplicating.
+                                Permissions for these fields apply only during editing.</q>
+                        </p>
+                    </div>
+
+                    <h4 id="permission-priority">Permission priority</h4>
+                    <p>Permissions are resolved in this order:</p>
+                    <ol class="steps">
+                        <li>User-specific permission</li>
+                        <li>Role permission</li>
+                        <li>Model default permission</li>
+                        <li>Read and Write, as the fallback default</li>
+                    </ol>
+
+                    <h4 id="form-behavior">Form behaviour</h4>
+                    <ul>
+                        <li>Hidden fields are removed from the form.</li>
+                        <li>Read-only fields remain visible but are locked.</li>
+                        <li>Required fields stay visible during create and duplicate actions.</li>
+                    </ul>
+
+                    <h4 id="field-bulk-assignment">Bulk assignment</h4>
+                    <ul>
+                        <li>On <strong>Assign Users</strong>, select the users, then click a model name.</li>
+                        <li>
+                            <strong>Save</strong> on Field Level Permissions writes the same field choices for every
+                            selected user.
+                        </li>
+                    </ul>
+
+                    <h4 id="superuser-access">Superuser access</h4>
+                    <ul>
+                        <li>Superusers bypass all field-level restrictions.</li>
+                        <li>Every field stays visible and editable for them.</li>
+                    </ul>
+
+                    <h3 id="super-users">6. Super Users Management</h3>
+                    <p>
+                        <strong>Purpose:</strong> manage administrator accounts that bypass role, user and field
+                        permissions.
+                    </p>
+                    <p>
+                        <strong>Access:</strong> <strong>Settings &rarr; Roles and Permissions &rarr; Super
+                            Users</strong>.
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>Add</strong> opens <strong>Add Super Users</strong>. The field is <strong
+                            >Users</strong>, with the placeholder <strong>Select Users</strong> and the help <q>Select
+                                one or more users to grant superuser privileges.</q>
+                        </li>
+                        <li>
+                            The table columns are <strong>First Name</strong>, <strong>Role</strong> and <strong
+                            >Actions</strong>.
+                        </li>
+                        <li>
+                            <strong>Remove</strong> asks <q>Are you sure you want to remove superuser status from this
+                                user?</q>
+                        </li>
+                    </ul>
+                    <div class="warning">
+                        <span class="label">Warning</span><p>
+                            At least one Super User must remain, so <strong>Remove</strong> stays disabled while only
+                            one Super User is listed.
+                        </p>
+                    </div>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-super-users.png"
+                            alt="Super Users tab with First Name, Role, Add and Remove"
+                            loading="lazy"
+                        >
+                        <figcaption>Super Users, with Add and Remove.</figcaption>
+                    </figure>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

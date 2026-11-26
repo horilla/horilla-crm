@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Opportunity Stages | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM opportunity stages: the stage list, stage type, probability, the final stage, and creating a stage."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Opportunity Stages</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Opportunity Stages</h1>
+                <p class="lead">
+                    Define the stages an opportunity moves through before it closes, including order, probability, stage
+                    type and the one final stage.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        <strong>Path:</strong> <strong>Settings &rarr; Opportunity &rarr; Opportunity Stages</strong>.
+                        The page title is <strong>Opportunity Stages</strong>, with the description “Define the stages
+                        an opportunity moves through before it closes.” Stages can be reordered by dragging the handle
+                        in <strong>Order</strong>. A company has one final stage, and that stage stays last. Each stage
+                        also has a type: <strong>Open</strong>, <strong>Closed Lost</strong> or <strong>Closed
+                            Won</strong>.
+                    </p>
+                </section>
+
+                <section id="opportunity-stage-list">
+                    <h2>1. Opportunity stage list</h2>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Contents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Order</td>
+                                    <td>Position in the pipeline. Drag the handle to reorder.</td>
+                                </tr>
+                                <tr>
+                                    <td>Stage Name</td>
+                                    <td>Name of the stage, such as Prospecting, Qualification or Closed Won.</td>
+                                </tr>
+                                <tr>
+                                    <td>Is Final Stage</td>
+                                    <td>
+                                        Checked for the one final stage. Closed Won is the final stage in the list shown
+                                        here.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Probability</td>
+                                    <td>Default probability for the stage, from 0.00 to 100.00.</td>
+                                </tr>
+                                <tr>
+                                    <td>Stage Type</td>
+                                    <td>Open, Closed Lost or Closed Won.</td>
+                                </tr>
+                                <tr>
+                                    <td>Actions</td>
+                                    <td>Edit or delete the stage.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figure>
+                        <img
+                            src="../assets/shots/opportunity-stage-list.png"
+                            alt="Opportunity Stages list from Prospecting through Closed Won"
+                            loading="lazy"
+                        >
+                        <figcaption>Opportunity Stages. Closed Won is the final stage.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="create-opportunity-stage">
+                    <h2>2. Creating an opportunity stage</h2>
+                    <p>Click <strong>New</strong>. The form title is <strong>Create Opportunity Stage</strong>.</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Stage Name</td>
+                                    <td>Required. Name of the stage.</td>
+                                </tr>
+                                <tr>
+                                    <td>Probability</td>
+                                    <td>Required. Default probability percentage for this stage.</td>
+                                </tr>
+                                <tr>
+                                    <td>Is Final Stage</td>
+                                    <td>
+                                        <strong>No</strong> or <strong>Yes</strong>. Only one stage can be final.
+                                        Marking a stage as final clears the previous final stage and moves the new one
+                                        to the end.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Order</td>
+                                    <td>Position in the pipeline. The form suggests the next order.</td>
+                                </tr>
+                                <tr>
+                                    <td>Stage Type</td>
+                                    <td>
+                                        Required. <strong>Open</strong>, <strong>Closed Lost</strong> or <strong>Closed
+                                            Won</strong>.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>
+                        <strong>Save</strong> stores the stage and closes the form. <strong>Save &amp; New</strong>
+                        stores it and opens a blank form.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/opportunity-stage-create.png"
+                            alt="Create Opportunity Stage form with Stage Name, Probability, Is Final Stage, Order and Stage Type"
+                            loading="lazy"
+                        >
+                        <figcaption>Create Opportunity Stage. Stage Type defaults to Open.</figcaption>
+                    </figure>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

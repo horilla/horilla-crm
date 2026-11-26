@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Email to Record | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM Email to Record: configuring incoming mailboxes, sender filters and keywords so that qualifying emails become leads or contacts."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Email to Record</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Email to Record</h1>
+                <p class="lead">
+                    Turn incoming email into a lead or a contact, using mailbox, sender and keyword rules. The menu name
+                    was Mail to Lead in earlier versions.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        Email to Record turns an incoming email into a lead or a contact when the mailbox, sender and
+                        keyword rules match.
+                    </p>
+                </section>
+
+                <section id="purpose">
+                    <h2>Purpose</h2>
+                    <ul>
+                        <li>Automate lead creation from incoming email.</li>
+                        <li>Standardise how leads are captured.</li>
+                        <li>Reduce manual data entry errors.</li>
+                        <li>Make sure customer enquiries receive timely follow-up.</li>
+                        <li>Capture only the relevant messages.</li>
+                    </ul>
+                </section>
+
+                <section id="navigation-path">
+                    <h2>Navigation Path</h2>
+                    <p>
+                        Go to <strong>Settings &rarr; Lead &rarr; Email to Record</strong>. The page description is <q
+                        >Automatically create leads or contacts from incoming emails.</q> Each saved configuration lists
+                        <strong>Incoming Mail</strong>, <strong>Type</strong>, <strong>Owner</strong> and <strong
+                        >Actions</strong>. <strong>New</strong> opens the create form. Matching mail is the mail shown
+                        in <a href="inbox.html">Inbox</a>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-email-record.png?v=2"
+                            alt="Email to Record list with inbox.demo@horilla.com, type Mail, and owner Adam Lui"
+                            loading="lazy"
+                        >
+                        <figcaption>Email to Record with a saved configuration.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="creating-a-configuration">
+                    <h2>Creating a Mail to Lead Configuration</h2>
+                    <ol class="steps">
+                        <li>Click the <strong>Add New</strong> button.</li>
+                        <li>The <strong>Create Mail to Lead Config</strong> form opens.</li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/mail-to-lead-n-single.png"
+                            alt="Create Mail to Lead Config form"
+                            loading="lazy"
+                        >
+                        <figcaption>Create Mail to Lead Config form.</figcaption>
+                    </figure>
+
+                    <p>
+                        The form records the mailbox, what to create, who owns the record, which senders are accepted,
+                        and the keywords.
+                    </p>
+
+                    <h3 id="incoming-mail">1. Incoming Mail</h3>
+                    <ul>
+                        <li>Sets the inbox to monitor.</li>
+                        <li>Only emails received in the selected mailbox are processed.</li>
+                        <li>Several configurations can be set up for different mailboxes.</li>
+                    </ul>
+
+                    <h3 id="create-as">2. Create As</h3>
+                    <ul>
+                        <li><strong>Lead</strong> creates a lead. This is the default.</li>
+                        <li><strong>Contact</strong> creates a contact from the same email.</li>
+                    </ul>
+
+                    <h3 id="assignment">3. Apply Assignment Rule</h3>
+                    <ul>
+                        <li>Used when the record is created as a lead.</li>
+                        <li>
+                            When it is on, assignment rules choose the owner, and the selected owner is used only when
+                            no rule matches.
+                        </li>
+                        <li>When it is off, the selected owner is always used.</li>
+                    </ul>
+
+                    <h3 id="lead-owner">4. Owner</h3>
+                    <ul>
+                        <li>
+                            Sets the user the created record is assigned to when assignment rules do not decide the
+                            owner.
+                        </li>
+                    </ul>
+
+                    <h3 id="accept-emails-from">5. Accept Emails From (optional)</h3>
+                    <ul>
+                        <li>Filters by sender address or domain.</li>
+                        <li>When set, only matching senders create leads.</li>
+                        <li>Left empty, all incoming emails are considered.</li>
+                    </ul>
+
+                    <h3 id="keywords">6. Keywords (mandatory)</h3>
+                    <ul>
+                        <li>Defines the trigger words or phrases.</li>
+                        <li>Only emails containing these keywords create leads.</li>
+                        <li>Helps filter for high-intent or otherwise relevant enquiries.</li>
+                    </ul>
+
+                    <h4 id="configuration-list-view">Configuration List View</h4>
+                    <p>Once saved, configurations appear in a list.</p>
+                    <ul>
+                        <li><strong>Displayed columns:</strong> Incoming Mail, Type (Mail), Lead Owner.</li>
+                        <li><strong>Available actions:</strong> Edit, Delete.</li>
+                    </ul>
+                    <p>This gives one place to manage all Mail to Lead rules.</p>
+                </section>
+
+                <section id="system-workflow">
+                    <h2>System Workflow</h2>
+                    <p>Once a configuration is active, the system processes email automatically.</p>
+
+                    <h3 id="workflow-steps">Workflow Steps</h3>
+                    <ol class="steps">
+                        <li>The system monitors the configured mailbox.</li>
+                        <li>An incoming email arrives.</li>
+                        <li>
+                            The email is checked against the sender filter (if one is defined) and the keywords
+                            (mandatory).
+                        </li>
+                        <li>
+                            If the conditions match: a lead record is created, <strong>Lead Source</strong> is set to
+                            <code>Mail</code>, the email content is saved in the lead description, and the lead is
+                            assigned to the configured owner.
+                        </li>
+                    </ol>
+                    <p>No manual action is needed after setup.</p>
+                </section>
+
+                <section id="data-handling">
+                    <h2>Data Handling</h2>
+
+                    <h3 id="lead-creation-rules">Lead Creation Rules</h3>
+                    <ul>
+                        <li>Each qualifying email creates one lead.</li>
+                        <li>Duplicate handling depends on the system configuration, where applicable.</li>
+                        <li>The email body is stored as lead context.</li>
+                    </ul>
+
+                    <h3 id="auto-populated-fields">Lead Fields Auto-Populated</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Lead Source</td>
+                                    <td>Mail</td>
+                                </tr>
+                                <tr>
+                                    <td>Description</td>
+                                    <td>Email content</td>
+                                </tr>
+                                <tr>
+                                    <td>Owner</td>
+                                    <td>The configured user</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="use-cases">
+                    <h2>Use Cases</h2>
+                    <ul>
+                        <li>Capturing sales enquiries from shared inboxes.</li>
+                        <li>Turning website contact emails into leads.</li>
+                        <li>Filtering high-intent emails with keywords.</li>
+                        <li>Managing several business email channels.</li>
+                    </ul>
+                </section>
+
+                <section id="benefits">
+                    <h2>Benefits</h2>
+                    <ul>
+                        <li>Automated lead capture.</li>
+                        <li>Faster response times.</li>
+                        <li>Less manual work.</li>
+                        <li>More consistent data.</li>
+                        <li>Better lead filtering and quality control.</li>
+                    </ul>
+                </section>
+
+                <section id="best-practices">
+                    <h2>Best Practices</h2>
+                    <ul>
+                        <li>Use dedicated inboxes for lead capture, such as sales or info addresses.</li>
+                        <li>Choose precise, relevant keywords.</li>
+                        <li>Restrict sender domains where needed.</li>
+                        <li>Assign owners according to the team structure.</li>
+                        <li>Review and update configurations regularly.</li>
+                    </ul>
+                </section>
+
+                <section id="limitations">
+                    <h2>Limitations and Considerations</h2>
+                    <ul>
+                        <li>Emails without the keywords will not create leads.</li>
+                        <li>Broad keywords can produce irrelevant leads.</li>
+                        <li>An incorrect sender filter can block valid enquiries.</li>
+                        <li>A properly configured and monitored mailbox is required.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

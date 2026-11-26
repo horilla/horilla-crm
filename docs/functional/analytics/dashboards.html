@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Dashboard &amp; Home | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM dashboards and the home page: dashboard and folder management, components and widgets, report integration, home page configuration and date filtering."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Analytics</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Dashboards</span>
+                </nav>
+                <p class="eyebrow">Analytics</p>
+                <h1>Dashboard &amp; Home</h1>
+                <p class="lead">
+                    Visualise CRM metrics on customisable dashboards, organise them in folders, and shape a personalised
+                    home page with date filtering and export options.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Dashboard &amp; Home module is a dashboard and home page system for visualising CRM metrics.
+                        It provides customisable dashboards, a hierarchical way of organising them, personalised home
+                        pages, date filtering and export options.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="dashboard-management">1.1 Dashboard Management</h3>
+                    <p><strong>Purpose:</strong> create, organise and manage multiple dashboards.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/dashboards-list.png"
+                            alt="Dashboard management screen listing dashboards"
+                            loading="lazy"
+                        >
+                        <figcaption>Dashboard management.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Create multiple dashboards.</li>
+                        <li>Give each dashboard a name and a description.</li>
+                        <li>Select a default dashboard.</li>
+                        <li>Assign a dashboard owner, with view-only or edit permissions.</li>
+                        <li>Navigate from the list into a dashboard's detail view.</li>
+                    </ul>
+
+                    <h3 id="folder-organization">1.2 Folder Organization System</h3>
+                    <p><strong>Purpose:</strong> give dashboards a hierarchical structure.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/dashboards-folders.png"
+                            alt="Dashboard folder organisation"
+                            loading="lazy"
+                        >
+                        <figcaption>Folder organisation.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Create multiple folders.</li>
+                        <li>Give each folder a name and a description.</li>
+                        <li>
+                            Nest folders inside one another, for example <strong>Main Folder &gt; Sales &gt; Q1
+                                Reports</strong>.
+                        </li>
+                        <li>Open a folder detail view.</li>
+                        <li>Assign dashboards to folders.</li>
+                    </ul>
+
+                    <h3 id="favorites-management">1.3 Favorites Management</h3>
+                    <p><strong>Purpose:</strong> reach frequently used dashboards and folders quickly.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/dashboards-favourites.png"
+                            alt="Favourite dashboards and folders"
+                            loading="lazy"
+                        >
+                        <figcaption>Favourites management.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Mark any dashboard or folder as a favourite.</li>
+                        <li>Favourites are available for quick access in the sidebar.</li>
+                        <li>Star icons act as visual favourite indicators.</li>
+                    </ul>
+
+                    <h3 id="dashboard-detail-view">1.4 Dashboard Detail View &amp; Interaction</h3>
+                    <p><strong>Purpose:</strong> work interactively with a dashboard and its components.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/dashboards-detail.png"
+                            alt="Dashboard detail view with components"
+                            loading="lazy"
+                        >
+                        <figcaption>Dashboard detail view.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>The dashboard is displayed interactively.</li>
+                    </ul>
+                    <ol class="steps">
+                        <li><strong>Add Components</strong> button.</li>
+                        <li>Reorder components by drag and drop.</li>
+                        <li>
+                            Component-specific actions:
+                            <ul>
+                                <li>Export chart components as PNG or PDF.</li>
+                                <li>Export table components as CSV, Excel or PDF.</li>
+                                <li>Update components.</li>
+                                <li>Delete components.</li>
+                                <li>Copy a component to another dashboard.</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                    <h3 id="components-widgets">1.5 Dashboard Components &amp; Widgets</h3>
+                    <p><strong>Purpose:</strong> offer a range of component types for visualising data.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/dashboards-components.png"
+                            alt="Dashboard component and widget configuration"
+                            loading="lazy"
+                        >
+                        <figcaption>Dashboard components and widgets.</figcaption>
+                    </figure>
+                    <h4 id="component-types">Available component types</h4>
+                    <ul>
+                        <li>Charts — bar, line, pie and others.</li>
+                        <li>Table Data.</li>
+                        <li>KPI Widgets.</li>
+                    </ul>
+                    <h4 id="component-configuration">Component configuration fields</h4>
+                    <ul>
+                        <li><strong>Component Name</strong></li>
+                        <li><strong>Module Selection</strong></li>
+                        <li><strong>Component Type</strong></li>
+                        <li><strong>Metric Field Selection:</strong> Count, Sum, Average, Min, Max</li>
+                        <li><strong>Grouping Field (X-Axis)</strong></li>
+                        <li><strong>Secondary Grouping</strong></li>
+                        <li><strong>Y-Axis Metric</strong></li>
+                        <li><strong>Table Columns</strong></li>
+                        <li><strong>KPI Icon</strong></li>
+                        <li><strong>Condition-Based Filtering</strong></li>
+                    </ul>
+
+                    <h3 id="component-preview">1.6 Component Preview &amp; Management</h3>
+                    <p><strong>Purpose:</strong> preview and manage dashboard components.</p>
+                    <ul>
+                        <li>Components are previewed in real time.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/dashboards-preview.png"
+                            alt="Real-time preview of a dashboard component"
+                            loading="lazy"
+                        >
+                        <figcaption>Real-time component preview.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Components can be reordered.</li>
+                        <li>KPIs are reordered separately.</li>
+                        <li>The chosen order persists, saved per user and per dashboard.</li>
+                        <li>The layout can be reset, which reverts to the system default order.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/dashboards-reorder.png"
+                            alt="Reordering dashboard components"
+                            loading="lazy"
+                        >
+                        <figcaption>Component reordering and layout reset.</figcaption>
+                    </figure>
+
+                    <h3 id="navigation-hierarchy">1.7 Navigation &amp; Folder Hierarchy</h3>
+                    <p><strong>Purpose:</strong> make moving through the dashboard structure intuitive.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/dashboards-nav.png"
+                            alt="Dashboard navigation and folder hierarchy"
+                            loading="lazy"
+                        >
+                        <figcaption>Navigation and folder hierarchy.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Breadcrumb navigation.</li>
+                        <li>
+                            Sidebar navigation for <strong>All Dashboards</strong>, <strong>All Folders</strong> and
+                            <strong>Favorites</strong> (both folders and dashboards).
+                        </li>
+                        <li>A hierarchical folder view.</li>
+                        <li>Quick navigation actions.</li>
+                    </ul>
+
+                    <h3 id="report-chart-integration">1.8 Report &amp; Chart View Integration</h3>
+                    <h4 id="add-report-as-component">Add Report as Component</h4>
+                    <ul>
+                        <li>
+                            Saved reports that include a chart can be added as a dashboard component from the Reports
+                            detail view.
+                        </li>
+                        <li>The chart type, grouping and secondary grouping are mapped across automatically.</li>
+                    </ul>
+                    <h4 id="add-chart-view-as-component">Add Chart View as Component</h4>
+                    <ul>
+                        <li>Every CRM module includes a Chart View that can be pinned to a dashboard.</li>
+                        <li>
+                            The module and grouping configuration are saved at the moment of pinning, and the chart then
+                            renders live data.
+                        </li>
+                    </ul>
+
+                    <h3 id="home-page-configuration">1.9 Home Page Configuration</h3>
+                    <p><strong>Purpose:</strong> provide personalised home page experiences.</p>
+                    <ul>
+                        <li>A default dashboard can act as the home page.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/dashboards-home.png"
+                            alt="Default dashboard used as the home page"
+                            loading="lazy"
+                        >
+                        <figcaption>Default dashboard home page.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>
+                            The system default home page shows Open Pipeline, Won Revenue, Overdue Tasks, Meetings Today
+                            and New Leads, then the stage funnel, won revenue by month, deals closing soon, open tasks
+                            and tasks due this week.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/dashboards-home-default.png"
+                            alt="System default home page"
+                            loading="lazy"
+                        >
+                        <figcaption>System default home page.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>The default home layout ordering is saved per user.</li>
+                        <li>The default home layout can be reset.</li>
+                        <li>The home page loads dynamically.</li>
+                        <li>Configuration is user-specific.</li>
+                        <li>
+                            Date range filtering:
+                            <ul>
+                                <li>
+                                    Presets: <strong>Created Today</strong>, <strong>Created Yesterday</strong>, <strong
+                                    >Created This Week</strong> and <strong>Created This Month</strong>.
+                                </li>
+                                <li>A custom date range selected with a date picker.</li>
+                                <li><strong>All Time</strong>.</li>
+                                <li>The chosen range applies across the whole dashboard.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+
+                <section id="benefits">
+                    <h2>Benefits</h2>
+                    <ul>
+                        <li>Centralised business intelligence.</li>
+                        <li>Flexible organisation.</li>
+                        <li>A personalised experience.</li>
+                        <li>Real-time data visualisation.</li>
+                        <li>14 chart types.</li>
+                        <li>Scalable dashboard management.</li>
+                        <li>Enhanced productivity.</li>
+                        <li>Advanced analytics: aggregation, secondary grouping and multi-condition filtering.</li>
+                        <li>Report integration.</li>
+                        <li>A user-friendly interface.</li>
+                        <li>Data export to PNG, PDF, CSV and Excel.</li>
+                        <li>Collaborative dashboard sharing.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

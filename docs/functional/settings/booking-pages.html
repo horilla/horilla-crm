@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Booking Pages | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Booking Pages in Horilla CRM: creating a page, availability, share and embed, and My Bookings."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Booking Pages</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Booking Pages</h1>
+                <p class="lead">Publish a page where someone outside the CRM can book time with a host.</p>
+            </header>
+
+            <main>
+                <section id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        Go to <strong>Settings &rarr; General &rarr; Booking Pages</strong>. The page title is <strong
+                        >Booking Pages</strong>, and the line under it reads <q>Create booking pages so others can
+                            schedule time with you.</q> Click <strong>New</strong> to add one. Each row has <strong
+                        >Edit</strong>, <strong>Availability</strong>, <strong>Embed</strong> and <strong
+                        >Delete</strong>.
+                    </p>
+                    <p>
+                        People who only have view-own access still see <strong>My Jobs &rarr; My Bookings</strong> and
+                        the meeting activities that belong to them. See <a href="../myjobs/bookings.html"
+                        >My Bookings</a>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-booking.png"
+                            alt="Booking Pages list with Title, Host, Duration, Online Meeting and Meeting Provider"
+                            loading="lazy"
+                        >
+                        <figcaption>Booking Pages.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="page-fields">
+                    <h2>What a booking page stores</h2>
+                    <ul>
+                        <li>
+                            <strong>Title</strong>, <strong>Description</strong> and a <strong>Slug</strong> used in the
+                            public URL.
+                        </li>
+                        <li><strong>Host</strong> and optional <strong>Participants</strong>.</li>
+                        <li>
+                            <strong>Business Hour</strong> and <strong>Shift Hours</strong>. Break windows inside a
+                            shift are not offered as slots.
+                        </li>
+                        <li>
+                            <strong>Duration</strong>, buffers before and after, <strong>Max Bookings Per Day</strong>,
+                            <strong>Advance Notice</strong> and <strong>Booking Window</strong> in days.
+                        </li>
+                        <li>
+                            <strong>Online Meeting</strong> and a <strong>Meeting Provider</strong>, or a <strong
+                            >Location</strong> for an in-person meeting.
+                        </li>
+                        <li><strong>Custom Questions</strong> asked of the booker.</li>
+                        <li>A reminder a set number of hours before the meeting.</li>
+                        <li>Whether rescheduling and cancellation are allowed, and the cutoff in days for each.</li>
+                        <li>Mail templates for confirmation, cancellation and reschedule, and a brand colour.</li>
+                    </ul>
+                </section>
+
+                <section id="create">
+                    <h2>Create Booking Page</h2>
+                    <p>
+                        Click <strong>New</strong>. The form title is <strong>Create Booking Page</strong>. <strong
+                        >Host</strong> is the signed-in user, and <strong>Slug</strong> is built from the title. Neither
+                        is shown on the form.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-booking-create.png"
+                            alt="Create Booking Page form with title, duration, online meeting, buffers and email templates"
+                            loading="lazy"
+                        >
+                        <figcaption>
+                            Create Booking Page. Save stores it. Save &amp; New stores it and opens a blank form.
+                        </figcaption>
+                    </figure>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Shift Hours</td>
+                                    <td>
+                                        Optional shift whose hours are offered instead of the company business hours.
+                                        Placeholder: Select Shift Hours.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Title</td>
+                                    <td>Name of the page. Placeholder: e.g. 30-Minute Intro Call.</td>
+                                </tr>
+                                <tr>
+                                    <td>Description</td>
+                                    <td>Text shown with the page. Placeholder: Enter Description here...</td>
+                                </tr>
+                                <tr>
+                                    <td>Duration (minutes)</td>
+                                    <td>Length of each slot. The form opens at 30.</td>
+                                </tr>
+                                <tr>
+                                    <td>Online Meeting</td>
+                                    <td>
+                                        <strong>Yes</strong> or <strong>No</strong>. Yes asks for a Meeting Provider. No
+                                        asks for a Location.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Participants</td>
+                                    <td>Other people on the meeting. Filter narrows the list.</td>
+                                </tr>
+                                <tr>
+                                    <td>Advance Notice (minutes)</td>
+                                    <td>How soon a slot can be booked. Opens at 60.</td>
+                                </tr>
+                                <tr>
+                                    <td>Booking Window (days)</td>
+                                    <td>How far ahead a visitor can book. Opens at 30.</td>
+                                </tr>
+                                <tr>
+                                    <td>Buffer Before / Buffer After</td>
+                                    <td>Minutes kept free around each booking. Both open at 0.</td>
+                                </tr>
+                                <tr>
+                                    <td>Reminder (hours before)</td>
+                                    <td>When to send the reminder. Leave it blank for no reminder.</td>
+                                </tr>
+                                <tr>
+                                    <td>Allow Rescheduling / Reschedule Cutoff (days)</td>
+                                    <td>Yes shows the cutoff. Opens at 1 day.</td>
+                                </tr>
+                                <tr>
+                                    <td>Allow Cancellation / Cancel Cutoff (days)</td>
+                                    <td>Yes shows the cutoff. Opens at 1 day.</td>
+                                </tr>
+                                <tr>
+                                    <td>Email templates</td>
+                                    <td>Confirmation, Cancellation and Reschedule templates.</td>
+                                </tr>
+                                <tr>
+                                    <td>Max Bookings Per Day</td>
+                                    <td>Optional daily limit.</td>
+                                </tr>
+                                <tr>
+                                    <td>Brand Color</td>
+                                    <td>Colour used on the public page.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>
+                        Click <strong>Save</strong> to store the page, or <strong>Save &amp; New</strong> to store it
+                        and open a blank form.
+                    </p>
+                </section>
+
+                <section id="availability">
+                    <h2>Availability</h2>
+                    <p>
+                        On a row, click <strong>Availability</strong>. The dialog title is <strong>Availability</strong>
+                        followed by the page title.
+                    </p>
+                    <p>
+                        A badge names the schedule in use: <strong>Shift Hours</strong> when the page has a shift,
+                        otherwise <strong>Business Hours</strong>. <strong>Weekly Schedule</strong> lists each day as
+                        open, with the start and end, or <strong>Closed</strong>. <strong>Host Unavailability</strong>
+                        lists blocks set for the host and participants. When there are none, it says <q>No
+                            unavailability blocks set.</q>
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-booking-availability.png"
+                            alt="Availability dialog for On-site Consultation with weekday hours and closed Saturday and Sunday"
+                            loading="lazy"
+                        >
+                        <figcaption>Availability. The weekly schedule, then any host unavailability.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="share">
+                    <h2>Share &amp; Embed</h2>
+                    <p>
+                        On a row, click <strong>Embed</strong>, the share icon. The dialog title is <strong>Share &amp;
+                            Embed</strong> followed by the page title.
+                    </p>
+                    <p>
+                        <strong>Public Booking Link</strong> is the URL a visitor opens. <strong>Embed Code</strong> is
+                        an iframe for another site. <strong>Copy</strong> copies either one.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-booking-share.png"
+                            alt="Share and Embed dialog with the public booking link and iframe code"
+                            loading="lazy"
+                        >
+                        <figcaption>Share &amp; Embed. Copy the link or the iframe.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="public-page">
+                    <h2>Public page</h2>
+                    <p>
+                        The visitor picks a day from the date strip, then a free slot. The booking stores the booker's
+                        name, email, start and end, timezone, answers, status and, for an online meeting, the meeting
+                        URL. A confirmed booking can create the related meeting activity.
+                    </p>
+                </section>
+
+                <section id="expected-behaviour">
+                    <h2>Expected Behaviour</h2>
+                    <ul>
+                        <li>
+                            Slots that fall in a break, inside a buffer, inside the advance-notice window, or past the
+                            daily maximum are not offered.
+                        </li>
+                        <li>
+                            A booker can reschedule or cancel only when the page allows it and the cutoff has not
+                            passed.
+                        </li>
+                        <li>A host with only their own bookings still opens My Bookings.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

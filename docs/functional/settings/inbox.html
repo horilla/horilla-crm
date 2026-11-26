@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Inbox and Outbox | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Horilla CRM Inbox and Outbox in Settings, including Email to Record."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Inbox and Outbox</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Inbox and Outbox</h1>
+                <p class="lead">Read mail the CRM has fetched, and review mail it has sent.</p>
+            </header>
+
+            <main>
+                <section id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        Both lists live under <strong>Settings &rarr; Mail</strong>, next to the outgoing server, the
+                        incoming server and mail templates.
+                    </p>
+                </section>
+
+                <section id="inbox">
+                    <h2>Inbox</h2>
+                    <p>
+                        Go to <strong>Settings &rarr; Mail &rarr; Inbox</strong>. The description is <q>Review emails
+                            fetched from your incoming mailboxes.</q> With no fetched mail, the page shows <q>Nothing to
+                            show yet. Please add your Incoming Mails.</q>
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-inbox.png?v=3"
+                            alt="Inbox page with the empty state Nothing to show yet. Please add your Incoming Mails."
+                            loading="lazy"
+                        >
+                        <figcaption>
+                            Inbox. Search and the filter sit at the top. The list is empty until mail is fetched.
+                        </figcaption>
+                    </figure>
+                    <p>
+                        <a href="mail-to-lead.html">Email to Record</a> uses this inbox. A matching message can create a
+                        Lead or a Contact.
+                    </p>
+                </section>
+
+                <section id="outbox">
+                    <h2>Outbox</h2>
+                    <p>
+                        Go to <strong>Settings &rarr; Mail &rarr; Outbox</strong>. The description is <q>Review the
+                            emails sent from the system.</q> Columns are <strong>Send To</strong>, <strong
+                        >Subject</strong>, <strong>Mail Status</strong>, <strong>From</strong>, <strong>Sent By</strong>
+                        and <strong>Sent At</strong>, with <strong>Actions</strong>. A checkbox and <strong
+                        >Select</strong> sit above the rows. <strong>Select</strong> shows the number of rows.
+                    </p>
+                    <p>
+                        A draft row offers <strong>Send Email</strong> and <strong>Delete</strong>. <strong>Sent
+                            By</strong> and <strong>Sent At</strong> stay blank until the mail is sent.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-outbox.png?v=3"
+                            alt="Outbox list with Send To, Subject, Mail Status, From, Sent By, Sent At and Actions. The row is a draft from support@horilla.com."
+                            loading="lazy"
+                        >
+                        <figcaption>
+                            Outbox. The draft is addressed to anjali.pillai@farmsteadindiaproduce.com and sent from
+                            support@horilla.com.
+                        </figcaption>
+                    </figure>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

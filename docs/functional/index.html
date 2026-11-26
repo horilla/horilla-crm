@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>CRM Documentation | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional documentation for Horilla CRM: an introduction to the platform, its modules and its key capabilities, with links to every module guide."
+        >
+        <link rel="stylesheet" href="assets/style.css?v=2">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <span aria-current="page">Horilla CRM Functional Docs</span>
+                </nav>
+                <p class="eyebrow">Introduction</p>
+                <h1>CRM Documentation</h1>
+                <p class="lead">
+                    Functional guide to Horilla CRM — sales, marketing, customer data, scheduling, analytics,
+                    automation, messaging and administration in a single open-source platform.
+                </p>
+            </header>
+
+            <main>
+                <section id="what-is-horilla-crm">
+                    <h2>What is Horilla CRM?</h2>
+                    <p>
+                        Horilla CRM is an open-source customer relationship management platform that brings sales,
+                        marketing, customer data, scheduling, analytics, automation and administration together in one
+                        system. This documentation covers the complete working cycle it supports, from capturing a lead
+                        through to managing deals and forecasting revenue.
+                    </p>
+                </section>
+
+                <section id="integrated-platform">
+                    <h2>Integrated Platform Foundation</h2>
+                    <p>
+                        Every module shares a single workspace, so records, people and activity stay connected rather
+                        than siloed. Real-time notifications are delivered over WebSockets, and background processing is
+                        handled by Celery.
+                    </p>
+                </section>
+
+                <section id="modules">
+                    <h2>Comprehensive Modules</h2>
+                    <p>
+                        The product is organised into functional areas. Each guide below describes the screens, fields,
+                        actions and workflows of its module.
+                    </p>
+
+                    <h3 id="sales">Sales</h3>
+                    <ul class="cards">
+                        <li>
+                            <a href="sales/leads.html">Leads</a><p>
+                                Lead capture and tracking, with a lead scoring engine, Web-to-Lead forms and Email to
+                                Record.
+                            </p>
+                        </li>
+                        <li>
+                            <a href="sales/campaigns.html">Campaigns</a><p>Marketing campaign planning and tracking.</p>
+                        </li>
+                        <li>
+                            <a href="sales/opportunities.html">Opportunities</a><p>
+                                Deal management, including big deal alerts and split revenue.
+                            </p>
+                        </li>
+                        <li>
+                            <a href="sales/forecast.html">Forecast</a><p>Revenue forecasting and target tracking.</p>
+                        </li>
+                    </ul>
+
+                    <h3 id="people">People</h3>
+                    <ul class="cards">
+                        <li>
+                            <a href="people/accounts.html">Accounts</a><p>Company records and their relationships.</p>
+                        </li>
+                        <li>
+                            <a href="people/contacts.html">Contacts</a><p>
+                                Individual people linked to accounts and deals.
+                            </p>
+                        </li>
+                    </ul>
+
+                    <h3 id="my-jobs">My Jobs</h3>
+                    <ul class="cards">
+                        <li>
+                            <a href="myjobs/bookings.html">My Bookings</a><p>
+                                Meetings booked through a public booking page, for hosts and participants.
+                            </p>
+                        </li>
+                        <li>
+                            <a href="myjobs/approval-jobs.html">Approval Jobs</a><p>
+                                Records waiting on the signed-in user for approval.
+                            </p>
+                        </li>
+                        <li>
+                            <a href="myjobs/review-jobs.html">Review Jobs</a><p>
+                                Records waiting on the signed-in user for review.
+                            </p>
+                        </li>
+                    </ul>
+
+                    <h3 id="schedule">Schedule</h3>
+                    <ul class="cards">
+                        <li>
+                            <a href="schedule/calendar.html">Calendar</a><p>
+                                Scheduling, with two-way Google Calendar sync.
+                            </p>
+                        </li>
+                        <li>
+                            <a href="schedule/activities.html">Activities</a><p>
+                                Tasks, calls, meetings and other follow-up work.
+                            </p>
+                        </li>
+                    </ul>
+
+                    <h3 id="analytics">Analytics</h3>
+                    <ul class="cards">
+                        <li>
+                            <a href="analytics/reports.html">Reports</a><p>
+                                Reporting with export to CSV, Excel, PDF and PNG.
+                            </p>
+                        </li>
+                        <li>
+                            <a href="analytics/dashboards.html">Dashboards</a><p>
+                                Live metric dashboards. Named ranges cover today, yesterday, this week and this month,
+                                plus a custom range.
+                            </p>
+                        </li>
+                    </ul>
+
+                    <h3 id="mobile">Mobile</h3>
+                    <ul class="cards">
+                        <li>
+                            <a href="mobile.html">Phone layout</a><p>
+                                Optional layout at <code>/m/</code> with My work, Agenda and Records.
+                            </p>
+                        </li>
+                    </ul>
+
+                    <h3 id="settings">Settings</h3>
+                    <p>Each group below is one menu in the Settings sidebar, in the same order as the product.</p>
+                    <div class="settings-menu">
+                        <h4 id="settings-general">General</h4>
+                        <ul class="cards">
+                            <li><a href="settings/company-information.html">Company Information</a></li>
+                            <li><a href="settings/users.html">Users</a></li>
+                            <li><a href="settings/roles-permissions.html">Roles and Permissions</a></li>
+                            <li><a href="settings/booking-pages.html">Booking Pages</a></li>
+                        </ul>
+
+                        <h4 id="settings-base">Base</h4>
+                        <ul class="cards">
+                            <li><a href="settings/branches-and-departments.html">Branches &amp; Departments</a></li>
+                            <li><a href="settings/relationship-roles.html">Relationship Roles</a></li>
+                            <li><a href="settings/scoring-rules.html">Scoring Rules</a></li>
+                        </ul>
+
+                        <h4 id="settings-mail">Mail</h4>
+                        <ul class="cards">
+                            <li><a href="settings/outgoing-mail-configuration.html">Outgoing Mail Configuration</a></li>
+                            <li><a href="settings/incoming-mail-configuration.html">Incoming Mail Configuration</a></li>
+                            <li><a href="settings/mail-template.html">Mail Template</a></li>
+                            <li><a href="settings/inbox.html">Inbox and Outbox</a></li>
+                        </ul>
+
+                        <h4 id="settings-integrations">Integrations</h4>
+                        <ul class="cards">
+                            <li><a href="settings/google-calendar-sync.html">Google Calendar Sync</a></li>
+                            <li><a href="settings/meeting-integration.html">Meeting Integration</a></li>
+                            <li><a href="settings/calls-integration.html">Call Integration</a></li>
+                        </ul>
+
+                        <h4 id="settings-notifications">Notifications</h4>
+                        <ul class="cards">
+                            <li><a href="settings/notification-template.html">Notification Template</a></li>
+                        </ul>
+
+                        <h4 id="settings-automations">Automations</h4>
+                        <ul class="cards">
+                            <li><a href="settings/mail-and-notification.html">Message Automations</a></li>
+                            <li><a href="settings/cadences.html">Cadences</a></li>
+                            <li><a href="settings/automations.html">Workflow Rules</a></li>
+                        </ul>
+
+                        <h4 id="settings-lead">Lead</h4>
+                        <ul class="cards">
+                            <li><a href="settings/lead-stage.html">Lead Stages</a></li>
+                            <li><a href="settings/mail-to-lead.html">Email to Record</a></li>
+                            <li><a href="settings/web-to-lead.html">Web to Lead</a></li>
+                        </ul>
+
+                        <h4 id="settings-duplicate-control">Duplicate Control</h4>
+                        <ul class="cards">
+                            <li><a href="settings/matching-rules.html">Matching Rules</a></li>
+                            <li><a href="settings/duplicate-rules.html">Duplicate Rules</a></li>
+                        </ul>
+
+                        <h4 id="settings-process-builder">Process Builder</h4>
+                        <ul class="cards">
+                            <li><a href="settings/review-process.html">Review Process</a></li>
+                            <li><a href="settings/approval-process.html">Approval Process</a></li>
+                        </ul>
+
+                        <h4 id="settings-whatsapp">WhatsApp</h4>
+                        <ul class="cards">
+                            <li><a href="settings/whatsapp.html">WhatsApp</a></li>
+                        </ul>
+
+                        <h4 id="settings-opportunity">Opportunity</h4>
+                        <ul class="cards">
+                            <li><a href="settings/opportunity-stage.html">Opportunity Stages</a></li>
+                            <li><a href="settings/opportunity-teams-split.html">Opportunity Teams &amp; Splits</a></li>
+                            <li><a href="settings/big-deal-alert.html">Big Deal Alert</a></li>
+                        </ul>
+
+                        <h4 id="settings-field-management">Field Management</h4>
+                        <ul class="cards">
+                            <li><a href="settings/field-management.html">Field Management</a></li>
+                        </ul>
+
+                        <h4 id="settings-theme">Theme Manager</h4>
+                        <ul class="cards">
+                            <li><a href="settings/colour-theme.html">Colour Theme</a></li>
+                        </ul>
+
+                        <h4 id="settings-data-management">Data Management</h4>
+                        <ul class="cards">
+                            <li><a href="settings/import-data.html">Import Data</a></li>
+                            <li><a href="settings/export-data.html">Export Data</a></li>
+                            <li><a href="settings/recycle-bin.html">Recycle Bin</a></li>
+                        </ul>
+
+                        <h4 id="settings-about">About System</h4>
+                        <ul class="cards">
+                            <li><a href="settings/version-info.html">Version Info</a></li>
+                        </ul>
+                    </div>
+
+                    <h3 id="mysettings">My Settings</h3>
+                    <p>Per-user preferences that affect only the signed-in user.</p>
+                    <ul class="cards">
+                        <li><a href="mysettings/profile.html">Profile</a></li>
+                        <li><a href="mysettings/product-tours.html">Product Tours</a></li>
+                        <li><a href="mysettings/regional-formatting.html">Regional &amp; Formatting</a></li>
+                        <li><a href="mysettings/change-password.html">Change Password</a></li>
+                        <li><a href="mysettings/login-history.html">Login History</a></li>
+                        <li><a href="mysettings/holiday.html">Holiday</a></li>
+                        <li><a href="mysettings/shift-hours.html">Shift Hours</a></li>
+                        <li>
+                            <a href="mysettings/google-calendar.html">Google Calendar</a><p>
+                                Shown when an administrator has enabled Google Calendar for the company.
+                            </p>
+                        </li>
+                        <li>
+                            <a href="mysettings/opportunity-teams.html">Opportunity Team</a><p>
+                                Shown when an administrator has enabled team selling for the company.
+                            </p>
+                        </li>
+                        <li><a href="mysettings/short-keys.html">Short Keys</a></li>
+                        <li>
+                            <a href="mysettings/google-calendar.html#meeting-accounts">Meeting</a><p>
+                                Shown when an administrator has enabled meeting integration for the company.
+                            </p>
+                        </li>
+                        <li>
+                            <a href="settings/calls-integration.html">Calls</a><p>
+                                Shown when an administrator has enabled call integration for the company.
+                            </p>
+                        </li>
+                    </ul>
+                </section>
+
+                <section id="key-capabilities">
+                    <h2>Key Capabilities</h2>
+
+                    <h3 id="visualisation">Flexible Visualisation</h3>
+                    <p>
+                        Records can be viewed as a <strong>List</strong>, <strong>Kanban</strong> board, <strong
+                        >Card</strong> grid, <strong>Group By</strong> breakdown, <strong>Chart</strong>, <strong
+                        >Split</strong> view, <strong>Timeline</strong> or <strong>Oldest First</strong>. Group By can
+                        expand the groups in view and continue as the user scrolls, and those groups support the same
+                        bulk actions as the list. A detail page edits its fields through <strong>Edit Details</strong>,
+                        which checks the form the same way a normal save does and shows each mistake under its field.
+                    </p>
+
+                    <h3 id="filtering">Advanced Filtering and Customisation</h3>
+                    <ul>
+                        <li>Multi-condition filters that can be saved and reused.</li>
+                        <li>Personalised column selection per list.</li>
+                        <li>Recently Viewed, Recently Created and Recently Modified tracking.</li>
+                    </ul>
+
+                    <h3 id="automation">Automation and Integration</h3>
+                    <ul>
+                        <li>Message automations.</li>
+                        <li>Workflow rules.</li>
+                        <li>Sales cadences.</li>
+                        <li>
+                            WhatsApp accounts, templates, flows and bot rules. Incoming webhooks are accepted only when
+                            Meta's signature matches the account's app secret.
+                        </li>
+                        <li>Google Calendar synchronisation.</li>
+                        <li>Email to Record, which can create a Lead or a Contact from the Inbox.</li>
+                        <li>Web-to-Lead forms.</li>
+                        <li>Public booking pages.</li>
+                        <li>
+                            A Product Tour of Home and Leads, plus tours for the other main record screens. A step is
+                            skipped when it is not on the page.
+                        </li>
+                    </ul>
+
+                    <h3 id="data-management">Robust Data Management</h3>
+                    <ul>
+                        <li>Bulk update, delete and export.</li>
+                        <li>Export in multiple formats.</li>
+                        <li>Import with field mapping.</li>
+                        <li>Recycle Bin for deleted records.</li>
+                        <li>Audit trails.</li>
+                        <li>Duplicate detection and record merging.</li>
+                    </ul>
+
+                    <h3 id="collaboration">Real-Time Collaboration</h3>
+                    <ul>
+                        <li>Live in-app notifications.</li>
+                        <li>Dashboard metrics that update in real time.</li>
+                        <li>Streaming activity feeds.</li>
+                    </ul>
+
+                    <h3 id="access-control">Access Control and Security</h3>
+                    <ul>
+                        <li>
+                            A four-layer permission model: model level, field level, row/owner level and role hierarchy.
+                            Users granted access to a record can act on it according to that grant.
+                        </li>
+                        <li>
+                            A company chooses the languages it offers. A user's language list is limited to those
+                            languages.
+                        </li>
+                        <li>
+                            Currency rates can refresh on a schedule, and each non-default currency can keep a dated
+                            history.
+                        </li>
+                        <li>Company-based multi-tenancy.</li>
+                        <li>User groups.</li>
+                        <li>Opportunity team access granted as Read/Write or Read-Only.</li>
+                        <li>Login history per user.</li>
+                    </ul>
+                </section>
+
+                <section id="adaptability">
+                    <h2>Tailored Adaptability</h2>
+                    <p>
+                        The platform suits both small sales teams and multi-branch enterprises, and because it is open
+                        source it can be extended to fit requirements that the standard configuration does not cover.
+                    </p>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

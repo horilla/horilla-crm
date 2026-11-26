@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Google Calendar Sync | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Google Calendar Sync in Horilla CRM: Enable Google Calendar and Access Control."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Google Calendar Sync</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Google Calendar Sync</h1>
+                <p class="lead">
+                    Turn Google Calendar on for the company, then choose who can connect a Google account.
+                </p>
+            </header>
+
+            <main>
+                <section id="settings">
+                    <h2>Google Calendar Sync</h2>
+                    <p>
+                        Go to <strong>Settings &rarr; Integrations &rarr; Google Calendar Sync</strong>. The page title
+                        is <strong>Google Integration</strong>. The description is <q>Sync your calendar and meetings
+                            with your Google account.</q>
+                    </p>
+                    <p>
+                        The <strong>Google Calendar</strong> section reads <q>Enable Google Calendar integration to
+                            allow users in your company to connect their Google account and sync calendar events.</q>
+                        <strong>Enable Google Calendar</strong> is on, and the status reads <q>Integration enabled —
+                            users can now connect Google Calendar.</q> <strong>Access Control</strong> appears while the
+                        switch is on. When the switch is off, the status reads <q>Integration disabled — users cannot
+                            connect Google Calendar</q> and Access Control is hidden.
+                    </p>
+                    <p>
+                        Connecting an account, the sync direction and the webhook are on <a
+                            href="../mysettings/google-calendar.html"
+                        >My Settings &rarr; Google Calendar</a>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-gcal-sync.png"
+                            alt="Google Integration with Enable Google Calendar on and Specific Users active for 8 users"
+                            loading="lazy"
+                        >
+                        <figcaption>Google Calendar Sync with Enable Google Calendar on.</figcaption>
+                    </figure>
+                    <div class="warning">
+                        <span class="label">Important</span>
+                        <p>
+                            Turning <strong>Enable Google Calendar</strong> off asks <q>Disable Google Calendar
+                                integration?</q> Confirming it permanently removes every user's connection and
+                            credentials for the company.
+                        </p>
+                    </div>
+                </section>
+
+                <section id="access-control">
+                    <h2>Access Control</h2>
+                    <p>
+                        The section line is <q>Choose who can connect Google Calendar.</q> Three cards set who may
+                        connect. The card in use is marked <strong>Active</strong>.
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>All Users</strong> — every user in the company can connect Google Calendar. The card
+                            shows <strong>Click To Activate</strong> while another option is active.
+                        </li>
+                        <li>
+                            <strong>Specific Roles</strong> — only users with the selected roles can connect Google
+                            Calendar. The card shows <strong>Click To Select</strong>. While this card is active it
+                            shows the role count and <strong>Click To Add Or Remove Roles</strong>.
+                        </li>
+                        <li>
+                            <strong>Specific Users</strong> — only the selected people can connect Google Calendar. This
+                            card is <strong>Active</strong>, with <strong>8 User(s)</strong> and <strong>Click To Add Or
+                                Remove Users</strong>.
+                        </li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

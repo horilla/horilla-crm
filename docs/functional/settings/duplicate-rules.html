@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Duplicate Rules | Horilla CRM</title>
+        <meta name="description" content="Functional guide to Duplicate Rules under Duplicate Control in Horilla CRM.">
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Duplicate Rules</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Duplicate Rules</h1>
+                <p class="lead">Set what happens when a record matches a matching rule.</p>
+            </header>
+
+            <main>
+                <section id="settings">
+                    <h2>Duplicate Rules</h2>
+                    <p>
+                        Go to <strong>Settings &rarr; Duplicate Control &rarr; Duplicate Rules</strong>. The page title
+                        is <strong>Duplicate Rules</strong>. The description is <q>Set how duplicate records are handled
+                            once matched.</q>
+                    </p>
+                    <p>
+                        Columns are <strong>Name</strong>, <strong>Module</strong>, <strong>Matching Rule</strong>,
+                        <strong>Action on Create</strong>, <strong>Action on Edit</strong>, <strong>Is Active</strong>
+                        and <strong>Actions</strong>. Actions are <strong>Edit</strong> and <strong>Delete</strong>.
+                        Click the name to open <strong>Details</strong>. The comparison itself is defined on <a
+                            href="matching-rules.html"
+                        >Matching Rules</a>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-duplicate-rules.png?v=2"
+                            alt="Duplicate Rules list with Block Duplicate Leads, Lead, Lead Email Match, Block on create, Allow on edit and Is Active on"
+                            loading="lazy"
+                        >
+                        <figcaption>Duplicate Rules. Block Duplicate Leads is active.</figcaption>
+                    </figure>
+                    <p>
+                        <strong>Is Active</strong> is a switch. Only one rule can be active for a module. Turning a rule
+                        on turns off the other active rule for that module.
+                    </p>
+                </section>
+
+                <section id="create">
+                    <h2>Create Duplicate Rule</h2>
+                    <p>
+                        Click <strong>New</strong>. The form title is <strong>Create Duplicate Rule</strong>. <strong
+                        >Save</strong> stores the rule. <strong>Save &amp; New</strong> stores it and opens a blank
+                        form.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/duplicate-control-n-single.png"
+                            alt="Create Duplicate Rule form with Name, Module, Description, Matching Rule, actions and the alert message"
+                            loading="lazy"
+                        >
+                        <figcaption>Create Duplicate Rule.</figcaption>
+                    </figure>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Name of the rule. Placeholder: Enter Name.</td>
+                                </tr>
+                                <tr>
+                                    <td>Module</td>
+                                    <td>Account, Contact or Lead. Placeholder: Select Module.</td>
+                                </tr>
+                                <tr>
+                                    <td>Description</td>
+                                    <td>Optional notes. Placeholder: Enter Description here...</td>
+                                </tr>
+                                <tr>
+                                    <td>Matching Rule</td>
+                                    <td>A matching rule for the selected module. Placeholder: Select Matching Rule.</td>
+                                </tr>
+                                <tr>
+                                    <td>Action on Create</td>
+                                    <td><strong>Allow</strong> or <strong>Block</strong>. The form opens on Allow.</td>
+                                </tr>
+                                <tr>
+                                    <td>Action on Edit</td>
+                                    <td><strong>Allow</strong> or <strong>Block</strong>. The form opens on Allow.</td>
+                                </tr>
+                                <tr>
+                                    <td>Alert Title</td>
+                                    <td>Heading of the warning. Opens as Potential Duplicate Detected.</td>
+                                </tr>
+                                <tr>
+                                    <td>Customize Message Per Action</td>
+                                    <td>
+                                        <strong>No</strong> uses one Alert Message. <strong>Yes</strong> shows Alert
+                                        Message (Create) and Alert Message (Edit).
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Alert Message</td>
+                                    <td>
+                                        Body of the warning. Opens as <q>Similar records found. Do you want to
+                                            proceed?</q>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Show Duplicate Records</td>
+                                    <td>Lists the matching records in the warning.</td>
+                                </tr>
+                                <tr>
+                                    <td>Is Active</td>
+                                    <td>Whether this rule is the active one for the module.</td>
+                                </tr>
+                                <tr>
+                                    <td>Conditions</td>
+                                    <td>
+                                        Optional filters. With none set, the rule applies to every record in the module.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="details">
+                    <h2>Details</h2>
+                    <p>
+                        Click the rule name. The dialog title is <strong>Details</strong>, then the rule name. It lists
+                        Name, Description, Module, Matching Rule, Action on Create, Action on Edit, Show Duplicate
+                        Records, Alert Title and the alert messages. <strong>Edit</strong> and <strong>Delete</strong>
+                        are on the dialog.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/duplicate-control-n-detail.png"
+                            alt="Details dialog for Block Duplicate Leads"
+                            loading="lazy"
+                        >
+                        <figcaption>Details for Block Duplicate Leads.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="warning">
+                    <h2>Warning on create or edit</h2>
+                    <p>
+                        Saving a record checks the active duplicate rule for that module. A match opens a warning with
+                        the alert title, the alert message and, when Show Duplicate Records is on, the matching records.
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>Allow</strong> offers <strong>Continue</strong>, which saves the record, and <strong
+                            >Cancel</strong>, which returns to the form.
+                        </li>
+                        <li><strong>Block</strong> offers <strong>OK</strong>. The record is not saved.</li>
+                    </ul>
+                </section>
+
+                <section id="potential-duplicates">
+                    <h2>Potential Duplicates</h2>
+                    <p>
+                        Lead, Contact and Account detail views include a <strong>Potential Duplicates</strong> tab. It
+                        lists records that match the current one, with a <strong>Merge</strong> action.
+                    </p>
+                    <div class="warning">
+                        <span class="label">Warning</span>
+                        <p>A merge can include at most 3 records, counting the current one.</p>
+                    </div>
+                    <p>Select the records, then click <strong>Merge</strong>.</p>
+                    <ol class="steps">
+                        <li>
+                            <strong>Compare.</strong> Fields are shown side by side. The radio button at the top of a
+                            column picks that record as the master and selects its values. A field can take its value
+                            from another column.
+                        </li>
+                        <li>
+                            <strong>Summary.</strong> The master record and the chosen value for each field are listed.
+                            <strong>Confirm</strong> continues.
+                        </li>
+                        <li>
+                            <strong>Merge.</strong> The master record is updated. Every record that was not the master
+                            is deleted.
+                        </li>
+                    </ol>
+                    <div class="warning">
+                        <span class="label">Warning</span>
+                        <p>Merging deletes every record that was not chosen as the master.</p>
+                    </div>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

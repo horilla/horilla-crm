@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Opportunity Teams &amp; Splits | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM Opportunity Teams and Splits: enabling team selling, creating teams, adding team members to opportunities, split settings, split types and managing splits."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Opportunity Teams &amp; Splits</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Opportunity Teams &amp; Splits</h1>
+                <p class="lead">
+                    Collaborate on individual opportunities with defined team roles and access levels, and attribute
+                    revenue or quantity credit across the people involved.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <ul>
+                        <li>
+                            Opportunity Teams and Opportunity Splits let users collaborate on individual opportunities
+                            and attribute revenue or quantity credit across team members.
+                        </li>
+                        <li><strong>Team Selling</strong> must be enabled before either feature is accessible.</li>
+                        <li>
+                            Once enabled, users can assign team members with defined roles and access levels, and can
+                            split credit across members using configurable split types.
+                        </li>
+                    </ul>
+                </section>
+
+                <section id="enable-team-selling">
+                    <h2>1. Enable Team Selling</h2>
+                    <p>
+                        <strong>Path:</strong> <strong>Settings &rarr; Opportunity &rarr; Opportunity Team
+                            Settings</strong>. The page title is <strong>Team Selling Setup</strong>. <strong>Enable
+                            Team Selling</strong> is on, and the status reads <q>Team Selling enabled — opportunity
+                            teams are available across your system.</q> <strong>Opportunity Split Settings</strong> is
+                        in the menu. Turning the switch off deletes existing opportunity teams and their members.
+                    </p>
+                    <p>
+                        <strong>Access Control</strong> asks <q>Choose who can use team selling.</q> <strong>All
+                            Users</strong> is <strong>Active</strong>. <strong>Specific Roles</strong> and <strong
+                        >Specific Users</strong> show <strong>Click To Select</strong>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-opp-teams.png?v=2"
+                            alt="Team Selling Setup with Enable Team Selling on and All Users active"
+                            loading="lazy"
+                        >
+                        <figcaption>Team Selling enabled, with Access Control.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>
+                            Team Selling is disabled by default. Click <strong>Enable Team Selling</strong> on the path
+                            above to activate it.
+                        </li>
+                        <li>
+                            Once enabled, the Opportunity Teams list under My Settings and all split features become
+                            available.
+                        </li>
+                        <li>Disabling Team Selling hides all team and split features system-wide.</li>
+                    </ul>
+                </section>
+
+                <section id="opportunity-teams-my-settings">
+                    <h2>2. Opportunity Teams (My Settings)</h2>
+                    <p><strong>Path:</strong> <strong>My Settings &rarr; Opportunity Team</strong>.</p>
+
+                    <h3 id="teams-list">2.1 Teams List</h3>
+                    <ul>
+                        <li>
+                            Lists the teams owned by the signed-in user, with columns for <strong>Team Name</strong> and
+                            <strong>Description</strong>.
+                        </li>
+                        <li>Each team has <strong>Edit</strong> and <strong>Delete</strong> actions.</li>
+                        <li>Clicking a team name opens its detail view.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-opp-team-list.png"
+                            alt="Opportunity Teams list with Enterprise Pursuit"
+                            loading="lazy"
+                        >
+                        <figcaption>The Opportunity Teams list.</figcaption>
+                    </figure>
+
+                    <h3 id="create-a-team">2.2 Create a Team</h3>
+                    <ol class="steps">
+                        <li>Click <strong>New</strong> to open the team form.</li>
+                        <li>Enter a <strong>Team Name</strong> and <strong>Description</strong>.</li>
+                        <li>
+                            Use <strong>Add Members</strong> to select users. For each member, assign a team role and an
+                            opportunity access level (<strong>Read/Write</strong> or <strong>Read-Only</strong>).
+                        </li>
+                        <li>Click <strong>+ Add More</strong> to add several members at once.</li>
+                        <li>Click <strong>Save</strong>.</li>
+                    </ol>
+
+                    <h3 id="team-detail-view">2.3 Team Detail View</h3>
+                    <ul>
+                        <li>
+                            Shows the team name and its members, with columns for <strong>Team Member</strong>, <strong
+                            >Member Role</strong> and <strong>Access Level</strong>.
+                        </li>
+                        <li>Per-member actions: <strong>Edit</strong> and <strong>Remove</strong>.</li>
+                        <li>Click <strong>New</strong> to add members to an existing team.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-opp-team-detail.png"
+                            alt="Enterprise Pursuit members: Suresh Thomas as Deal Owner with Read/Write, and Aishwarya Reddy as Sales Engineer with Read Only"
+                            loading="lazy"
+                        >
+                        <figcaption>The Enterprise Pursuit team.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="opportunity-teams-detail-view">
+                    <h2>3. Opportunity Teams (Opportunity Detail View)</h2>
+                    <p>
+                        With Team Selling enabled, a <strong>Team Members</strong> related list appears on each
+                        opportunity's detail view.
+                    </p>
+
+                    <h3 id="add-members-manually">3.1 Add Members Manually</h3>
+                    <ol class="steps">
+                        <li>Click <strong>New</strong> in the Team Members related list.</li>
+                        <li>
+                            Select one or more users and assign each a <strong>Team Role</strong> and an <strong
+                            >Opportunity Access</strong> level.
+                        </li>
+                        <li>Click <strong>Save</strong>.</li>
+                    </ol>
+
+                    <h3 id="add-default-team">3.2 Add Default Team</h3>
+                    <ul>
+                        <li>
+                            Click <strong>Add Default Team</strong> and select an existing Opportunity Team from the
+                            dropdown.
+                        </li>
+                        <li>All of its members are added at once with their preset roles and access levels.</li>
+                        <li>Members already on the opportunity are skipped automatically.</li>
+                    </ul>
+
+                    <h3 id="manage-members">3.3 Manage Members</h3>
+                    <ul>
+                        <li>Click <strong>Edit</strong> to change a member's role or access level.</li>
+                        <li>Click <strong>Remove</strong> to take a member off the opportunity.</li>
+                    </ul>
+                </section>
+
+                <section id="opportunity-split-settings">
+                    <h2>4. Opportunity Split Settings</h2>
+                    <p>
+                        <strong>Path:</strong> <strong>Settings &rarr; Opportunity &rarr; Opportunity Split
+                            Settings</strong>. The page description is <q>Configure how revenue is split between team
+                            members on an opportunity.</q>
+                    </p>
+
+                    <h3 id="enable-opportunity-splits">4.1 Enable Opportunity Splits</h3>
+                    <p>
+                        <strong>Enable Opportunity Split</strong> is on. The status reads <q>Opportunity Splits enabled
+                            — users can now split opportunities.</q>
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-opp-splits.png?v=2"
+                            alt="Opportunity Split Settings with the switch on, Revenue and Overlay active, and Expected Revenue types inactive"
+                            loading="lazy"
+                        >
+                        <figcaption>Opportunity Split Settings with the split types.</figcaption>
+                    </figure>
+                    <div class="warning">
+                        <span class="label">Warning</span>
+                        <p>Disabling this option permanently deletes all existing split data.</p>
+                    </div>
+
+                    <h3 id="split-types">4.2 Split Types</h3>
+                    <ul>
+                        <li>
+                            The list shows all split types with the columns <strong>Split Label</strong>, <strong>Split
+                                Field</strong>, <strong>Totals 100%</strong> and <strong>Is Active</strong>.
+                        </li>
+                        <li>Each type can be toggled active or inactive.</li>
+                    </ul>
+
+                    <p>Four split types are created automatically:</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Split type</th>
+                                    <th>Field split</th>
+                                    <th>Must total 100%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Revenue</td>
+                                    <td>Opportunity - Amount</td>
+                                    <td>Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Overlay</td>
+                                    <td>Opportunity - Amount</td>
+                                    <td>No</td>
+                                </tr>
+                                <tr>
+                                    <td>Expected Revenue</td>
+                                    <td>Opportunity - Expected Revenue</td>
+                                    <td>Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Expected Revenue Overlay</td>
+                                    <td>Opportunity - Expected Revenue</td>
+                                    <td>No</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p>
+                        <strong>Let users add members to opportunity teams while editing splits</strong> is off. While
+                        it is off, only opportunity team members can receive a split. Turning it on lets any active
+                        company user be assigned a split.
+                    </p>
+                </section>
+
+                <section id="opportunity-splits-detail-view">
+                    <h2>5. Opportunity Splits (Opportunity Detail View)</h2>
+                    <p>
+                        When splits are enabled, a <strong>Splits</strong> section appears on the opportunity detail
+                        view, with one tab per active split type.
+                    </p>
+
+                    <h3 id="split-tabs">5.1 Split Tabs</h3>
+                    <ul>
+                        <li>
+                            Each active split type, for example Revenue, Overlay or Expected Revenue, has its own tab.
+                        </li>
+                        <li>Each tab is managed independently of the others.</li>
+                    </ul>
+
+                    <h3 id="manage-opportunity-splits">5.2 Manage Opportunity Splits</h3>
+                    <ul>
+                        <li>
+                            Each tab shows a table with <strong>User</strong>, <strong>Split Percentage</strong> and
+                            <strong>Split Amount</strong> columns.
+                        </li>
+                        <li>
+                            Click <strong>+ Add Row</strong>, select a user, then enter either a <strong>Split
+                                Percentage</strong> (the amount is calculated automatically) or a <strong>Split
+                                Amount</strong> (the percentage is recalculated automatically).
+                        </li>
+                    </ul>
+
+                    <h4 id="totals-and-validation">Totals and Validation</h4>
+                    <ul>
+                        <li>
+                            The table footer shows the <strong>Total Percentage</strong> and <strong>Total
+                                Amount</strong>.
+                        </li>
+                        <li>Split types that require 100% are validated before saving.</li>
+                        <li>Overlay types accept any total.</li>
+                    </ul>
+
+                    <h4 id="save-and-recalculate">Save and Recalculate</h4>
+                    <ul>
+                        <li>Click <strong>Save</strong> to store the rows for the active split type.</li>
+                        <li>
+                            If the opportunity's amount or expected revenue changes, click <strong>Recalculate</strong>
+                            to update split amounts proportionally from the saved percentages.
+                        </li>
+                        <li>Remove an individual row with the delete icon.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

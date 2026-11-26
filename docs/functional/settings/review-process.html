@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Review Process | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Horilla CRM Review Process settings: field-level approval workflows, entry criteria and review rules."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Review Process</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Review Process</h1>
+                <p class="lead">
+                    Set up field-level approval workflows that keep matching records out of the list view until an
+                    approver has signed off on the required fields.
+                </p>
+            </header>
+
+            <main>
+                <section id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        A Review Process defines a field-level approval workflow for the records of a module. Records
+                        that match the configured criteria are held back from the module's list view until the assigned
+                        approver has approved the fields under review.
+                    </p>
+                    <p>
+                        Working a record that is already waiting — the jobs list and the field review — is covered in <a
+                            href="../myjobs/review-jobs.html"
+                        >Review Jobs</a>.
+                    </p>
+                </section>
+
+                <section id="navigation">
+                    <h2>Navigation</h2>
+                    <p>Go to <strong>Settings &rarr; Process Builder &rarr; Review Processes</strong>.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-review-list.png"
+                            alt="Review Processes list with Title, Module, Execute on, Is Active and edit and delete actions"
+                            loading="lazy"
+                        >
+                        <figcaption>Review Processes in Settings.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="review-process-list">
+                    <h2>Review Process List</h2>
+                    <p>
+                        The list shows every review process with its <strong>Title</strong>, <strong>Module</strong> and
+                        <strong>Is Active</strong> status, along with <strong>Edit</strong> and <strong>Delete</strong>
+                        actions.
+                    </p>
+                </section>
+
+                <section id="create-review-process">
+                    <h2>Create Review Process</h2>
+                    <p>Click <strong>New</strong> to open the creation form.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/review-process-n-single.png"
+                            alt="Form for creating a new review process"
+                            loading="lazy"
+                        >
+                        <figcaption>New review process form.</figcaption>
+                    </figure>
+
+                    <h3 id="review-process-fields">Fields</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Title</td>
+                                    <td>The name of the review process.</td>
+                                </tr>
+                                <tr>
+                                    <td>Module</td>
+                                    <td>The module the process applies to, for example Lead.</td>
+                                </tr>
+                                <tr>
+                                    <td>Fields to Review</td>
+                                    <td>The fields that require approval, for example Email and Contact Number.</td>
+                                </tr>
+                                <tr>
+                                    <td>Entry Criteria (optional)</td>
+                                    <td>
+                                        Conditions deciding which records enter the process. Left empty, the process
+                                        applies to every record in the module.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Notify on Resubmission</td>
+                                    <td>Notifies the approver when the record owner resubmits the record.</td>
+                                </tr>
+                                <tr>
+                                    <td>Notify on Approval</td>
+                                    <td>Notifies the record owner when the record is approved.</td>
+                                </tr>
+                                <tr>
+                                    <td>Notify on Rejection</td>
+                                    <td>Notifies the record owner when the record is rejected.</td>
+                                </tr>
+                                <tr>
+                                    <td>Is Active</td>
+                                    <td>Enables or disables the process.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="process-detail-view">
+                    <h2>Process Detail View</h2>
+                    <ul>
+                        <li>Click the process title to open its detail view.</li>
+                        <li>
+                            The detail view shows the <strong>Entry Criteria</strong>, the notification settings and the
+                            <strong>Fields to Review</strong>, with the review rules listed below them.
+                        </li>
+                        <li>Available actions: <strong>Add Rule</strong> and <strong>Edit Process</strong>.</li>
+                    </ul>
+                </section>
+
+                <section id="review-rules">
+                    <h2>Review Rules</h2>
+                    <p>
+                        Rules assign approvers to the records inside a process. A single process can hold several rules.
+                        To create one, click <strong>Add Rule</strong> in the detail view.
+                    </p>
+
+                    <h3 id="review-rule-fields">Fields</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Approver Type</td>
+                                    <td>
+                                        Choose <strong>User</strong> or <strong>Role</strong>, depending on who should
+                                        approve.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Condition (optional)</td>
+                                    <td>
+                                        Defines which records the rule covers. Left empty, the rule applies to every
+                                        record entering the process. Add further conditions with <strong>+ Add
+                                            More</strong>.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="expected-behaviour">
+                    <h2>Expected Behaviour</h2>
+                    <ul>
+                        <li>Users can create review processes and link them to a module.</li>
+                        <li>
+                            Entry criteria determine which records enter the process; with no criteria, all records are
+                            included.
+                        </li>
+                        <li>A process can have multiple rules, each with its own conditions and approvers.</li>
+                        <li>
+                            Matching records appear in the assigned approver's <a href="../myjobs/review-jobs.html"
+                            >Review Jobs</a> queue.
+                        </li>
+                        <li>
+                            Approvers review each configured field separately and approve or reject it, with an optional
+                            comment.
+                        </li>
+                        <li>
+                            Rejected records stay hidden from the list view until they are resubmitted and approved.
+                        </li>
+                        <li>A record appears in the list view only once all required fields are approved.</li>
+                        <li>Notifications follow the toggle settings configured on the review process.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

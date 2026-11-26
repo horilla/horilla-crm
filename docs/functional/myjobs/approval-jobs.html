@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Approval Jobs | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Approval Jobs in Horilla CRM: the pending list, Approval History and Respond to Approval."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>My Jobs</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Approval Jobs</span>
+                </nav>
+                <p class="eyebrow">My Jobs</p>
+                <h1>Approval Jobs</h1>
+                <p class="lead">
+                    Work the approval requests waiting on you, see what has already been decided, and send a response.
+                </p>
+            </header>
+
+            <main>
+                <section id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        Go to <strong>My Jobs &rarr; Approval Jobs</strong>. The page title is <strong>My Approval
+                            Jobs</strong>. It has two tabs: <strong>Approval Jobs</strong> for requests still waiting,
+                        and <strong>Approval History</strong> for requests that are already decided.
+                    </p>
+                    <p>
+                        Creating a process, opening its detail and adding rules are set up under <a
+                            href="../settings/approval-process.html"
+                        >Settings &rarr; Process Builder &rarr; Approval Process</a>.
+                    </p>
+                </section>
+
+                <section id="approval-jobs">
+                    <h2>Approval Jobs</h2>
+                    <p>The <strong>Approval Jobs</strong> tab lists the pending requests where you are an approver.</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Contents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Rule</td>
+                                    <td>The approval rule that caught the record. Click it to open the request.</td>
+                                </tr>
+                                <tr>
+                                    <td>Related To</td>
+                                    <td>The record waiting for a decision.</td>
+                                </tr>
+                                <tr>
+                                    <td>Status</td>
+                                    <td>Pending while the request is still open.</td>
+                                </tr>
+                                <tr>
+                                    <td>Created At</td>
+                                    <td>When the request was created.</td>
+                                </tr>
+                                <tr>
+                                    <td>Actions</td>
+                                    <td><strong>Respond</strong> opens Respond to Approval.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-approval-jobs.png"
+                            alt="My Approval Jobs with Approval Jobs and Approval History tabs, and pending requests"
+                            loading="lazy"
+                        >
+                        <figcaption>Approval Jobs. Pending requests for the signed-in approver.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="approval-history">
+                    <h2>Approval History</h2>
+                    <p>
+                        Open the <strong>Approval History</strong> tab on the same page. It lists requests that are no
+                        longer pending: approved or rejected. Columns are <strong>Rule</strong>, <strong>Related
+                            To</strong>, <strong>Status</strong>, <strong>requested by</strong> and <strong>Updated
+                            At</strong>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-approval-history.png"
+                            alt="Approval History tab with approved and rejected requests"
+                            loading="lazy"
+                        >
+                        <figcaption>Approval History. Decided requests, with who requested each one.</figcaption>
+                    </figure>
+                    <p>
+                        Click a row to open its timeline: the approvers, the time of each decision and any notes. On a
+                        rejected record, the person who requested it can click <strong>Resubmit</strong> to start the
+                        process again from the first step. A superuser can resubmit as well.
+                    </p>
+                </section>
+
+                <section id="respond">
+                    <h2>Respond to Approval</h2>
+                    <p>
+                        On a pending job, click <strong>Respond</strong>. The form title is <strong>Respond to
+                            Approval</strong>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-approval-respond.png"
+                            alt="Respond to Approval form with Decision set to Approve and a response note"
+                            loading="lazy"
+                        >
+                        <figcaption>
+                            Respond to Approval. Choose Approve, Reject or Delegate, then add a note.
+                        </figcaption>
+                    </figure>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Decision</td>
+                                    <td>
+                                        <strong>Approve</strong>, <strong>Reject</strong> or <strong>Delegate</strong>.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Delegate To</td>
+                                    <td>Shown when Decision is Delegate. The user who should take the request.</td>
+                                </tr>
+                                <tr>
+                                    <td>Response Note (Optional)</td>
+                                    <td>Comment for the decision. Placeholder: Add comments for your decision.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>Click <strong>Submit Response</strong> to send it.</p>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

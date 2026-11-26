@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Import Data | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM data import: the import wizard, template download, file upload, field and value mapping, action configuration, summary and import history."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Import Data</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Import Data</h1>
+                <p class="lead">
+                    Bring external data into the CRM through a step-by-step wizard with field mapping, value mapping and
+                    downloadable templates.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Import Data module moves external data into the CRM from spreadsheets and other sources. It
+                        supports the <strong>Leads</strong>, <strong>Accounts</strong>, <strong>Contacts</strong> and
+                        <strong>Opportunities</strong> modules and offers a structured import wizard, field mapping,
+                        value mapping for choice fields and a downloadable template generator, with the aim of accurate,
+                        duplicate-free data migration.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="import-wizard">1.1 Import wizard overview</h3>
+                    <p><strong>Purpose:</strong> guide users step by step through an efficient import.</p>
+                    <p><strong>Access:</strong> <strong>Settings &rarr; Data Management &rarr; Import Data</strong>.</p>
+                    <p>The Import Data interface has two tabs:</p>
+                    <ul>
+                        <li><strong>Import Data:</strong> starts a new import.</li>
+                        <li><strong>Import History:</strong> shows past imports and their logs.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/import-wizard.png"
+                            alt="Import Data page with the Import Data and Import History tabs"
+                            loading="lazy"
+                        >
+                        <figcaption>Import wizard overview.</figcaption>
+                    </figure>
+
+                    <h3 id="download-template">1.2 Download import template</h3>
+                    <p>
+                        <strong>Purpose:</strong> provide a pre-formatted file with the correct column headers for the
+                        chosen module.
+                    </p>
+                    <ol class="steps">
+                        <li>Click <strong>Download Template</strong> on the Import Data page.</li>
+                        <li>Select the <strong>Module</strong> — Lead, Account, Contact, Opportunity and so on.</li>
+                        <li>
+                            Choose which fields to include. Required fields are pre-selected and cannot be deselected.
+                        </li>
+                        <li>Select the file format: <strong>CSV</strong> or <strong>XLSX</strong>.</li>
+                        <li>Click <strong>Download</strong> to get the template.</li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/import-template.png"
+                            alt="Download import template dialog with module and field selection"
+                            loading="lazy"
+                        >
+                        <figcaption>Downloading an import template.</figcaption>
+                    </figure>
+
+                    <h3 id="upload-file">1.3 Upload file</h3>
+                    <p>
+                        <strong>Purpose:</strong> start the import by choosing a module and uploading the source file.
+                    </p>
+                    <ol class="steps">
+                        <li>Choose the <strong>Module</strong>.</li>
+                        <li>Enter an <strong>Import Name</strong>, for example "Q4 2025 Lead Import".</li>
+                        <li>Upload the data file. CSV, XLS and XLSX files are supported.</li>
+                        <li>Click <strong>Next</strong> once the file has been validated.</li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/import-upload.png"
+                            alt="Upload file step with module, import name and file picker"
+                            loading="lazy"
+                        >
+                        <figcaption>Uploading the source file.</figcaption>
+                    </figure>
+
+                    <h3 id="map-fields">1.4 Map fields</h3>
+                    <p><strong>Purpose:</strong> match the columns in the file to CRM fields.</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Contents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Model Field</td>
+                                    <td>Name of the CRM field.</td>
+                                </tr>
+                                <tr>
+                                    <td>File Header</td>
+                                    <td>Matching column in the uploaded file.</td>
+                                </tr>
+                                <tr>
+                                    <td>Default Value</td>
+                                    <td>Fallback used for fields that are not mapped.</td>
+                                </tr>
+                                <tr>
+                                    <td>Sample Data</td>
+                                    <td>Preview of the data taken from the file.</td>
+                                </tr>
+                                <tr>
+                                    <td>Status</td>
+                                    <td>Mapping progress for the field.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <ul>
+                        <li>Fields marked with <code>*</code> are required.</li>
+                        <li>Fields whose names match are mapped automatically.</li>
+                        <li>Fields shown as <strong>Not Mapped</strong> need manual mapping or a default value.</li>
+                    </ul>
+                    <h4 id="value-mapping">Value mapping for choice and relation fields</h4>
+                    <ul>
+                        <li>
+                            Appears for fields with fixed choices, such as Lead Source or Industry, and for foreign key
+                            fields.
+                        </li>
+                        <li>The unique values found in the file are listed, each to be mapped to a CRM option.</li>
+                        <li>Values whose names match are mapped automatically.</li>
+                        <li>
+                            Values left unmapped can be assigned manually or allowed to fall back to the default value.
+                        </li>
+                    </ul>
+                    <p>Click <strong>Next</strong> once all required fields are mapped.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/import-map.png"
+                            alt="Field mapping screen matching file headers to CRM fields"
+                            loading="lazy"
+                        >
+                        <figcaption>Mapping fields.</figcaption>
+                    </figure>
+
+                    <h3 id="action-configuration">1.5 Action configuration</h3>
+                    <p><strong>Purpose:</strong> decide how new and existing records are handled.</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Import option</th>
+                                    <th>Behaviour</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Create New Records</td>
+                                    <td>Adds every row as a new record.</td>
+                                </tr>
+                                <tr>
+                                    <td>Update Existing</td>
+                                    <td>Updates records that already exist.</td>
+                                </tr>
+                                <tr>
+                                    <td>Create New and Update Existing</td>
+                                    <td>Does both.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>
+                        <strong>Record Match By</strong> sets the field used to match records when updating or
+                        combining; the options are <strong>Email</strong>, <strong>Company Name</strong>, <strong>Phone
+                            Number</strong> and <strong>Unique Identifier</strong>. Click <strong>Next</strong> to
+                        continue.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/import-action.png"
+                            alt="Action configuration step with import options and record match field"
+                            loading="lazy"
+                        >
+                        <figcaption>Action configuration.</figcaption>
+                    </figure>
+
+                    <h3 id="import-summary">1.6 Import summary</h3>
+                    <p><strong>Purpose:</strong> review the settings before the import runs.</p>
+                    <ul>
+                        <li>
+                            The chosen <strong>Module</strong>, the uploaded <strong>File Name</strong> and the selected
+                            <strong>Import Action</strong>.
+                        </li>
+                        <li>Counts of <strong>Mapped</strong> and <strong>Unmapped</strong> fields.</li>
+                    </ul>
+                    <p>Click <strong>Import</strong> to start.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/import-summary.png"
+                            alt="Import summary showing module, file and mapping counts"
+                            loading="lazy"
+                        >
+                        <figcaption>Import summary.</figcaption>
+                    </figure>
+
+                    <h3 id="import-completion">1.7 Import completion</h3>
+                    <p><strong>Purpose:</strong> report the results once the import has run.</p>
+                    <ul>
+                        <li><strong>Import Statistics:</strong> Records Created, Records Updated and Errors.</li>
+                        <li><strong>Processing Summary:</strong> total rows processed and the success rate.</li>
+                    </ul>
+                    <p>
+                        From here you can click <strong>Import More Data</strong> to start another import, visit the
+                        related module to review the imported records, or check <strong>Import History</strong> for the
+                        logs.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/import-complete.png"
+                            alt="Import completion screen with statistics and processing summary"
+                            loading="lazy"
+                        >
+                        <figcaption>Import completion.</figcaption>
+                    </figure>
+
+                    <h3 id="import-history">1.8 Import history</h3>
+                    <p><strong>Purpose:</strong> track import activity for review, auditing and error recovery.</p>
+                    <p><strong>Access:</strong> the <strong>Import History</strong> tab on the Import Data page.</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Detail</th>
+                                    <th>Contents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Import Name</td>
+                                    <td>Name given when the import was run.</td>
+                                </tr>
+                                <tr>
+                                    <td>Module</td>
+                                    <td>CRM module the data was imported into.</td>
+                                </tr>
+                                <tr>
+                                    <td>Original Filename</td>
+                                    <td>Name of the uploaded file.</td>
+                                </tr>
+                                <tr>
+                                    <td>Status</td>
+                                    <td>Completed or Failed.</td>
+                                </tr>
+                                <tr>
+                                    <td>Success Rate</td>
+                                    <td>Percentage of rows imported successfully.</td>
+                                </tr>
+                                <tr>
+                                    <td>Duration</td>
+                                    <td>How long the import took.</td>
+                                </tr>
+                                <tr>
+                                    <td>Created At</td>
+                                    <td>Date and time of the import.</td>
+                                </tr>
+                                <tr>
+                                    <td>Created By</td>
+                                    <td>User who ran the import.</td>
+                                </tr>
+                                <tr>
+                                    <td>Imported File</td>
+                                    <td>Download of the original file.</td>
+                                </tr>
+                                <tr>
+                                    <td>Error File</td>
+                                    <td>
+                                        Download containing only the failed rows with their error details, so they can
+                                        be corrected and re-imported.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figure>
+                        <img
+                            src="../assets/shots/import-history.png"
+                            alt="Import history listing past imports with status and success rate"
+                            loading="lazy"
+                        >
+                        <figcaption>Import history.</figcaption>
+                    </figure>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

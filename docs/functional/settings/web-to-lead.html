@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Web to Lead | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM Web to Lead: building a public lead capture form, choosing fields, post-submission behaviour, embedding the form and how captured leads are created."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Web to Lead</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Web to Lead</h1>
+                <p class="lead">
+                    Build a lead capture form inside the CRM, embed it on any external website, and have every
+                    submission create a lead automatically.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>1. Introduction</h2>
+                    <ul>
+                        <li>Web to Lead lets you capture leads from any external website.</li>
+                        <li>You build the form inside the CRM and embed it on your site.</li>
+                        <li>
+                            Each submission automatically creates a Lead record, and visitors do not need to log in.
+                        </li>
+                    </ul>
+                </section>
+
+                <section id="access">
+                    <h2>2. Access Web to Lead</h2>
+                    <ol class="steps">
+                        <li>
+                            Go to <strong>Settings &rarr; Lead &rarr; Web to Lead</strong>. The page title is <strong
+                            >Lead Capture Form</strong>. The description is <q>Build a web form to capture leads
+                                directly from your website.</q>
+                        </li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-web-to-lead.png"
+                            alt="Lead Capture Form page with iframe embed code, generated HTML, Copy Code, Preview and Edit Form"
+                            loading="lazy"
+                        >
+                        <figcaption>Web to Lead in Settings.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="configure-the-form">
+                    <h2>3. Configure the Form</h2>
+
+                    <h3 id="form-heading">Form Heading</h3>
+                    <p>Enter a <strong>Form Name</strong>, which is shown as the form's title.</p>
+
+                    <h3 id="select-fields">Select Fields</h3>
+                    <ul>
+                        <li>Click fields in the left panel to add them to the form.</li>
+                        <li>Remove a field with the remove icon.</li>
+                        <li>The preview updates instantly.</li>
+                        <li>
+                            Common fields: <strong>First Name</strong>, <strong>Last Name</strong>, <strong
+                            >Email</strong>, <strong>Phone</strong>, <strong>Company Name</strong>.
+                        </li>
+                    </ul>
+
+                    <h3 id="after-submission">After Submission</h3>
+                    <p>Choose what happens once a visitor submits the form:</p>
+                    <ul>
+                        <li><strong>Success Message</strong> – shows a custom message on the same page.</li>
+                        <li>
+                            <strong>Return URL</strong> – redirects the visitor to another page, such as a thank-you
+                            page.
+                        </li>
+                    </ul>
+
+                    <h3 id="language">Language</h3>
+                    <p>
+                        Choose the form language: <strong>English</strong>, <strong>Arabic</strong>, <strong
+                        >German</strong> or <strong>French</strong>.
+                    </p>
+
+                    <h3 id="lead-owner">Lead Owner</h3>
+                    <p>Select a user. All leads captured through this form are assigned to that user.</p>
+
+                    <h3 id="form-color">Form Color</h3>
+                    <p>Choose a <strong>Header Color</strong> to match your brand.</p>
+
+                    <h3 id="save">Save</h3>
+                    <p>Click <strong>Generate to</strong> to apply the configuration.</p>
+                </section>
+
+                <section id="embed-the-form">
+                    <h2>4. Embed the Form</h2>
+                    <p>After saving, the system generates a public URL in this format:</p>
+                    <p><code>https://yourdomain.com/leads/capture/&lt;form_id&gt;/</code></p>
+                    <p>You can then:</p>
+                    <ul>
+                        <li>Share the link directly.</li>
+                        <li>Embed it on your website with an <code>&lt;iframe&gt;</code>.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-web-to-lead.png"
+                            alt="Generated iframe embed code and HTML for the lead capture form"
+                            loading="lazy"
+                        >
+                        <figcaption>Generated form URL and embed option.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="how-lead-capture-works">
+                    <h2>How Lead Capture Works</h2>
+                    <p>When a visitor submits the form:</p>
+                    <ul>
+                        <li>A new Lead is created in Horilla CRM.</li>
+                        <li><strong>Lead Source</strong> is automatically set to <code>Website</code>.</li>
+                        <li><strong>Lead Status</strong> is set to the first active pipeline stage.</li>
+                        <li><strong>Lead Owner</strong> is assigned according to the form settings.</li>
+                        <li>The visitor sees the success message or is redirected.</li>
+                    </ul>
+                </section>
+
+                <section id="recommendations">
+                    <h2>Additional Recommendations</h2>
+                    <ul>
+                        <li>Keep the form short; too many fields can reduce submissions.</li>
+                        <li>Use clear labels, and mark fields as required only when necessary.</li>
+                        <li>Match the form's colours and wording to your website's branding.</li>
+                        <li>Test the form after embedding it to confirm leads are created correctly.</li>
+                        <li>Review captured leads regularly to maintain data quality.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

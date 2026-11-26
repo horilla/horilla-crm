@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Matching Rules | Horilla CRM</title>
+        <meta name="description" content="Functional guide to Matching Rules under Duplicate Control in Horilla CRM.">
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Matching Rules</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Matching Rules</h1>
+                <p class="lead">Define which fields are compared when the CRM looks for duplicate records.</p>
+            </header>
+
+            <main>
+                <section id="settings">
+                    <h2>Matching Rules</h2>
+                    <p>
+                        Go to <strong>Settings &rarr; Duplicate Control &rarr; Matching Rules</strong>. The page title
+                        is <strong>Matching Rules</strong>. The description is <q>Define which fields are compared to
+                            detect matching records.</q>
+                    </p>
+                    <p>
+                        Each rule is one row. <strong>Edit</strong> and <strong>Delete</strong> sit on the row, and the
+                        arrow expands it. The expanded row shows <strong>Module</strong>, <strong>Description</strong>
+                        when one is set, and <strong>Matching Criteria</strong>. What to do after a match is set on <a
+                            href="duplicate-rules.html"
+                        >Duplicate Rules</a>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-duplicate-matching.png"
+                            alt="Matching Rules list with Lead Email Match, Edit, Delete and the expand arrow"
+                            loading="lazy"
+                        >
+                        <figcaption>Matching Rules. Lead Email Match is the saved rule.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="create">
+                    <h2>Create Matching Rule</h2>
+                    <p>
+                        Click <strong>New</strong>. The form title is <strong>Create Matching Rule</strong>. <strong
+                        >Save</strong> stores the rule. The form does not offer Save &amp; New.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-matching-create.png"
+                            alt="Create Matching Rule form with Name, Module, Description and Matching Criteria"
+                            loading="lazy"
+                        >
+                        <figcaption>Create Matching Rule.</figcaption>
+                    </figure>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Name of the rule. Placeholder: Enter Name.</td>
+                                </tr>
+                                <tr>
+                                    <td>Module</td>
+                                    <td>Account, Contact or Lead. Placeholder: Select Module.</td>
+                                </tr>
+                                <tr>
+                                    <td>Description</td>
+                                    <td>Optional notes. Placeholder: Enter Description here...</td>
+                                </tr>
+                                <tr>
+                                    <td>Matching Criteria</td>
+                                    <td>
+                                        At least one row. <strong>+ Add More</strong> adds another. Each field can be
+                                        used only once.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>Each criterion row has three lists:</p>
+                    <ul>
+                        <li><strong>Field</strong> — the field to compare. The choices depend on the module.</li>
+                        <li><strong>Matching Method</strong> — <strong>Exact</strong> or <strong>Fuzzy</strong>.</li>
+                        <li>
+                            <strong>Blank fields</strong> — <strong>Blank fields do not match</strong> or <strong>Blank
+                                fields match</strong>.
+                        </li>
+                    </ul>
+                    <div class="note">
+                        <span class="label">Note</span>
+                        <p>Several criteria on one rule are combined with AND, so every criterion has to match.</p>
+                    </div>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

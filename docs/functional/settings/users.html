@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Users | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM user management: the users list, user creation wizard, list, Kanban and group by views, user profiles and login history."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Users</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Users</h1>
+                <p class="lead">
+                    Administer system users, monitor access and maintain security standards from one centralised module.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The User Management module gives administrators a central place to manage system users, keep an
+                        eye on access and uphold security standards. It offers three ways of looking at the same user
+                        records: List View, Kanban View and Group By View.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="users-overview">1. Users Overview</h3>
+                    <p><strong>Purpose:</strong> a central dashboard for viewing and managing every user.</p>
+                    <p><strong>Navigation:</strong> <strong>Settings &rarr; Users</strong>.</p>
+                    <ul>
+                        <li>
+                            Shows <strong>Name</strong>, <strong>Email</strong>, <strong>Role</strong>, <strong>Contact
+                                Number</strong>, <strong>Country</strong> and <strong>State/Province</strong>.
+                        </li>
+                        <li>A search bar narrows the list quickly.</li>
+                        <li>Multi-select checkboxes allow bulk selection.</li>
+                        <li>
+                            Each user row carries its own actions: <strong>Edit</strong> and <strong>Delete</strong>.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/users-1.png"
+                            alt="Users list showing name, email, role and contact columns"
+                            loading="lazy"
+                        >
+                        <figcaption>Users overview.</figcaption>
+                    </figure>
+
+                    <h3 id="user-creation">2. User Creation Workflow</h3>
+                    <p><strong>Purpose:</strong> guided onboarding of new users.</p>
+                    <ol class="steps">
+                        <li>Click <strong>New</strong> on the Users page.</li>
+                        <li>
+                            Work through the multi-step wizard, which covers personal, address, work and localization
+                            details.
+                        </li>
+                        <li>
+                            Use the navigation controls to move between steps; validation checks the accuracy of the
+                            data entered.
+                        </li>
+                        <li>Click <strong>Save</strong> at the end to create and activate the account.</li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/users-n-multi.png"
+                            alt="Multi-step new user creation wizard"
+                            loading="lazy"
+                        >
+                        <figcaption>User creation wizard.</figcaption>
+                    </figure>
+
+                    <h3 id="view-modes">3. View Modes</h3>
+                    <p>
+                        The module supports three views, switched with the <strong>View Selector</strong> icon in the
+                        top-right corner of the Users page:
+                    </p>
+                    <ul>
+                        <li><strong>List View</strong> (default)</li>
+                        <li><strong>Kanban View</strong></li>
+                        <li><strong>Group By View</strong></li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/users-view-modes.png"
+                            alt="View selector offering list, Kanban and group by views"
+                            loading="lazy"
+                        >
+                        <figcaption>Switching view modes.</figcaption>
+                    </figure>
+
+                    <h3 id="list-view">4. List View (default)</h3>
+                    <p><strong>Purpose:</strong> present users in a structured table.</p>
+                    <ul>
+                        <li>This is the view shown when the Users module is opened.</li>
+                        <li>Users appear in rows and columns, which can be sorted and scanned quickly.</li>
+                        <li>Action buttons are available on each record.</li>
+                    </ul>
+
+                    <h3 id="kanban-view">5. Kanban View</h3>
+                    <p><strong>Purpose:</strong> a visual, card-based representation of users.</p>
+                    <ul>
+                        <li>Users appear as cards grouped by a chosen field, such as Role or Department.</li>
+                        <li>
+                            Each card shows the <strong>Name</strong>, <strong>Role</strong> and contact information.
+                        </li>
+                        <li>Drag-and-drop interaction is supported where enabled.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/users-kanban.png"
+                            alt="Kanban view of users grouped into columns"
+                            loading="lazy"
+                        >
+                        <figcaption>Kanban view.</figcaption>
+                    </figure>
+
+                    <h3 id="kanban-settings">6. Kanban Settings</h3>
+                    <p><strong>Purpose:</strong> control how the Kanban view groups data.</p>
+                    <ul>
+                        <li>
+                            <strong>Access:</strong> click the Settings icon in the view toolbar and choose <strong
+                            >Kanban Settings</strong>.
+                        </li>
+                        <li>
+                            <strong>Configuration:</strong> select the field to group by, for example Role or
+                            Department.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/users-kanban-settings.png"
+                            alt="Kanban settings dialog for choosing the grouping field"
+                            loading="lazy"
+                        >
+                        <figcaption>Kanban settings.</figcaption>
+                    </figure>
+
+                    <h3 id="group-by-view">7. Group By View</h3>
+                    <p><strong>Purpose:</strong> organise users into expandable grouped sections.</p>
+                    <ul>
+                        <li>Users are grouped by the selected criteria.</li>
+                        <li>Each group can be expanded or collapsed.</li>
+                        <li>Each group shows how many users it contains.</li>
+                        <li>Within a group the records keep their structured list format.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/users-group.png"
+                            alt="Group by view with collapsible user groups"
+                            loading="lazy"
+                        >
+                        <figcaption>Group By view.</figcaption>
+                    </figure>
+
+                    <h3 id="group-by-settings">8. Group By Settings</h3>
+                    <p><strong>Purpose:</strong> define the grouping logic used by the Group By view.</p>
+                    <ul>
+                        <li>
+                            <strong>Access:</strong> click the Settings icon and choose <strong>Group By
+                                Settings</strong>.
+                        </li>
+                        <li>
+                            <strong>Configuration:</strong> choose the field users are grouped by, for example Role or
+                            Department.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/users-group-settings.png"
+                            alt="Group by settings dialog for choosing the grouping field"
+                            loading="lazy"
+                        >
+                        <figcaption>Group By settings.</figcaption>
+                    </figure>
+
+                    <h3 id="user-profile">9. User Profile Management</h3>
+                    <p><strong>Purpose:</strong> view and edit an individual user's profile in detail.</p>
+                    <ul>
+                        <li>Open a profile by clicking a user's name in the list or Kanban view.</li>
+                        <li>
+                            The profile holds personal, address, work and localization details, arranged in sections.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/users-profile.png"
+                            alt="User profile page with personal, address and work sections"
+                            loading="lazy"
+                        >
+                        <figcaption>User profile.</figcaption>
+                    </figure>
+
+                    <h3 id="login-history">10. Login History Monitoring</h3>
+                    <p><strong>Purpose:</strong> track login activity for security and compliance.</p>
+                    <p>Open <strong>View Login History</strong> from the user profile. The history records:</p>
+                    <ul>
+                        <li>Browser and OS information</li>
+                        <li>Login timestamp</li>
+                        <li>Active/inactive status, shown with green and red indicators</li>
+                        <li>IP address</li>
+                        <li>Session status — login and logout events</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/users-n-page.png"
+                            alt="Login history list showing browser, timestamp, IP address and session status"
+                            loading="lazy"
+                        >
+                        <figcaption>Login history.</figcaption>
+                    </figure>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

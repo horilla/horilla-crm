@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Branches &amp; Departments | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM branches and departments: department management, the branch list, multi-step and single-step branch creation, automated stage setup and the branch detail view."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Branches &amp; Departments</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Branch &amp; Department Management</h1>
+                <p class="lead">
+                    Run several business units from one CRM, each with its own company details, localization,
+                    preferences and sales stages.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Branch &amp; Department module manages multiple business units and their internal structures
+                        inside a single system. Branches, also called companies, keep their own company details,
+                        localization settings and operational configuration while remaining integrated with the wider
+                        CRM.
+                    </p>
+                    <p>
+                        Departments sit within branches and provide hierarchy and team alignment, which supports
+                        reporting and access management. Creating a branch also triggers lead and opportunity stage
+                        configuration, so every branch has its own sales processes from the start.
+                    </p>
+                </section>
+
+                <section id="departments">
+                    <h2>Departments</h2>
+
+                    <h3 id="accessing-departments">1. Accessing Departments</h3>
+                    <p><strong>Navigation:</strong> <strong>Settings &rarr; Base &rarr; Departments</strong>.</p>
+
+                    <h3 id="department-management">1.1 Department Management</h3>
+                    <p>
+                        <strong>Purpose:</strong> define organisational departments that categorise users and structure
+                        business operations.
+                    </p>
+                    <ul>
+                        <li>
+                            Departments provide hierarchy and team alignment, supporting reporting and access
+                            management.
+                        </li>
+                        <li>They represent units such as Sales, Marketing or Support.</li>
+                        <li>They group users, align responsibilities and support departmental reporting.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/branches-and-departments-2.png"
+                            alt="Departments settings page listing organisational departments"
+                            loading="lazy"
+                        >
+                        <figcaption>Department management.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="branches">
+                    <h2>Branches (Companies)</h2>
+
+                    <h3 id="accessing-branches">2. Accessing Branches</h3>
+                    <p>
+                        <strong>Navigation:</strong> <strong>Settings &rarr; Base &rarr; Branches</strong>. From here
+                        administrators can view, create and manage branches.
+                    </p>
+
+                    <h3 id="branches-list">2.1 Branches list view</h3>
+                    <p>All branches are displayed in a structured table.</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>Column</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Company Name</td></tr>
+                                <tr><td>Email Address</td></tr>
+                                <tr><td>Number of Employees</td></tr>
+                                <tr><td>Headquarter</td></tr>
+                                <tr><td>Currency</td></tr>
+                                <tr><td>Actions</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <ul>
+                        <li><strong>Actions:</strong> edit branch details, or delete the branch.</li>
+                        <li>Search and filter options give quick access to a particular branch.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/branches-and-departments-1.png"
+                            alt="Branches list view with company name, email, employees, headquarter and currency columns"
+                            loading="lazy"
+                        >
+                        <figcaption>Branches list view.</figcaption>
+                    </figure>
+
+                    <h3 id="create-branch">2.2 Create a new branch</h3>
+                    <p>
+                        Click <strong>New</strong> to open the creation form. Two modes are offered — <strong>Multi-Step
+                            Form</strong> and <strong>Single-Step Form</strong> — and you can switch between them at any
+                        point using the toggle at the top of the form.
+                    </p>
+
+                    <h4 id="multi-step-form">Multi-Step Form</h4>
+                    <p><strong>Purpose:</strong> guided, structured creation spread across several steps.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/branches-and-departments-n-multi.png"
+                            alt="Multi-step branch creation form"
+                            loading="lazy"
+                        >
+                        <figcaption>Multi-step branch creation.</figcaption>
+                    </figure>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Step</th>
+                                    <th>Fields</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Step 1 – Basic Information</td>
+                                    <td>
+                                        Company Name, Email Address, Website, Company Icon, Contact Number, Fax Number
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Step 2 – Business Details</td>
+                                    <td>Annual Revenue, Number of Employees, Head Quarter (toggle)</td>
+                                </tr>
+                                <tr>
+                                    <td>Step 3 – Location &amp; Locale</td>
+                                    <td>Country, State/Province, City, ZIP/Postal Code, Language, Time Zone</td>
+                                </tr>
+                                <tr>
+                                    <td>Step 4 – Preferences</td>
+                                    <td>
+                                        Currency, Time Format, Date Format, Date Time Format, Activate Multiple
+                                        Currencies (toggle)
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 id="single-step-form">Single-Step Form</h4>
+                    <p><strong>Purpose:</strong> quick creation when all the information is already to hand.</p>
+                    <ul>
+                        <li>Every field appears on one page.</li>
+                        <li>There is no step-by-step navigation.</li>
+                        <li>Data entry is faster.</li>
+                    </ul>
+                    <ol class="steps">
+                        <li>Switch to the Single-Step Form using the toggle at the top of the form.</li>
+                        <li>Enter all the required details on the single screen.</li>
+                        <li>Click <strong>Save</strong>.</li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/branches-and-departments-n-single.png"
+                            alt="Single-step branch creation form showing all fields on one page"
+                            loading="lazy"
+                        >
+                        <figcaption>Single-step branch creation.</figcaption>
+                    </figure>
+
+                    <h3 id="automated-stage-setup">2.3 Automated stage setup after saving a branch</h3>
+                    <p>Saving a branch automatically opens the sales process template windows.</p>
+
+                    <h4 id="lead-stage-template">Step 1: Lead Stage template</h4>
+                    <ul>
+                        <li>The Lead Stage configuration window opens immediately after the branch is saved.</li>
+                        <li>Administrators can select, reorder and configure lead stages.</li>
+                        <li>
+                            Configurable options are the stage name, order number, probability percentage and whether
+                            the stage is marked <strong>Final</strong>.
+                        </li>
+                        <li>Both default and custom stages are supported.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/branches-lead-stages.png"
+                            alt="Lead stage template configuration window"
+                            loading="lazy"
+                        >
+                        <figcaption>Lead stage template.</figcaption>
+                    </figure>
+
+                    <h4 id="opportunity-stage-template">Step 2: Opportunity Stage template</h4>
+                    <ul>
+                        <li>
+                            Once lead stages are saved, the Opportunity Stage configuration window opens automatically.
+                        </li>
+                        <li>
+                            Administrators manage the opportunity pipeline stages with order, probability and Final
+                            marking.
+                        </li>
+                        <li>Both default and custom stages are supported.</li>
+                    </ul>
+                    <p>As a result, each branch starts life with a standardised sales process.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/branches-opportunity-stages.png"
+                            alt="Opportunity stage template configuration window"
+                            loading="lazy"
+                        >
+                        <figcaption>Opportunity stage template.</figcaption>
+                    </figure>
+
+                    <h3 id="branch-detail">2.4 Branch detail view</h3>
+                    <p>Clicking a branch opens its detail page, organised into sections:</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Section</th>
+                                    <th>Contents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Company Information</td>
+                                    <td>Name, Email, Website, Contact Number, Annual Revenue, Number of Employees</td>
+                                </tr>
+                                <tr>
+                                    <td>Address</td>
+                                    <td>City, State/Province, Country, ZIP/Postal Code</td>
+                                </tr>
+                                <tr>
+                                    <td>Localization</td>
+                                    <td>Time Zone, Language, Currency, Time Format, Date Format</td>
+                                </tr>
+                                <tr>
+                                    <td>Multi-Currency Status</td>
+                                    <td>Whether multiple currencies are activated</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>An <strong>Edit</strong> option on the page updates the branch details.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/branches-detail.png"
+                            alt="Branch detail view with company information, address and localization sections"
+                            loading="lazy"
+                        >
+                        <figcaption>Branch detail view.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="benefits">
+                    <h2>Benefits</h2>
+                    <ul>
+                        <li>
+                            <strong>Multi-branch management:</strong> several business units organised under one CRM.
+                        </li>
+                        <li>
+                            <strong>Automated sales stage setup:</strong> lead and opportunity pipelines are
+                            pre-configured as soon as a branch is created.
+                        </li>
+                        <li>
+                            <strong>Customisable sales processes:</strong> default and custom stages are both supported.
+                        </li>
+                        <li>
+                            <strong>Comprehensive company profiling:</strong> contact details alongside business
+                            metrics.
+                        </li>
+                        <li>
+                            <strong>Advanced localization:</strong> timezone, language, currency and date/time formats.
+                        </li>
+                        <li><strong>Multi-currency support:</strong> multiple currencies per branch.</li>
+                        <li>
+                            <strong>Centralised data management:</strong> all branch details kept in organised sections.
+                        </li>
+                        <li><strong>Scalable operations:</strong> suited to organisations expanding across regions.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

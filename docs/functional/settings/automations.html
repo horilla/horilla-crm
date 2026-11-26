@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Workflow Rules | Horilla CRM</title>
+        <meta name="description" content="Functional guide to Workflow Rules in Horilla CRM.">
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Workflow Rules</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Workflow Rules</h1>
+                <p class="lead">Run an action when a record meets the conditions on a workflow rule.</p>
+            </header>
+
+            <main>
+                <section id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        Go to <strong>Settings &rarr; Automations &rarr; Workflow Rules</strong>. The page description
+                        is <q>Automate actions when records meet the conditions you set.</q> <strong>New</strong> opens
+                        the create form.
+                    </p>
+                    <p>
+                        Each row shows <strong>Rule Name</strong>, <strong>Module</strong>, <strong
+                        >Description</strong>, <strong>Execute on</strong>, an <strong>Is Active</strong> switch, and
+                        edit and delete actions. A rule evaluates its conditions on a record and carries out the actions
+                        configured on the rule.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-workflow.png"
+                            alt="Workflow Rules list with Rule Name, Module, Description, Execute on and Is Active"
+                            loading="lazy"
+                        >
+                        <figcaption>Workflow Rules.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="rule-detail">
+                    <h2>Rule Detail</h2>
+                    <p>
+                        Click a <strong>Rule Name</strong> in the list. The page title is the rule name, with a back
+                        arrow to the list and a pencil that opens the rule form.
+                    </p>
+                    <p>
+                        <strong>Entry Criteria</strong> lists each condition. <strong>High Priority Account
+                            Task</strong> uses <q>Customer Priority Equals High</q>.
+                    </p>
+                    <p>
+                        <strong>Immediate Actions</strong> run as soon as the rule matches. This rule has <strong>Assign
+                            Task</strong> and <strong>Notification</strong>. Each action has edit and delete. <strong
+                        >Add</strong> opens a new action.
+                    </p>
+                    <p>
+                        <strong>Time Trigger Actions</strong> run after a delay. The clock button opens <strong
+                        >Execution History</strong>. With none saved, the section shows <q>No time triggers added yet.
+                            Use the Add button to schedule actions after a delay.</q>
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-workflow-detail.png"
+                            alt="High Priority Account Task detail with Entry Criteria, Assign Task, Notification, and an empty Time Trigger Actions section"
+                            loading="lazy"
+                        >
+                        <figcaption>The High Priority Account Task detail page.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="expected-behaviour">
+                    <h2>Expected Behaviour</h2>
+                    <ul>
+                        <li>Turning <strong>Is Active</strong> off stops that rule from running.</li>
+                        <li>
+                            The rule name opens the detail page. Edit opens the rule form. Delete removes the rule after
+                            confirmation.
+                        </li>
+                        <li>A rule the user cannot view is absent from the list.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

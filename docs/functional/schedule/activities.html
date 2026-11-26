@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Activities | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Horilla CRM Activities module: activities overview, Kanban view, creating an activity and the activity detail view."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Schedule</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Activities</span>
+                </nav>
+                <p class="eyebrow">Schedule</p>
+                <h1>Activities</h1>
+                <p class="lead">
+                    Track, schedule and manage the calls, meetings, tasks and events that make up your interactions with
+                    accounts and contacts.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Activities module is used to track, schedule and manage interactions with accounts and
+                        contacts — calls, meetings, tasks and events — with each activity linked to the related CRM
+                        record.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="activities-overview">2.1 Activities Overview</h3>
+                    <p>
+                        <strong>Purpose:</strong> provide a consolidated list view for tracking activities and keeping
+                        them up to date.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/activities-list.png"
+                            alt="Activities list view in Horilla CRM"
+                            loading="lazy"
+                        >
+                        <figcaption>Activities list view.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Open the module from <strong>Activities</strong> in the sidebar.</li>
+                        <li>Search and filter by subject, type or related record.</li>
+                        <li>
+                            The list view shows <strong>Subject</strong>, <strong>Description</strong>, <strong>Activity
+                                Type</strong>, <strong>Source</strong>, <strong>Related To</strong> and <strong
+                            >Status</strong>.
+                        </li>
+                        <li>Select rows in bulk to edit, delete or export them.</li>
+                    </ul>
+
+                    <h3 id="kanban-view">2.2 Kanban View</h3>
+                    <p><strong>Purpose:</strong> show activities visually, grouped by status.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/activities-kanban.png"
+                            alt="Activities Kanban view grouped by status"
+                            loading="lazy"
+                        >
+                        <figcaption>Kanban view.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Columns represent statuses such as Pending and Completed.</li>
+                        <li>Drag and drop a card to update its status.</li>
+                        <li>
+                            Each card shows <strong>Subject</strong>, <strong>Type</strong>, <strong>Source</strong> and
+                            <strong>Related Record</strong>.
+                        </li>
+                        <li>The view makes it easier to monitor progress.</li>
+                        <li>The Kanban settings can be customised.</li>
+                    </ul>
+
+                    <h3 id="create-activity">1.3 Creating a New Activity</h3>
+                    <p><strong>Purpose:</strong> add new activities.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/activities-n-single.png"
+                            alt="New activity creation form"
+                            loading="lazy"
+                        >
+                        <figcaption>Creating a new activity.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Click the <strong>New</strong> button on the Activities page.</li>
+                        <li>
+                            Complete the core fields:
+                            <ul>
+                                <li><strong>Activity Type</strong> — Task, Event, Call, Meeting and similar.</li>
+                                <li><strong>Subject</strong>, <strong>Description</strong>, <strong>Title</strong></li>
+                                <li><strong>Source</strong></li>
+                                <li><strong>Related Record</strong> — Account, Contact, Opportunity and similar.</li>
+                                <li><strong>Status</strong> — Pending or Completed.</li>
+                                <li>
+                                    <strong>Start Date</strong>, <strong>End Date</strong>, <strong>Location</strong>,
+                                    <strong>Assigned To</strong>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>Save to register the activity; it then appears in both the List and Kanban views.</li>
+                    </ul>
+                    <div class="note">
+                        <span class="label">Note</span>
+                        <p>
+                            The source page numbers this section "1.3", out of sequence with the surrounding 2.x
+                            sections.
+                        </p>
+                    </div>
+
+                    <h3 id="activity-detail">2.4 Activity Detailed Information</h3>
+                    <p><strong>Purpose:</strong> give a full view of an activity, with tracking and editing.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/activities-n-detail.png"
+                            alt="Activity detail view with tabs"
+                            loading="lazy"
+                        >
+                        <figcaption>Activity detail view.</figcaption>
+                    </figure>
+                    <dl>
+                        <dt>Details Tab</dt>
+                        <dd>Shows all the activity's fields, each of which can be edited inline.</dd>
+                        <dt>History Tab</dt>
+                        <dd>
+                            Logs the changes made, including subject changes, status transitions such as Pending to
+                            Completed, and reassignments.
+                        </dd>
+                        <dt>Status Tracking</dt>
+                        <dd>
+                            A progress bar shows where the activity stands, and the status can be updated from the
+                            detail view.
+                        </dd>
+                    </dl>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

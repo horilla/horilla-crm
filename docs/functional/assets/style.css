@@ -1,0 +1,247 @@
+/* Horilla CRM – Functional Documentation
+   Shared stylesheet for all pages under /functional */
+
+:root {
+  --bg: #ffffff;
+  --surface: #f7f8fa;
+  --surface-alt: #eef1f6;
+  --text: #1f2430;
+  --text-muted: #5b6475;
+  --border: #dfe3ea;
+  --accent: #e54f37;
+  --accent-soft: #fdeeeb;
+  --note: #2f6fed;
+  --note-soft: #eef3fe;
+  --radius: 8px;
+  --maxw: 60rem;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  padding: 0 16px 64px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.page { max-width: var(--maxw); margin: 0 auto; }
+
+/* ---------- Header / breadcrumbs ---------- */
+
+header.doc-header {
+  border-bottom: 1px solid var(--border);
+  padding: 32px 0 20px;
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0 0 6px;
+}
+
+nav.breadcrumbs { font-size: .85rem; color: var(--text-muted); margin-bottom: 10px; }
+nav.breadcrumbs a { color: var(--text-muted); }
+nav.breadcrumbs span[aria-hidden="true"] { margin: 0 6px; }
+
+h1 { font-size: 2rem; line-height: 1.25; margin: 0 0 8px; }
+h2 { font-size: 1.4rem; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 1.12rem; margin: 28px 0 8px; }
+h4 { font-size: 1rem; margin: 20px 0 6px; color: var(--text-muted); }
+
+p { margin: 0 0 14px; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.lead { font-size: 1.05rem; color: var(--text-muted); margin-bottom: 0; }
+
+/* ---------- Lists ---------- */
+
+ul, ol { margin: 0 0 16px; padding-left: 1.4rem; }
+li { margin-bottom: 6px; }
+
+ol.steps { counter-reset: none; }
+ol.steps > li { margin-bottom: 10px; }
+
+dl { margin: 0 0 16px; }
+dt { font-weight: 600; margin-top: 10px; }
+dd { margin: 0 0 4px 1.2rem; color: var(--text-muted); }
+
+/* ---------- Tables ---------- */
+
+.table-wrap { overflow-x: auto; margin: 0 0 20px; }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: .95rem;
+}
+
+caption {
+  caption-side: top;
+  text-align: left;
+  font-weight: 600;
+  padding-bottom: 8px;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+thead th { background: var(--surface-alt); font-weight: 600; }
+tbody tr:nth-child(even) { background: var(--surface); }
+
+/* ---------- Callouts ---------- */
+
+.note, .tip, .warning {
+  border-left: 4px solid var(--note);
+  background: var(--note-soft);
+  padding: 12px 16px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 0 0 20px;
+}
+
+.note p:last-child, .tip p:last-child, .warning p:last-child { margin-bottom: 0; }
+
+.note .label, .tip .label, .warning .label {
+  display: block;
+  font-weight: 600;
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 4px;
+}
+
+.warning { border-left-color: var(--accent); background: var(--accent-soft); }
+
+/* ---------- Figures ---------- */
+
+figure {
+  margin: 0 0 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  background: var(--surface);
+}
+
+figure img { max-width: 100%; height: auto; display: block; border-radius: 4px; }
+
+figure.phone {
+  width: fit-content;
+  max-width: 100%;
+}
+
+figure.phone img {
+  width: auto;
+  max-height: 640px;
+}
+
+figcaption { font-size: .85rem; color: var(--text-muted); margin-top: 8px; }
+
+/* ---------- Section cards (index pages) ---------- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+  margin: 0 0 28px;
+  padding: 0;
+  list-style: none;
+}
+
+.cards li {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  background: var(--surface);
+  margin: 0;
+}
+
+.cards li a { font-weight: 600; }
+.cards li p { margin: 4px 0 0; font-size: .9rem; color: var(--text-muted); }
+
+.settings-menu h4 {
+  color: var(--text);
+  font-size: .95rem;
+  margin: 22px 0 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-menu .cards { margin-bottom: 8px; }
+
+/* ---------- Footer / pager ---------- */
+
+footer.doc-footer {
+  margin-top: 48px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: .85rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+code {
+  background: var(--surface-alt);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: .9em;
+}
+
+kbd {
+  display: inline-block;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: .85em;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15181e;
+    --surface: #1c2027;
+    --surface-alt: #232833;
+    --text: #e7eaf0;
+    --text-muted: #a3acbd;
+    --border: #2d333f;
+    --accent: #ff7a63;
+    --accent-soft: #2c1f1c;
+    --note: #7aa6ff;
+    --note-soft: #1b2232;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #15181e;
+  --surface: #1c2027;
+  --surface-alt: #232833;
+  --text: #e7eaf0;
+  --text-muted: #a3acbd;
+  --border: #2d333f;
+  --accent: #ff7a63;
+  --accent-soft: #2c1f1c;
+  --note: #7aa6ff;
+  --note-soft: #1b2232;
+}

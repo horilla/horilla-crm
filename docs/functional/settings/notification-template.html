@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Notification Template | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to notification templates in Horilla CRM settings: creating reusable templates linked to system models and using them in mail automation."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Notification Template</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Notification Template</h1>
+                <p class="lead">
+                    Create reusable notification templates tied to system models and reuse them in automation workflows.
+                </p>
+            </header>
+
+            <main>
+                <section id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        Notification Templates are reusable messages linked to a CRM model. Message Automations use them
+                        when the delivery channel is <strong>Send as Notification</strong>.
+                    </p>
+                </section>
+
+                <section id="navigation">
+                    <h2>Navigation</h2>
+                    <p>Go to <strong>Settings &rarr; Notifications &rarr; Notification Template</strong>.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/notification-template-1.png"
+                            alt="Navigating to the Notification Template page in Horilla CRM settings"
+                            loading="lazy"
+                        >
+                        <figcaption>Reaching the Notification Template page.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="template-list">
+                    <h2>Notification Template List</h2>
+                    <p>The list page shows every template that has been created.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-notification-list.png"
+                            alt="Notification Templates list showing New Contact Assigned, New Account Assigned, Campaign Started, Deal Won and New Lead Assigned"
+                            loading="lazy"
+                        >
+                        <figcaption>The notification template list.</figcaption>
+                    </figure>
+                    <ul>
+                        <li><strong>Information shown:</strong> Template Title and Related Model.</li>
+                        <li><strong>Row actions:</strong> Edit and Delete.</li>
+                        <li>
+                            <strong>Available actions:</strong> view templates, search templates and create a new
+                            template.
+                        </li>
+                    </ul>
+                </section>
+
+                <section id="create-template">
+                    <h2>Create Notification Template</h2>
+                    <ol class="steps">
+                        <li>Click <strong>New</strong> to open the Create Notification Template form.</li>
+                        <li>
+                            Fill in the fields:
+                            <ul>
+                                <li><strong>Template Title</strong> &ndash; the name of the template.</li>
+                                <li>
+                                    <strong>Related Model</strong> &ndash; the system model the template is associated
+                                    with. Any available model can be selected from the list.
+                                </li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/notification-template-n-single.png"
+                            alt="Create Notification Template form with template title and related model fields"
+                            loading="lazy"
+                        >
+                        <figcaption>The Create Notification Template form.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="detail-view">
+                    <h2>Template Detail View</h2>
+                    <ul>
+                        <li>Clicking a <strong>Template Title</strong> opens its detail view.</li>
+                        <li>
+                            The detail view is used to reach the template's configuration and its related information.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/notification-template-n-detail.png"
+                            alt="Notification template detail view"
+                            loading="lazy"
+                        >
+                        <figcaption>The template detail view.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="usage-in-automation">
+                    <h2>Usage in Automation</h2>
+                    <p>
+                        On a message automation, choose <strong>Send as Notification</strong>. The <strong>Notification
+                            Template</strong> field then lists the templates whose related model matches the
+                        automation's module.
+                    </p>
+                </section>
+
+                <section id="expected-behaviour">
+                    <h2>Expected Behaviour</h2>
+                    <ul>
+                        <li>Users can create notification templates.</li>
+                        <li>Templates can be associated with any available model.</li>
+                        <li>Created templates appear on the Notification Template page.</li>
+                        <li>Clicking a template title opens its detail view.</li>
+                        <li>Templates can be selected on a message automation that sends a notification.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

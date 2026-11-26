@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Mail Template | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to mail templates in Horilla CRM settings: creating reusable email templates for leads, contacts and opportunities, and managing or previewing them."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Mail Template</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Mail Template</h1>
+                <p class="lead">Create and manage reusable, pre-formatted email templates for CRM records.</p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Mail Template module is used to create and manage reusable email templates for CRM records
+                        such as Leads, Contacts and Opportunities. Templates supply pre-formatted content so that
+                        routine communication can be sent more quickly.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="templates-overview">1. Mail Templates Overview</h3>
+                    <p><strong>Purpose:</strong> bring every mail template together in one place for management.</p>
+                    <ul>
+                        <li>Navigate to <strong>Settings &rarr; Mail &rarr; Mail Template</strong>.</li>
+                        <li>
+                            The list shows the <strong>Template title</strong> and the <strong>Related Model</strong>,
+                            both of which are sortable, plus an <strong>Actions</strong> column with Edit and Delete
+                            icons.
+                        </li>
+                        <li>A search function helps locate a particular template.</li>
+                        <li>The <strong>New</strong> button in the top right creates a template.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/mail-templates-list.png"
+                            alt="Mail template list view with template title, related model and action icons"
+                            loading="lazy"
+                        >
+                        <figcaption>The mail templates list.</figcaption>
+                    </figure>
+
+                    <h3 id="create-template">2. Creating a New Mail Template</h3>
+                    <p><strong>Purpose:</strong> build reusable templates for the different CRM entities.</p>
+                    <ol class="steps">
+                        <li>Click <strong>New</strong> to open the <strong>Create Mail Template</strong> modal.</li>
+                        <li>Complete the form fields described below.</li>
+                        <li>Click <strong>Save Template</strong> to finish.</li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/mail-template-create.png"
+                            alt="Create Mail Template modal with title, subject, related model and body fields"
+                            loading="lazy"
+                        >
+                        <figcaption>The Create Mail Template modal.</figcaption>
+                    </figure>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Template title</td>
+                                    <td>A descriptive name for the template.</td>
+                                </tr>
+                                <tr>
+                                    <td>Subject</td>
+                                    <td>The subject line of the email.</td>
+                                </tr>
+                                <tr>
+                                    <td>Related Model</td>
+                                    <td>
+                                        Optional dropdown identifying the CRM entity type the template belongs to. The
+                                        options include Lead, Contact and Opportunity among others.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Body</td>
+                                    <td>A rich text editor with formatting tools for the message content.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 id="managing-templates">3. Managing Existing Templates</h3>
+                    <p><strong>Purpose:</strong> edit or delete templates that already exist.</p>
+                    <ul>
+                        <li><strong>Edit</strong> icon &ndash; change the template's content and settings.</li>
+                        <li><strong>Delete</strong> icon &ndash; remove the template permanently.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/mail-template-edit.png"
+                            alt="Edit Mail Template modal for Contact Follow-up, with subject, related model and body"
+                            loading="lazy"
+                        >
+                        <figcaption>Managing an existing template.</figcaption>
+                    </figure>
+
+                    <h3 id="template-preview">4. Template Detail View (Preview)</h3>
+                    <p><strong>Purpose:</strong> preview the template as it will be rendered.</p>
+                    <ul>
+                        <li>Click any template record to open its detail view.</li>
+                        <li>
+                            A modal shows a full visual preview of the template. Template variables are displayed in
+                            their placeholder form.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/mail-template-preview.png"
+                            alt="Mail template preview modal showing the rendered template with placeholder variables"
+                            loading="lazy"
+                        >
+                        <figcaption>The template preview.</figcaption>
+                    </figure>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Export Data | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Export Data in Horilla CRM settings: selecting modules and formats, downloading exports, and setting up recurring scheduled exports."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Export Data</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Export Data</h1>
+                <p class="lead">
+                    Extract and download CRM data on demand, or schedule recurring exports that are emailed to you
+                    automatically.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        Export Data sits under <strong>Data Management</strong> in Settings and lets users pull data out
+                        of the CRM modules and download it. Exports can be taken immediately, or automated so that they
+                        run on a recurring schedule.
+                    </p>
+                    <ul>
+                        <li>
+                            Available export formats: <strong>Excel</strong>, <strong>CSV</strong> and <strong
+                            >PDF</strong>.
+                        </li>
+                        <li>
+                            The feature works with the Base, Mail, Leads, Opportunities and Forecast areas of the
+                            system.
+                        </li>
+                    </ul>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="export-data-overview">1. Export Data Overview</h3>
+                    <p>
+                        <strong>Purpose:</strong> give users a single interface for choosing which modules to export, in
+                        which format, and whether the export should be scheduled.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/export-module.png"
+                            alt="Export Data page in Horilla CRM settings, with module and format selection"
+                            loading="lazy"
+                        >
+                        <figcaption>The Export Data page.</figcaption>
+                    </figure>
+                    <ol class="steps">
+                        <li>Go to <strong>Settings &rarr; Data Management &rarr; Export Data</strong>.</li>
+                        <li>
+                            Select the module you want to export. One module or several may be selected at the same
+                            time.
+                        </li>
+                        <li>Choose the export format.</li>
+                        <li>When a single module is selected, the file downloads directly in the chosen format.</li>
+                        <li>
+                            When several modules are selected (for example Company and Department), the generated files
+                            are bundled together into a ZIP archive.
+                        </li>
+                    </ol>
+
+                    <h3 id="scheduled-exports">2. Scheduled Exports</h3>
+                    <p>
+                        <strong>Purpose:</strong> run exports automatically at a set interval and email the resulting
+                        file. The mail goes only to the user who created the schedule, at that user's email address.
+                        There is no separate recipient field. A schedule is skipped when that user no longer has
+                        permission to view exports. Custom fields defined for the module are included with the export.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/export-schedule.png"
+                            alt="Schedule Export modal with frequency and date options"
+                            loading="lazy"
+                        >
+                        <figcaption>The Schedule Export modal.</figcaption>
+                    </figure>
+                    <ol class="steps">
+                        <li>On the Export Data page, select the modules and the format as usual.</li>
+                        <li>
+                            Click <strong>Schedule</strong> to open the Schedule Export modal. The modules and format
+                            chosen on the main page are carried over automatically.
+                        </li>
+                        <li>Complete the scheduling fields described below.</li>
+                        <li>Click <strong>Schedule</strong> in the modal to submit the form.</li>
+                    </ol>
+
+                    <h4 id="schedule-fields">Schedule Export fields</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>When it applies</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Frequency</td>
+                                    <td>Always &ndash; required</td>
+                                    <td>
+                                        Radio buttons for <strong>Daily</strong>, <strong>Weekly</strong>, <strong
+                                        >Monthly</strong> and <strong>Yearly</strong>. Daily runs every day from the
+                                        start date; Weekly runs once a week on a chosen day; Monthly runs once a month
+                                        on a chosen date; Yearly runs once a year on a chosen date and month. Selecting
+                                        a frequency shows or hides the related fields below.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Day of Week</td>
+                                    <td>Weekly &ndash; required</td>
+                                    <td>Dropdown listing Monday through Sunday.</td>
+                                </tr>
+                                <tr>
+                                    <td>Day of Month</td>
+                                    <td>Monthly &ndash; required</td>
+                                    <td>Dropdown listing <code>1</code> to <code>31</code>.</td>
+                                </tr>
+                                <tr>
+                                    <td>Day of Month</td>
+                                    <td>Yearly &ndash; required</td>
+                                    <td>
+                                        Dropdown listing <code>1</code> to <code>31</code> for the day within the chosen
+                                        month.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Month</td>
+                                    <td>Yearly &ndash; required</td>
+                                    <td>Dropdown listing January through December.</td>
+                                </tr>
+                                <tr>
+                                    <td>Start Date</td>
+                                    <td>Always &ndash; required</td>
+                                    <td>
+                                        Date picker. The date must be today or later; dates in the past are rejected.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>End Date</td>
+                                    <td>Optional</td>
+                                    <td>
+                                        Date picker. Left blank, the schedule runs indefinitely. If a date is given, it
+                                        must fall after the Start Date.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Schedule button</td>
+                                    <td>Always</td>
+                                    <td>
+                                        Submits the form. On success the modal closes and the new schedule is added to
+                                        the Scheduled Exports list. On failure, inline errors appear beside the affected
+                                        fields and the modal stays open.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 id="viewing-schedules">Viewing scheduled exports</h4>
+                    <p>
+                        Existing schedules are listed in a table that shows the details of each schedule together with
+                        its execution status.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/export-schedule-list.png"
+                            alt="Scheduled exports list showing schedule details and execution status"
+                            loading="lazy"
+                        >
+                        <figcaption>The Scheduled Exports list.</figcaption>
+                    </figure>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

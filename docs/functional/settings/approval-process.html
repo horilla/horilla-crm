@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Approval Process | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Horilla CRM Approval Process settings: creating approval processes, process rules, conditions, approvers, and approval and rejection actions."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Approval Process</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Approval Process</h1>
+                <p class="lead">
+                    Build automated review workflows that hold new or edited CRM records until the right people have
+                    approved them.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Approval Process module lets administrators define automated workflows that run when CRM
+                        records are created or edited. Nominated approvers review the record before it moves forward. A
+                        workflow can chain several levels of approvers, restrict itself with conditions, and perform
+                        automatic actions depending on whether the record is approved or rejected.
+                    </p>
+                    <p>
+                        Working a request that is already waiting — the jobs list, the history and the response — is
+                        covered in <a href="../myjobs/approval-jobs.html">Approval Jobs</a>.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="approval-process-overview">1. Approval Process Overview</h3>
+                    <p><strong>Purpose:</strong> see and manage every approval process configured in the system.</p>
+                    <ul>
+                        <li>Go to <strong>Settings &rarr; Process Builder &rarr; Approval Processes</strong>.</li>
+                        <li>The page description is <q>Set up approval rules and routing for your records.</q></li>
+                        <li>
+                            The list shows <strong>Name</strong>, <strong>Module</strong>, <strong>Execute on</strong>,
+                            <strong>Is Active</strong> and <strong>Actions</strong>. Execute on is <strong>Create and
+                                Edit</strong>, <strong>Create only</strong> or <strong>Edit only</strong>. Is Active is
+                            a switch. Actions are edit and delete.
+                        </li>
+                        <li>A search function is available to locate a process in the list.</li>
+                        <li>
+                            When no approval process has been created yet, the page displays an empty-state message.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-approval-list.png"
+                            alt="Approval Processes list with Account Credit Approval, Lead Conversion Approval and Discount Approval"
+                            loading="lazy"
+                        >
+                        <figcaption>Approval processes list.</figcaption>
+                    </figure>
+
+                    <h3 id="create-approval-process">2. Creating a New Approval Process</h3>
+                    <p><strong>Purpose:</strong> define a new workflow and the records it applies to.</p>
+                    <ol class="steps">
+                        <li>Click <strong>New</strong> on the Approval Processes page.</li>
+                        <li>Complete the form fields described below.</li>
+                        <li>Click <strong>Save</strong>.</li>
+                    </ol>
+
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>A descriptive label for the approval process.</td>
+                                </tr>
+                                <tr>
+                                    <td>Module</td>
+                                    <td>
+                                        The record type the process applies to: <strong>Lead</strong>, <strong
+                                        >Opportunity</strong>, <strong>Account</strong> or <strong>Contact</strong>.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>When a record is created</td>
+                                    <td>Trigger that fires when a new record of the selected module is created.</td>
+                                </tr>
+                                <tr>
+                                    <td>When a record is edited</td>
+                                    <td>Trigger that fires when an existing record is updated.</td>
+                                </tr>
+                                <tr>
+                                    <td>Is Active</td>
+                                    <td>Turns the process on or off without deleting it.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="note">
+                        <span class="label">Note</span>
+                        <p>
+                            Both triggers can be enabled at the same time, so a single process can run on creation and
+                            on edit.
+                        </p>
+                    </div>
+
+                    <figure>
+                        <img
+                            src="../assets/shots/approval-process-n-single.png"
+                            alt="Form for creating a new approval process"
+                            loading="lazy"
+                        >
+                        <figcaption>New approval process form.</figcaption>
+                    </figure>
+
+                    <h3 id="process-detail-view">3. Process Detail View</h3>
+                    <p><strong>Purpose:</strong> open a process to manage its rules.</p>
+                    <ul>
+                        <li>Click a process name in the list to open its detail view.</li>
+                        <li>
+                            The top navbar carries the <strong>Add Rule</strong> and <strong>Edit Process</strong>
+                            buttons.
+                        </li>
+                        <li>If the process has no rules yet, the page displays an empty-state message.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/approval-process-n-detail.png"
+                            alt="Approval process detail view with Add Rule and Edit Process buttons"
+                            loading="lazy"
+                        >
+                        <figcaption>Approval process detail view.</figcaption>
+                    </figure>
+
+                    <h3 id="adding-process-rules">4. Adding Process Rules</h3>
+                    <p>
+                        <strong>Purpose:</strong> decide which records a process catches, who approves them, and what
+                        happens afterwards.
+                    </p>
+                    <div class="note">
+                        <span class="label">Note</span>
+                        <p>Rules are evaluated in order and the first rule that matches is the one applied.</p>
+                    </div>
+
+                    <h4 id="rule-conditions">Conditions</h4>
+                    <ul>
+                        <li>Conditions are optional.</li>
+                        <li>
+                            Each condition row is built from a <strong>Field</strong>, an <strong>Operator</strong> and
+                            a <strong>Value</strong>.
+                        </li>
+                        <li>Condition rows are combined with <strong>AND</strong> or <strong>OR</strong>.</li>
+                        <li>Use <strong>+ Add More</strong> to add further condition rows.</li>
+                        <li>With no conditions set, the rule applies to every record that fires the trigger.</li>
+                    </ul>
+
+                    <h4 id="rule-approvers">Approvers</h4>
+                    <ul>
+                        <li>
+                            Each approver entry is given an <strong>Order</strong>, which sets its position in the
+                            approval chain.
+                        </li>
+                        <li>
+                            <strong>Approver Type</strong> can be <strong>User</strong>, <strong>Role</strong> or
+                            <strong>Owner's Manager</strong>.
+                        </li>
+                    </ul>
+
+                    <h4 id="approval-method">Approval Method</h4>
+                    <ul>
+                        <li>
+                            <strong>Sequential</strong> – approvers are asked one at a time, in the configured order.
+                        </li>
+                        <li>
+                            <strong>Parallel</strong> – all approvers are notified at once. Choose whether <strong
+                            >Anyone</strong> may approve or <strong>Everyone must approve</strong>.
+                        </li>
+                    </ul>
+
+                    <h4 id="approval-actions">Approval Actions</h4>
+                    <p>
+                        Actions performed automatically when the record is approved: <strong>Update Field</strong>,
+                        <strong>Assign Task</strong>, <strong>Send Mail</strong> or <strong>Send Notification</strong>.
+                    </p>
+
+                    <h4 id="rejection-actions">Rejection Actions</h4>
+                    <p>
+                        The same set of action types is available for rejections and is configured separately from the
+                        approval actions.
+                    </p>
+                </section>
+
+                <section id="record-visibility">
+                    <h2>Effect on Record Visibility</h2>
+                    <ul>
+                        <li>
+                            Records that are pending approval or that have been rejected are hidden from the standard
+                            list views.
+                        </li>
+                        <li>They remain visible in the approvers' queue.</li>
+                        <li>Once fully approved, the record reappears in the list views and becomes editable again.</li>
+                    </ul>
+                </section>
+
+                <section id="best-practices">
+                    <h2>Best Practices</h2>
+                    <ul>
+                        <li>Give each process a descriptive name.</li>
+                        <li>Use conditions to limit which records trigger the process.</li>
+                        <li>Configure both approval and rejection actions.</li>
+                        <li>Test a new process on a staging environment before enabling it in production.</li>
+                        <li>Use <strong>Is Active</strong> to pause a process rather than deleting it.</li>
+                        <li>
+                            Review the <a href="../myjobs/approval-jobs.html#approval-history">approval history</a> to
+                            find bottlenecks in the chain.
+                        </li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

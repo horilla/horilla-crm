@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Field Management | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Field Management in Horilla CRM: custom fields, form layouts and field requirements for Leads and Opportunities."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Field Management</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Field Management</h1>
+                <p class="lead">
+                    Add fields, choose which fields a create form shows, and decide which fields are required, per
+                    company.
+                </p>
+            </header>
+
+            <main>
+                <section id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        Go to <strong>Settings &rarr; Field Management</strong>. The section has three pages: <strong
+                        >Custom Fields</strong>, <strong>Form Layout</strong> and <strong>Field Requirements</strong>.
+                        Each setting belongs to the active company. Today these pages apply to <strong>Leads</strong>
+                        and <strong>Opportunities</strong>.
+                    </p>
+                </section>
+
+                <section id="custom-fields">
+                    <h2>Custom Fields</h2>
+                    <p>
+                        A custom field captures extra information on Leads and Opportunities. The page description is <q
+                        >Define custom fields to capture additional information on Leads and Opportunities.</q> Saved
+                        fields list <strong>Name</strong>, <strong>Model</strong>, <strong>Type</strong>, <strong
+                        >Required</strong>, <strong>Order</strong> and <strong>Actions</strong>. <strong>New</strong>
+                        opens the create form.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-custom-fields.png?v=2"
+                            alt="Custom Fields list with Referral Source and Follow-up Date on Lead, and Deal Priority and Seat Count on Opportunity"
+                            loading="lazy"
+                        >
+                        <figcaption>Custom Fields with saved fields.</figcaption>
+                    </figure>
+                    <p>
+                        Once saved, the field is available wherever that model's data is shown, subject to field
+                        permissions:
+                    </p>
+                    <ul>
+                        <li>Create and edit forms, including the wizard.</li>
+                        <li>The detail header, the Details tab, inline edit and Edit Details.</li>
+                        <li>List columns, the column picker, filters and quick filters.</li>
+                        <li>Kanban, Group By and Chart, for a single-choice field.</li>
+                        <li>Import templates, export, scheduled export, reports and dashboard components.</li>
+                        <li>
+                            Condition builders used by approvals, reviews, workflow, automations, cadences, duplicates,
+                            scoring and forecast.
+                        </li>
+                        <li>The Insert Fields list on mail and notification templates.</li>
+                    </ul>
+                    <p>
+                        A hidden field permission removes the field from those surfaces. A read-only permission shows it
+                        but does not accept a change. An applied filter chip shows the field's name.
+                    </p>
+                </section>
+
+                <section id="form-layout">
+                    <h2>Form Layout</h2>
+                    <p>
+                        The page description is <q>Choose which fields appear and in what order. Available as a Custom
+                            Layout mode on create and edit forms.</q> Each saved layout is one row, with <strong
+                        >Model</strong>, <strong>Fields Shown</strong>, <strong>Last Updated</strong> and <strong
+                        >Actions</strong>. Fields Shown is the number of visible fields out of the fields on that form.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-form-layout.png?v=2"
+                            alt="Form Layout list with Opportunity and Lead, each showing 6 of 20 fields"
+                            loading="lazy"
+                        >
+                        <figcaption>Form Layout with a Lead layout and an Opportunity layout.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="field-requirements">
+                    <h2>Field Requirements</h2>
+                    <p>
+                        The page description is <q>Choose which fields your team must fill in when creating or editing
+                            records.</q> Each row lists <strong>Model</strong>, <strong>Field</strong>, <strong
+                        >Requirement</strong> (Required or Optional) and <strong>Actions</strong>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-field-requirements.png?v=2"
+                            alt="Field Requirements list for Lead and Opportunity, with Required and Optional rows"
+                            loading="lazy"
+                        >
+                        <figcaption>Field Requirements with Lead and Opportunity fields.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="expected-behaviour">
+                    <h2>Expected Behaviour</h2>
+                    <ul>
+                        <li>A field added for one company does not appear for another company.</li>
+                        <li>Deleting a custom field removes it from forms, lists, filters, exports and conditions.</li>
+                        <li>A user without view permission on the page does not see that Field Management item.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

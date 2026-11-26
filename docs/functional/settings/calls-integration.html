@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Call Integration | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Call Integration settings page in Horilla CRM: Enable Call Integration, Access Control and Providers."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Call Integration</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Call Integration</h1>
+                <p class="lead">
+                    Turn calling on for the company, choose who can initiate calls, and add a calling provider.
+                </p>
+            </header>
+
+            <main>
+                <section id="settings">
+                    <h2>Call Integration</h2>
+                    <p>
+                        Go to <strong>Settings &rarr; Integrations &rarr; Call Integration</strong>. The page title is
+                        <strong>Call Integration</strong>. The description is <q>Connect a calling provider to make and
+                            log calls.</q>
+                    </p>
+                    <p>
+                        Each user sets a caller ID from <a href="../mysettings/calls.html">My Settings &rarr; Calls</a>.
+                    </p>
+                    <p>
+                        <strong>Call Settings</strong> explains that call integration lets users make and receive calls
+                        directly from any record. The <strong>Enable Call Integration</strong> switch is on, and the
+                        status reads <q>Enabled — users can make and receive calls.</q> The <strong>Access
+                            Control</strong> and <strong>Providers</strong> tabs appear while the switch is on.
+                    </p>
+                </section>
+
+                <section id="access-control">
+                    <h2>Access Control</h2>
+                    <p>
+                        The tab line is <q>Choose who can initiate calls.</q> Three cards set who may use calling. The
+                        card in use is marked <strong>Active</strong>.
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>All Users</strong> — every user in the company can use call integration. The card
+                            shows <strong>Click To Activate</strong> while another option is active.
+                        </li>
+                        <li>
+                            <strong>Specific Roles</strong> — only users with the selected roles can use call
+                            integration. The card shows <strong>Click To Select</strong>.
+                        </li>
+                        <li>
+                            <strong>Specific Users</strong> — only the selected people can use call integration. This
+                            card is <strong>Active</strong>, with <strong>16 User(s)</strong> and <strong>Click To Add
+                                Or Remove Users</strong>.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-calls.png?v=2"
+                            alt="Call Integration settings with Enable Call Integration on and the Access Control tab. Specific Users is Active for 16 users."
+                            loading="lazy"
+                        >
+                        <figcaption>Call Integration with the Access Control tab.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="providers">
+                    <h2>Providers</h2>
+                    <p>
+                        The <strong>Providers</strong> tab lists each saved provider with <strong>Name</strong>, <strong
+                        >Provider</strong>, <strong>Status</strong>, <strong>Default Caller ID</strong> and <strong
+                        >Actions</strong>. Status can be Active, Inactive or Testing. Actions are test connection, edit
+                        and delete. <strong>Setup Guide</strong> opens the provider setup notes. <strong>Add</strong>
+                        opens <strong>Create Call Provider</strong>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-calls-providers.png?v=2"
+                            alt="Providers tab with Support Desk on Exotel in Testing and Horilla Sales Line on Twilio as Inactive"
+                            loading="lazy"
+                        >
+                        <figcaption>The Providers tab with saved providers.</figcaption>
+                    </figure>
+
+                    <h3 id="add-provider">Add a provider</h3>
+                    <p>
+                        The fields change with the provider. Every provider asks for <strong>Name</strong>, <strong
+                        >Provider</strong>, <strong>Status</strong>, <strong>Default Caller ID</strong> and <strong>Auth
+                            Token / API Secret</strong>. The choices are Twilio, SignalWire (Beta), Telnyx (Beta), Sinch
+                        (Beta), Exotel (Beta) and Mock (Testing).
+                    </p>
+                    <p>
+                        <strong>SignalWire</strong> also asks for <strong>Account SID</strong>, <strong>API Base
+                            URL</strong> and <strong>Webhook Secret</strong>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-calls-provider-signalwire.png"
+                            alt="Create Call Provider for SignalWire with Name, Provider, Status, Default Caller ID, Auth Token, Account SID, API Base URL and Webhook Secret"
+                            loading="lazy"
+                        >
+                        <figcaption>Create Call Provider for SignalWire.</figcaption>
+                    </figure>
+                    <p>
+                        <strong>Exotel</strong> asks for <strong>Account SID</strong> and <strong>API Key</strong>.
+                        Twilio and Sinch ask for <strong>Account SID</strong>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-calls-provider-exotel.png"
+                            alt="Create Call Provider for Exotel with Account SID and API Key"
+                            loading="lazy"
+                        >
+                        <figcaption>Create Call Provider for Exotel.</figcaption>
+                    </figure>
+                    <p>
+                        <strong>Telnyx</strong> asks for <strong>Connection ID</strong> and <strong>Webhook
+                            Secret</strong>. Mock adds no extra fields.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-calls-provider-telnyx.png"
+                            alt="Create Call Provider for Telnyx with Connection ID and Webhook Secret"
+                            loading="lazy"
+                        >
+                        <figcaption>Create Call Provider for Telnyx.</figcaption>
+                    </figure>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

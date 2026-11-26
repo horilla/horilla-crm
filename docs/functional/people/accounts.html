@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Accounts | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Horilla CRM Accounts module: list and alternative views, account creation forms and the account detail view."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>People</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Accounts</span>
+                </nav>
+                <p class="eyebrow">People</p>
+                <h1>Accounts</h1>
+                <p class="lead">
+                    Manage the organisations and business entities behind your customers, prospects and partners from
+                    one workspace.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Accounts module is the central workspace for organisations and business entities connected
+                        to customers, prospects and partners. It keeps the relationship with each organisation, together
+                        with its activities and interaction history, in one place.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="accounts-overview">1.1 Accounts Overview</h3>
+                    <ul>
+                        <li>
+                            Open the module from <strong>Accounts</strong> in the <strong>Sales</strong> sidebar menu.
+                        </li>
+                        <li>
+                            Every account is listed together, with a search box and filters for criteria such as company
+                            name or industry.
+                        </li>
+                        <li>Columns can be adjusted and the filters applied to the list can be tailored.</li>
+                        <li>
+                            Select rows to run bulk actions: <strong>Edit</strong>, <strong>Export</strong> and <strong
+                            >Mass Delete</strong>.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/accounts-1.png"
+                            alt="Accounts list view in Horilla CRM"
+                            loading="lazy"
+                        >
+                        <figcaption>Accounts list view.</figcaption>
+                    </figure>
+
+                    <h3 id="kanban-view">1.2 Kanban View</h3>
+                    <ul>
+                        <li>
+                            Accounts are grouped by relationship stage, or by whichever category has been configured.
+                        </li>
+                        <li>
+                            Cards can be dragged and dropped from one stage to another, and the Kanban settings are
+                            customisable.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/accounts-2.png"
+                            alt="Accounts Kanban view grouped by stage"
+                            loading="lazy"
+                        >
+                        <figcaption>Kanban view.</figcaption>
+                    </figure>
+
+                    <h3 id="card-view">1.3 Card View</h3>
+                    <ul>
+                        <li>
+                            Each card shows <strong>Company Name</strong>, <strong>Industry</strong>, <strong>Phone
+                                Number</strong>, <strong>Website</strong> and <strong>Annual Revenue</strong>.
+                        </li>
+                        <li>The search and filter options from List View apply here as well.</li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/accounts-3.png" alt="Accounts card view" loading="lazy">
+                        <figcaption>Card view.</figcaption>
+                    </figure>
+
+                    <h3 id="group-by-view">1.4 Group By View</h3>
+                    <ul>
+                        <li>
+                            Group accounts by <strong>Industry</strong>, <strong>Account Owner</strong>, <strong>Account
+                                Type</strong> or <strong>Country</strong>.
+                        </li>
+                        <li>Each grouped section can be collapsed or expanded.</li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/accounts-n-group.png" alt="Accounts grouped view" loading="lazy">
+                        <figcaption>Group By view.</figcaption>
+                    </figure>
+
+                    <h3 id="chart-view">1.5 Chart View</h3>
+                    <ul>
+                        <li>Charts cover industry distribution, account ownership and revenue segmentation.</li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/accounts-n-chart.png" alt="Accounts chart view" loading="lazy">
+                        <figcaption>Chart view.</figcaption>
+                    </figure>
+
+                    <h3 id="split-view">1.6 Split View</h3>
+                    <ul>
+                        <li>
+                            The left panel holds the account list and the right panel shows the details of the selected
+                            account.
+                        </li>
+                        <li>Details load in place, so no page navigation is needed.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/accounts-n-split.png"
+                            alt="Accounts split view with list and details side by side"
+                            loading="lazy"
+                        >
+                        <figcaption>Split view: list on the left, details on the right.</figcaption>
+                    </figure>
+
+                    <h3 id="timeline-view">1.7 Timeline View</h3>
+                    <ul>
+                        <li>Accounts are ordered by creation date or by last updated date.</li>
+                        <li>Rows can be grouped by <strong>Industry</strong> or <strong>Account Owner</strong>.</li>
+                        <li>
+                            The columns shown are <strong>Company Name</strong>, <strong>Industry</strong>, <strong
+                            >Website</strong>, <strong>Phone Number</strong> and <strong>Account Owner</strong>.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/accounts-n-timeline.png" alt="Accounts timeline view" loading="lazy">
+                        <figcaption>Timeline view.</figcaption>
+                    </figure>
+
+                    <h3 id="create-account">1.8 Creating a New Account</h3>
+                    <p>
+                        Click <strong>New</strong> on the Accounts page to open the creation form. Two entry modes are
+                        available, and you can switch between them at any time.
+                    </p>
+
+                    <h4 id="multi-step-form">Multi-Step Form</h4>
+                    <figure>
+                        <img
+                            src="../assets/shots/accounts-n-multi.png"
+                            alt="Multi-step account creation form"
+                            loading="lazy"
+                        >
+                        <figcaption>Multi-step account creation form.</figcaption>
+                    </figure>
+                    <ol class="steps">
+                        <li>
+                            <strong>Step 1 – Basic Information:</strong> Account Owner, Company Name, Industry, Annual
+                            Revenue, Website, Phone Number.
+                        </li>
+                        <li><strong>Step 2 – Address Information:</strong> City, State, Country, Postal Code (Zip).</li>
+                        <li>
+                            <strong>Step 3 – Additional Information:</strong> Parent Account, Description / Notes,
+                            Contact Details, Additional Business Information.
+                        </li>
+                    </ol>
+
+                    <h4 id="single-step-form">Single-Step Form</h4>
+                    <figure>
+                        <img
+                            src="../assets/shots/accounts-n-single.png"
+                            alt="Single-step account creation form"
+                            loading="lazy"
+                        >
+                        <figcaption>Single-step account creation form.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>
+                            All fields are presented on one page, with no step navigation, which makes data entry
+                            faster.
+                        </li>
+                        <li>
+                            Use the toggle in the form header to switch to Single-Step Mode, then click <strong
+                            >Save</strong>.
+                        </li>
+                    </ul>
+
+                    <h3 id="account-detail">Account Detailed Information</h3>
+                    <ul>
+                        <li>Open an account by clicking its name in the list.</li>
+                        <li>
+                            The detail view shows company name, industry, website, phone, annual revenue, parent account
+                            and address.
+                        </li>
+                        <li>
+                            Information is organised into the <strong>Details</strong>, <strong>Activity</strong>,
+                            <strong>Related Lists</strong> and <strong>History</strong> tabs.
+                        </li>
+                        <li>Inline edit icons allow fields to be updated directly from this view.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/accounts-n-detail.png"
+                            alt="Account detail view with tabs"
+                            loading="lazy"
+                        >
+                        <figcaption>Account detail view.</figcaption>
+                    </figure>
+                    <div class="note">
+                        <span class="label">Note</span>
+                        <p>
+                            The source page numbers this section "1.4", repeating the number already used for Group By
+                            View.
+                        </p>
+                    </div>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

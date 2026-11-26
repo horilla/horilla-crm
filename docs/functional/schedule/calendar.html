@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Calendar | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Horilla CRM Calendar module: calendar views, activity preferences, activity creation and detail, unavailability management and custom calendars."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Schedule</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Calendar</span>
+                </nav>
+                <p class="eyebrow">Schedule</p>
+                <h1>Calendar</h1>
+                <p class="lead">A unified, time-based view for managing every CRM activity.</p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>The Calendar module provides a unified, time-based view for managing CRM activities.</p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="calendar-views">1.1 Calendar Views</h3>
+                    <p><strong>Purpose:</strong> offer flexible time-based perspectives on the schedule.</p>
+                    <dl>
+                        <dt>Month View</dt>
+                        <dd>A monthly grid of activities.</dd>
+                        <dt>Week View</dt>
+                        <dd>Detailed weekly scheduling.</dd>
+                        <dt>Day View</dt>
+                        <dd>Focus on a single day.</dd>
+                        <dt>Year View</dt>
+                        <dd>A yearly overview of how activities are distributed.</dd>
+                    </dl>
+                    <figure>
+                        <img src="../assets/shots/calendar-1.png" alt="Calendar month view" loading="lazy">
+                        <figcaption>Month view.</figcaption>
+                    </figure>
+                    <p>
+                        The sidebar can filter by <strong>team members</strong> and by <strong>status</strong>. In Team
+                        view, unavailability is shown for the members who remain after the filter. <strong>Color by Type
+                            / Status</strong> switches how events are coloured. An event popup can <strong>Open Related
+                            Record</strong>. All-day activities span whole days. An unavailability block can end earlier
+                        today; a date before today is still refused.
+                    </p>
+                    <figure>
+                        <img src="../assets/shots/calendar-n-week.png" alt="Calendar week view" loading="lazy">
+                        <figcaption>Week view.</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="../assets/shots/calendar-n-day.png" alt="Calendar day view" loading="lazy">
+                        <figcaption>Day view.</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="../assets/shots/calendar-n-year.png" alt="Calendar year view" loading="lazy">
+                        <figcaption>Year view.</figcaption>
+                    </figure>
+                    <p>
+                        Move around the calendar with the <strong>Today</strong>, <strong>Previous</strong> and <strong
+                        >Next</strong> controls.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/calendar-n-page.png"
+                            alt="Calendar navigation controls"
+                            loading="lazy"
+                        >
+                        <figcaption>Calendar navigation.</figcaption>
+                    </figure>
+
+                    <h3 id="activities-preference">1.2 Activities and Activity Preference</h3>
+                    <p><strong>Purpose:</strong> present activities on an interactive, colour-coded calendar.</p>
+                    <ul>
+                        <li>
+                            The supported activity types are <strong>Task</strong>, <strong>Event</strong>, <strong
+                            >Meeting</strong> and <strong>Unavailability</strong>.
+                        </li>
+                        <li>Activities are placed on the calendar at their start and end times.</li>
+                        <li>Colours are configurable per user and per activity type.</li>
+                        <li>
+                            The visible activity types can be filtered, so each user chooses which types to display.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/calendar-preferences.png"
+                            alt="Colour-coded activities and the activity type menu"
+                            loading="lazy"
+                        >
+                        <figcaption>Activities and activity preferences.</figcaption>
+                    </figure>
+
+                    <h3 id="create-activity">1.3 Creating a New Activity</h3>
+                    <p><strong>Purpose:</strong> schedule CRM activities.</p>
+                    <ul>
+                        <li>Activities can be added directly from the calendar.</li>
+                        <li>Once saved, an activity appears immediately in the selected view.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/calendar-create-menu.png"
+                            alt="Creating a new activity from the calendar"
+                            loading="lazy"
+                        >
+                        <figcaption>Creating a new activity.</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="../assets/shots/calendar-create-form.png" alt="Activity creation form" loading="lazy">
+                        <figcaption>Activity creation form.</figcaption>
+                    </figure>
+
+                    <h3 id="activity-detail">1.4 Activity Detail View</h3>
+                    <p><strong>Purpose:</strong> give both quick and full access to an activity's information.</p>
+                    <h4 id="short-detail-popup">Short detail popup</h4>
+                    <ul>
+                        <li>Opens when an activity is clicked on the calendar.</li>
+                        <li>
+                            Shows <strong>Subject</strong>, <strong>Description</strong>, <strong>Assigned
+                                User</strong>, <strong>Dates</strong> and <strong>Status</strong>.
+                        </li>
+                        <li>
+                            Quick actions: <strong>Edit</strong>, <strong>Delete</strong>, <strong>Mark
+                                Complete</strong> and <strong>Info</strong>.
+                        </li>
+                    </ul>
+                    <h4 id="full-detail-view">Full detail view</h4>
+                    <ul>
+                        <li>Opened from the <strong>Info</strong> action.</li>
+                        <li>Shows all fields, which can be edited inline.</li>
+                        <li>A <strong>History</strong> tab records status changes and reassignments.</li>
+                        <li>Progress is tracked, for example from Pending to Completed.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/calendar-activity-detail.png"
+                            alt="Activity detail popup on the calendar"
+                            loading="lazy"
+                        >
+                        <figcaption>Activity detail view.</figcaption>
+                    </figure>
+
+                    <h3 id="unavailability">1.5 Unavailability Management</h3>
+                    <p><strong>Purpose:</strong> block out time so scheduling conflicts are avoided.</p>
+                    <ul>
+                        <li>Mark unavailability for whole dates or for specific time slots.</li>
+                        <li>Unavailability is shown as its own activity type.</li>
+                        <li>Notes can record the reason for the unavailability.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/calendar-unavailability.png"
+                            alt="Mark Unavailability form on the calendar"
+                            loading="lazy"
+                        >
+                        <figcaption>Unavailability management.</figcaption>
+                    </figure>
+
+                    <h3 id="custom-calendars">1.6 Custom Calendars</h3>
+                    <p><strong>Purpose:</strong> overlay the calendar with records from any CRM module.</p>
+                    <ul>
+                        <li>
+                            Custom calendars are created with the <strong>+</strong> button beside <strong>My
+                                Calendars</strong> in the right sidebar.
+                        </li>
+                        <li>Records from the modules you are permitted to see appear as colour-coded events.</li>
+                        <li>Each custom calendar has its own visibility checkbox.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/calendar-n-page.png"
+                            alt="Custom calendars listed in the right sidebar"
+                            loading="lazy"
+                        >
+                        <figcaption>Custom calendars.</figcaption>
+                    </figure>
+
+                    <h4 id="creating-custom-calendar">Creating a Custom Calendar</h4>
+                    <ul>
+                        <li>Click the <strong>+</strong> button to open the Create Custom Calendar modal.</li>
+                        <li>
+                            Complete the fields:
+                            <ul>
+                                <li><strong>Calendar Name</strong></li>
+                                <li><strong>Color</strong></li>
+                                <li><strong>Module</strong></li>
+                                <li><strong>Start Date Field</strong></li>
+                                <li><strong>End Date Field</strong> (optional)</li>
+                                <li><strong>Display Name Field</strong></li>
+                                <li><strong>Conditions</strong> (optional)</li>
+                            </ul>
+                        </li>
+                        <li>
+                            Click <strong>Save</strong>. The calendar appears in the sidebar and renders its events
+                            immediately.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/calendar-custom.png"
+                            alt="Create Custom Calendar modal"
+                            loading="lazy"
+                        >
+                        <figcaption>Creating a custom calendar.</figcaption>
+                    </figure>
+
+                    <h4 id="custom-calendar-event-detail">Custom Calendar Event Detail View</h4>
+                    <ul>
+                        <li>
+                            Clicking an event opens a popup showing its title, <strong>Start Date</strong> and <strong
+                            >End Date</strong>.
+                        </li>
+                        <li>
+                            The <strong>Info</strong> button opens the full view of the linked record, where one is
+                            available.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/calendar-n-page.png"
+                            alt="Custom calendar event detail popup"
+                            loading="lazy"
+                        >
+                        <figcaption>Custom calendar event detail.</figcaption>
+                    </figure>
+
+                    <h4 id="managing-custom-calendars">Managing Custom Calendars</h4>
+                    <p>The sidebar dropdown for each custom calendar offers these actions:</p>
+                    <dl>
+                        <dt>Display This Only</dt>
+                        <dd>Show only this calendar.</dd>
+                        <dt>Color</dt>
+                        <dd>Change the display colour; the change applies immediately.</dd>
+                        <dt>Update</dt>
+                        <dd>Edit the calendar, with its existing settings pre-filled.</dd>
+                        <dt>Delete</dt>
+                        <dd>Remove the calendar permanently, after a confirmation.</dd>
+                        <dt>Visibility checkbox</dt>
+                        <dd>
+                            Show or hide the calendar's events; the preference is saved automatically for each user.
+                        </dd>
+                    </dl>
+                    <figure>
+                        <img
+                            src="../assets/shots/calendar-n-page.png"
+                            alt="Custom calendar management dropdown"
+                            loading="lazy"
+                        >
+                        <figcaption>Managing custom calendars.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="benefits">
+                    <h2>Benefits</h2>
+                    <ul>
+                        <li>Centralised scheduling of CRM activities.</li>
+                        <li>Visual clarity through the different views and colour coding.</li>
+                        <li>Productivity gains from acting on activities directly in the calendar.</li>
+                        <li>Conflict prevention through unavailability tracking.</li>
+                        <li>Stronger 360-degree engagement tracking, because activities are linked to records.</li>
+                        <li>Custom calendars give date-driven views of any module.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

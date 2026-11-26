@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Cadences | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM Cadences: automated multi-stage outreach workflows with follow-up stages, branching, execution rules, reports and record-level tracking."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Cadences</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Cadences</h1>
+                <p class="lead">
+                    Automate multi-stage outreach: chain tasks, calls and emails that advance by themselves as each
+                    activity reaches a given status.
+                </p>
+            </header>
+
+            <main>
+                <section id="overview">
+                    <h2>Overview</h2>
+                    <ul>
+                        <li>
+                            Cadences are automated, multi-stage outreach workflows for CRM records. A cadence triggers a
+                            sequence of tasks, calls and emails once its conditions are met.
+                        </li>
+                        <li>
+                            Each stage moves forward automatically when the previous stage's activity reaches a
+                            configured status.
+                        </li>
+                        <li>Cadences support branching, so different outcomes lead to different follow-ups.</li>
+                        <li>
+                            Cadences can be applied to four modules: <strong>Lead</strong>, <strong>Contact</strong>,
+                            <strong>Account</strong> and <strong>Opportunity</strong>.
+                        </li>
+                    </ul>
+                </section>
+
+                <section id="navigation">
+                    <h2>Navigation</h2>
+                    <p>
+                        Go to <strong>Settings &rarr; Automations &rarr; Cadences</strong>. The page description is <q
+                        >Automate sequences of follow-ups for your records.</q>
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-cadence-list.png"
+                            alt="Cadences list with Name, Module, Description, Is Active and edit and delete actions"
+                            loading="lazy"
+                        >
+                        <figcaption>Cadences in Automation Settings.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="cadence-list">
+                    <h2>Cadence List</h2>
+                    <p>The list shows every cadence with:</p>
+                    <ul>
+                        <li><strong>Name</strong></li>
+                        <li><strong>Module</strong></li>
+                        <li><strong>Description</strong></li>
+                        <li><strong>Is Active</strong> status</li>
+                        <li><strong>Edit</strong> and <strong>Delete</strong> actions</li>
+                    </ul>
+                </section>
+
+                <section id="create-cadence">
+                    <h2>Create Cadence</h2>
+                    <p>Click <strong>New</strong> to open the creation form.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/cadences-n-single.png"
+                            alt="Form for creating a new cadence"
+                            loading="lazy"
+                        >
+                        <figcaption>New cadence form.</figcaption>
+                    </figure>
+
+                    <h3 id="cadence-fields">Fields</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>The cadence's name.</td>
+                                </tr>
+                                <tr>
+                                    <td>Module</td>
+                                    <td>The module it applies to: Lead, Contact, Account or Opportunity.</td>
+                                </tr>
+                                <tr>
+                                    <td>Description</td>
+                                    <td>An optional description.</td>
+                                </tr>
+                                <tr>
+                                    <td>Conditions</td>
+                                    <td>Determines which records are enrolled in the cadence.</td>
+                                </tr>
+                                <tr>
+                                    <td>Is Active</td>
+                                    <td>Turns the cadence on or off.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="cadence-detail-view">
+                    <h2>Cadence Detail View</h2>
+                    <ul>
+                        <li>Click the cadence name to open its detail view.</li>
+                        <li>
+                            Follow-ups are shown in a kanban-style layout organised by stage (Follow up 1, Follow up 2
+                            and so on).
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/cadences-n-detail.png"
+                            alt="Cadence detail view with follow-ups in a kanban layout by stage"
+                            loading="lazy"
+                        >
+                        <figcaption>Cadence detail view.</figcaption>
+                    </figure>
+
+                    <h3 id="available-actions">Available Actions</h3>
+                    <ul>
+                        <li><strong>Add Follow-up</strong></li>
+                        <li><strong>Edit Cadence</strong></li>
+                        <li><strong>View Reports</strong></li>
+                    </ul>
+                </section>
+
+                <section id="follow-ups">
+                    <h2>Follow-Ups</h2>
+                    <ul>
+                        <li>Follow-ups are the actions carried out within a cadence.</li>
+                        <li>
+                            Each one belongs to a stage and can be a <strong>Task</strong>, a <strong>Call</strong> or
+                            an <strong>Email</strong>.
+                        </li>
+                        <li>Click <strong>+</strong> in the detail view to add one.</li>
+                    </ul>
+
+                    <h3 id="common-fields">Common Fields</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Follow up Type</td>
+                                    <td>Task, Call or Email.</td>
+                                </tr>
+                                <tr>
+                                    <td>Do This</td>
+                                    <td>When to run it: Immediately, Minute, Hour, Day or Month.</td>
+                                </tr>
+                                <tr>
+                                    <td>Do This Value</td>
+                                    <td>The delay amount. Not required when Do This is set to Immediately.</td>
+                                </tr>
+                                <tr>
+                                    <td>After Previous Status Is</td>
+                                    <td>
+                                        The previous stage's status that triggers this follow-up. Required from Follow
+                                        up 2 onward.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="note">
+                        <span class="label">Note</span>
+                        <p>A configured mail server is required before an email follow-up can be added.</p>
+                    </div>
+                </section>
+
+                <section id="follow-up-stages">
+                    <h2>Follow-Up Stages</h2>
+
+                    <h3 id="follow-up-1">Follow up 1 (Initial Stage)</h3>
+                    <ul>
+                        <li>Only one Follow up 1 is allowed.</li>
+                        <li>It triggers when a record matches the cadence conditions.</li>
+                        <li>It requires no previous status.</li>
+                    </ul>
+
+                    <h3 id="follow-up-2-plus">Follow up 2+ (Subsequent Stages)</h3>
+                    <ul>
+                        <li>Triggered by the previous stage's status.</li>
+                        <li>The <strong>After Previous Status Is</strong> field is required.</li>
+                    </ul>
+                </section>
+
+                <section id="branching-workflows">
+                    <h2>Branching Workflows</h2>
+                    <p>
+                        From Follow up 2 onward, a single parent follow-up can have several follow-ups beneath it, each
+                        tied to a different status.
+                    </p>
+
+                    <h3 id="branching-example">Example</h3>
+                    <ul>
+                        <li>Follow up 1 is a Task.</li>
+                        <li>If it is completed, Follow up 2 is an Email.</li>
+                        <li>If it is overdue, Follow up 2 is a Call.</li>
+                        <li>Only the branch whose status matches is run.</li>
+                    </ul>
+                </section>
+
+                <section id="adding-follow-ups">
+                    <h2>Adding Follow-Ups</h2>
+                    <ul>
+                        <li><strong>+</strong> on the right side adds the next stage.</li>
+                        <li>
+                            <strong>+</strong> below adds another follow-up within the same stage (Follow up 3 and
+                            later).
+                        </li>
+                    </ul>
+                    <div class="note">
+                        <span class="label">Note</span>
+                        <p>A follow-up that has child branches cannot be deleted.</p>
+                    </div>
+                </section>
+
+                <section id="cadence-execution">
+                    <h2>Cadence Execution</h2>
+
+                    <h3 id="record-enrollment">Record Enrollment</h3>
+                    <ul>
+                        <li>When a record is created or updated, the active cadences are evaluated.</li>
+                        <li>Records that match trigger Follow up 1.</li>
+                    </ul>
+
+                    <h3 id="stage-progression">Stage Progression</h3>
+                    <ul>
+                        <li>When an activity's status changes, the next-stage follow-ups are triggered.</li>
+                        <li>Only the matching branch runs.</li>
+                    </ul>
+
+                    <h3 id="backfill">Backfill</h3>
+                    <ul>
+                        <li>On activation, Follow up 1 is applied to existing records.</li>
+                        <li>On update, pending activities are synced.</li>
+                    </ul>
+                </section>
+
+                <section id="cadence-reports">
+                    <h2>Cadence Reports</h2>
+                    <p>Reports are opened from the cadence detail view.</p>
+
+                    <h3 id="task-report">Task Report</h3>
+
+                    <h3 id="call-report">Call Report</h3>
+
+                    <h3 id="email-report">Email Report</h3>
+                </section>
+
+                <section id="cadence-tab-on-record">
+                    <h2>Cadence Tab on Record</h2>
+                    <p>A Cadence tab is available in the detail view of a CRM record.</p>
+                </section>
+
+                <section id="editing-and-deleting">
+                    <h2>Editing and Deleting</h2>
+                    <ul>
+                        <li><strong>Edit Cadence</strong> – available from the list or the detail view.</li>
+                        <li><strong>Edit Follow-Up</strong> – available from the follow-up card's menu.</li>
+                        <li><strong>Delete Follow-Up</strong> – blocked when the follow-up has child branches.</li>
+                        <li><strong>Delete Cadence</strong> – removes all of its follow-ups and conditions.</li>
+                    </ul>
+                </section>
+
+                <section id="activate-deactivate">
+                    <h2>Activate / Deactivate</h2>
+                    <ul>
+                        <li><strong>Active</strong> – the cadence runs automatically.</li>
+                        <li><strong>Inactive</strong> – execution stops.</li>
+                        <li><strong>Reactivation</strong> – applies Follow up 1 to matching records again.</li>
+                    </ul>
+                </section>
+
+                <section id="expected-behaviour">
+                    <h2>Expected Behaviour</h2>
+                    <ul>
+                        <li>Cadences can be created for any supported module.</li>
+                        <li>Conditions determine which records are enrolled.</li>
+                        <li>Follow up 1 triggers automatically.</li>
+                        <li>Follow up 2 and later depend on the previous stage's status.</li>
+                        <li>Branching allows several outcome paths.</li>
+                        <li>Tasks and calls create activities.</li>
+                        <li>Emails are sent using templates.</li>
+                        <li>Activation backfills existing records.</li>
+                        <li>Updates sync pending activities.</li>
+                        <li>Reports show execution metrics.</li>
+                        <li>The record view shows cadence progress.</li>
+                        <li>Follow-ups with children cannot be deleted.</li>
+                        <li>Execution is fully automated through system triggers.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

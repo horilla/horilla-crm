@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Calls | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to My Settings Calls in Horilla CRM: Call Accounts and the caller ID for each provider."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>My Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Calls</span>
+                </nav>
+                <p class="eyebrow">My Settings</p>
+                <h1>Calls</h1>
+                <p class="lead">Set the caller ID this user presents when a calling provider is active.</p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        Go to <strong>My Settings &rarr; Calls</strong>. The page title is <strong>Call
+                            Accounts</strong>. The description is <q>Manage the calling accounts connected to your
+                            profile.</q> This page is shown when an administrator has enabled call integration for the
+                        company and the signed-in user is allowed to use it.
+                    </p>
+                    <p>
+                        Company setup is covered in <a href="../settings/calls-integration.html">Call Integration</a>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-call-accounts.png"
+                            alt="Call Accounts with no calling provider available yet"
+                            loading="lazy"
+                        >
+                        <figcaption>Call Accounts while no provider is Active.</figcaption>
+                    </figure>
+                    <p>
+                        While no provider is <strong>Active</strong>, the page reads <q>No calling provider is available
+                            yet. Please contact your administrator.</q> A provider left Inactive or Testing does not
+                        appear here. Mock providers are hidden.
+                    </p>
+                    <p>
+                        When a provider is <strong>Active</strong>, it appears as its own card, titled with the provider
+                        name and type. The line under the title is <q>Configuration saved.</q> or <q>Not configured
+                            yet.</q> <strong>Edit Configuration</strong> opens the form. <strong>Caller ID</strong> is
+                        optional. The placeholder is <q>Your phone number (e.g. +919XXXXXXXXX)</q>, and the hint is <q
+                        >Leave blank to use the provider's default number set by your administrator.</q> <strong
+                        >Save</strong> stores the number for this user only. Before the first save, <strong>How to
+                            configure your Caller ID</strong> opens notes for that provider.
+                    </p>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

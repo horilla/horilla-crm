@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Lead Stages | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM lead stages: the stage list, drag-and-drop order, probability, the final stage, and creating a stage."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Lead Stages</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Lead Stages</h1>
+                <p class="lead">
+                    Define the stages a lead moves through in the pipeline, including their order, probability and the
+                    one final stage.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        <strong>Path:</strong> <strong>Settings &rarr; Lead &rarr; Lead Stages</strong>. The page title
+                        is <strong>Lead Stages</strong>, with the description “Define the stages a lead moves through in
+                        your pipeline.” Stages can be reordered by dragging the handle in <strong>Status Order</strong>.
+                        A company has one final stage, and that stage stays last.
+                    </p>
+                </section>
+
+                <section id="lead-stage-list">
+                    <h2>1. Lead stage list</h2>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Contents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Status Order</td>
+                                    <td>Position in the pipeline. Drag the handle to reorder.</td>
+                                </tr>
+                                <tr>
+                                    <td>Status Name</td>
+                                    <td>
+                                        Name of the stage, such as New, Contacted, Qualified, Proposal, Lost or Convert.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Is Final Stage</td>
+                                    <td>
+                                        Checked for the one final stage. Convert is the final stage in the list shown
+                                        here.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Probability</td>
+                                    <td>Default probability for the stage, from 0.00 to 100.00.</td>
+                                </tr>
+                                <tr>
+                                    <td>Actions</td>
+                                    <td>Edit or delete the stage.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figure>
+                        <img
+                            src="../assets/shots/lead-stage-list.png"
+                            alt="Lead Stages list with New, Contacted, Qualified, Proposal, Lost and Convert"
+                            loading="lazy"
+                        >
+                        <figcaption>Lead Stages. Convert is the final stage.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="create-lead-stage">
+                    <h2>2. Creating a lead stage</h2>
+                    <p>Click <strong>New</strong>. The form title is <strong>Create Lead Stage</strong>.</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Status Name</td>
+                                    <td>Required. Name of the stage.</td>
+                                </tr>
+                                <tr>
+                                    <td>Probability</td>
+                                    <td>Required. Default probability percentage for this stage.</td>
+                                </tr>
+                                <tr>
+                                    <td>Status Order</td>
+                                    <td>Position in the pipeline. The form suggests the next order.</td>
+                                </tr>
+                                <tr>
+                                    <td>Is Final Stage</td>
+                                    <td>
+                                        <strong>No</strong> or <strong>Yes</strong>. Only one stage can be final.
+                                        Marking a stage as final clears the previous final stage and moves the new one
+                                        to the end.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>
+                        <strong>Save</strong> stores the stage and closes the form. <strong>Save &amp; New</strong>
+                        stores it and opens a blank form.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/lead-stage-create.png"
+                            alt="Create Lead Stage form with Status Name, Probability, Status Order and Is Final Stage"
+                            loading="lazy"
+                        >
+                        <figcaption>Create Lead Stage.</figcaption>
+                    </figure>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

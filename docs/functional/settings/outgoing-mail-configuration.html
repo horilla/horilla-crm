@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Outgoing Mail Configuration | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to outgoing mail configuration in Horilla CRM: connecting Outlook/Office 365 through OAuth, setting up SMTP servers, and managing primary mail servers."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Outgoing Mail Configuration</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Outgoing Mail Configuration</h1>
+                <p class="lead">Set up and manage the mail server connections the CRM uses to send outbound email.</p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Outgoing Mail Configuration module is where email server connections for sending messages
+                        are created and maintained. Multiple configurations are supported, and connections can be made
+                        either to Microsoft Outlook / Office 365 through OAuth or to other mail servers through SMTP.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="configurations-overview">1. Outgoing Mail Configurations Overview</h3>
+                    <p><strong>Purpose:</strong> view every configured outgoing mail server in one table.</p>
+                    <ul>
+                        <li>Navigate to <strong>Settings &rarr; Mail &rarr; Outgoing Mail Server</strong>.</li>
+                        <li>
+                            The table has three columns: <strong>Email Host Username</strong> (the sender address),
+                            <strong>Type</strong> (Outlook or Mail) and <strong>Actions</strong> (the management icons).
+                        </li>
+                        <li>Use the search box to locate a specific configuration.</li>
+                        <li>
+                            Sort by <strong>Email Host Username</strong> or <strong>Type</strong> using the indicators
+                            in the column headers.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/outgoing-list.png"
+                            alt="Outgoing mail server list with email host username, type and actions columns"
+                            loading="lazy"
+                        >
+                        <figcaption>The outgoing mail configurations list.</figcaption>
+                    </figure>
+
+                    <h3 id="create-configuration">2. Creating a New Mail Configuration</h3>
+                    <p><strong>Purpose:</strong> add a new outgoing mail server configuration.</p>
+                    <ol class="steps">
+                        <li>Click <strong>New</strong>.</li>
+                        <li>
+                            In the <strong>Select Mail Server Type</strong> modal, choose one of the two options:
+                            <ul>
+                                <li>
+                                    <strong>Outlook Mail Server</strong> &ndash; Microsoft Azure / Office 365 using
+                                    OAuth. Click <strong>Select Outlook</strong>.
+                                </li>
+                                <li>
+                                    <strong>Other Mail Servers</strong> &ndash; SMTP, Gmail, Yahoo or other servers.
+                                    Click <strong>Select Other</strong>.
+                                </li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/outgoing-type.png"
+                            alt="Select Mail Server Type modal with Outlook and Other Mail Servers options"
+                            loading="lazy"
+                        >
+                        <figcaption>Choosing the mail server type.</figcaption>
+                    </figure>
+
+                    <h3 id="outlook-configuration">3. Configuring an Outlook Mail Server</h3>
+                    <p><strong>Purpose:</strong> integrate a Microsoft Outlook or Office 365 account using OAuth.</p>
+                    <p>Selecting Outlook opens the <strong>Create Mail Configuration</strong> form.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/outgoing-outlook.png"
+                            alt="Create Mail Configuration form for an Outlook outgoing mail server"
+                            loading="lazy"
+                        >
+                        <figcaption>The Outlook mail configuration form.</figcaption>
+                    </figure>
+
+                    <h4 id="outlook-credentials">Authentication credentials</h4>
+                    <ul>
+                        <li>Client ID</li>
+                        <li>Outlook client secret</li>
+                        <li>Tenant ID</li>
+                        <li>Email Host Username</li>
+                        <li>Display Name</li>
+                        <li>Redirect URI</li>
+                    </ul>
+
+                    <h4 id="outlook-endpoints">Endpoints</h4>
+                    <p>These fields are pre-populated:</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Default value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>OAuth authorization endpoint</td>
+                                    <td><code>https://login.microsoftonline.com/cor</code></td>
+                                </tr>
+                                <tr>
+                                    <td>OAuth token endpoint</td>
+                                    <td><code>https://login.microsoftonline.com/cor</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Microsoft Graph API endpoint</td>
+                                    <td><code>https://graph.microsoft.com/v1.0</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 id="outlook-options">Additional options</h4>
+                    <ul>
+                        <li><strong>Primary Mail Server</strong> toggle.</li>
+                    </ul>
+                    <p>Click <strong>Save</strong> to finalise the configuration.</p>
+
+                    <h3 id="other-mail-servers">4. Configuring Other Mail Servers</h3>
+                    <p>
+                        <strong>Purpose:</strong> set up an SMTP-based server such as Gmail, Yahoo or a custom server.
+                    </p>
+                    <p>Selecting Other opens the <strong>Outgoing Mail Server Configuration</strong> form.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/outgoing-smtp.png"
+                            alt="Outgoing Mail Server Configuration form for an SMTP mail server"
+                            loading="lazy"
+                        >
+                        <figcaption>The SMTP mail server configuration form.</figcaption>
+                    </figure>
+
+                    <h4 id="smtp-fields">Fields</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Group</th>
+                                    <th>Fields</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Server connection details</td>
+                                    <td>Host, Port, Default From Mail, Email Host Username</td>
+                                </tr>
+                                <tr>
+                                    <td>Authentication and display</td>
+                                    <td>Display Name, App Password</td>
+                                </tr>
+                                <tr>
+                                    <td>Security settings (dropdowns)</td>
+                                    <td>Use TLS, Use SSL, Fail Silently</td>
+                                </tr>
+                                <tr>
+                                    <td>Additional options</td>
+                                    <td>
+                                        Primary Mail Server toggle; Use dynamic display name toggle; Email Send Timeout
+                                        in seconds (required) &ndash; the duration allowed for sending attempts
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>Click <strong>Save</strong> to finalise the configuration.</p>
+                    <div class="note">
+                        <span class="label">Note</span>
+                        <p>The guide does not state specific SMTP host names or port numbers for this form.</p>
+                    </div>
+
+                    <h3 id="managing-configurations">5. Managing Existing Configurations</h3>
+                    <ul>
+                        <li>
+                            Only one configuration can be the primary one. Setting a new configuration as primary
+                            removes the flag from the previous one, and the first configuration created becomes primary
+                            automatically.
+                        </li>
+                        <li>
+                            The row actions depend on the server type:
+                            <ul>
+                                <li>
+                                    <strong>Outlook:</strong> Refresh token, Login Outlook, Send test mail, Edit,
+                                    Delete.
+                                </li>
+                                <li><strong>Other servers:</strong> Send test mail, Edit, Delete.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+
+                <section id="best-practices">
+                    <h2>Best Practices</h2>
+                    <ul>
+                        <li>Configure at least one mail server before trying to send email from the CRM.</li>
+                        <li>Designate one configuration as the Primary Mail Server for default operations.</li>
+                        <li>For Outlook, complete the Azure AD app registration and permissions beforehand.</li>
+                        <li>
+                            For Gmail and similar providers, use app-specific passwords rather than the regular account
+                            password.
+                        </li>
+                        <li>Test each configuration after setup with the envelope (send test mail) icon.</li>
+                        <li>
+                            Store client secrets and passwords securely, using the visibility toggle only when needed.
+                        </li>
+                        <li>Review and update the configurations regularly.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

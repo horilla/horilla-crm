@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>WhatsApp | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to WhatsApp in Horilla CRM: accounts, templates, flows, bot rules, and how incoming webhooks and chats are checked."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">WhatsApp</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>WhatsApp</h1>
+                <p class="lead">
+                    Connect a WhatsApp Business account, send approved templates, and answer chats with flows and bot
+                    rules.
+                </p>
+            </header>
+
+            <main>
+                <section id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        WhatsApp is a Settings section. An administrator connects one or more Meta WhatsApp Business
+                        accounts, then builds the messages those accounts can send. Message automations can use WhatsApp
+                        as a channel.
+                    </p>
+                    <p>
+                        Go to <strong>Settings &rarr; WhatsApp</strong>. The section has four pages: <strong
+                        >Accounts</strong>, <strong>Templates</strong>, <strong>Flows</strong> and <strong>Bot
+                            Rules</strong>.
+                    </p>
+                </section>
+
+                <section id="accounts">
+                    <h2>Accounts</h2>
+                    <p>
+                        The list shows <strong>Display Name</strong>, <strong>Whatsapp Number</strong>, <strong>Primary
+                            Account</strong>, <strong>Enable Bot</strong>, <strong>Is Active</strong> and <strong
+                        >Actions</strong>. Actions include test connection, edit and delete.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-whatsapp-accounts.png?v=2"
+                            alt="WhatsApp Accounts list with Horilla Support and Horilla Sales"
+                            loading="lazy"
+                        >
+                        <figcaption>WhatsApp Accounts with two saved accounts.</figcaption>
+                    </figure>
+                    <p>Each account stores the connection to Meta:</p>
+                    <ul>
+                        <li><strong>Display Name</strong> and <strong>WhatsApp Number</strong>.</li>
+                        <li><strong>Phone Number ID</strong> and <strong>Business Account ID</strong>.</li>
+                        <li>
+                            <strong>Access Token</strong>, <strong>Webhook Verify Token</strong> and <strong>App
+                                Secret</strong>.
+                        </li>
+                        <li><strong>Graph API Version</strong>, which defaults to <code>v21.0</code>.</li>
+                        <li>
+                            <strong>Primary Account</strong>, <strong>Enable Bot</strong> and an optional <strong
+                            >Default Bot Rule</strong>.
+                        </li>
+                    </ul>
+                    <p>
+                        Use <strong>Test Connection</strong> on an account to check that Horilla can reach Meta with the
+                        saved token. An incoming webhook is accepted only when Meta's signature matches that account's
+                        app secret. A missing or mismatched signature is rejected.
+                    </p>
+                </section>
+
+                <section id="templates">
+                    <h2>Templates</h2>
+                    <p>
+                        The list shows <strong>Template Title</strong>, <strong>Template Name</strong>, <strong>Language
+                            Code</strong>, <strong>Category</strong>, <strong>Related Model</strong> and <strong
+                        >Actions</strong>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-whatsapp-templates.png?v=2"
+                            alt="WhatsApp Templates list with Deal Update for Opportunity and Lead Welcome for Lead"
+                            loading="lazy"
+                        >
+                        <figcaption>WhatsApp Templates with two saved templates.</figcaption>
+                    </figure>
+                    <p>
+                        A template is a message Meta has approved for the account. The form records the template title,
+                        the Meta template name, language code, category, sample body, components, the related CRM model,
+                        and the record fields used as variables. Sending uses the account the template belongs to.
+                    </p>
+                </section>
+
+                <section id="flows">
+                    <h2>Flows</h2>
+                    <p>
+                        The list shows <strong>Flow Title</strong>, <strong>Flow Name</strong>, <strong>Button
+                            Text</strong>, <strong>Account</strong>, <strong>Is Active</strong> and <strong
+                        >Actions</strong>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-whatsapp-flows.png?v=2"
+                            alt="WhatsApp Flows list with Quote Request on Horilla Support and Book a Demo on Horilla Sales"
+                            loading="lazy"
+                        >
+                        <figcaption>WhatsApp Flows with two saved flows.</figcaption>
+                    </figure>
+                    <p>
+                        A flow is a Meta WhatsApp Flow attached to an account and a related model. The record stores the
+                        flow title, the Meta flow, the flow name and the button text shown to the contact.
+                    </p>
+                </section>
+
+                <section id="bot-rules">
+                    <h2>Bot Rules</h2>
+                    <p>
+                        The list shows <strong>Flow Name</strong>, <strong>Account</strong>, <strong>Trigger
+                            Type</strong>, <strong>Trigger Keywords</strong>, <strong>Is Active</strong>, <strong
+                        >Version</strong> and <strong>Actions</strong>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-whatsapp-bots.png?v=2"
+                            alt="Bot Rules list with After Hours Reply and Greeting Keywords"
+                            loading="lazy"
+                        >
+                        <figcaption>Bot Rules with two saved rules.</figcaption>
+                    </figure>
+                    <p>
+                        A bot rule answers a conversation without an agent. It belongs to one account and can be limited
+                        to a related model. The rule has a trigger type, trigger keywords, a version, and a retrigger
+                        cooldown with a unit (so the same person is not walked through the rule again immediately).
+                    </p>
+                    <p>
+                        The rule is a graph of nodes and edges. One node is the start. A session remembers the
+                        conversation, the current node and any variables. A delayed step can resume later.
+                    </p>
+                </section>
+
+                <section id="chats">
+                    <h2>Chats</h2>
+                    <ul>
+                        <li>
+                            A conversation linked to a CRM record follows that record's access. Someone who cannot see
+                            the record cannot open the chat.
+                        </li>
+                        <li>A conversation with no live record needs the WhatsApp conversation permission.</li>
+                        <li>The API uses the same model permissions and stays inside the caller's company.</li>
+                        <li>An empty inbox uses the shared empty state.</li>
+                    </ul>
+                </section>
+
+                <section id="expected-behaviour">
+                    <h2>Expected Behaviour</h2>
+                    <ul>
+                        <li>
+                            Accounts, templates, flows and bot rules are listed, created, edited and deleted from
+                            Settings.
+                        </li>
+                        <li>A webhook without a valid signature does not create or update a message.</li>
+                        <li>Turning the bot on for an account does not reply until a bot rule is available to run.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

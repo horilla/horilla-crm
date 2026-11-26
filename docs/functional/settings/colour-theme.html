@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Colour Theme | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Colour Theme settings in Horilla CRM: the available pre-built themes, activating a theme company-wide and setting a default login page theme."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Colour Theme</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Colour Theme</h1>
+                <p class="lead">
+                    Change the appearance of the whole application by activating one of the pre-built colour themes.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        Administrators can change how the whole application looks by selecting from a set of pre-built
+                        colour themes. The active theme applies company-wide to navigation, buttons, icons, forms and
+                        background surfaces. An administrator can also set one theme as the default for the login page.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="colour-theme-overview">1. Colour Theme Overview</h3>
+                    <p>
+                        <strong>Purpose:</strong> show every available theme in a grid so administrators can activate
+                        and manage them.
+                    </p>
+                    <ul>
+                        <li>Menu path: <strong>Settings &rarr; Theme Manager &rarr; Color Theme</strong>.</li>
+                        <li>
+                            The page title is <strong>Theme Management</strong>. The line under it reads: <q>Select a
+                                theme to customize the appearance of your application.</q>
+                        </li>
+                        <li>
+                            Each card shows a colour strip, the theme name, a short description, and <strong>Set as
+                                Default</strong>. The theme in use for the company is marked <strong>(Active)</strong>
+                            with a check. The login default shows <strong>Default Theme</strong> instead of <strong>Set
+                                as Default</strong>.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-colour-theme.png?v=2"
+                            alt="Theme Management grid. Coral Red Theme is Active and the Default Theme. The other cards have Set as Default."
+                            loading="lazy"
+                        >
+                        <figcaption>The Colour Theme overview.</figcaption>
+                    </figure>
+
+                    <h3 id="available-themes">2. Available Themes</h3>
+                    <p>
+                        The product ships these color themes. They appear as cards on this page once the theme records
+                        are installed:
+                    </p>
+                    <ol>
+                        <li>Coral Red Theme (Default)</li>
+                        <li>Ocean Blue Theme</li>
+                        <li>Forest Green Theme</li>
+                        <li>Purple Professional Theme</li>
+                        <li>Slate Gray Theme</li>
+                        <li>Indigo Night Theme</li>
+                        <li>Sunset Orange Theme</li>
+                        <li>Crimson Wine Theme &ndash; a deep crimson palette</li>
+                        <li>Teal Corporate Theme</li>
+                        <li>Amber Glow Theme</li>
+                        <li>Navy Steel Theme</li>
+                        <li>Rose Gold Theme</li>
+                        <li>Emerald Mint Theme</li>
+                    </ol>
+
+                    <h3 id="activating-a-theme">3. Activating a Theme</h3>
+                    <p>
+                        <strong>Purpose:</strong> apply a theme to the whole application, for every user in the company.
+                    </p>
+                    <ol class="steps">
+                        <li>On the Colour Theme page, browse the theme cards.</li>
+                        <li>Click <strong>Activate</strong> on the card you want.</li>
+                        <li>
+                            The page reloads and the new theme is applied across all pages, navigation and UI
+                            components.
+                        </li>
+                        <li>The chosen card then carries the <strong>(Active)</strong> label.</li>
+                    </ol>
+                    <div class="note">
+                        <span class="label">Note</span>
+                        <p>
+                            Activation is company-wide. Other users in the same company see the change on their next
+                            page load.
+                        </p>
+                    </div>
+
+                    <h3 id="default-login-theme">4. Setting a Default Theme for the Login Page</h3>
+                    <p>
+                        <strong>Purpose:</strong> control which theme is shown on the login screen, before a user signs
+                        in.
+                    </p>
+                    <ol class="steps">
+                        <li>On the Colour Theme page, find the theme you want on the login page.</li>
+                        <li>Click <strong>Set as Default</strong> on that card.</li>
+                        <li>The theme is then applied to the login page for all visitors.</li>
+                    </ol>
+                    <ul>
+                        <li>
+                            Only one theme can be the login default at a time; setting a new one removes the flag from
+                            the previous default.
+                        </li>
+                        <li>
+                            To clear the default without choosing another, click <strong>Remove as Default</strong> on
+                            the current default theme.
+                        </li>
+                        <li>The login theme is independent of the company's active application theme.</li>
+                        <li>
+                            A user's last active theme is stored in their browser, so the login screen reflects the
+                            theme from their previous session until the global default overrides it.
+                        </li>
+                    </ul>
+                </section>
+
+                <section id="best-practices">
+                    <h2>Best Practices</h2>
+                    <ul>
+                        <li>
+                            After activating a theme, check the dashboard, Kanban, forms and calendar for readability
+                            and consistency.
+                        </li>
+                        <li>
+                            Use <strong>Set as Default</strong> so the login page carries the organisation's brand
+                            colours.
+                        </li>
+                        <li>
+                            Only one theme can be active at a time; activating a new one immediately replaces the old
+                            one for all users.
+                        </li>
+                        <li>
+                            Coordinate theme changes with the team so the interface does not shift unexpectedly during
+                            business hours.
+                        </li>
+                        <li>
+                            Coral Red Theme (Default) is the system baseline and is applied automatically when no
+                            company theme has been configured.
+                        </li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

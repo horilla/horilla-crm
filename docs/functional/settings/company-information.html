@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Company Information | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM Company Information settings: company details, fiscal year, business hours, shift hours, holidays, currencies and the recycle bin policy."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Company Information</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Company Information</h1>
+                <p class="lead">
+                    Configure organisation-wide data and system behaviour: company profile, fiscal year, working hours,
+                    shift hours, holidays, currencies and data retention.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Company Information module sits in the General settings section and acts as the central
+                        place for organisational data and system configuration. Administrators use it to set company
+                        details, fiscal year settings, working hours, shift hours, holidays, currency management and
+                        data retention policies.
+                    </p>
+                    <p>
+                        Because these values are system-wide, they feed into reporting, scheduling, financial
+                        calculations and workflows across the CRM.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="accessing-company-information">1. Accessing Company Information</h3>
+                    <p>
+                        Go to <strong>Settings &rarr; General &rarr; Company Information</strong>. From there,
+                        administrators can view and manage the organisation's details and configuration, which are
+                        arranged across tabs.
+                    </p>
+
+                    <h3 id="company-details">2. Company Details Tab</h3>
+                    <p><strong>Purpose:</strong> manage the core organisational profile.</p>
+                    <ul>
+                        <li>
+                            <strong>Company profile:</strong> logo, name, phone, fax, email, website and address
+                            (country, state/province, city, postal code).
+                        </li>
+                        <li>
+                            <strong>Operational details:</strong> time zone, the languages the company offers, currency,
+                            number of employees and annual revenue. A user's language list is limited to the languages
+                            chosen here. A language already saved on a user stays selectable.
+                        </li>
+                        <li><strong>Editing:</strong> use the pencil icon in the top-right corner of the tab.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/company-details.png"
+                            alt="Company Details tab showing the organisation profile fields"
+                            loading="lazy"
+                        >
+                        <figcaption>Company Details tab.</figcaption>
+                    </figure>
+
+                    <h3 id="fiscal-year">3. Fiscal Year Tab</h3>
+                    <p><strong>Purpose:</strong> configure the financial year used for reporting and forecasting.</p>
+                    <ul>
+                        <li>
+                            <strong>Fiscal Year Type:</strong> <strong>Standard Fiscal Year</strong> (the default) or
+                            <strong>Custom Fiscal Year</strong>, which is set up through the <strong>Manage Fiscal
+                                Year</strong> button.
+                        </li>
+                        <li><strong>Start Date Month:</strong> January by default; it can be changed.</li>
+                        <li>
+                            <strong>Display Fiscal Year Based On:</strong> <strong>Starting Year</strong> or <strong
+                            >Ending Year</strong>.
+                        </li>
+                        <li><strong>Preview Calendar:</strong> shows how the fiscal year will be laid out.</li>
+                        <li>
+                            <strong>Manage Fiscal Year:</strong> switches between the standard and custom fiscal year.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/company-fiscal.png"
+                            alt="Fiscal Year tab with fiscal year type and start month options"
+                            loading="lazy"
+                        >
+                        <figcaption>Fiscal Year tab.</figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="../assets/shots/company-fiscal-manage.png"
+                            alt="Manage Fiscal Year dialog for switching between standard and custom"
+                            loading="lazy"
+                        >
+                        <figcaption>Manage Fiscal Year.</figcaption>
+                    </figure>
+
+                    <h4 id="custom-fiscal-year">Custom Fiscal Year options</h4>
+                    <p>
+                        When <strong>Custom</strong> is selected, the calendar can follow either a year-based or a
+                        quarter-based pattern.
+                    </p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Pattern type</th>
+                                    <th>Option</th>
+                                    <th>Structure</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Year-based</td>
+                                    <td>3-3-3-4</td>
+                                    <td>Q1 three periods, Q2 three, Q3 three, Q4 four</td>
+                                </tr>
+                                <tr>
+                                    <td>Year-based</td>
+                                    <td>3-3-4-3</td>
+                                    <td>Q1 three periods, Q2 three, Q3 four, Q4 three</td>
+                                </tr>
+                                <tr>
+                                    <td>Year-based</td>
+                                    <td>3-4-3-3</td>
+                                    <td>Q1 three periods, Q2 four, Q3 three, Q4 three</td>
+                                </tr>
+                                <tr>
+                                    <td>Year-based</td>
+                                    <td>4-3-3-3</td>
+                                    <td>Q1 four periods, Q2 three, Q3 three, Q4 three</td>
+                                </tr>
+                                <tr>
+                                    <td>Quarter-based</td>
+                                    <td>4-4-5</td>
+                                    <td>Each quarter has three periods of 4, 4 and 5 weeks</td>
+                                </tr>
+                                <tr>
+                                    <td>Quarter-based</td>
+                                    <td>4-5-4</td>
+                                    <td>Each quarter has three periods of 4, 5 and 4 weeks</td>
+                                </tr>
+                                <tr>
+                                    <td>Quarter-based</td>
+                                    <td>5-4-4</td>
+                                    <td>Each quarter has three periods of 5, 4 and 4 weeks</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figure>
+                        <img
+                            src="../assets/shots/company-fiscal-custom.png"
+                            alt="Custom fiscal year pattern options"
+                            loading="lazy"
+                        >
+                        <figcaption>Custom Fiscal Year options.</figcaption>
+                    </figure>
+
+                    <h4 id="fiscal-year-fields">Fields to fill</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Start Date Month</td>
+                                    <td>Month in which the fiscal year starts.</td>
+                                </tr>
+                                <tr>
+                                    <td>Start Date Day</td>
+                                    <td>Exact day the fiscal year starts.</td>
+                                </tr>
+                                <tr>
+                                    <td>Week Start Day</td>
+                                    <td>First day of the week, for example Sunday or Monday.</td>
+                                </tr>
+                                <tr>
+                                    <td>Display Fiscal Year Based On</td>
+                                    <td>Label the year by its starting year or its ending year.</td>
+                                </tr>
+                                <tr>
+                                    <td>Number of Weeks By</td>
+                                    <td>How weeks are counted — monthly or quarterly.</td>
+                                </tr>
+                                <tr>
+                                    <td>Period Display Option</td>
+                                    <td>How periods are displayed in reports.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 id="business-hours">4. Working Hours Tab</h3>
+                    <p>
+                        The tab is <strong>Working Hours</strong>. It has two buttons: <strong>Business Hours</strong>
+                        and <strong>Shift Hours</strong>.
+                    </p>
+                    <p>
+                        <strong>Purpose:</strong> define working hours and schedules. More than one schedule can exist,
+                        for example a 24x7 schedule alongside standard office hours, and one of them can be marked as
+                        the default.
+                    </p>
+                    <p>
+                        The management table lists <strong>Name</strong>, <strong>Time Zone</strong>, <strong>Business
+                            Hour Type</strong>, <strong>Week Start Day</strong>, <strong>Is Default</strong> and <strong
+                        >Actions</strong>. From Actions you can edit or delete a schedule, and new schedules can be
+                        created.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/company-hours.png"
+                            alt="Business Hours tab listing the configured schedules"
+                            loading="lazy"
+                        >
+                        <figcaption>Business Hours tab.</figcaption>
+                    </figure>
+                    <h4 id="create-business-hours">Create Business Hours</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Descriptive name for the schedule.</td>
+                                </tr>
+                                <tr>
+                                    <td>Time Zone</td>
+                                    <td>Timezone the schedule applies to.</td>
+                                </tr>
+                                <tr>
+                                    <td>Week Start Day</td>
+                                    <td>Day the week starts on, such as Sunday or Monday.</td>
+                                </tr>
+                                <tr>
+                                    <td>Business Hour Type</td>
+                                    <td>Type of schedule, for example 24x7 or office hours.</td>
+                                </tr>
+                                <tr>
+                                    <td>Is Default</td>
+                                    <td>Checkbox making this the default schedule.</td>
+                                </tr>
+                                <tr>
+                                    <td>Is Active</td>
+                                    <td>Checkbox controlling whether the schedule is active.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figure>
+                        <img
+                            src="../assets/shots/company-hours-form.png"
+                            alt="Create Business Hours form"
+                            loading="lazy"
+                        >
+                        <figcaption>Create Business Hours.</figcaption>
+                    </figure>
+
+                    <h3 id="shift-hours">5. Shift Hours</h3>
+                    <p>
+                        On <strong>Working Hours</strong>, click <strong>Shift Hours</strong>. The heading is <strong
+                        >Shift Hours</strong>, and the line under it reads <q>Set up shift-based working hours for
+                            employees with non-standard schedules.</q>
+                    </p>
+                    <p>
+                        Click <strong>Add</strong> to open <strong>Create Shift Hour</strong>. The list shows <strong
+                        >Name</strong>, <strong>Shift Hours</strong>, <strong>Week Days</strong>, <strong>Time
+                            Zone</strong> and <strong>Assigned Users</strong>, with <strong>Edit</strong> and <strong
+                        >Delete</strong>. Shift Hours is <strong>Same Hour Every Day</strong> or <strong>Different Hour
+                            Per Day</strong>. When the hours differ by day, Week Days says <strong>Hours vary by
+                            day</strong>. When none exist yet, the panel says <q>Nothing to show yet. Please add your
+                            Shift Hours.</q> and offers <strong>Add New</strong>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/company-shift-hours.png?v=3"
+                            alt="Shift Hours list with APAC Night, Saturday Support and Weekday Desk"
+                            loading="lazy"
+                        >
+                        <figcaption>
+                            Shift Hours. Each shift, its days and hours, time zone and how many people are assigned.
+                        </figcaption>
+                    </figure>
+                    <h4 id="create-shift-hour">Create Shift Hour</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Name of the shift. Placeholder: e.g. US Shift, APAC Support.</td>
+                                </tr>
+                                <tr>
+                                    <td>Time Zone</td>
+                                    <td>Timezone the shift uses.</td>
+                                </tr>
+                                <tr>
+                                    <td>Shift Hours</td>
+                                    <td>
+                                        <strong>Same Hour Every Day</strong> or <strong>Different Hour Per Day</strong>.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Week Days</td>
+                                    <td>Sunday through Saturday. Tick the days this shift covers.</td>
+                                </tr>
+                                <tr>
+                                    <td>Default Start Time / Default End Time</td>
+                                    <td>
+                                        Hours used when Shift Hours is Same Hour Every Day. Times are 24-hour: 5:30 PM
+                                        is 17:30.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Break Hours 1 / Break Hours 2</td>
+                                    <td>
+                                        <strong>No break hours</strong>, <strong>Same hours every day</strong> or
+                                        <strong>Different hours every day</strong>.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Assigned Users</td>
+                                    <td>People who work this shift. Filter narrows the list.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figure>
+                        <img
+                            src="../assets/shots/company-shift-hours-form.png"
+                            alt="Create Shift Hour form with name, timezone, week days, breaks and assigned users"
+                            loading="lazy"
+                        >
+                        <figcaption>Create Shift Hour.</figcaption>
+                    </figure>
+                    <p>
+                        <strong>Save</strong> stores the shift. <strong>Save &amp; New</strong> stores it and opens a
+                        blank form. People chosen under Assigned Users see those hours in <a
+                            href="../mysettings/shift-hours.html"
+                        >My Settings &rarr; Shift Hours</a>.
+                    </p>
+
+                    <h3 id="holidays">6. Holidays Tab</h3>
+                    <p>
+                        <strong>Purpose:</strong> maintain the company holiday calendar. Both single-day and multi-day
+                        holidays are supported, as are holidays that recur every year such as New Year or Independence
+                        Day.
+                    </p>
+                    <p>
+                        The management table lists <strong>Holiday Name</strong>, <strong>Start Date</strong>, <strong
+                        >End Date</strong>, <strong>Recurring</strong> and <strong>Actions</strong>, where holidays can
+                        be edited, deleted or created.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/company-holiday-list.png"
+                            alt="Holidays tab listing the holiday calendar"
+                            loading="lazy"
+                        >
+                        <figcaption>Holidays tab.</figcaption>
+                    </figure>
+                    <h4 id="create-holiday">Create Holiday</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Holiday Name</td>
+                                    <td>Name of the holiday.</td>
+                                </tr>
+                                <tr>
+                                    <td>Start Date / End Date</td>
+                                    <td>Duration of the holiday.</td>
+                                </tr>
+                                <tr>
+                                    <td>All Users</td>
+                                    <td>Applies the holiday to every user.</td>
+                                </tr>
+                                <tr>
+                                    <td>Specific Users</td>
+                                    <td>Applies the holiday only to the selected users.</td>
+                                </tr>
+                                <tr>
+                                    <td>Recurring</td>
+                                    <td>Repeats the holiday annually.</td>
+                                </tr>
+                                <tr>
+                                    <td>Holiday Frequency and Yearly Repeat Type</td>
+                                    <td>Settings that define the repeat pattern.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>
+                        Each mistake is shown on its field. A date that is already a holiday is refused. The repeat
+                        choices explain how an annual holiday is applied.
+                    </p>
+                    <figure>
+                        <img src="../assets/shots/company-holiday-form.png" alt="Create Holiday form" loading="lazy">
+                        <figcaption>Create Holiday.</figcaption>
+                    </figure>
+
+                    <h3 id="currencies">7. Currencies Tab</h3>
+                    <p>
+                        <strong>Purpose:</strong> manage the company currency, live rates and dated rates. Currency
+                        management stays on this tab. It is not part of the company create or edit form.
+                    </p>
+                    <p>
+                        The tab has three panels once multiple currencies are on: <strong>Rates &amp;
+                            Formatting</strong>, <strong>Currencies</strong> and <strong>Dated Exchange Rates</strong>.
+                    </p>
+                    <h4 id="rates-and-formatting">Rates &amp; Formatting</h4>
+                    <ul>
+                        <li>
+                            <strong>Default Currency:</strong> the currency every other currency is converted from.
+                            Changing it recalculates conversion rates. A preferred currency on a user stays inside that
+                            user's company.
+                        </li>
+                        <li>
+                            <strong>Enable Multiple Currency:</strong> allow records in more than one currency. Turning
+                            it off hides the other currency options.
+                        </li>
+                        <li>
+                            <strong>Auto Fetch Exchange Rate:</strong> fetch rates when a currency is added, when the
+                            default changes, and when rates are refreshed. Turn it off to type every rate.
+                        </li>
+                        <li>
+                            <strong>Keep Rates Up To Date:</strong> refresh the other currencies daily or weekly. The
+                            default currency stays at 1. <strong>Refresh Now</strong> fetches immediately, and <strong
+                            >Last Refreshed</strong> shows when that last happened.
+                        </li>
+                        <li>
+                            <strong>Rate alert:</strong> administrators are told when a rate moves past the configured
+                            threshold.
+                        </li>
+                        <li>
+                            <strong>Keep Rate History:</strong> save a dated exchange rate whenever a rate is added or
+                            changes, so older records keep the rate that applied then.
+                        </li>
+                        <li><strong>Formatting:</strong> decimal places and number grouping for amounts.</li>
+                    </ul>
+                    <h4 id="currencies-list">Currencies</h4>
+                    <p>
+                        The currency table shows <strong>Currency Code</strong>, <strong>Name</strong>, <strong>Default
+                            Currency</strong>, <strong>Conversion Rate</strong>, <strong>Decimal Places</strong> and
+                        <strong>Number Grouping Format</strong>. Rows are edited with the pencil icon and removed with
+                        the trash icon.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/company-currency-table.png"
+                            alt="Currencies tab with default currency and currency list"
+                            loading="lazy"
+                        >
+                        <figcaption>Currencies tab.</figcaption>
+                    </figure>
+                    <h4 id="add-currency">Add New Currency</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Currency</td>
+                                    <td>Chosen from a dropdown.</td>
+                                </tr>
+                                <tr>
+                                    <td>Conversion Rate</td>
+                                    <td>Rate against the default currency.</td>
+                                </tr>
+                                <tr>
+                                    <td>Decimal Places</td>
+                                    <td>Precision used for amounts.</td>
+                                </tr>
+                                <tr>
+                                    <td>Number Grouping Format</td>
+                                    <td>Grouping style, for example 1,234,567.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figure>
+                        <img src="../assets/shots/company-currency-form.png" alt="Add New Currency form" loading="lazy">
+                        <figcaption>Add New Currency.</figcaption>
+                    </figure>
+                    <h4 id="currency-features">Additional currency features</h4>
+                    <ul>
+                        <li>
+                            <strong>Change Default Currency:</strong> done from the default-currency control; the system
+                            recalculates rates automatically.
+                        </li>
+                        <li>
+                            <strong>Dated Exchange Rates:</strong> set a different conversion rate for a date range.
+                            Pick the range, or use <strong>New Exchange Rates</strong>. A dated rate can be edited or
+                            deleted.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/company-dated-rates.png"
+                            alt="Dated exchange rates for a date range"
+                            loading="lazy"
+                        >
+                        <figcaption>Managing conversion rates.</figcaption>
+                    </figure>
+
+                    <h3 id="recycle-bin-policy">8. Recycle Bin Policy Tab</h3>
+                    <p><strong>Purpose:</strong> control how long deleted records can be recovered.</p>
+                    <ul>
+                        <li>
+                            <strong>Default Expire Days:</strong> the retention period for deleted records; the default
+                            is 30 days. When that period ends, the records are removed permanently.
+                        </li>
+                        <li>
+                            <strong>No expiry:</strong> keep deleted records until someone removes them. While this is
+                            on, the days field and its save button stay disabled.
+                        </li>
+                        <li><strong>Save:</strong> applies the updated retention setting.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/company-recycle.png"
+                            alt="Recycle Bin Policy tab with the default expire days setting"
+                            loading="lazy"
+                        >
+                        <figcaption>Recycle Bin Policy tab.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="benefits">
+                    <h2>Benefits</h2>
+                    <ul>
+                        <li>Organisation-level settings are configured in one central place.</li>
+                        <li>Multi-currency support with flexible exchange rates.</li>
+                        <li>Flexible scheduling through business hours, shift hours and holiday calendars.</li>
+                        <li>Fiscal year settings feed analytics and forecasting.</li>
+                        <li>Retention controls support data governance.</li>
+                        <li>A tab-based layout with clear action buttons.</li>
+                        <li>Settings apply system-wide across CRM modules.</li>
+                        <li>Scales to multiple currencies, schedules and policies.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

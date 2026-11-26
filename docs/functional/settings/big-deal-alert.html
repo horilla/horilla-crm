@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Big Deal Alert | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM Big Deal Alerts: configuring triggers, conditions, delivery channels, templates, recipients and scheduled alerts for high-value opportunities."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Big Deal Alert</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Big Deal Alert</h1>
+                <p class="lead">
+                    Watch high-value opportunities, set alert thresholds and have the right people notified by mail or
+                    in-app notification as soon as the conditions are met.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Big Deal Alert module helps organisations monitor high-value opportunities, set alert
+                        thresholds, receive timely notifications and act quickly. Centralised visibility and deal
+                        insights help stakeholders make better decisions and improve sales performance.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="big-deal-alerts-overview">1.1 Big Deal Alerts Overview</h3>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-big-deal.png"
+                            alt="Big Deal Alerts list with Big Deal Over 100k, edit, delete and expand"
+                            loading="lazy"
+                        >
+                        <figcaption>Big Deal Alerts list.</figcaption>
+                    </figure>
+                    <p>
+                        <strong>Purpose:</strong> list the Big Deal Alerts for the company. The page description is <q
+                        >Get notified automatically when a high-value opportunity is created.</q>
+                    </p>
+                    <ul>
+                        <li>Location: <strong>Settings &rarr; Opportunity &rarr; Big Deal Alerts</strong>.</li>
+                        <li>Each alert is a row with its title, edit, delete and an expand control.</li>
+                        <li>Clicking a title expands the row to reveal the full configuration.</li>
+                        <li>Quick search and filtering help locate an alert.</li>
+                        <li>Each row provides <strong>Edit</strong> and <strong>Delete</strong> actions.</li>
+                        <li>When no alerts exist, an empty state prompts the user to create the first one.</li>
+                    </ul>
+
+                    <h3 id="configuring-big-deal-alerts">1.2 Configuring Big Deal Alerts</h3>
+                    <figure>
+                        <img
+                            src="../assets/shots/big-deal-alert-n-single.png"
+                            alt="Big Deal Alert creation form"
+                            loading="lazy"
+                        >
+                        <figcaption>Big Deal Alert creation form.</figcaption>
+                    </figure>
+                    <p><strong>Purpose:</strong> let users create and manage alerts for high-value opportunities.</p>
+                    <ul>
+                        <li>Click <strong>New</strong> in the top navigation bar to open the creation form.</li>
+                        <li>
+                            The form uses the automation framework and is linked automatically to the Opportunity
+                            module.
+                        </li>
+                    </ul>
+
+                    <h4 id="form-fields">Form Fields</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Title</td>
+                                    <td>
+                                        Full-width text field holding the alert name. Required, and must be unique
+                                        across the system.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Trigger</td>
+                                    <td>
+                                        Dropdown defining when the alert fires: <strong>On Create</strong>, <strong>On
+                                            Update</strong>, <strong>On Create or Update</strong>, <strong>On
+                                            Delete</strong>, <strong>Scheduled</strong>.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Delivery Channel</td>
+                                    <td>
+                                        Dropdown controlling delivery: <strong>Send as Mail</strong>, <strong>Send as
+                                            Notification</strong>, <strong>Send as Mail and Notification</strong>.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Mail Template</td>
+                                    <td>
+                                        Dropdown selecting the email body. Shown when the delivery channel includes
+                                        mail.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Outgoing Mail Server</td>
+                                    <td>
+                                        Dropdown selecting the sending mail server. Shown when the delivery channel
+                                        includes mail.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Notification Template</td>
+                                    <td>
+                                        Dropdown selecting the in-app notification. Shown when the delivery channel
+                                        includes notification.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Mail to / Notify to</td>
+                                    <td>
+                                        Text field for recipients. Accepts direct email addresses, the keyword <code
+                                        >self</code> (the user who triggered the action), dynamic field references, and
+                                        multiple comma-separated entries.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Also Send to</td>
+                                    <td>
+                                        Multi-select for extra users, who receive the notification as CC recipients.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 id="conditions">Conditions</h4>
+                    <p>
+                        Conditions are dynamic rows, each defining when the alert fires based on Opportunity field
+                        values. Each row contains:
+                    </p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Element</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Field</td>
+                                    <td>The Opportunity field to evaluate, such as Amount or Probability.</td>
+                                </tr>
+                                <tr>
+                                    <td>Operator</td>
+                                    <td>
+                                        The comparison: equal, not equal, greater than, less than, greater than or
+                                        equal, less than or equal, or contains.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Value</td>
+                                    <td>The threshold to compare against.</td>
+                                </tr>
+                                <tr>
+                                    <td>Logical Operator</td>
+                                    <td>
+                                        <strong>AND</strong> or <strong>OR</strong>, used to chain conditions together.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>Multiple conditions can be added for more precise control.</p>
+
+                    <h4 id="scheduled-trigger-fields">Scheduled Trigger Fields</h4>
+                    <p>These fields appear only when <strong>Trigger</strong> is set to <strong>Scheduled</strong>.</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Target Date Field</td>
+                                    <td>The date or datetime Opportunity field the schedule is based on.</td>
+                                </tr>
+                                <tr>
+                                    <td>Adjust By</td>
+                                    <td>Numeric offset.</td>
+                                </tr>
+                                <tr>
+                                    <td>Timing</td>
+                                    <td>Whether to fire before or after the target date.</td>
+                                </tr>
+                                <tr>
+                                    <td>Offset Unit</td>
+                                    <td>Days, weeks or months.</td>
+                                </tr>
+                                <tr>
+                                    <td>Run Time</td>
+                                    <td>Optional time of day at which to fire.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 id="alert-expanded-view">1.3 Alert Expanded View</h3>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-big-deal-expanded.png"
+                            alt="Big Deal Over 100k expanded, showing Trigger Amount Greater Than 100000, Notify Emails, Trigger On Create, and Delivery Channel Send as Notification"
+                            loading="lazy"
+                        >
+                        <figcaption>The expanded Big Deal Over 100k alert.</figcaption>
+                    </figure>
+                    <p><strong>Purpose:</strong> show the full alert settings inline within the list.</p>
+                    <p>
+                        Click the alert title to expand it. <strong>Big Deal Over 100k</strong> opens a two-column grid:
+                    </p>
+                    <ul>
+                        <li><strong>Trigger Amount</strong> — Greater Than 100000</li>
+                        <li><strong>Notify Emails</strong> — instance.owner.email</li>
+                        <li><strong>Trigger</strong> — On Create</li>
+                        <li><strong>Delivery Channel</strong> — Send as Notification</li>
+                    </ul>
+                    <p>
+                        A mail alert also shows <strong>Mail Template</strong> and <strong>Sender Email</strong>.
+                        <strong>Notify CC Emails</strong> appears when extra recipients are selected.
+                    </p>
+
+                    <h3 id="notifications-and-delivery">1.4 Notifications and Delivery</h3>
+                    <p><strong>Purpose:</strong> ensure timely, automated communication about high-value deals.</p>
+                    <p>
+                        Active alerts monitor Opportunities continuously and send notifications automatically once their
+                        conditions are met.
+                    </p>
+
+                    <h4 id="delivery-channels">Delivery Channels</h4>
+                    <ul>
+                        <li>
+                            <strong>Mail</strong> – sends an email using the selected mail template through the
+                            configured outgoing server.
+                        </li>
+                        <li>
+                            <strong>Notification</strong> – sends an in-app notification using the selected notification
+                            template.
+                        </li>
+                        <li><strong>Both</strong> – sends the email and the in-app notification together.</li>
+                    </ul>
+                    <ul>
+                        <li>
+                            Recipients are resolved when the alert fires, based on <strong>Mail to / Notify to</strong>.
+                        </li>
+                        <li>Users listed in <strong>Also Send to</strong> receive CC copies.</li>
+                        <li>
+                            Scheduled alerts fire from a date field on the Opportunity, with a configurable offset and
+                            an optional run time.
+                        </li>
+                    </ul>
+
+                    <h3 id="edit-and-delete">1.5 Edit and Delete Functionality</h3>
+                    <p><strong>Purpose:</strong> keep alerts accurate and current.</p>
+
+                    <h4 id="edit">Edit</h4>
+                    <ul>
+                        <li>Click the edit icon on an accordion row to open the update form in a modal.</li>
+                        <li>
+                            Title, trigger, conditions, delivery channel, templates and recipients can all be changed.
+                        </li>
+                        <li>Changes appear in the list immediately.</li>
+                    </ul>
+
+                    <h4 id="delete">Delete</h4>
+                    <ul>
+                        <li>
+                            Click the delete icon on an accordion row to open a confirmation prompt before permanent
+                            removal.
+                        </li>
+                        <li>The confirmation step guards against accidental deletion.</li>
+                        <li>Once deleted, the alert is removed and all of its notification activity stops.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

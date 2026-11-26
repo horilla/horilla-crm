@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Incoming Mail Configuration | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to incoming mail configuration in Horilla CRM: connecting Outlook/Office 365 through OAuth, connecting IMAP mail servers, and managing existing configurations."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Incoming Mail Configuration</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Incoming Mail Configuration</h1>
+                <p class="lead">Set up and manage the mail server connections the CRM uses to receive inbound email.</p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Incoming Mail Configuration module is where email server connections for receiving messages
+                        are set up and maintained. It supports Microsoft Outlook and Office 365 accounts through OAuth,
+                        and other mail servers through IMAP.
+                    </p>
+                    <p>
+                        Several mail accounts can be configured for different purposes, so that inbound messages from
+                        leads, contacts and customers are handled from inside the CRM.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="configurations-overview">1. Incoming Mail Configurations Overview</h3>
+                    <p><strong>Purpose:</strong> list every configured incoming mail server in a single table.</p>
+                    <ul>
+                        <li>Navigate to <strong>Settings &rarr; Mail &rarr; Incoming Mail Server</strong>.</li>
+                        <li>
+                            The table shows three columns: <strong>Email Host Username</strong> (the receiving email
+                            address), <strong>Type</strong> (Outlook or Mail) and <strong>Actions</strong> (the
+                            management icons).
+                        </li>
+                        <li>A search box is available for locating a specific configuration.</li>
+                        <li>
+                            The <strong>Email Host Username</strong> and <strong>Type</strong> columns can be sorted
+                            using the indicators in their headers.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/incoming-list.png"
+                            alt="Incoming mail server list showing email host username, type and actions columns"
+                            loading="lazy"
+                        >
+                        <figcaption>The incoming mail configurations list.</figcaption>
+                    </figure>
+
+                    <h3 id="create-configuration">2. Creating a New Mail Configuration</h3>
+                    <p><strong>Purpose:</strong> add a new incoming mail server.</p>
+                    <ol class="steps">
+                        <li>Click <strong>New</strong>.</li>
+                        <li>
+                            The <strong>Select Mail Server Type</strong> dialog opens with two choices:
+                            <ul>
+                                <li>
+                                    <strong>Outlook Mail Server</strong> &ndash; for Microsoft Azure / Office 365
+                                    accounts using OAuth.
+                                </li>
+                                <li>
+                                    <strong>Other Mail Servers</strong> &ndash; for IMAP, Gmail, Yahoo or other servers.
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            Click <strong>Select Outlook</strong> or <strong>Select Other</strong> to continue to the
+                            matching form.
+                        </li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/incoming-type.png"
+                            alt="Select Mail Server Type dialog with Outlook and Other Mail Servers options"
+                            loading="lazy"
+                        >
+                        <figcaption>Choosing the mail server type.</figcaption>
+                    </figure>
+
+                    <h3 id="outlook-configuration">3. Configuring an Outlook Mail Server</h3>
+                    <p><strong>Purpose:</strong> connect a Microsoft Outlook or Office 365 account using OAuth.</p>
+                    <p>
+                        Choosing <strong>Outlook Mail Server</strong> opens the <strong>Create Mail
+                            Configuration</strong> form.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/incoming-outlook.png"
+                            alt="Create Mail Configuration form for an Outlook mail server"
+                            loading="lazy"
+                        >
+                        <figcaption>The Outlook mail configuration form.</figcaption>
+                    </figure>
+
+                    <h4 id="outlook-credentials">Authentication credentials</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Client ID</td>
+                                    <td>The application (client) identifier taken from Azure.</td>
+                                </tr>
+                                <tr>
+                                    <td>Outlook client secret</td>
+                                    <td>The secret created for the Azure application.</td>
+                                </tr>
+                                <tr>
+                                    <td>Tenant ID</td>
+                                    <td>The Azure directory (tenant) identifier.</td>
+                                </tr>
+                                <tr>
+                                    <td>Email Host Username</td>
+                                    <td>The email address that will receive the mail.</td>
+                                </tr>
+                                <tr>
+                                    <td>Display Name</td>
+                                    <td>The name shown for the account.</td>
+                                </tr>
+                                <tr>
+                                    <td>Redirect URI</td>
+                                    <td>The OAuth redirect address.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 id="outlook-endpoints">Endpoints</h4>
+                    <p>These fields arrive pre-filled with default values:</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Default value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>OAuth authorization endpoint</td>
+                                    <td><code>https://login.microsoftonline.com/cor</code></td>
+                                </tr>
+                                <tr>
+                                    <td>OAuth token endpoint</td>
+                                    <td><code>https://login.microsoftonline.com/cor</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Microsoft Graph API endpoint</td>
+                                    <td><code>https://graph.microsoft.com/v1.0</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 id="outlook-options">Additional options</h4>
+                    <ul>
+                        <li><strong>Primary Mail Server</strong> toggle.</li>
+                    </ul>
+                    <p>Click <strong>Save</strong> to store the configuration.</p>
+
+                    <h3 id="other-mail-servers">4. Configuring Other Mail Servers</h3>
+                    <p>
+                        <strong>Purpose:</strong> connect an IMAP-based server such as Gmail, Yahoo or a custom mail
+                        server.
+                    </p>
+                    <p>
+                        Choosing <strong>Other Mail Servers</strong> opens the <strong>Create Mail
+                            Configuration</strong> form.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/incoming-other.png"
+                            alt="Create Mail Configuration form for a non-Outlook IMAP mail server"
+                            loading="lazy"
+                        >
+                        <figcaption>The form for other (IMAP) mail servers.</figcaption>
+                    </figure>
+                    <h4 id="other-server-fields">Fields</h4>
+                    <ul>
+                        <li><strong>Server connection details:</strong> Host, Port.</li>
+                        <li><strong>Authentication:</strong> Email Host Username, Password.</li>
+                        <li>
+                            <strong>Additional options:</strong> the <strong>Primary Mail Server</strong> toggle, which
+                            marks this account as the default receiving account.
+                        </li>
+                    </ul>
+                    <p>Click <strong>Save</strong> to store the configuration.</p>
+
+                    <h3 id="managing-configurations">5. Managing Existing Configurations</h3>
+                    <p>Each row in the list carries action icons, which differ by server type:</p>
+                    <ul>
+                        <li><strong>Outlook configurations:</strong> Refresh token, Login Outlook, Edit, Delete.</li>
+                        <li><strong>Other mail server configurations:</strong> Edit, Delete.</li>
+                    </ul>
+                </section>
+
+                <section id="best-practices">
+                    <h2>Best Practices</h2>
+                    <ol class="steps">
+                        <li>Configure at least one mail server before expecting the CRM to receive email.</li>
+                        <li>
+                            Mark one configuration as the <strong>Primary Mail Server</strong> so there is a default
+                            receiving account.
+                        </li>
+                        <li>
+                            For Outlook, register the application in Azure AD beforehand and grant the <code
+                            >Mail.Read</code> and <code>Mail.ReadWrite</code> permissions.
+                        </li>
+                        <li>
+                            For Gmail and similar providers: use an app-specific password rather than the main account
+                            password, enable IMAP access in the provider's settings, and for Gmail use host <code
+                            >imap.gmail.com</code> with port <code>993</code>.
+                        </li>
+                        <li>Make sure firewall and security settings allow incoming connections on the IMAP port.</li>
+                        <li>Store client secrets and passwords securely, revealing them only when needed.</li>
+                        <li>Refresh OAuth tokens regularly for Outlook configurations.</li>
+                        <li>
+                            Review the mail configurations periodically so they keep working and stay compliant with
+                            security requirements.
+                        </li>
+                    </ol>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

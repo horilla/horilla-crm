@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Campaigns | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Horilla CRM Campaigns module: list, Kanban, card, group by, chart, split and timeline views, campaign creation and the campaign detail view."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Sales</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Campaigns</span>
+                </nav>
+                <p class="eyebrow">Sales</p>
+                <h1>Campaigns</h1>
+                <p class="lead">
+                    Plan, run and measure marketing initiatives, with their activities, audiences, budgets and results
+                    kept alongside Leads and Contacts.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Campaigns module gives marketing and sales teams one place to plan, execute and track
+                        marketing initiatives. It records campaign activities, the target audience, the budget and the
+                        results achieved. Because campaigns are linked to Leads and Contacts, marketing effort and sales
+                        follow-up stay aligned.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="campaigns-overview">1. Campaigns Overview</h3>
+                    <p>
+                        <strong>Purpose:</strong> see and manage every campaign recorded in the system from a single
+                        list.
+                    </p>
+                    <ol class="steps">
+                        <li>
+                            Go to <strong>Sales &rarr; Campaigns</strong>. The page opens on the Kanban view. List, the
+                            tabular view, is on the view toolbar.
+                        </li>
+                        <li>
+                            In List view, use the search box and filters to narrow the campaigns by criteria such as
+                            campaign name, campaign type or status.
+                        </li>
+                        <li>Columns can be sorted, and the filters applied to the list can be customised.</li>
+                        <li>
+                            Select campaigns with the row checkboxes to run bulk actions: <strong>Update</strong>,
+                            <strong>Export</strong> and <strong>Delete</strong>.
+                        </li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/campaigns-1.png"
+                            alt="Campaigns list view in Horilla CRM"
+                            loading="lazy"
+                        >
+                        <figcaption>Campaigns list view.</figcaption>
+                    </figure>
+
+                    <h3 id="kanban-view">2. Kanban View</h3>
+                    <p><strong>Purpose:</strong> follow campaign progress visually as a workflow.</p>
+                    <ul>
+                        <li>Campaigns are arranged into columns by progress or status.</li>
+                        <li>How campaigns are categorised into columns is controlled by the Kanban settings.</li>
+                        <li>Drag and drop a campaign card from one column to another to update its stage.</li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/campaigns-2.png" alt="Campaigns Kanban view" loading="lazy">
+                        <figcaption>Kanban view, with campaigns grouped by status.</figcaption>
+                    </figure>
+
+                    <h3 id="card-view">3. Card View</h3>
+                    <p><strong>Purpose:</strong> scan campaigns as compact summary cards.</p>
+                    <ul>
+                        <li>Switch to Card View from the view toolbar.</li>
+                        <li>
+                            Each card shows the key campaign details: <strong>Campaign Name</strong>, <strong>Campaign
+                                Owner</strong>, <strong>Campaign Type</strong>, <strong>Status</strong> and <strong
+                            >Expected Revenue</strong>.
+                        </li>
+                        <li>The same search and filter options available in List View apply here.</li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/campaigns-3.png" alt="Campaigns card view" loading="lazy">
+                        <figcaption>Card view.</figcaption>
+                    </figure>
+
+                    <h3 id="group-by-view">4. Group By View</h3>
+                    <p><strong>Purpose:</strong> organise campaigns into collapsible groups for comparison.</p>
+                    <ul>
+                        <li>Switch to Group By View from the view toolbar.</li>
+                        <li>
+                            Group campaigns by <strong>Status</strong>, <strong>Campaign Type</strong> or <strong
+                            >Campaign Owner</strong>.
+                        </li>
+                        <li>Each group appears as a section that can be expanded or collapsed.</li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/campaigns-4.png" alt="Campaigns grouped view" loading="lazy">
+                        <figcaption>Group By view.</figcaption>
+                    </figure>
+
+                    <h3 id="chart-view">5. Chart View</h3>
+                    <p><strong>Purpose:</strong> analyse campaign data graphically.</p>
+                    <ul>
+                        <li>Switch to Chart View from the view toolbar.</li>
+                        <li>
+                            Charts visualise campaign statuses, campaign types, and the distribution of budget and
+                            revenue.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/campaigns-5.png" alt="Campaigns chart view" loading="lazy">
+                        <figcaption>Chart view.</figcaption>
+                    </figure>
+
+                    <h3 id="split-view">6. Split View</h3>
+                    <p><strong>Purpose:</strong> read campaign details without leaving the list.</p>
+                    <ul>
+                        <li>Activate Split View from the view toolbar.</li>
+                        <li>
+                            The left panel holds the campaign list; the right panel shows the details of the selected
+                            campaign.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/campaigns-6.png" alt="Campaigns split view" loading="lazy">
+                        <figcaption>Split view: list on the left, details on the right.</figcaption>
+                    </figure>
+
+                    <h3 id="timeline-view">7. Timeline View</h3>
+                    <p><strong>Purpose:</strong> see campaigns in chronological order.</p>
+                    <ul>
+                        <li>Switch to Timeline View from the view toolbar.</li>
+                        <li>
+                            Campaigns are ordered by creation date or last updated date, and can optionally be grouped
+                            by status.
+                        </li>
+                        <li>
+                            You can switch to a start date / end date view to spot overlapping campaigns and peak
+                            periods.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/campaigns-7.png" alt="Campaigns timeline view" loading="lazy">
+                        <figcaption>Timeline view.</figcaption>
+                    </figure>
+
+                    <h3 id="create-campaign">8. Creating a New Campaign</h3>
+                    <p><strong>Purpose:</strong> capture and store the information of a new campaign.</p>
+                    <p>
+                        Click <strong>New</strong> on the Campaigns page to open the campaign creation form. The form
+                        offers two entry modes, and you can switch between them at any time while filling it in.
+                    </p>
+
+                    <h4 id="multi-step-form">Multi-Step Form</h4>
+                    <ol class="steps">
+                        <li>
+                            <strong>Step 1 – Basic Information:</strong> Campaign Owner, Campaign Name, Status, Start
+                            Date, End Date, Campaign Type.
+                        </li>
+                        <li>
+                            <strong>Step 2 – Financial Details:</strong> Budget Cost, Actual Cost, Expected Revenue,
+                            Estimated Response.
+                        </li>
+                        <li><strong>Step 3 – Additional Information:</strong> Description, Audience Size.</li>
+                        <li>
+                            Use <strong>Next</strong> and <strong>Previous</strong> to move between the steps, then
+                            click <strong>Save</strong> to create the campaign.
+                        </li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/campaigns-n-multi.png"
+                            alt="Multi-step campaign creation form"
+                            loading="lazy"
+                        >
+                        <figcaption>Multi-step campaign creation form.</figcaption>
+                    </figure>
+
+                    <h4 id="single-step-form">Single-Step Form</h4>
+                    <ul>
+                        <li>All campaign fields are presented on one page for quick data entry.</li>
+                        <li>Use the toggle in the form header to switch to single-step mode.</li>
+                        <li>Click <strong>Save</strong> to create the record.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/campaigns-n-single.png"
+                            alt="Single-step campaign creation form"
+                            loading="lazy"
+                        >
+                        <figcaption>Single-step campaign creation form.</figcaption>
+                    </figure>
+
+                    <h3 id="campaign-detail">9. Campaign Detailed Information</h3>
+                    <p><strong>Purpose:</strong> work with everything recorded against a single campaign.</p>
+                    <ul>
+                        <li>Open the detail view by clicking the campaign name in the list view or Kanban view.</li>
+                        <li>
+                            The detail view brings together the campaign's related activities, performance statistics
+                            and history.
+                        </li>
+                        <li>
+                            The status can be updated directly from this page, and the campaign can be marked as
+                            completed by selecting the final stage in the progress bar.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/campaigns-n-detail.png" alt="Campaign detail view" loading="lazy">
+                        <figcaption>
+                            Campaign detail view with activities, performance statistics and history.
+                        </figcaption>
+                    </figure>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

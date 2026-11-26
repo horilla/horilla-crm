@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Review Jobs | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Review Jobs in Horilla CRM: the pending list, the Review Job dialog and Field Review."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>My Jobs</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Review Jobs</span>
+                </nav>
+                <p class="eyebrow">My Jobs</p>
+                <h1>Review Jobs</h1>
+                <p class="lead">
+                    Work the field reviews waiting on you, approve or reject each field, and see a record return after
+                    it is resubmitted.
+                </p>
+            </header>
+
+            <main>
+                <section id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        Go to <strong>My Jobs &rarr; Review Jobs</strong>. The page title is <strong>My Review
+                            Jobs</strong>. It lists the pending review jobs assigned to the signed-in user.
+                    </p>
+                    <p>
+                        Creating a process, opening its detail and adding rules are set up under <a
+                            href="../settings/review-process.html"
+                        >Settings &rarr; Process Builder &rarr; Review Process</a>.
+                    </p>
+                </section>
+
+                <section id="review-jobs">
+                    <h2>Review Jobs</h2>
+                    <p>
+                        Each row is a record held for field review. The list only shows jobs that are still pending and
+                        assigned to you.
+                    </p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Contents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Review Process</td>
+                                    <td>The process that caught the record.</td>
+                                </tr>
+                                <tr>
+                                    <td>Record</td>
+                                    <td>The record waiting for review.</td>
+                                </tr>
+                                <tr>
+                                    <td>Status</td>
+                                    <td>Pending while the job is still open.</td>
+                                </tr>
+                                <tr>
+                                    <td>Approvers</td>
+                                    <td>
+                                        Everyone assigned to review this record. A row can list more than one person.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Actions</td>
+                                    <td><strong>Review</strong> opens the Review Job dialog.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-review-jobs.png"
+                            alt="My Review Jobs with pending records, approvers and a Review action"
+                            loading="lazy"
+                        >
+                        <figcaption>Review Jobs. Pending records for the signed-in approver.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="review-job">
+                    <h2>Review Job</h2>
+                    <p>
+                        On a pending job, click <strong>Review</strong>. The dialog title is <strong>Review
+                            Job</strong>. It names the <strong>Process</strong> and the <strong>Record</strong>.
+                    </p>
+                    <p>
+                        When more than one approver is assigned, a line under the title shows how many have finished,
+                        for example <strong>1 / 2 approved</strong>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-review-job.png"
+                            alt="Review Job dialog with record details and fields still pending"
+                            loading="lazy"
+                        >
+                        <figcaption>
+                            Review Job. Record details, then each field still waiting for a decision.
+                        </figcaption>
+                    </figure>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Section</th>
+                                    <th>Contents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Record Details</td>
+                                    <td>
+                                        A short set of fields from the record, such as email, amount and close date.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Fields To Review</td>
+                                    <td>
+                                        Each field that the process requires. The row shows the current value, a status
+                                        of <strong>Pending</strong>, <strong>Approved</strong> or <strong
+                                        >Rejected</strong>, and a comment icon.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="field-review">
+                    <h2>Field Review</h2>
+                    <p>
+                        Click the comment icon on a field. The form title is <strong>Field Review</strong>. It shows the
+                        field name and its current value.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-review-field.png"
+                            alt="Field Review form for Amount with a comment and Reject and Approve buttons"
+                            loading="lazy"
+                        >
+                        <figcaption>Field Review. Add a reason, then reject or approve that field.</figcaption>
+                    </figure>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Comment</td>
+                                    <td>
+                                        Optional reason for this field. Placeholder: Add reason for this field decision.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Reject</td>
+                                    <td>Marks this field rejected.</td>
+                                </tr>
+                                <tr>
+                                    <td>Approve</td>
+                                    <td>Marks this field approved.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>
+                        Each field is decided on its own. The job stays on <strong>My Review Jobs</strong> until the
+                        required approvals are in.
+                    </p>
+                </section>
+
+                <section id="approval-rejection-resubmission">
+                    <h2>Approval, Rejection and Resubmission</h2>
+
+                    <h3 id="approved">Approved</h3>
+                    <p>
+                        Once every reviewed field is approved, the record appears in the module's main list view, for
+                        example the Leads list. The owner is notified if <strong>Notify on Approval</strong> is enabled
+                        on the process.
+                    </p>
+
+                    <h3 id="rejected">Rejected</h3>
+                    <p>
+                        A rejected record does not appear in the list view. The owner is notified if <strong>Notify on
+                            Rejection</strong> is enabled, and can correct the data and resubmit the record for review.
+                    </p>
+
+                    <h3 id="resubmission">Resubmission</h3>
+                    <p>
+                        On a rejected field, the record owner can edit the value in the Review Job dialog and click
+                        <strong>Save and resubmit</strong>. That field returns to <strong>Pending</strong> for every
+                        approver. The approver is notified if <strong>Notify on Resubmission</strong> is enabled.
+                    </p>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

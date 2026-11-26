@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Scoring Rules | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Horilla CRM scoring rules: the rules list, creating a rule, adding rule criteria with conditions and operators, and the rule detail view."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Scoring Rules</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Scoring Rules</h1>
+                <p class="lead">
+                    Award weighted points to leads and opportunities through rule-based criteria, so the most promising
+                    records rise to the top.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        Scoring Rules let an organisation assign weighted points to records in the Leads and
+                        Opportunities modules. The rule-based criteria help CRM users prioritise high-quality leads and
+                        the opportunities most likely to close. A rule can combine multiple conditions and logical
+                        operators, and scoring can be either additive or subtractive.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="accessing-scoring-rules">Accessing Scoring Rules</h3>
+                    <p>
+                        <strong>Path:</strong> <strong>Settings &rarr; Base &rarr; Scoring Rules</strong>.
+                        Administrators can view, create and manage scoring rules across modules.
+                    </p>
+
+                    <h3 id="scoring-rules-list">1. Scoring Rules list view</h3>
+                    <p>All created rules are shown in a table.</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Contents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Rule Name</td>
+                                    <td>Name given to the rule.</td>
+                                </tr>
+                                <tr>
+                                    <td>Module</td>
+                                    <td>Lead or Opportunity.</td>
+                                </tr>
+                                <tr>
+                                    <td>Is Active</td>
+                                    <td>Whether the rule is currently in use.</td>
+                                </tr>
+                                <tr>
+                                    <td>Description</td>
+                                    <td>Description of the rule.</td>
+                                </tr>
+                                <tr>
+                                    <td>Actions</td>
+                                    <td>Row-level actions.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <ul>
+                        <li>Edit an existing rule.</li>
+                        <li>Delete a rule.</li>
+                        <li>Activate or deactivate a rule with a toggle.</li>
+                        <li>Search and filter to find rules quickly.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/scoring-rules-1.png"
+                            alt="Scoring rules list view with rule name, module and status columns"
+                            loading="lazy"
+                        >
+                        <figcaption>Scoring rules list view.</figcaption>
+                    </figure>
+
+                    <h3 id="create-scoring-rule">2. Create a new scoring rule</h3>
+                    <ol class="steps">
+                        <li>Click <strong>New</strong> to open the creation form.</li>
+                        <li>Enter the rule details.</li>
+                        <li>Click <strong>Save</strong>.</li>
+                    </ol>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Rule Name</td>
+                                    <td>A unique name for the rule.</td>
+                                </tr>
+                                <tr>
+                                    <td>Module</td>
+                                    <td>Lead or Opportunity.</td>
+                                </tr>
+                                <tr>
+                                    <td>Description</td>
+                                    <td>A meaningful description of what the rule does.</td>
+                                </tr>
+                                <tr>
+                                    <td>Is Active</td>
+                                    <td>Turns the rule on or off.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figure>
+                        <img
+                            src="../assets/shots/scoring-rules-n-single.png"
+                            alt="Create scoring rule form"
+                            loading="lazy"
+                        >
+                        <figcaption>Creating a scoring rule.</figcaption>
+                    </figure>
+
+                    <h3 id="add-rule-criteria">3. Add rule criteria</h3>
+                    <ol class="steps">
+                        <li>Click the rule to open its Rule Detail View.</li>
+                        <li>Click <strong>New</strong> to add criteria.</li>
+                        <li>Configure the criteria fields.</li>
+                        <li>Optionally click <strong>+ Add More</strong> to add further conditions.</li>
+                        <li>Click <strong>Save</strong>.</li>
+                    </ol>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Points to Award</td>
+                                    <td>Numeric value of the score.</td>
+                                </tr>
+                                <tr>
+                                    <td>Operation Type</td>
+                                    <td>Add or Subtract.</td>
+                                </tr>
+                                <tr>
+                                    <td>Field</td>
+                                    <td>A field belonging to the module.</td>
+                                </tr>
+                                <tr>
+                                    <td>Operator</td>
+                                    <td>A comparison operator such as Equals, Contains or Greater Than.</td>
+                                </tr>
+                                <tr>
+                                    <td>Value</td>
+                                    <td>The value the field is matched against.</td>
+                                </tr>
+                                <tr>
+                                    <td>Logical Operator (optional)</td>
+                                    <td>AND or OR, used to combine multiple conditions.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figure>
+                        <img
+                            src="../assets/shots/scoring-criteria.png"
+                            alt="Rule criteria form with points, operation type and conditions"
+                            loading="lazy"
+                        >
+                        <figcaption>Adding rule criteria.</figcaption>
+                    </figure>
+
+                    <h3 id="rule-detail-view">4. Scoring rule detail view</h3>
+                    <p>Clicking a scoring rule opens its detail view, which contains:</p>
+                    <ul>
+                        <li><strong>Rule Information:</strong> rule name, module, status and description.</li>
+                        <li>
+                            <strong>Criteria List:</strong> each criterion's fields, operators, values and scoring
+                            action.
+                        </li>
+                        <li><strong>Actions:</strong> edit a criterion, or delete it.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/scoring-rules-n-detail.png"
+                            alt="Scoring rule detail view with rule information and criteria list"
+                            loading="lazy"
+                        >
+                        <figcaption>Scoring rule detail view.</figcaption>
+                    </figure>
+                </section>
+
+                <section id="benefits">
+                    <h2>Benefits</h2>
+                    <ul>
+                        <li>
+                            <strong>Automated lead qualification:</strong> points are assigned to leads according to
+                            business logic.
+                        </li>
+                        <li>
+                            <strong>Opportunity prioritisation:</strong> the opportunities most likely to close stand
+                            out.
+                        </li>
+                        <li>
+                            <strong>Customisable rules:</strong> flexible field conditions, operators and scoring logic.
+                        </li>
+                        <li>
+                            <strong>Improved sales efficiency:</strong> effort concentrates on high-potential records.
+                        </li>
+                        <li>
+                            <strong>Data-driven decisions:</strong> leads and opportunities are ranked and filtered
+                            objectively.
+                        </li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

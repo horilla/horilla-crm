@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Forecast | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Horilla CRM Forecast page, where each forecast type is a tab with its own period table, and to Forecast Types and Forecast Targets in Settings."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Sales</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Forecast</span>
+                </nav>
+                <p class="eyebrow">Sales</p>
+                <h1>Forecast</h1>
+                <p class="lead">
+                    Open Forecast from Sales to read each forecast type as a tab, with the period table inside the
+                    selected tab. Manage the types and the targets from Settings.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        Forecast tracks target, closed revenue, commit, best case, and open pipeline for the fiscal
+                        year. Active forecast types appear as tabs on the Forecast page. The table for the selected type
+                        loads inside that tab. Forecast Types and Forecast Targets are configured under Settings.
+                    </p>
+                </section>
+
+                <section id="forecast-page">
+                    <h2>1. Forecast</h2>
+                    <p><strong>Location:</strong> <strong>Sales &rarr; Forecast</strong>.</p>
+                    <p>
+                        The page header shows <strong>Forecast</strong>, an <strong>All Users</strong> selector, and a
+                        period range. <strong>All Users</strong> includes <strong>My Forecast</strong> and the other
+                        users you can view. The period range defaults to the fiscal year, for example Period 1 (Jan
+                        2026) through Period 12 (Dec 2026). Choose a beginning period and an ending period to narrow the
+                        table.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/forecast-1.png"
+                            alt="Forecast page with forecast type tabs and the period table inside the selected tab"
+                            loading="lazy"
+                        >
+                        <figcaption>
+                            Forecast, with one tab per forecast type and the period table inside the selected tab.
+                        </figcaption>
+                    </figure>
+
+                    <h3 id="forecast-type-tabs">1.1 Forecast type tabs</h3>
+                    <p>
+                        Each active forecast type is a tab. The tab title is the forecast type name, such as <strong
+                        >Revenue Amount Forecast</strong>, <strong>Expected Revenue Forecast</strong>, or <strong
+                        >Quantity Forecast</strong>. Selecting a tab loads that type's table. Under the tabs, the page
+                        states the measurement for the open tab, for example <strong>Forecast Type: Deal Revenue
+                            Amount</strong>.
+                    </p>
+                    <p>
+                        <strong>Chart Analysis</strong> opens a chart of the figures in the current tab, using the same
+                        user and period range.
+                    </p>
+
+                    <h3 id="forecast-table">1.2 Table inside the tab</h3>
+                    <p>The table belongs to the selected tab. Its columns are:</p>
+                    <dl>
+                        <dt>Period</dt>
+                        <dd>The fiscal period, with its start and end dates.</dd>
+                        <dt>Target</dt>
+                        <dd>
+                            The target set for that period. Revenue types show an amount. Quantity types show a deal
+                            count.
+                        </dd>
+                        <dt>Achievement</dt>
+                        <dd>Closed value against the target, with a progress bar and the percentage achieved.</dd>
+                        <dt>Gap</dt>
+                        <dd>The difference between target and achievement, and that difference as a percentage.</dd>
+                        <dt>Closed</dt>
+                        <dd>Opportunities that are closed.</dd>
+                        <dt>Commit Forecast</dt>
+                        <dd>Opportunities in the commit forecast.</dd>
+                        <dt>Best Case</dt>
+                        <dd>Opportunities in the best case.</dd>
+                        <dt>Open Pipeline</dt>
+                        <dd>Opportunities still open in the pipeline.</dd>
+                    </dl>
+                    <p>
+                        The first row is <strong>Total</strong> for every period in the range. Each period below it can
+                        be expanded to show the period total, a row for each role, and a row for each team member. A
+                        role row can be opened to show the roles under it and the people in that role. Clicking a
+                        <strong>Closed</strong>, <strong>Commit Forecast</strong>, <strong>Best Case</strong>, or
+                        <strong>Open Pipeline</strong> value opens the opportunities that make up that figure. The same
+                        action is available on the total row, a period row, and a user row.
+                    </p>
+                </section>
+
+                <section id="forecast-types">
+                    <h2>2. Forecast Types</h2>
+                    <p><strong>Location:</strong> <strong>Settings &rarr; Forecast &rarr; Forecast Types</strong>.</p>
+                    <p>
+                        This page defines the categories that become the tabs on the Forecast page. The description on
+                        the page is <em>Define the categories used to group your sales forecasts.</em>
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/forecast-2.png"
+                            alt="Forecast Types settings list with name, type, active status, and actions"
+                            loading="lazy"
+                        >
+                        <figcaption>Forecast Types.</figcaption>
+                    </figure>
+                    <p>
+                        The list columns are <strong>Forecast Type Name</strong>, <strong>Forecast Type</strong>,
+                        <strong>Is Active</strong>, and <strong>Actions</strong>. Forecast Type is one of:
+                    </p>
+                    <ul>
+                        <li><strong>Deal Revenue Amount</strong></li>
+                        <li><strong>Deal Revenue Expected Amount</strong></li>
+                        <li><strong>Deal Quantity</strong></li>
+                    </ul>
+                    <p>Use the search box to find a type. Each row has edit and delete actions.</p>
+
+                    <h3 id="creating-forecast-type">2.1 Creating a forecast type</h3>
+                    <ol class="steps">
+                        <li>Click <strong>New</strong>.</li>
+                        <li>
+                            Enter <strong>Forecast Type Name</strong>, choose <strong>Forecast Type</strong>, and add a
+                            <strong>Description</strong> if you need one.
+                        </li>
+                        <li>
+                            Under <strong>Filter Opportunities</strong>, add the conditions that decide which
+                            opportunities count. Each condition has <strong>Field</strong>, <strong>Operator</strong>,
+                            <strong>Value</strong>, and <strong>Logical Operator</strong>. Click <strong>+ Add
+                                More</strong> for another condition.
+                        </li>
+                        <li>Click <strong>Save</strong>.</li>
+                    </ol>
+                    <p>
+                        Only an active forecast type appears as a tab on the Forecast page. If none are set, that page
+                        asks you to create one and offers <strong>Go To Forecast Type</strong>.
+                    </p>
+                </section>
+
+                <section id="forecast-targets">
+                    <h2>3. Forecast Targets</h2>
+                    <p><strong>Location:</strong> <strong>Settings &rarr; Forecast &rarr; Forecast Targets</strong>.</p>
+                    <p>
+                        This page sets the target amounts that the Forecast table reads. The description on the page is
+                        <em>Set sales targets for your team's forecasts.</em>
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/forecast-3.png"
+                            alt="Forecast Targets settings with forecast type and period filters"
+                            loading="lazy"
+                        >
+                        <figcaption>Forecast Targets, filtered by forecast type and period.</figcaption>
+                    </figure>
+                    <p>Two filters sit above the list:</p>
+                    <ul>
+                        <li><strong>Forecast Type</strong> – one of the types defined on Forecast Types.</li>
+                        <li>
+                            <strong>Forecast Period</strong> – the fiscal period the targets belong to. The page opens
+                            on the current period when one is in progress.
+                        </li>
+                    </ul>
+                    <p>
+                        The list shows the targets for that type and period. When none exist yet, the page says <em
+                        >Nothing to show yet. Please add your Forecast Targets.</em> Saved rows show the assigned user,
+                        role, and target, with edit and delete actions.
+                    </p>
+
+                    <h3 id="setting-a-target">3.1 Setting a target</h3>
+                    <ol class="steps">
+                        <li>Click <strong>Set Target</strong>.</li>
+                        <li>
+                            <strong>Set Target For</strong> is one choice:
+                            <ul>
+                                <li><strong>User</strong> sets a target for one or more users.</li>
+                                <li>
+                                    <strong>Role</strong> takes one total and divides it among the users in that role.
+                                </li>
+                                <li>
+                                    <strong>Role Hierarchy</strong> divides that total across the selected role and the
+                                    roles under it.
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            For a user target, fill the user, period, forecast type, and amount. Click <strong>+ Add
+                            More</strong> for another user.
+                        </li>
+                        <li>For a role target, choose the role, the period, the forecast type, and the one total.</li>
+                        <li>Click <strong>Save</strong>.</li>
+                    </ol>
+                    <div class="warning">
+                        <span class="label">Warning</span>
+                        <p>
+                            A user, period, and forecast type can be saved together only once. A duplicate combination
+                            is rejected.
+                        </p>
+                    </div>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

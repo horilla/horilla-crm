@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Opportunities | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Horilla CRM Opportunities module: pipeline views, opportunity creation, the detail view and closing a deal as won or lost."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Sales</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Opportunities</span>
+                </nav>
+                <p class="eyebrow">Sales</p>
+                <h1>Opportunities</h1>
+                <p class="lead">
+                    Manage active sales deals through the pipeline stages, track their progress and close them, with
+                    related contacts, activities and follow-ups in one place.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Opportunities module is where active sales deals are managed. It lets sales teams move deals
+                        through the pipeline stages, monitor how each deal is progressing, close deals, and manage the
+                        contacts, activities and follow-ups attached to them.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="opportunities-overview">1. Opportunities Overview</h3>
+                    <p><strong>Purpose:</strong> see and manage every opportunity from one centralised list.</p>
+                    <ol class="steps">
+                        <li>
+                            Go to <strong>Sales &rarr; Opportunities</strong>. The page opens on the Kanban view. List,
+                            the tabular view, is on the view toolbar.
+                        </li>
+                        <li>
+                            In List view, use the search box and filters to narrow the opportunities by criteria such as
+                            opportunity name, stage or owner.
+                        </li>
+                        <li>Columns can be sorted, and the filters applied to the list can be customised.</li>
+                        <li>
+                            Select opportunities with the row checkboxes to run bulk actions: <strong>Update</strong>,
+                            <strong>Export</strong> and <strong>Bulk Delete</strong>.
+                        </li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/opportunities-1.png"
+                            alt="Opportunities list view in Horilla CRM"
+                            loading="lazy"
+                        >
+                        <figcaption>Opportunities list view.</figcaption>
+                    </figure>
+
+                    <h3 id="kanban-view">2. Kanban View</h3>
+                    <p><strong>Purpose:</strong> follow the sales pipeline visually, stage by stage.</p>
+                    <ul>
+                        <li>Each column represents a stage of the sales pipeline.</li>
+                        <li>
+                            How opportunities are categorised into stages is customised through the Kanban settings.
+                        </li>
+                        <li>
+                            Drag and drop an opportunity card from one column to another to move it to a different
+                            stage.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/opportunities-2.png" alt="Opportunities Kanban view" loading="lazy">
+                        <figcaption>Kanban view, with one column per pipeline stage.</figcaption>
+                    </figure>
+
+                    <h3 id="card-view">3. Card View</h3>
+                    <p><strong>Purpose:</strong> scan opportunities as compact summary cards.</p>
+                    <ul>
+                        <li>Switch to Card View from the view toolbar.</li>
+                        <li>
+                            Each card shows the key details: <strong>Name</strong>, <strong>Stage</strong>, <strong
+                            >Amount</strong> and <strong>Owner</strong>.
+                        </li>
+                        <li>The same search and filter options available in List View apply here.</li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/opportunities-3.png" alt="Opportunities card view" loading="lazy">
+                        <figcaption>Card view.</figcaption>
+                    </figure>
+
+                    <h3 id="group-by-view">4. Group By View</h3>
+                    <p><strong>Purpose:</strong> organise opportunities into collapsible groups for comparison.</p>
+                    <ul>
+                        <li>Switch to Group By View from the view toolbar.</li>
+                        <li>
+                            Group opportunities by <strong>Stage</strong>, <strong>Owner</strong>, <strong>Lead
+                                Source</strong> or <strong>Account</strong>.
+                        </li>
+                        <li>
+                            Each group appears as a section that can be expanded or collapsed, making sets of deals
+                            easier to compare.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/opportunities-4.png?v=2"
+                            alt="Opportunities grouped by stage, with deals listed under Prospecting"
+                            loading="lazy"
+                        >
+                        <figcaption>Group By view.</figcaption>
+                    </figure>
+
+                    <h3 id="chart-view">5. Chart View</h3>
+                    <p><strong>Purpose:</strong> analyse opportunity data graphically.</p>
+                    <ul>
+                        <li>Switch to Chart View from the view toolbar.</li>
+                        <li>
+                            Charts summarise opportunities by stage, by source and by ownership, giving a view of
+                            pipeline health and deal distribution.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/opportunities-5.png" alt="Opportunities chart view" loading="lazy">
+                        <figcaption>Chart view.</figcaption>
+                    </figure>
+
+                    <h3 id="split-view">6. Split View</h3>
+                    <p><strong>Purpose:</strong> read opportunity details without leaving the list.</p>
+                    <ul>
+                        <li>Activate Split View from the view toolbar.</li>
+                        <li>
+                            The left panel holds the opportunity list; the right panel shows the details of the selected
+                            opportunity.
+                        </li>
+                        <li>
+                            Selecting an opportunity on the left loads its details on the right, with no page
+                            navigation.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/opportunities-6.png" alt="Opportunities split view" loading="lazy">
+                        <figcaption>Split view: list on the left, details on the right.</figcaption>
+                    </figure>
+
+                    <h3 id="timeline-view">7. Timeline View</h3>
+                    <p><strong>Purpose:</strong> see opportunities in chronological order.</p>
+                    <ul>
+                        <li>Switch to Timeline View from the view toolbar.</li>
+                        <li>
+                            Opportunities are ordered by creation date or activity date, which makes trends and peak
+                            periods visible.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img src="../assets/shots/opportunities-7.png" alt="Opportunities timeline view" loading="lazy">
+                        <figcaption>Timeline view.</figcaption>
+                    </figure>
+
+                    <h3 id="create-opportunity">8. Creating a New Opportunity</h3>
+                    <p><strong>Purpose:</strong> capture and store the information of a new deal.</p>
+                    <p>
+                        Click <strong>New</strong> on the Opportunities page to open the creation form. The form offers
+                        two entry modes, and you can switch between them at any time while filling it in.
+                    </p>
+
+                    <h4 id="multi-step-form">Multi-Step Form</h4>
+                    <ol class="steps">
+                        <li>
+                            <strong>Step 1 – Opportunity Information:</strong> Opportunity Owner, Opportunity Name,
+                            Account, Amount, Expected Close Date, Stage.
+                        </li>
+                        <li><strong>Step 2 – Additional Information:</strong> Probability, Lead Source, Campaign.</li>
+                        <li><strong>Step 3 – Description.</strong></li>
+                        <li>
+                            Use <strong>Next</strong> and <strong>Previous</strong> to move between the steps, then
+                            click <strong>Save</strong> to create the opportunity.
+                        </li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/opportunities-n-multi.png"
+                            alt="Multi-step opportunity creation form"
+                            loading="lazy"
+                        >
+                        <figcaption>Multi-step opportunity creation form.</figcaption>
+                    </figure>
+
+                    <h4 id="single-step-form">Single-Step Form</h4>
+                    <ul>
+                        <li>All opportunity fields are presented on one page for quick data entry.</li>
+                        <li>Use the toggle in the form header to switch to single-step mode.</li>
+                        <li>Click <strong>Save</strong> to create the opportunity.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/opportunities-n-single.png"
+                            alt="Single-step opportunity creation form"
+                            loading="lazy"
+                        >
+                        <figcaption>Single-step opportunity creation form.</figcaption>
+                    </figure>
+
+                    <h3 id="opportunity-detail">9. Opportunity Detailed Information</h3>
+                    <p><strong>Purpose:</strong> work with everything recorded against a single opportunity.</p>
+                    <ul>
+                        <li>Open the detail view by clicking an opportunity from any of the views above.</li>
+                        <li>
+                            Related lists cover the <strong>Contacts</strong> attached to the deal along with their
+                            roles, the <strong>opportunity team</strong> and the <strong>opportunity splits</strong>.
+                        </li>
+                        <li>
+                            Further sections hold <strong>Activities</strong>, <strong>Cadences</strong>, <strong>Notes
+                                and Attachments</strong> and <strong>History</strong>.
+                        </li>
+                    </ul>
+                    <p>
+                        Edit Details checks the opportunity the same way a normal save does. <strong
+                        >Probability</strong> stays read-only. Changing <strong>Stage</strong> refreshes Probability,
+                        and <strong>Expected Revenue</strong> follows Amount × Probability. An empty Amount clears
+                        Expected Revenue. The separate Edit action is not shown when Edit Details can edit the record.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/opportunities-n-detail.png"
+                            alt="Opportunity detail view"
+                            loading="lazy"
+                        >
+                        <figcaption>
+                            Opportunity detail view with related lists, activities, cadences, notes and history.
+                        </figcaption>
+                    </figure>
+
+                    <h3 id="closing-an-opportunity">10. Closing an Opportunity</h3>
+                    <p><strong>Purpose:</strong> record the final outcome of a deal.</p>
+                    <ol class="steps">
+                        <li>Open the opportunity's detail view and click the final stage in the progress bar.</li>
+                        <li>
+                            A selection modal appears offering two outcomes: <strong>Closed Won</strong> for a
+                            successful deal and <strong>Closed Lost</strong> for an unsuccessful one.
+                        </li>
+                        <li>Select the outcome to finalise the opportunity.</li>
+                    </ol>
+                    <figure>
+                        <img
+                            src="../assets/shots/opportunities-n-single.png"
+                            alt="Closing an opportunity: Closed Won or Closed Lost selection modal"
+                            loading="lazy"
+                        >
+                        <figcaption>Closing an opportunity as Closed Won or Closed Lost.</figcaption>
+                    </figure>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

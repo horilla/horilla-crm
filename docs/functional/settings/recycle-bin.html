@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Recycle Bin | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Horilla CRM Recycle Bin: restoring deleted records, permanent deletion, emptying the bin, bulk actions and the expiry policy."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Recycle Bin</span>
+                </nav>
+                <p class="eyebrow">Settings</p>
+                <h1>Recycle Bin</h1>
+                <p class="lead">
+                    Hold deleted records temporarily so they can be restored or removed for good, with a configurable
+                    expiry period behind it.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Recycle Bin is temporary storage for deleted records, allowing users either to restore them
+                        or to delete them permanently. It improves data security, guards against accidental loss, and
+                        supports organisational retention policies through a configurable expiry period.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="recycle-bin-overview">1.1 Recycle Bin Overview</h3>
+                    <p><strong>Purpose:</strong> a central place to manage deleted records from every CRM module.</p>
+                    <p>
+                        <strong>Location:</strong> <strong>Settings &rarr; Data Management &rarr; Recycle Bin</strong>.
+                    </p>
+                    <p>Each record is listed with:</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Detail</th>
+                                    <th>Contents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Record Name</td>
+                                    <td>Name of the deleted record.</td>
+                                </tr>
+                                <tr>
+                                    <td>Type</td>
+                                    <td>Module the record came from.</td>
+                                </tr>
+                                <tr>
+                                    <td>Deleted By</td>
+                                    <td>User who deleted it.</td>
+                                </tr>
+                                <tr>
+                                    <td>Deleted At</td>
+                                    <td>Timestamp of the deletion.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <ul>
+                        <li>Search, filtering and sorting are supported.</li>
+                        <li>
+                            Action buttons: <strong>Restore</strong>, which undoes the deletion, and <strong>Permanent
+                                Delete</strong>, which removes the record forever.
+                        </li>
+                        <li>Multi-selection checkboxes enable bulk operations.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/recycle-bin-list.png"
+                            alt="Recycle Bin list showing deleted records with type, deleted by and deleted at"
+                            loading="lazy"
+                        >
+                        <figcaption>Recycle Bin overview.</figcaption>
+                    </figure>
+                    <figure>
+                        <img
+                            src="../assets/shots/recycle-bin-actions.png"
+                            alt="Recycle Bin actions for restoring and deleting records"
+                            loading="lazy"
+                        >
+                        <figcaption>Recycle Bin actions.</figcaption>
+                    </figure>
+
+                    <h3 id="restoring-records">1.2 Restoring Deleted Records</h3>
+                    <p><strong>Purpose:</strong> recover records that were deleted by mistake.</p>
+                    <ul>
+                        <li>Restore a single record with the <strong>Restore</strong> icon in the Actions column.</li>
+                        <li>
+                            Restore several at once by selecting them and clicking the <strong>Restore</strong> button.
+                        </li>
+                        <li>A confirmation prompt appears before the restoration goes ahead.</li>
+                        <li>
+                            Restored records return immediately to their original module with data integrity preserved.
+                        </li>
+                    </ul>
+
+                    <h3 id="permanent-deletion">1.3 Permanent Deletion of Records</h3>
+                    <p><strong>Purpose:</strong> remove unwanted records securely and deliberately.</p>
+                    <ul>
+                        <li>Delete a single record with the <strong>Delete</strong> icon.</li>
+                        <li>Delete several at once with the <strong>Delete</strong> button after selecting them.</li>
+                        <li>A confirmation dialog appears first.</li>
+                    </ul>
+                    <div class="warning">
+                        <span class="label">Warning</span><p>Permanently deleted records cannot be recovered.</p>
+                    </div>
+
+                    <h3 id="empty-recycle-bin">1.4 Empty Recycle Bin</h3>
+                    <p><strong>Purpose:</strong> clear every deleted record in one action.</p>
+                    <ul>
+                        <li>Permanently deletes all items currently held in the Recycle Bin.</li>
+                        <li>A confirmation dialog appears first.</li>
+                        <li>It is intended for administrators clearing large volumes of data.</li>
+                    </ul>
+                    <div class="warning">
+                        <span class="label">Warning</span><p>
+                            Once confirmed, emptying the Recycle Bin cannot be undone.
+                        </p>
+                    </div>
+
+                    <h3 id="bulk-actions">1.5 Bulk Actions and Selection</h3>
+                    <p><strong>Purpose:</strong> manage large volumes of deleted data more efficiently.</p>
+                    <ul>
+                        <li>
+                            Selection options: <strong>Select All</strong>, <strong>Unselect</strong> and a <strong
+                            >Selected (count)</strong> indicator.
+                        </li>
+                        <li>Bulk actions: restore the selected records, or delete them permanently.</li>
+                        <li>Selected records are highlighted before any action is carried out.</li>
+                    </ul>
+
+                    <h3 id="recycle-bin-policy">1.6 Recycle Bin Policy (expiry settings)</h3>
+                    <p><strong>Purpose:</strong> automate data retention and compliance.</p>
+                    <ul>
+                        <li>
+                            <strong>Location:</strong> Settings &rarr; General &rarr; Company Information &rarr; Recycle
+                            Bin Policy.
+                        </li>
+                        <li>Administrators set a <strong>Default Expiry Days</strong> value for deleted records.</li>
+                        <li>When that period ends, the records are removed permanently and automatically.</li>
+                        <li>
+                            <strong>No expiry</strong> keeps deleted records until someone removes them. While it is on,
+                            the days field cannot be saved.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/company-recycle.png"
+                            alt="Recycle Bin policy settings with default expiry days"
+                            loading="lazy"
+                        >
+                        <figcaption>Recycle Bin policy.</figcaption>
+                    </figure>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

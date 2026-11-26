@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Contacts | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to the Horilla CRM Contacts module: list and alternative views, contact creation forms and the contact detail view."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>People</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Contacts</span>
+                </nav>
+                <p class="eyebrow">People</p>
+                <h1>Contacts</h1>
+                <p class="lead">
+                    Keep the individual people behind your customers and prospects in one repository, linked to leads
+                    and opportunities.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Contacts module is the central repository for individual contact records: customers,
+                        prospects and the other people connected to your business. Contacts are integrated with the
+                        Leads and Opportunities modules.
+                    </p>
+                </section>
+
+                <section id="key-features">
+                    <h2>Key Features and Functionalities</h2>
+
+                    <h3 id="contacts-overview">2.1 Contacts Overview</h3>
+                    <p><strong>Purpose:</strong> show every contact in one centralised list view.</p>
+                    <ul>
+                        <li>Go to <strong>People &rarr; Contacts</strong>.</li>
+                        <li>Search, sort and filter the list by criteria such as name, job title or email.</li>
+                        <li>
+                            Use the row checkboxes for bulk management: <strong>Update</strong>, <strong>Export</strong>
+                            and <strong>Delete</strong>.
+                        </li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/contacts-1.png"
+                            alt="Contacts list view in Horilla CRM"
+                            loading="lazy"
+                        >
+                        <figcaption>Contacts list view.</figcaption>
+                    </figure>
+
+                    <h3 id="kanban-view">2.2 Kanban View</h3>
+                    <p><strong>Purpose:</strong> visualise contacts and group them by source.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/contacts-2.png"
+                            alt="Contacts Kanban view grouped by contact source"
+                            loading="lazy"
+                        >
+                        <figcaption>Kanban view grouped by contact source.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Switch to this view with the view toggle on the Contacts page.</li>
+                        <li>
+                            Contacts are grouped automatically by <strong>Contact Source</strong> — for example Web,
+                            Referral, Social Media or Event. The categorisation can be adjusted through the Kanban
+                            settings.
+                        </li>
+                        <li>
+                            Each card shows <strong>Name</strong>, <strong>Job Title</strong>, <strong>Email</strong>
+                            and <strong>Phone</strong>.
+                        </li>
+                        <li>Drag and drop cards to reposition them or to reassign the source.</li>
+                        <li>The view makes it easier to see which contact sources are the most valuable.</li>
+                    </ul>
+
+                    <h3 id="card-view">2.3 Card View</h3>
+                    <p><strong>Purpose:</strong> present contacts in a compact format that is easy to scan.</p>
+                    <figure>
+                        <img src="../assets/shots/contacts-3.png" alt="Contacts card view" loading="lazy">
+                        <figcaption>Card view.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Switch to Card View from the toolbar.</li>
+                        <li>
+                            Each card shows <strong>Name</strong>, <strong>Job Title</strong>, <strong>Email</strong>,
+                            <strong>Phone</strong> and <strong>Birth Date</strong>.
+                        </li>
+                        <li>The same search and filters as List View are supported.</li>
+                    </ul>
+
+                    <h3 id="group-by-view">2.4 Group By View</h3>
+                    <p><strong>Purpose:</strong> organise contacts into groups for analysis.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/contacts-group.png"
+                            alt="Contacts grouped by contact source"
+                            loading="lazy"
+                        >
+                        <figcaption>Group By view.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Switch to Group By View from the toolbar.</li>
+                        <li>
+                            Group contacts by <strong>Contact Source</strong>, <strong>Job Title</strong> or <strong
+                            >Language</strong>.
+                        </li>
+                        <li>Sections are collapsible, which makes comparison easier.</li>
+                        <li>Helps identify trends and concentrations by source.</li>
+                    </ul>
+
+                    <h3 id="chart-view">2.5 Chart View</h3>
+                    <p><strong>Purpose:</strong> provide graphical insights and reporting.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/contacts-chart.png"
+                            alt="Contacts chart grouped by contact source"
+                            loading="lazy"
+                        >
+                        <figcaption>Chart view.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Switch to Chart View from the toolbar.</li>
+                        <li>Charts cover contact source distribution and contact ownership.</li>
+                        <li>Useful for analysing where contacts originate and where sourcing gaps lie.</li>
+                    </ul>
+
+                    <h3 id="split-view">2.6 Split View</h3>
+                    <p><strong>Purpose:</strong> see the list and the details of a contact at the same time.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/contacts-split.png"
+                            alt="Contacts split view with list and details side by side"
+                            loading="lazy"
+                        >
+                        <figcaption>Split view: list on the left, details on the right.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Activate Split View from the toolbar.</li>
+                        <li>
+                            The left panel lists contacts with <strong>Name</strong> and <strong>Email</strong>; the
+                            right panel shows the contact's details.
+                        </li>
+                        <li>Selecting a contact loads its details without navigating away from the page.</li>
+                    </ul>
+
+                    <h3 id="timeline-view">2.7 Timeline View</h3>
+                    <p><strong>Purpose:</strong> display contacts chronologically for activity tracking.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/contacts-timeline.png"
+                            alt="Contacts timeline grouped by contact source"
+                            loading="lazy"
+                        >
+                        <figcaption>Timeline view.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>Switch to Timeline View from the toolbar.</li>
+                        <li>Contacts are organised by creation date and last updated date.</li>
+                        <li>Rows are grouped by <strong>Contact Source</strong>.</li>
+                        <li>
+                            The columns shown are <strong>Name</strong>, <strong>Last Name</strong>, <strong>Job
+                                Title</strong>, <strong>Email</strong> and <strong>Contact Source</strong>.
+                        </li>
+                        <li>Helps identify activity trends and periods of high acquisition.</li>
+                    </ul>
+
+                    <h3 id="create-contact">2.8 Creating a New Contact</h3>
+                    <p><strong>Purpose:</strong> add contacts through structured forms.</p>
+                    <p>
+                        Click <strong>New</strong> on the Contacts page to open the creation wizard. Two modes are
+                        available — Multi-Step Form and Single-Step Form — and you can switch between them at any time.
+                    </p>
+
+                    <h4 id="multi-step-form">Multi-Step Form</h4>
+                    <p><strong>Purpose:</strong> guided, structured entry spread across steps.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/contacts-n-multi.png"
+                            alt="Multi-step contact creation form"
+                            loading="lazy"
+                        >
+                        <figcaption>Multi-step contact creation form.</figcaption>
+                    </figure>
+                    <ol class="steps">
+                        <li>
+                            <strong>Step 1 – Contact Information:</strong> Contact Owner, Job Title, First Name / Last
+                            Name, Phone Numbers, Email, Assistant Details, Parent Contact, Contact Source, Currency.
+                        </li>
+                        <li><strong>Step 2 – Address Information:</strong> City, State, Country, Postal Code (Zip).</li>
+                        <li><strong>Step 3 – Additional Information:</strong> Language, Descriptive Notes.</li>
+                        <li>
+                            Move between the steps with <strong>Next</strong> and <strong>Previous</strong>, then click
+                            <strong>Save</strong> to create the record.
+                        </li>
+                    </ol>
+
+                    <h4 id="single-step-form">Single-Step Form</h4>
+                    <p><strong>Purpose:</strong> quick entry when all the information is already available.</p>
+                    <figure>
+                        <img
+                            src="../assets/shots/contacts-n-single.png"
+                            alt="Single-step contact creation form"
+                            loading="lazy"
+                        >
+                        <figcaption>Single-step contact creation form.</figcaption>
+                    </figure>
+                    <ul>
+                        <li>All fields appear on one page, with no step navigation, which makes entry faster.</li>
+                        <li>
+                            The fields are the same as those in the three steps above: Contact Information, Address
+                            Information and Additional Information.
+                        </li>
+                    </ul>
+                    <ol class="steps">
+                        <li>Use the toggle in the form header to switch to Single-Step mode.</li>
+                        <li>Click <strong>Save</strong> to create the record.</li>
+                    </ol>
+
+                    <h3 id="contact-detail">2.9 Contacts Detailed Information</h3>
+                    <p><strong>Purpose:</strong> give a complete, editable view of a contact.</p>
+                    <ul>
+                        <li>Open a contact by clicking its name in the list.</li>
+                        <li>
+                            The view shows personal details — job title, phone, email, birth date and assistant —
+                            together with the address.
+                        </li>
+                        <li>
+                            Information is organised into the <strong>Details</strong>, <strong>Activity</strong>,
+                            <strong>Related Lists</strong> and <strong>History</strong> tabs.
+                        </li>
+                        <li>Fields can be edited inline using the edit icons.</li>
+                        <li>Gives visibility into interactions and the relationship history.</li>
+                    </ul>
+                    <figure>
+                        <img
+                            src="../assets/shots/contacts-detail.png"
+                            alt="Contact detail view with the Details tab"
+                            loading="lazy"
+                        >
+                        <figcaption>Contact detail view.</figcaption>
+                    </figure>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

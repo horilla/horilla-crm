@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Google Calendar Integration | Horilla CRM</title>
+        <meta
+            name="description"
+            content="Functional guide to Meeting Accounts in My Settings, with a link to Google Calendar Sync."
+        >
+        <link rel="stylesheet" href="../assets/style.css">
+    </head>
+    <body>
+        <div class="page">
+            <header class="doc-header">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <a href="../index.html">Horilla CRM Functional Docs</a>
+                    <span aria-hidden="true">/</span>
+                    <span>My Settings</span>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">Google Calendar</span>
+                </nav>
+                <p class="eyebrow">My Settings</p>
+                <h1>Google Calendar Integration</h1>
+                <p class="lead">
+                    Keep your CRM activities and unavailability blocks in step with your Google Calendar in near real
+                    time.
+                </p>
+            </header>
+
+            <main>
+                <section id="introduction">
+                    <h2>Introduction</h2>
+                    <p>
+                        The Google Calendar integration synchronises CRM Activities and Unavailability blocks with a
+                        user's Google Calendar in near real time. It authenticates through OAuth 2.0 and relies on
+                        Google push notifications, which makes the connection both secure and responsive.
+                    </p>
+                </section>
+
+                <section id="integration">
+                    <h2>Google Calendar Integration</h2>
+                    <p>
+                        Company setup is covered in <a href="../settings/google-calendar-sync.html"
+                        >Google Calendar Sync</a>.
+                    </p>
+                </section>
+
+                <section id="meeting-accounts">
+                    <h2>Meeting Accounts</h2>
+                    <p>
+                        Go to <strong>My Settings &rarr; Meeting</strong>. The page title is <strong>Meeting
+                            Accounts</strong>. The description is <q>Manage the meeting accounts connected to your
+                            profile.</q> This page is shown when an administrator has enabled meeting integration for
+                        the company.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-meeting-accounts.png"
+                            alt="Meeting Accounts with Zoom, Google Meet and Microsoft Teams"
+                            loading="lazy"
+                        >
+                        <figcaption>Meeting Accounts. Google Meet asks for a connected Google Calendar.</figcaption>
+                    </figure>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Account</th>
+                                    <th>On this page</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Zoom</td>
+                                    <td>
+                                        <strong>How to set up Zoom OAuth</strong> opens the setup notes. <strong>Client
+                                            ID</strong> placeholder: your_client_id. <strong>Client Secret</strong>
+                                        placeholder: your_client_secret. <strong>Save Credentials</strong> stores them.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Google Meet</td>
+                                    <td>
+                                        The card reads <q>Google Meet requires Google Calendar to be connected
+                                            first.</q> <strong>Connect Google Calendar</strong> opens My Settings &rarr;
+                                        Google Calendar, covered below.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Microsoft Teams</td>
+                                    <td>
+                                        <strong>How to set up Microsoft Teams OAuth</strong> opens the setup notes.
+                                        <strong>Client ID</strong> placeholder: Application (client) ID. <strong>Client
+                                            Secret</strong> placeholder: Secret Value. <strong>Tenant ID</strong> opens
+                                        as common. <strong>Save Credentials</strong> stores them.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="google-cloud-setup">
+                    <h2>Google Cloud Console Setup</h2>
+                    <p>
+                        On <strong>My Settings &rarr; Google Calendar</strong>, open <strong>How to configure Google
+                            Cloud Console</strong>. The panel lists the one-time setup in Google Cloud and the redirect
+                        URI to register.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-gcal-cloud.png"
+                            alt="How to configure Google Cloud Console, with the Calendar API, Tasks API, OAuth consent screen, and the Horilla redirect URI"
+                            loading="lazy"
+                        >
+                        <figcaption>How to configure Google Cloud Console.</figcaption>
+                    </figure>
+                    <ol class="steps">
+                        <li>
+                            Open <a href="https://console.cloud.google.com">console.cloud.google.com</a> and sign in.
+                        </li>
+                        <li>Create a project from the project dropdown, or select an existing one.</li>
+                        <li>
+                            In <strong>APIs &amp; Services &rarr; Library</strong>, enable <strong>Google Calendar
+                                API</strong> and <strong>Tasks API</strong>.
+                        </li>
+                        <li>
+                            On the <strong>OAuth consent screen</strong>, choose <strong>External</strong>, or <strong
+                            >Internal</strong> for Google Workspace. Enter the app name, support email and developer
+                            contact, then save.
+                        </li>
+                        <li>
+                            In <strong>Credentials</strong>, choose <strong>+ Create Credentials &rarr; OAuth client
+                                ID</strong>. Set the application type to <strong>Web application</strong>. Under <strong
+                            >Authorized redirect URIs</strong>, add the URI shown in Horilla. It ends in <code
+                            >/calendar/google-calendar/callback/</code>.
+                        </li>
+                        <li>
+                            Download the <code>client_secret_*.json</code> file and upload it in the field above the
+                            panel.
+                        </li>
+                    </ol>
+                </section>
+
+                <section id="connect-google-calendar">
+                    <h2>User: Connect Google Calendar</h2>
+                    <p>
+                        Open <strong>My Settings &rarr; Google Calendar</strong>. The page title is <strong>Google
+                            Calendar</strong>. The description is <q>Connect your Google account to sync your calendar
+                            and meetings.</q>
+                    </p>
+
+                    <h3 id="upload-credentials">Upload credentials</h3>
+                    <p>
+                        The <strong>OAuth Credentials</strong> section is shown until a credentials file is saved.
+                        Choose the <strong>Google OAuth JSON file</strong>, check that <strong>Redirect URI</strong>
+                        matches the URI registered in Google Cloud, then click <strong>Save Credentials</strong>.
+                    </p>
+                    <figure>
+                        <img
+                            src="../assets/shots/guide-gcal-upload.png"
+                            alt="OAuth Credentials with Google OAuth JSON file, Redirect URI and Save Credentials"
+                            loading="lazy"
+                        >
+                        <figcaption>Uploading the Google OAuth JSON file.</figcaption>
+                    </figure>
+
+                    <h3 id="authorize">Authorize</h3>
+                    <p>
+                        After the credentials are saved, the page shows <strong>Connect Google Account</strong>.
+                        Completing the Google consent for Calendar, Tasks and email returns to Horilla, and the page
+                        shows the connected email address.
+                    </p>
+
+                    <h3 id="sync-direction">Sync direction</h3>
+                    <p>Sync direction appears after the account is connected.</p>
+                    <ul>
+                        <li>
+                            <strong>One-way: Horilla CRM &rarr; Google</strong> — Horilla CRM activities are pushed to
+                            Google Calendar. Changes made in Google are ignored.
+                        </li>
+                        <li><strong>Two-way: Horilla CRM &harr; Google</strong> — changes sync in both directions.</li>
+                    </ul>
+
+                    <h3 id="what-gets-synced">What gets synced</h3>
+                    <ul>
+                        <li>An Activity of type <strong>Task</strong> becomes a Google Task in the default list.</li>
+                        <li>
+                            An Activity of type <strong>Event</strong> or <strong>Meeting</strong> becomes a Google
+                            Calendar event.
+                        </li>
+                        <li>An <strong>Unavailability</strong> block becomes a Google Calendar event.</li>
+                        <li>
+                            With two-way sync, items created, updated or deleted in Google Calendar are synced back to
+                            Horilla. Events that Horilla itself created, and Google system events such as birthdays, are
+                            excluded.
+                        </li>
+                    </ul>
+
+                    <h3 id="push-notifications">Real-time push notifications</h3>
+                    <p>
+                        With two-way sync, the connection page shows the webhook status. <strong>Register
+                            Webhook</strong> is available when the site is opened over HTTPS. On HTTP or localhost the
+                        status says the app must be opened over HTTPS.
+                    </p>
+                </section>
+
+                <section id="disconnect">
+                    <h2>Disconnect</h2>
+                    <p>
+                        After the account is connected, <strong>Disconnect</strong> is on the same <strong>My Settings
+                            &rarr; Google Calendar</strong> page, beside the webhook button. Disconnecting stops the
+                        push notification channel, clears the OAuth tokens and resets the sync state. The uploaded
+                        credentials file is kept so reconnecting is quicker.
+                    </p>
+                </section>
+
+                <section id="recommendations">
+                    <h2>Additional Recommendations</h2>
+                    <ul>
+                        <li>
+                            Use two-way sync only where it is genuinely needed; one-way sync gives more control and
+                            avoids unintended overwrites.
+                        </li>
+                        <li>
+                            Do not create the same event manually in both systems — let the integration do the syncing.
+                        </li>
+                        <li>
+                            Keep the <code>client_secret_*.json</code> file private, and regenerate the credentials if
+                            it may have been exposed.
+                        </li>
+                        <li>Use HTTPS in production and check the webhook status on the Google Calendar page.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer class="doc-footer">
+                <span>Horilla CRM – Functional Documentation</span>
+            </footer>
+        </div>
+    </body>
+</html>

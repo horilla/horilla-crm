@@ -11,16 +11,9 @@
             id="exportBox-{{ view_id|safe }}"
             class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md modal-content opacity-0 scale-95 transition-all duration-300 min-w-[850px]"
         >
-            <div class="flex justify-between items-center mb-2">
-                <h2 class="text-md font-semibold">{% trans "Select Columns to Export (Optional)" %}</h2>
-                <button
-                    type="button"
-                    onclick="closeExport('{{ view_id|safe }}')"
-                    class="text-gray-500 hover:text-gray-500 text-xl cursor-pointer"
-                >
-                    <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-                </button>
-            </div>
+            {% with export_close="closeExport('"|concat:view_id|concat:"')" %}
+                {% modal_header _("Select Columns to Export (Optional)") on_close=export_close %}
+            {% endwith %}
 
             <form
                 id="exportForm-{{ view_id|safe }}"

@@ -1,27 +1,9 @@
 <div class="p-5">
-    <div class="flex justify-between items-center mb-2">
-        <h2 class="text-md font-semibold">
-            {% if draft %}
-                <svg
-                    class="inline-block w-5 h-5 me-2 text-green-600"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                >
-                    <circle cx="12" cy="12" r="3" />
-                    <path d="M20.188 10.934c.388.472.582.707.582 1.066s-.194.594-.582 1.066C18.768 14.79 15.636 18 12 18s-6.768-3.21-8.188-4.934c-.388-.472-.582-.707-.582-1.066s.194-.594.582-1.066C5.232 9.21 8.364 6 12 6s6.768 3.21 8.188 4.934Z" />
-                </svg>
-                {% trans "Mail Preview" %}
-            {% else %}
-                {% trans "Email Snapshot" %}
-            {% endif %}
-        </h2>
-        <button type="button" onclick="closeContentModal()" class="text-gray-500 hover:text-red-500 text-xl cursor-pointer">
-            <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-        </button>
-    </div>
+    {% if draft %}
+        {% modal_header _("Mail Preview") on_close="closeContentModal()" %}
+    {% else %}
+        {% modal_header _("Email Snapshot") on_close="closeContentModal()" %}
+    {% endif %}
 
     <div class="max-h-[80vh] overflow-y-auto">
         <div class="">

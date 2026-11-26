@@ -1,16 +1,6 @@
 <script src="{% static 'forecast/js/forecast_chart_modal.js' %}"></script>
 <div class="p-5 w-full min-w-0">
-    <div class="flex justify-between items-center mb-2">
-        <h2 class="text-md font-semibold">{% trans "Chart Analysis" %}</h2>
-        <a
-            role="button"
-            tabindex="0"
-            onclick="closeContentModal()"
-            class="text-gray-500 hover:text-red-500 text-xl cursor-pointer"
-        >
-            <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-        </a>
-    </div>
+    {% modal_header _("Chart Analysis") on_close="closeContentModal()" %}
     {% if forecast_chart_data and forecast_chart_data.categories %}
         <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
             {% if forecast_chart_data.is_quantity_based %}

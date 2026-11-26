@@ -1,15 +1,6 @@
 <div class="modal-content">
     <div class="p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold">{% trans "Merge Summary" %}</h2>
-            <button
-                type="button"
-                onclick="closeContentModalSecond()"
-                class="text-gray-500 hover:text-red-500 text-xl cursor-pointer"
-            >
-                <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-            </button>
-        </div>
+        {% modal_header _("Merge Summary") on_close="closeContentModalSecond()" %}
 
         <div class="mb-4 p-4 bg-yellow-50 rounded-md">
             <p class="text-sm text-yellow-800">

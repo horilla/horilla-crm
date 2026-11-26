@@ -1,15 +1,8 @@
 <div id="step3">
     {% if single_import %}
-        <div class="flex justify-between items-center mb-2">
-            <h2 class="text-md font-semibold">Import {{ module }}</h2>
-            <button
-                type="button"
-                onclick="closeModal()"
-                class="text-gray-500 hover:text-red-500 text-xl cursor-pointer"
-            >
-                <img src="{% static 'assets/icons/close.svg' %}" alt="{% trans 'Close' %}">
-            </button>
-        </div>
+        {% trans "Import" as import_word %}
+        {% trans module as module_word %}
+        {% modal_header import_word|concat:" "|concat:module_word %}
     {% endif %}
     {% include "import/_stepper.html" with current_step=3 %}
 

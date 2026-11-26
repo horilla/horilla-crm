@@ -1,0 +1,68 @@
+{% with pk_text=request.resolver_match.kwargs.pk|stringformat:"s" %}
+<form
+    id="notes-edit-{{ object_pk|default:request.resolver_match.kwargs.pk }}"
+    class="rounded-[4px_12px_12px_12px] border border-primary-600 bg-white p-2"
+    hx-post="{{ form_url }}?inline=1"
+    hx-encoding="multipart/form-data"
+    hx-target="#notes-body-{{ request.resolver_match.kwargs.pk }}"
+    hx-swap="innerHTML"
+>
+    {% csrf_token %}
+    {{ form.description }}
+    {% if form.description.errors %}<p class="text-red-500 text-xs mt-1">{{ form.description.errors }}</p>{% endif %}
+    {{ form.file }}
+    {% if form.file.errors %}<p class="text-red-500 text-xs mt-1">{{ form.file.errors }}</p>{% endif %}
+    <div class="mt-2 flex flex-wrap items-center gap-2">
+        <button
+            type="button"
+            class="inline-flex items-center gap-2 rounded-md border border-[#e9e9e9] px-3 py-1.5 text-xs text-gray-600 hover:border-primary-600 hover:text-primary-600"
+            onclick="document.getElementById('{{ form.file.id_for_label }}').click()"
+        >
+            <i class="fa-solid fa-paperclip"></i>{% trans "Attach file" %}
+        </button>
+        <span
+            id="{{ form.file.id_for_label }}_name"
+            class="min-w-0 truncate text-xs text-gray-600"
+        >{% if form.instance.file %}{{ form.instance.file_basename }}{% endif %}</span>
+        {% if form.remove_file %}
+            {{ form.remove_file }}
+            <button
+                type="button"
+                id="{{ form.file.id_for_label }}_remove"
+                class="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-red-600"
+                title="{% trans 'Remove file' %}"
+            >
+                <i class="fa-solid fa-trash text-[10px]"></i>{% trans "Remove" %}
+            </button>
+        {% endif %}
+    </div>
+    <script>
+        (function () {
+            var input = document.getElementById('{{ form.file.id_for_label }}');
+            var label = document.getElementById('{{ form.file.id_for_label }}_name');
+            var flag = document.getElementById('{{ form.remove_file.id_for_label }}');
+            var remove = document.getElementById('{{ form.file.id_for_label }}_remove');
+            if (input && label) input.addEventListener('change', function () {
+                if (input.files.length) {
+                    label.textContent = input.files[0].name;
+                    label.classList.remove('line-through');
+                    if (flag) flag.value = 'False';
+                }
+            });
+            if (flag && remove) remove.addEventListener('click', function () {
+                var on = flag.value !== 'True';
+                flag.value = on ? 'True' : 'False';
+                label.classList.toggle('line-through', on);
+                remove.lastChild.textContent = on ? '{% trans "Undo" %}' : '{% trans "Remove" %}';
+                if (on) input.value = '';
+            });
+        })();
+    </script>
+    <div class="mt-2 flex justify-end gap-2">
+        {% with body_target="#notes-body-"|add:pk_text cancel_url=form_url|add:"?inline=1&view=1" %}
+            {% btn _("Cancel") variant="outline" type="button" sizing="text-xs px-4 py-2" extra_class="bg-white" hx_get=cancel_url hx_target=body_target hx_swap="innerHTML" %}
+        {% endwith %}
+        {% btn _("Save") type="submit" sizing="text-xs px-4 py-2" %}
+    </div>
+</form>
+{% endwith %}

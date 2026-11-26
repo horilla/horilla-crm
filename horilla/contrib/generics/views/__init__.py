@@ -33,11 +33,10 @@ from horilla.contrib.generics.views.chart import (
 from horilla.contrib.generics.views.kanban import HorillaKanbanView
 from horilla.contrib.generics.views.timeline import HorillaTimelineView
 from horilla.contrib.generics.views.attachments import (
-    AttachmentListView,
     HorillaNotesAttachementSectionView,
-    HorillaNotesAttachementDetailView,
     HorillaNotesAttachmentCreateView,
     HorillaNotesAttachmentDeleteView,
+    HorillaNotesAttachmentPinView,
 )
 from horilla.contrib.generics.views.global_search import (
     GlobalSearchSuggestView,
@@ -86,11 +85,10 @@ __all__ = [
     # Timeline Views
     "HorillaTimelineView",
     # Attachment Views
-    "AttachmentListView",
     "HorillaNotesAttachementSectionView",
-    "HorillaNotesAttachementDetailView",
     "HorillaNotesAttachmentCreateView",
     "HorillaNotesAttachmentDeleteView",
+    "HorillaNotesAttachmentPinView",
     # Global Search
     "GlobalSearchView",
     "GlobalSearchSuggestView",

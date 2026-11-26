@@ -1,0 +1,69 @@
+<form
+    id="notes-composer"
+    class="bg-white border border-[#e9e9e9] rounded-[10px] p-3 mb-4 flex gap-3"
+    hx-post="{{ form_url }}?{{ composer_query }}"
+    hx-encoding="multipart/form-data"
+    hx-target="#notes-composer"
+    hx-swap="outerHTML"
+    ondragover="event.preventDefault();this.classList.add('ring-2','ring-primary-600')"
+    ondragleave="this.classList.remove('ring-2','ring-primary-600')"
+    ondrop="notesComposerDrop(event,this)"
+>
+    {% csrf_token %}
+    <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-600">
+        {{ request.user.get_full_name|default:request.user.username|slice:":1"|upper }}
+    </div>
+    <div class="min-w-0 flex-1 space-y-2">
+        <div>
+            {{ form.description }}
+            {% if form.title.errors %}<p class="text-red-500 text-xs mt-1">{{ form.title.errors }}</p>{% endif %}
+            {% if form.description.errors %}<p class="text-red-500 text-xs mt-1">{{ form.description.errors }}</p>{% endif %}
+        </div>
+        {{ form.file }}
+        {% if form.file.errors %}<p class="text-red-500 text-xs mt-1">{{ form.file.errors }}</p>{% endif %}
+        <div id="composerFileName" class="hidden items-center gap-2 rounded-md bg-[#f7f6f6] px-2.5 py-1.5 text-xs text-gray-600 w-fit max-w-full">
+            <i class="fa-solid fa-paperclip text-gray-400"></i>
+            <span class="truncate" data-name></span>
+            <button type="button" class="text-gray-400 hover:text-red-600" onclick="notesComposerClearFile()" aria-label="{% trans 'Remove file' %}"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <button
+                type="button"
+                class="inline-flex items-center gap-2 rounded-md border border-[#e9e9e9] px-3 py-1.5 text-xs text-gray-600 hover:border-primary-600 hover:text-primary-600"
+                onclick="document.getElementById('composerFile').click()"
+            >
+                <i class="fa-solid fa-paperclip"></i>{% trans "Attach file" %}
+            </button>
+            <label class="cursor-pointer">
+                {{ form.is_pinned }}
+                <span class="inline-flex items-center gap-2 rounded-md border border-[#e9e9e9] px-3 py-1.5 text-xs text-gray-600 peer-checked:border-primary-600 peer-checked:bg-primary-100 peer-checked:text-primary-600 peer-focus-visible:ring-2 peer-focus-visible:ring-primary-600">
+                    <i class="fa-solid fa-thumbtack"></i>{% trans "Pin" %}
+                </span>
+            </label>
+            <div class="ms-auto">{% btn _("Log note") type="submit" sizing="text-xs px-4 py-2" %}</div>
+        </div>
+    </div>
+</form>
+<script>
+    (function () {
+        var input = document.getElementById('composerFile');
+        if (!input) return;
+        function show() {
+            var box = document.getElementById('composerFileName');
+            var has = input.files && input.files.length;
+            box.classList.toggle('hidden', !has);
+            box.classList.toggle('flex', !!has);
+            if (has) box.querySelector('[data-name]').textContent = input.files[0].name;
+        }
+        input.addEventListener('change', show);
+        window.notesComposerClearFile = function () { input.value = ''; show(); };
+        window.notesComposerDrop = function (e, form) {
+            e.preventDefault();
+            form.classList.remove('ring-2', 'ring-primary-600');
+            if (e.dataTransfer && e.dataTransfer.files.length) {
+                input.files = e.dataTransfer.files;
+                show();
+            }
+        };
+    })();
+</script>

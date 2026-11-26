@@ -1,20 +1,193 @@
-<div class="h-full min-h-0 min-w-0 w-full flex flex-col">
-    <div class="bg-white flex justify-between items-center mb-2 w-full flex-shrink-0">
-        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 justify-between w-full pb-3">
-            <div class="flex items-center gap-4">
-                <h3 class="text-md font-semibold hidden lg:block">{% trans "Notes and Attachments" %}</h3>
+<div class="h-full min-h-0 min-w-0 w-full flex flex-col" id="notes-attachments-main">
+    <div class="flex flex-wrap items-center justify-between gap-3 pb-3 flex-shrink-0">
+        <div class="flex items-center gap-3">
+            <h3 class="text-md font-semibold hidden lg:block">{% trans "Notes and Attachments" %}</h3>
+            <span class="text-xs font-semibold px-2 py-1 rounded-full bg-primary-100 text-primary-700">{{ attachment_total }}</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <label class="flex items-center gap-2 rounded-lg border border-[#e9e9e9] bg-white px-3 min-w-0">
+                <i class="fa-solid fa-magnifying-glass text-xs text-gray-400"></i>
+                <input
+                    id="notesSearch"
+                    type="search"
+                    placeholder="{% trans 'Search notes and files' %}"
+                    aria-label="{% trans 'Search' %}"
+                    class="w-44 py-1.5 text-xs bg-transparent focus:outline-none"
+                >
+            </label>
+            <div class="flex gap-1 rounded-lg border border-[#e9e9e9] bg-white p-[3px]" id="notesFilter" role="group">
+                <button type="button" data-f="all" aria-pressed="true" class="notes-f rounded-md px-3 py-1 text-xs font-medium">{% trans "All" %}</button>
+                <button type="button" data-f="note" aria-pressed="false" class="notes-f rounded-md px-3 py-1 text-xs font-medium">{% trans "Notes" %}</button>
+                <button type="button" data-f="file" aria-pressed="false" class="notes-f rounded-md px-3 py-1 text-xs font-medium">{% trans "Files" %}</button>
             </div>
-            {% if can_add_attachment %}
-                <div class="flex items-center h-[40px] gap-1">
-                    {% url 'generics:notes_attachment_create' as notes_add_url %}
-                    {% with model_name=obj|model_name %}
-                        {% btn _("Add") sizing="text-xs px-4 py-2" hx_get=notes_add_url|add:"?"|add:request.GET.urlencode|add:"&model_name="|add:model_name hx_target="#modalBox" onclick="openModal()" %}
-                    {% endwith %}
-                </div>
-            {% endif %}
         </div>
     </div>
-    <div class="flex-1 min-h-0 min-w-0 flex flex-col">
-        {% include "list_view.html" %}
+    <style>
+        #notesFilter .notes-f { color: #7a7272; }
+        #notesFilter .notes-f[aria-pressed="true"] { background: var(--color-primary-600, #e54f38); color: #fff; }
+        .notes-entry:has(form[id^="notes-edit-"]) .notes-actions { display: none; }
+        .notes-rich ul { list-style: disc; padding-inline-start: 1.25rem; margin: .25rem 0; }
+        .notes-rich ol { list-style: decimal; padding-inline-start: 1.25rem; margin: .25rem 0; }
+        .notes-rich a { color: var(--color-primary-600, #e54f38); text-decoration: underline; }
+    </style>
+
+    <div class="flex-1 min-h-0 min-w-0 overflow-y-auto custom-scroll pb-2">
+        {% if can_add_attachment %}
+            {% include "forms/notes_attachment_composer.html" %}
+        {% endif %}
+
+        {% for group in attachment_groups %}
+            <section class="notes-group mb-4" data-group>
+                <div class="my-2 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                    <span class="h-px flex-1 bg-[#ebe8e8]"></span>
+                    <span>{% if group.pinned %}<i class="fa-solid fa-thumbtack me-1 text-primary-600"></i>{% endif %}{{ group.label }}</span>
+                    <span class="h-px flex-1 bg-[#ebe8e8]"></span>
+                </div>
+                <div class="flex flex-col gap-4">
+                    {% for card in group.cards %}
+                        {% with att=card.obj %}
+                            <article
+                                class="notes-entry group/entry relative flex gap-3"
+                                data-kind="{{ card.kind }}"
+                                data-text="{{ att.title|lower }} {{ att.created_by.get_full_name|lower }} {{ att.file_basename|lower }} {{ att.description|striptags|lower|truncatechars:400 }}"
+                            >
+                                <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-600">
+                                    {{ att.created_by.get_full_name|default:"?"|slice:":1"|upper }}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="mb-1 flex flex-wrap items-baseline gap-2">
+                                        <span class="text-sm font-semibold">{{ att.created_by.get_full_name }}</span>
+                                        <time class="text-xs text-gray-500">{{ att.created_at|date:"h:i A" }}</time>
+                                        <span class="rounded-full px-2 py-px text-[10px] font-semibold uppercase tracking-wide {% if card.kind == 'note' %}bg-[#fbf7ee] text-[#9a7a2c] border border-[#efe3c6]{% else %}bg-[#f7f6f6] text-gray-500{% endif %}">
+                                            {% if card.kind == 'note' %}{% trans "Note" %}{% else %}{% trans "File" %}{% endif %}
+                                        </span>
+                                        {% if card.foreign %}{{ att.history_source_col }}{% endif %}
+                                    </div>
+                                    <div id="notes-body-{{ att.pk }}">
+                                        {% include "partials/notes_entry_bubble.html" %}
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="notes-actions absolute end-2 top-6 flex items-center gap-0.5 rounded-md border border-[#e9e9e9] bg-white p-0.5 opacity-0 transition-opacity group-hover/entry:opacity-100 focus-within:opacity-100"
+                                    onclick="event.stopPropagation()"
+                                >
+                                    {% if att.file %}
+                                        <a href="{{ att.file.url }}" download title="{% trans 'Download' %}" class="flex h-7 w-7 items-center justify-center rounded text-gray-500 hover:bg-primary-100 hover:text-primary-600"><i class="fa-solid fa-download text-xs"></i></a>
+                                    {% endif %}
+                                    {% if card.can_pin %}
+                                        <button
+                                            type="button"
+                                            title="{% if att.is_pinned %}{% trans 'Unpin' %}{% else %}{% trans 'Pin' %}{% endif %}"
+                                            class="flex h-7 w-7 items-center justify-center rounded hover:bg-primary-100 {% if att.is_pinned %}text-primary-600{% else %}text-gray-500 hover:text-primary-600{% endif %}"
+                                            hx-post="{% url 'generics:notes_attachment_pin' att.pk %}"
+                                            hx-target="#notes-attachments-main"
+                                            hx-swap="beforeend"
+                                        ><i class="fa-solid fa-thumbtack text-xs"></i></button>
+                                    {% endif %}
+                                    {% if card.can_edit %}
+                                        <button
+                                            type="button"
+                                            title="{% trans 'Edit' %}"
+                                            class="flex h-7 w-7 items-center justify-center rounded text-gray-500 hover:bg-primary-100 hover:text-primary-600"
+                                            hx-get="{{ att.get_edit_url }}?inline=1"
+                                            hx-target="#notes-body-{{ att.pk }}"
+                                            hx-swap="innerHTML"
+                                        ><i class="fa-solid fa-pen text-xs"></i></button>
+                                    {% endif %}
+                                    {% if card.can_delete %}
+                                        <button
+                                            type="button"
+                                            title="{% trans 'Delete' %}"
+                                            class="flex h-7 w-7 items-center justify-center rounded text-gray-500 hover:bg-red-50 hover:text-red-600"
+                                            hx-post="{{ att.get_delete_url }}"
+                                            hx-target="#deleteModeBox"
+                                            hx-swap="innerHTML"
+                                            hx-trigger="click"
+                                            hx-vals='{"check_dependencies": "true"}'
+                                            onclick="openDeleteModeModal()"
+                                        ><i class="fa-solid fa-trash text-xs"></i></button>
+                                    {% endif %}
+                                </div>
+                            </article>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            </section>
+        {% empty %}
+            <div class="flex flex-col items-center justify-center py-12 text-center">
+                <img src="{% static 'assets/img/not-found.svg' %}" alt="" class="mb-4 h-36">
+                <p class="text-sm text-gray-500">{% trans "Nothing to show yet. Please add your Attachments." %}</p>
+            </div>
+        {% endfor %}
+        <p
+            id="notesNoMatch"
+            class="hidden py-10 text-center text-sm text-gray-500"
+            data-search="{% trans 'No entries match your search.' %}"
+            data-note="{% trans 'No notes yet.' %}"
+            data-file="{% trans 'No files attached yet.' %}"
+            data-all="{% trans 'Nothing to show yet.' %}"
+        ></p>
     </div>
 </div>
+<script>
+    /* Keep scroll position while an entry swaps between view and in-place editor. */
+    (function () {
+        if (window.__notesScrollGuard) return;
+        window.__notesScrollGuard = true;
+        var saved = null;
+        function scroller(el) { return el.closest('.overflow-y-auto'); }
+        document.body.addEventListener('htmx:beforeRequest', function (e) {
+            var t = e.detail.target;
+            if (!t || !t.id || t.id.indexOf('notes-body-') !== 0) return;
+            var sc = scroller(t);
+            saved = { t: t, sc: sc, top: sc ? sc.scrollTop : 0 };
+            t.style.minHeight = t.offsetHeight + 'px';
+        });
+        document.body.addEventListener('htmx:afterSwap', function (e) {
+            if (!saved || e.detail.target !== saved.t) return;
+            var s = saved;
+            function restore() { if (s.sc) s.sc.scrollTop = s.top; }
+            restore();
+            // The rich-text editor builds itself a moment after the swap.
+            setTimeout(restore, 50);
+            setTimeout(function () { restore(); s.t.style.minHeight = ''; restore(); }, 400);
+            saved = null;
+        });
+    })();
+    (function () {
+        var root = document.getElementById('notes-attachments-main');
+        if (!root) return;
+        var filter = 'all', query = '';
+        function apply() {
+            var shown = 0;
+            root.querySelectorAll('[data-group]').forEach(function (g) {
+                var any = 0;
+                g.querySelectorAll('.notes-entry').forEach(function (e) {
+                    var ok = (filter === 'all' || e.dataset.kind === filter) &&
+                        (!query || e.dataset.text.indexOf(query) > -1);
+                    e.hidden = !ok;
+                    if (ok) any++;
+                });
+                g.hidden = !any;
+                shown += any;
+            });
+            var empty = document.getElementById('notesNoMatch');
+            // No entries at all keeps the illustration; otherwise say why nothing is listed.
+            var show = shown === 0 && !!root.querySelector('.notes-entry');
+            empty.classList.toggle('hidden', !show);
+            if (show) empty.textContent = query ? empty.dataset.search : empty.dataset[filter] || empty.dataset.all;
+        }
+        document.getElementById('notesFilter').addEventListener('click', function (ev) {
+            var b = ev.target.closest('button[data-f]');
+            if (!b) return;
+            filter = b.dataset.f;
+            this.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+            apply();
+        });
+        document.getElementById('notesSearch').addEventListener('input', function () {
+            query = this.value.trim().toLowerCase();
+            apply();
+        });
+    })();
+</script>

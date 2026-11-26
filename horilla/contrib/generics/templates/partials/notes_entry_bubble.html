@@ -1,0 +1,27 @@
+<div
+    class="min-w-0 rounded-[4px_12px_12px_12px] border p-3 break-words [overflow-wrap:anywhere] {% if att.is_pinned %}border-primary-600{% elif not att.file %}border-[#efe3c6] bg-[#fbf7ee]{% else %}border-[#e9e9e9] bg-white{% endif %}"
+>
+    {% if att.show_title %}<h4 class="text-sm font-semibold">{{ att.title }}</h4>{% endif %}
+    {% if att.description %}
+        <div class="notes-rich mt-1 text-sm text-gray-700">{{ att.description|sanitize_html }}</div>
+    {% endif %}
+    {% if att.file %}
+        {% if att.is_image %}
+            <a href="{{ att.file.url }}" target="_blank" rel="noopener" class="inline-block max-w-full">
+            <img
+                src="{{ att.file.url }}"
+                alt="{{ att.file_basename }}"
+                loading="lazy"
+                class="mt-2 max-h-52 max-w-full rounded-lg border border-[#e9e9e9] object-contain bg-[#f7f6f6]"
+            >
+            </a>
+            <p class="mt-1 text-xs text-gray-500">{{ att.file_basename }} · {{ att.file.size|filesizeformat }}</p>
+        {% else %}
+            <div class="mt-2 inline-flex max-w-full items-center gap-2 rounded-lg border border-[#e9e9e9] bg-[#f7f6f6] px-2.5 py-1.5 text-xs text-gray-700">
+                <i class="fa-regular fa-file text-gray-400"></i>
+                <span class="truncate">{{ att.file_basename }}</span>
+                <span class="flex-shrink-0 text-gray-400">{{ att.file.size|filesizeformat }}</span>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>

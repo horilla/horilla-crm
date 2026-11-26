@@ -28,6 +28,11 @@ TOOLBAR_PRESETS = {
         ["view", ["fullscreen", "codeview"]],
         ["help", ["help"]],
     ],
+    "chatter": [
+        ["font", ["bold", "italic", "underline"]],
+        ["para", ["ul", "ol"]],
+        ["insert", ["link"]],
+    ],
     "basic": [
         ["font", ["bold", "italic", "underline", "forecolor"]],
     ],
@@ -36,7 +41,7 @@ TOOLBAR_PRESETS = {
 
 # Total editor height per preset. The widget's height includes the toolbar, so
 # these leave roughly 300px of writing area under the taller "full" toolbar.
-PRESET_HEIGHTS = {"full": "400px", "basic": "350px"}
+PRESET_HEIGHTS = {"full": "400px", "basic": "350px", "chatter": "100px"}
 
 
 class HorillaSummernoteWidget(SummernoteInplaceWidget):

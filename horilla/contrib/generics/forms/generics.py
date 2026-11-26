@@ -758,11 +758,12 @@ class HorillaAttachmentForm(forms.ModelForm):
         """Meta options for HorillaAttachmentForm."""
 
         model = HorillaAttachment
-        fields = ["title", "file", "description"]
+        fields = ["title", "file", "description", "is_pinned"]
         labels = {
             "file": "",  # hide label
         }
         widgets = {
+            "is_pinned": forms.CheckboxInput(attrs={"class": "peer sr-only"}),
             "title": forms.TextInput(
                 attrs={
                     "class": "text-color-600 p-2 placeholder:text-xs pr-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600",
@@ -804,3 +805,61 @@ class HorillaAttachmentForm(forms.ModelForm):
                 }
             ),
         }
+
+    def __init__(self, *args, inline=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.inline = inline
+        if inline:
+            # Compact composer on the detail page: title is optional.
+            self.fields["title"].required = False
+            if self.instance.pk:
+                # Editing in place: note text and file can change; title and
+                # pin state are left as they are.
+                for name in ("is_pinned", "title"):
+                    self.fields.pop(name, None)
+            self.fields["description"].widget = HorillaSummernoteWidget(
+                preset="chatter",
+                settings={
+                    "placeholder": str(_("Log a note…")),
+                    "disableResizeEditor": True,
+                },
+            )
+            if self.instance.pk and self.instance.file:
+                self.fields["remove_file"] = forms.BooleanField(
+                    required=False, widget=forms.HiddenInput(attrs={"value": "False"})
+                )
+            file_attrs = {"class": "hidden"}
+            if not self.instance.pk:
+                file_attrs["id"] = "composerFile"
+            self.fields["file"].widget = forms.FileInput(attrs=file_attrs)
+
+    def clean(self):
+        """In the inline composer, build the title from the note or file when left blank."""
+        cleaned = super().clean()
+        new_upload = self.files.get(self.add_prefix("file"))
+        removing = bool(self.inline and cleaned.get("remove_file") and not new_upload)
+        if removing:
+            # False tells the model form to clear the stored file.
+            cleaned["file"] = False
+        if self.inline and not (cleaned.get("title") or "").strip():
+            if self.instance.pk and self.instance.show_title:
+                if removing and not HorillaAttachment.derive_title(
+                    cleaned.get("description"), ""
+                ):
+                    self.add_error("description", _("Write a note or keep the file."))
+                # A typed title is kept when only the note text is edited.
+                cleaned["title"] = self.instance.title
+                return cleaned
+            upload = cleaned.get("file")
+            filename = getattr(upload, "name", "") or (
+                self.instance.file.name if self.instance.file and not removing else ""
+            )
+            title = HorillaAttachment.derive_title(cleaned.get("description"), filename)
+            if title:
+                cleaned["title"] = title
+                self.errors.pop("title", None)
+            else:
+                self.add_error(
+                    "description", _("Write a note or attach a file to log it.")
+                )
+        return cleaned

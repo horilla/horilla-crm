@@ -782,6 +782,10 @@ def create_type_display(entry):
         model = ct.model_class() if ct else None
     except Exception:
         model = None
+    custom_label = getattr(model, "history_create_label", None)
+    if callable(custom_label):
+        # The model words its own creation entry (e.g. "Note added").
+        return str(custom_label(getattr(entry, "changes_dict", None) or {}))
     field_name = _get_history_create_type_field(model)
     if not field_name:
         return ""

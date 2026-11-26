@@ -171,9 +171,9 @@ urlpatterns = [
         name="notes_attachment_edit",
     ),
     path(
-        "notes-attachment-views/<int:pk>/",
-        views.HorillaNotesAttachementDetailView.as_view(),
-        name="notes_attachment_view",
+        "notes-attachment-pin/<int:pk>/",
+        views.HorillaNotesAttachmentPinView.as_view(),
+        name="notes_attachment_pin",
     ),
     path(
         "notes-attachment-delete/<int:pk>/",

@@ -228,6 +228,8 @@ These optimizations target the calendar shell and its AJAX event request. Use
 
 The page script lives in `calendar/static/calendar/js/calendar_view.js`.
 
+`calendar.html` lays the page out as `lg:grid-cols-[minmax(0,1fr)_225px]`. The grid column uses the remaining width (`min-w-0`). The side panel is a fixed 225px.
+
 ## All-day row and assignees
 
 `_multi_day_span()` (`views/helpers.py`) treats a range that crosses midnight

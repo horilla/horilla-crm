@@ -65,7 +65,7 @@ Each key becomes a valid `?layout=<key>` value and a valid `default_layout` valu
 
 Returns the HTMX URL loaded into the main content area, resolved in this order:
 1. `?layout=<key>` if `<key>` is a valid built-in or `custom_layouts` key with a non-empty URL.
-2. `default_layout`, if set and it maps to a non-empty URL — this is what makes the *default* view (no `?layout=` in the URL) match what the navbar's toggle icon shows.
+2. `default_layout`, if set and it maps to a non-empty URL — this is what makes the *default* view (no `?layout=` in the URL) match what the navbar's toggle icon shows. Leads, Opportunities, and Campaigns set `default_layout = "kanban"` on both the page view and the navbar, so those pages open on Kanban.
 3. Legacy fallback: `kanban_url` if `list_url` is empty, otherwise `list_url`.
 
 ### Settings list pages

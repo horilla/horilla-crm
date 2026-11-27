@@ -2,7 +2,7 @@
 
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.13"
+__version__ = "1.11.14"
 __module_name__ = _("Booking")
 __release_date__ = ""
 __description__ = _(
@@ -11,6 +11,8 @@ __description__ = _(
     "confirmation, reminder, reschedule, and cancellation emails."
 )
 __icon__ = "/assets/icons/calendar.svg"
+
+__1_11_14__ = _("Demo data includes booking pages and bookings.")
 
 __1_11_13__ = _(
     "Booking pages use the field-aware list search. Booking is included in "

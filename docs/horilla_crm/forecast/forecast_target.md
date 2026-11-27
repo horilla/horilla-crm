@@ -2,7 +2,7 @@
 
 ## What this module does
 
-Manages **ForecastTarget** records — per-user, per-period targets against a forecast type (e.g. revenue, deal count). Supports bulk creation via condition rows, role-based user filtering, and dynamic conditional fields driven by "same" checkboxes.
+Manages **ForecastTarget** records — per-user, per-period targets against a forecast type (e.g. revenue, deal count). The form asks **Set Target For** once: **User**, **Role**, or **Role Hierarchy**. A role target is one total split among the people in that role. The older "same" checkboxes and the role switch stay in the form as hidden state; the page does not show them.
 
 ---
 
@@ -14,7 +14,7 @@ Manages **ForecastTarget** records — per-user, per-period targets against a fo
 | `ForecastTargetFiltersView` | `TemplateView` | HTMX partial — returns dynamic filter dropdowns for forecast type and period |
 | `ForecastTargetNavbar` | `HorillaNavView` | Navigation bar with "Set Target" action |
 | `ForecastTargetListView` | `HorillaListView` | Filtered and sortable target list |
-| `ForecastTargetFormView` | `HorillaSingleFormView` | Create/update target; supports condition rows with "same" column collapsing |
+| `ForecastTargetFormView` | `HorillaSingleFormView` | Create/update. **Set Target For** chooses user rows or a role split. Overrides `form_fields` in `forecast_target_form.html` |
 | `ToggleRoleBasedView` | `View` | HTMX partial — filters user dropdown by selected role |
 | `ToggleConditionFieldsView` | `View` | HTMX partial — shows or hides conditional fields based on checkbox state |
 | `UpdateTargetHelpTextView` | `View` | HTMX partial — returns updated help text for target field based on `forecast_type` |
@@ -29,9 +29,23 @@ Manages **ForecastTarget** records — per-user, per-period targets against a fo
 
 `ForecastTargetView.get()` validates `forecast_type` and `period` query params against allowed choices. Invalid values result in a redirect to the default forecast target URL rather than a 400 or an empty page.
 
+### Set Target For
+
+The visible control is one `<select name="set_for">`:
+
+| Value | What it saves |
+|-------|----------------|
+| `user` | One row per user. **+ Add More** adds a row. |
+| `role` | One total, divided across the users in the selected role (`is_whole_role`). |
+| `below` | The same total, divided across that role and the roles under it (`include_below`). |
+
+`forecastSetFor()` writes the hidden checkboxes (`is_role_based`, `is_whole_role`, `include_below`, and the "same" flags) and lets the form redraw. A manager can assign targets only to people in roles below their own, and can split only a role below them. Their own target comes from the manager above.
+
+`save_whole_role()` writes one `ForecastTarget` per person in the split. Deleting one of those rows calls `ForecastTarget.get_delete_notice()`, and the generic delete modal shows how the role total will add up afterwards.
+
 ### "Same" checkbox column collapsing
 
-`ForecastTargetFormView` supports three checkboxes: `is_period_same`, `is_target_same`, `is_forecast_type_same`. When checked, the corresponding condition column is hidden and its value is copied from the first row to all rows before save. `process_row_data_before_create()` applies this logic during multi-instance creation.
+The three checkboxes `is_period_same`, `is_target_same`, and `is_forecast_type_same` are still read on save. For a user target they are set together from **Set Target For** (period and type shared, amount per row). When one is on, that column is hidden and `process_row_data_before_create()` copies row 0 onto the other rows.
 
 `ForecastTargetForm` (`Meta.exclude`) omits **`currency`** and **`current_amount`** — those values are derived from the forecast type / runtime totals rather than edited on the target form.
 
@@ -74,11 +88,13 @@ The forecast dashboard shell (`forecast_view.html`) uses the same `activate_comp
 
 ## Bulk creation flow
 
-1. User opens **Set Target** modal → `ForecastTargetFormView` renders with one condition row.
-2. User adds rows → HTMX `add_condition_row` dispatches to `HorillaSingleFormView.dispatch`.
-3. User toggles "Same period" → `ToggleConditionFieldsView` hides the period column across all rows.
-4. User selects a role → `ToggleRoleBasedView` narrows the user dropdown.
-5. User submits → `save_multiple_main_instances` iterates rows; `process_row_data_before_create` injects shared values; `check_duplicate_instance` rejects duplicates.
+1. User opens **Set Target**. `ForecastTargetFormView` renders **Set Target For** and, for a user target, one condition row.
+2. **User** — add rows with **+ Add More**. Period and forecast type are shared; each row has its own user and amount.
+3. **Role** or **Role Hierarchy** — `build_whole_role_context()` lists the people and the share of the total. **+ Add More** stays hidden. Submit calls `save_whole_role()`.
+4. A role change still goes through `ToggleRoleBasedView`, which narrows the user list.
+5. `check_duplicate_instance()` rejects a second target with the same `(assigned_to, period, forecast_type)`.
+
+On the Forecast page, an expanded period shows a row per role (`build_period_role_rows` in `views/core/helpers.py`, template `forecast_role_row.html`). A role row opens the roles under it and the people in that role. A manager sees their own role and the roles below it, not peers or the roles above. A single role in scope gets no role rows.
 
 ---
 

@@ -213,7 +213,7 @@ actions on every row.
 
 CRM uses both hooks for converted leads:
 
-- `Lead.is_record_locked` is true when `is_convert` is set, so a converted lead stays readable and cannot be edited.
+- `Lead.is_record_locked` is true when `is_convert` is set, so a converted lead stays readable and cannot be edited. Saving that flag during conversion sets `skip_approval_sync` and `skip_approval_edit_guard`, so the conversion does not start an approval on the lead. The success window is `lead_convert_success_modal.html` (**Your lead has been converted**), with the new account, contact, and opportunity.
 - Contact, Account and Opportunity implement `get_history_sources()` so the converted lead's activities, notes and emails show on the record it became. Account walks the contacts and opportunities created from the lead. Those reverse relations are listed in `FULL_HISTORY_EXCLUDE` so the History tab does not also merge them as ordinary related rows.
 
 A detail modal whose record no longer exists closes instead of rendering an empty page.

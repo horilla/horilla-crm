@@ -3,13 +3,15 @@
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.17"
+__version__ = "1.11.18"
 __module_name__ = "Reports"
 __release_date__ = ""
 __description__ = _(
     "Module for creating and customizing reports across all system modules."
 )
 __icon__ = "reports/assets/icons/icon5.svg"
+
+__1_11_18__ = _("A product tour walks through reports.")
 
 __1_11_17__ = _(
     "The reports sidebar is shared, and the chart menu uses hx_anchor. "

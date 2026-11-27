@@ -177,6 +177,7 @@ Override `get_post_delete_response()` in subclasses for custom HTMX behavior (se
 Referenced by this view:
 
 - `delete_mode_modal.html`
+- `_delete_notice.html` — included by the mode modal and the dependency modal. Renders `object.get_delete_notice()` when the model defines it and the return value is not empty. `ForecastTarget.get_delete_notice()` is the shipped example: it says what a role total will add up to after that target is deleted.
 - `delete_dependency_modal.html`
 - `delete_dependency_partial.html`
 - `bulk_reassign_form.html`

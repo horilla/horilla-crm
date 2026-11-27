@@ -246,9 +246,11 @@ Do **not** swallow the original exception unless the handler fully recovers. Det
 `horilla.utils.functional.cached_property` (re-export of Django’s helper) caches a **computed value** on the instance. The attribute name is not the value itself.
 
 ```python
+from horilla.contrib.utils.middlewares import get_active_company
+
 @cached_property
 def get_company_for_user(self):
-    return self.request.active_company or Company.objects.filter(...).first()
+    return get_active_company(self.request)
 
 def company_for_user(self):
     """Return the resolved company (or None)."""

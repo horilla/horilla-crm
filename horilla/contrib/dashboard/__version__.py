@@ -8,11 +8,16 @@ application registry and UI.
 # First party imports (Horilla)
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.14"
+__version__ = "1.11.15"
 __module_name__ = "Dashboards"
 __release_date__ = ""
 __description__ = _("Module for building and customizing interactive dashboards.")
 __icon__ = "dashboard/assets/icons/icon6.svg"
+
+__1_11_15__ = _(
+    "The home page is a short set of KPIs, charts and tables. Created and "
+    "updated fields are offered when a component picks its fields."
+)
 
 __1_11_14__ = _(
     "Named date-range presets on the home and dashboard date filter. "

@@ -2,13 +2,33 @@
 
 from django.utils.translation import gettext_lazy as _
 
-__version__ = "1.18.1"
+__version__ = "1.18.2"
 __module_name__ = _("Core System")
 __release_date__ = ""
 __description__ = _(
     "Core system providing authentication, configuration, utilities, and platform-level services."
 )
 __icon__ = "assets/icons/logo.png"
+
+__1_18_2__ = _(
+    "Home shows a short set of KPIs, charts and tables, each answering one "
+    "question. Product tours cover the main CRM pages, plus Settings and My "
+    "Settings. A step is skipped when its target is missing. Forecast can "
+    "set one target for a role and split it, and a manager sees their team. "
+    "Notes and attachments are a chat: write in the box, edit in place, and "
+    "pin. A form with errors lists the fields to check, and a long form "
+    "scrolls. My Settings adds Shift Hours. Holidays are checked on each "
+    "field, a date cannot be used twice, and the repeat choices are "
+    "explained. Shift breaks and half-filled days are checked on the field. "
+    "Fiscal year lists hide the blank choice. Alias and legacy time zones "
+    "are hidden. Import mapping uses plainer wording in a wider window. "
+    "Leads, Opportunities and Campaigns open on Kanban. A lead needs a "
+    "title; the other lead fields can be left blank. Assignment skips people "
+    "who are unavailable. Converting a lead does not start an approval. The "
+    "active company is read in one place. Demo data is linked and dated from "
+    "the day it is loaded, and loading it does not fire workflow, assignment "
+    "or cadences."
+)
 
 __1_18_1__ = _(
     "Product Tour: guided walkthroughs of the CRM screens, including Home "

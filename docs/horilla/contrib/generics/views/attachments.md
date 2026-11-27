@@ -1,21 +1,21 @@
 # Horilla Attachments Views (`horilla_generics/views/attachments.py`)
 
-## 🎯 Purpose
+## Purpose
 
-`attachments.py` provides HTMX-friendly views for the **Notes & Attachments** feature:
+`attachments.py` renders the **Notes and Attachments** tab as a chat-style stream:
 
-- list attachments linked to any model object
-- open attachment details in modal
-- create/edit attachment records with file upload
-- delete attachment records
+- notes and files for a record, grouped as Pinned, then Today, Yesterday, and older days
+- an inline composer on the tab (no create modal)
+- in-place edit of one entry
+- pin and unpin
+- delete
 
-It integrates with:
-- `HorillaAttachment` and `HorillaContentType` (from `horilla_core.models`)
-- generic list/detail/delete view infrastructure in `horilla_generics`
-- template set:
-  - `notes_attachments.html`
-  - `notes_attachments_detail.html`
-  - `forms/notes_attachment_form.html`
+It uses `HorillaAttachment` and `HorillaContentType` (`horilla.contrib.core.models`). Templates:
+
+- `notes_attachments.html` — the stream
+- `forms/notes_attachment_composer.html` — the box at the top
+- `forms/notes_attachment_inline_edit.html` — the editor that replaces one entry
+- `partials/notes_entry_bubble.html` — one saved entry
 
 ### XSS sanitization on save
 
@@ -24,290 +24,123 @@ It integrates with:
 - **`title`** → `sanitize_plain_text()` (no HTML)
 - **`description`** → `sanitize_html()` (bleach allowlist)
 
-Helpers live in `horilla.contrib.utils.methods` — see [../../utils/utils.md](../../utils/utils.md). The form may also escape for the editor; model `save()` is the durable XSS control for stored attachments.
+Helpers live in `horilla.contrib.utils.methods` — see [../../utils/utils.md](../../utils/utils.md). Model `save()` is the durable XSS control for stored attachments.
 
 ---
 
-## 📦 Module components
+## Module components
 
 Classes in this file:
 
-1. `AttachmentListView(HorillaListView)`
-2. `HorillaNotesAttachementSectionView(DetailView)`
-3. `HorillaNotesAttachementDetailView(HorillaModalDetailView)`
-4. `HorillaNotesAttachmentCreateView(FormView)`
-5. `HorillaNotesAttachmentDeleteView(HorillaSingleDeleteView)`
+1. `HorillaNotesAttachementSectionView(DetailView)`
+2. `HorillaNotesAttachmentCreateView(FormView)`
+3. `HorillaNotesAttachmentPinView(View)`
+4. `HorillaNotesAttachmentDeleteView(HorillaSingleDeleteView)`
 
-> Note: class names contain `Attachement` spelling (as in the source code).
+The section view spells `Attachement` the same way the class does. URL names use the `generics` namespace (`generics:notes_attachment_create`, `notes_attachment_edit`, `notes_attachment_pin`, `notes_attachment_delete`).
 
----
-
-## 🔁 `AttachmentListView`
-
-### Purpose
-
-Reusable list configuration for displaying `HorillaAttachment` rows.
-
-### Key settings
-
-```python
-model = HorillaAttachment
-columns = ["title", "created_by", "created_at"]
-bulk_select_option = False
-list_column_visibility = False
-table_height_as_class = "h-[calc(_100vh_-_520px_)]"
-table_width = False
-```
-
-This class is not directly exposed as URL endpoint; it is instantiated by `HorillaNotesAttachementSectionView.get(...)` to render attachments inside the tab section.
+There is no list view inside the tab and no detail modal. Search and the All / Notes / Files filter run in the page.
 
 ---
 
-## 🔍 `HorillaNotesAttachementSectionView`
+## `HorillaNotesAttachementSectionView`
 
-### Decorators / access
+### Access
 
 - `@htmx_required`
-- `@permission_required_or_denied(["horilla_core.view_horillaattachment", "horilla_core.view_own_horillaattachment"])`
-
-### Purpose
-
-Renders the notes/attachments section for a specific object (`pk`) in detail tabs.
+- the record must pass `check_record_access`; otherwise `403.html`
 
 ### Template
 
 - `template_name = "notes_attachments.html"`
 - `context_object_name = "obj"`
 
-### Important methods
+### `get(...)`
 
-#### `get_actions()`
+1. Load the parent with `get_object()`.
+2. Query `HorillaAttachment` with `history_q(self.object, request.user)` (this record plus rows from `get_history_sources()`).
+3. Remember the parent for history labels (`remember_history_parent`).
+4. Build one card per row, newest first. A row is a **file** when `file` is set, otherwise a **note**. A row from another record (`is_foreign_row`) or a locked parent (`is_record_locked`) cannot be edited, deleted, or pinned.
+5. Edit, delete, and pin also need change or delete access on the parent. A user with only change-own must own the entry (`created_by` in `get_allowed_user_ids`).
+6. Pinned rows go in a **Pinned** group. The rest are grouped by day: Today, Yesterday, or a formatted date.
+7. `can_add_attachment` is true when the user can change the parent. The composer form is then `HorillaAttachmentForm(inline=True)`.
 
-Returns row actions for attachment list:
-- Edit
-- Delete
+### Context
 
-There is no View action: the list sets `col_attrs` on the `title` column so clicking the title opens the detail modal (`#contentModalBox`).
-
-Edit/Delete are also built when the parent record is locked (`is_record_locked`, see `generics/history.py`), but each row is passed through `guard_foreign_row_action`, which disables them on rows that belong to another record or on a locked parent.
-
-These include HTMX attrs such as `hx-get`, `hx-post`, modal targets, and permission metadata consumed by generic list templates.
-
-#### `check_attachment_add_permission()`
-
-Evaluates whether current user may add attachments for the related object:
-
-- requires `horilla_core.add_horillaattachment`
-- and either:
-  - owner-style permission `change_own_<model>` when user is in one of `OWNER_FIELDS`
-  - or standard `change_<model>`
-
-Handles owner checks for:
-- FK owner fields
-- ManyToMany owner fields
-
-#### `get(...)`
-
-Flow:
-1. resolve object (`self.get_object()`)
-2. resolve content type via `HorillaContentType.objects.get_for_model(self.model)`
-3. query attachments with `history_q(self.object, request.user)` (the record's own rows plus rows of its `get_history_sources()` records); a `Related To` column (`history_source_col`) is added only when a non-own row is present
-4. store attachment ids in session: `ordered_ids_horillaattachment`
-5. instantiate `AttachmentListView`, inject request/queryset/actions/view_id
-6. merge list context + detail context
-7. set `can_add_attachment`
-8. render `notes_attachments.html`
-
-### Key context variables for `notes_attachments.html`
-
-| Variable | Example |
+| Variable | Meaning |
 |---|---|
-| `obj` | related object instance (ex: Lead object) |
-| `can_add_attachment` | `True` |
-| `view_id` | `"attachments_lead_42"` |
-| list-view context (`queryset`, `actions`, etc.) | provided by `AttachmentListView.get_context_data()` |
+| `obj` | the parent record |
+| `attachment_groups` | `[{label, cards, pinned?}, ...]` |
+| `attachment_total` | count shown in the badge |
+| `can_add_attachment` | whether the composer is rendered |
+| `form` / `form_url` / `composer_query` | the inline composer, when adding is allowed |
+
+Each card has `obj`, `foreign`, `can_edit`, `can_delete`, `can_pin`, and `kind` (`note` or `file`).
 
 ---
 
-## 🧾 `HorillaNotesAttachementDetailView`
+## `HorillaNotesAttachmentCreateView`
 
-### Decorators / access
-
-- `@htmx_required`
-- `@permission_required_or_denied(["horilla_core.view_horillaattachment", "horilla_core.view_own_horillaattachment"])`
-
-### Base / template
-
-- inherits `HorillaModalDetailView`
-- `model = HorillaAttachment`
-- `template_name = "notes_attachments_detail.html"`
-- `title = "Notes and Attachment"`
-
-### `get(...)` behavior
-
-- tries `self.get_object()`
-- if missing:
-  - pushes error message
-  - returns script response to reload and close content modal
-- else renders normal modal detail context
-
-### Important template variables (`notes_attachments_detail.html`)
-
-| Variable | Example |
-|---|---|
-| `object` | `HorillaAttachment` instance |
-| `instance_ids` | list for prev/next navigation |
-| `previous_url` / `next_url` / `ids_key` | used for modal navigation buttons (arrows on the left, action buttons on the right; Delete is shown before Edit) |
-| `request.GET.urlencode` | preserved params for navigation |- unsupported dimension -> returns error
-
-
----
-
-## 📝 `HorillaNotesAttachmentCreateView`
-
-### Decorator / access
+### Access
 
 - `@htmx_required`
-- inherits `LoginRequiredMixin`, `FormView`
+- `LoginRequiredMixin`, `FormView`
+- add or change access on the parent record (`check_related_object_permission`)
 
-### Base settings
+### Templates
 
-- `template_name = "forms/notes_attachment_form.html"`
-- `form_class = HorillaAttachmentForm`
-- `model = HorillaAttachment`
+- create: `forms/notes_attachment_composer.html`
+- edit (`pk` in the URL): `forms/notes_attachment_inline_edit.html`
+- `form_class = HorillaAttachmentForm`, `inline=True`
+- an edit form uses `auto_id = edit_<pk>_%s` so its fields do not clash with the composer
 
-### Create vs edit mode
+### Create vs edit
 
-- create: no `pk` in URL kwargs
-- edit: `pk` exists
+Create reads `model_name` and `object_id` from the query string. Edit loads `HorillaAttachment` by `pk`. A missing row returns a script that reloads messages and closes the modal.
 
-#### `get_context_data(...)`
+`GET` with `pk` and `view` cancels an in-place edit and renders `partials/notes_entry_bubble.html` unchanged.
 
-Sets `form_url`:
-- create: `reverse_lazy("horilla_generics:notes_attachment_create")`
-- edit: `reverse_lazy("horilla_generics:notes_attachment_edit", kwargs={"pk": pk})`
+### `form_valid`
 
-#### `get_object()`
+On create, sets `created_by`, `object_id`, `content_type`, and `company = get_active_company(request)`, then returns a script that clicks `#tab-notes-attachments` so the stream reloads.
 
-Returns attachment object for edit mode, otherwise `None`.
+On edit, saves and returns only `partials/notes_entry_bubble.html` for that entry, so the stream keeps its scroll position.
 
-#### `get_form(...)`
-
-Binds `instance=obj` for edit mode.
-
-### Permission logic (`dispatch`)
-
-#### Edit mode (`pk` given)
-
-- load attachment + related object
-- call `check_related_object_permission(related_object, "change")`
-- deny => error message + JS response to close modal/reload UI
-
-#### Create mode
-
-Reads from query params:
-- `model_name`
-- `object_id`
-
-Then:
-- resolves `HorillaContentType` by model name
-- loads related object
-- checks `check_related_object_permission(..., "add")`
-- deny/invalid => error message + JS response
-
-### `form_valid(...)`
-
-On create:
-- resolves content type from `model_name` GET param
-- sets:
-  - `created_by = request.user`
-  - `object_id = request.GET["object_id"]`
-  - `content_type`
-  - `company = request.active_company`
-- success message: `"<title> created successfully"`
-
-On edit:
-- updates existing object
-- success message: `"<title> updated successfully"`
-
-Returns JS response:
-- triggers notes tab reload and closes modal
-
-### Required create query params (example)
-
-When opening create modal, frontend should include:
+Query string for the composer:
 
 ```text
-?model_name=lead&object_id=42
+?model_name=lead&object_id=42&inline=1
 ```
 
-Template (`notes_attachments.html`) does:
-
-```html
-hx-get="{% url 'horilla_generics:notes_attachment_create' %}?{{ request.GET.urlencode }}&model_name={{obj|model_name}}"
-```
+`model_name` is resolved with `HorillaContentType.objects.get(model=model_name.lower())`.
 
 ---
 
-## 🗑️ `HorillaNotesAttachmentDeleteView`
+## `HorillaNotesAttachmentPinView`
 
-### Decorators / access
+`POST` `generics:notes_attachment_pin` flips `is_pinned` and reloads the notes tab.
 
-- `@htmx_required`
-- `@permission_required_or_denied("horilla_core.delete_horillaattachment", modal=True)`
-
-### Base / model
-
-- inherits `HorillaSingleDeleteView`
-- `model = HorillaAttachment`
-
-### Post-delete response
-
-`get_post_delete_response()` returns script that:
-- triggers `#reloadButton`
-- closes content modal
+The user must be able to change the parent, and the parent must not be locked. Change-own users can pin only an entry they created (or one with no `created_by`). Anyone else gets an error script and no change.
 
 ---
 
-## 🧪 End-to-end usage example
+## `HorillaNotesAttachmentDeleteView`
 
-### 1) Add URLs (example pattern)
-
-```python
-path(
-    "leads-notes-attachments/<int:pk>/",
-    LeadsNotesAndAttachments.as_view(model=Lead),
-    name="leads_notes_attachments",
-)
-```
-
-### 2) Tab opens section view
-
-Section view renders:
-- header + add button (`can_add_attachment`)
-- embedded list (`list_view.html`) with attachment rows and actions
-
-### 3) User clicks Add
-
-Modal GET:
-
-```text
-/generics/notes-attachment-create/?model_name=lead&object_id=42
-```
-
-Form posts to `form_url` with multipart upload.
-
-### 4) Save response
-
-View returns JS snippet to:
-- click notes tab reload button
-- close modal
-- refresh detail container
+Inherits `HorillaSingleDeleteView` with `check_delete_permission = False`. `dispatch` allows the delete when the user is a superuser, or has change access on the parent (change-own only for an entry they created). `get_post_delete_response()` returns `HxTriggerResponse(extra="closeContentModal();")`.
 
 ---
 
-## 📌 Practical notes
+## End-to-end
 
-- Ownership checks rely on related model’s `OWNER_FIELDS`. If your model needs owner-aware attachment permissions, define `OWNER_FIELDS` properly.
-- `model_name` for create path is looked up via `HorillaContentType.objects.get(model=model_name.lower())`; pass canonical model name.
-- All flows are HTMX-oriented; non-HTMX access is rejected by `htmx_required`.
+1. The detail tab includes the section view for the record.
+2. The section renders the composer (when `can_add_attachment`) and the grouped stream.
+3. Saving the composer posts to `generics:notes_attachment_create` and reloads the tab.
+4. Edit replaces that entry in place. Pin reloads the tab so the Pinned group updates. Delete closes the confirm modal.
+
+---
+
+## Practical notes
+
+- A locked parent and a row that belongs to another record cannot be edited, pinned, or deleted. The row still shows, with a source label when it comes from `get_history_sources()`.
+- Change and delete follow the parent record, not a separate attachment permission on the section view. Create and edit still refuse a user who cannot change that parent.
+- All of these views require HTMX (`htmx_required`).

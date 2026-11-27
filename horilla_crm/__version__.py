@@ -2,11 +2,23 @@
 
 from horilla.utils.translation import gettext_lazy as _
 
-__version__ = "1.11.25"
+__version__ = "1.11.26"
 __module_name__ = "CRM"
 __release_date__ = ""
 __description__ = _("CRM module for managing leads, contacts, and opportunities.")
 __icon__ = "assets/icons/icon2.svg"
+
+__1_11_26__ = _(
+    "Forecast: Set Target For is one choice, User, Role or Role Hierarchy. "
+    "A role target is one total split among the users, and a manager sees "
+    "their team's forecast. Leads: the page opens on Kanban; Title is "
+    "required and the other fields can be left blank; assignment skips "
+    "unavailable users; the converted-lead window shows the new account, "
+    "contact and opportunity; conversion does not start an approval. "
+    "Opportunities and Campaigns open on Kanban. Product tours cover "
+    "Accounts, Contacts, Campaigns, Opportunities and Forecast. Demo data "
+    "loads 20 campaigns and links leads, accounts, contacts and opportunities."
+)
 
 __1_11_25__ = _(
     "Leads: product tours for the list and a single lead. Opportunities: "

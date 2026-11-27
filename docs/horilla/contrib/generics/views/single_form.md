@@ -18,6 +18,10 @@ It supports:
 
 Template: `single_form_view.html`
 
+`{% block form_fields %}` and `{% block condition_section %}` are the two override points. A subclass template (for example `forecast_target_form.html`) replaces the generated fields or the condition rows and keeps the shell: form tag, CSRF, header, errors, scroll area, and save button.
+
+When the form has field errors, `partials/form_error_summary.html` lists them as **Please check this field** or **Please check these fields**, with a link that scrolls to that field. The field area scrolls (`max-h-[620px]` when `modal_height` is set, otherwise `modal_height_class`).
+
 ---
 
 ## Class: `HorillaSingleFormView`

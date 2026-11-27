@@ -37,6 +37,50 @@ date and open a fresh Unreleased above it.
 ### Security      — vulnerabilities fixed; link the advisory and credit the reporter
 -->
 
+## [1.18.2] — 2026-11-27
+
+### Added
+
+- Product tours for the main CRM pages, and for Settings and My Settings. A
+  step is skipped when its target is missing.
+- Shift Hours on My Settings.
+- Forecast targets for a whole role. One total is split among the users in
+  the role, or across the role and the roles under it. A manager sees their
+  team's forecast.
+- Notes and attachments as a chat: an inline composer, in-place editing, and
+  pinned entries.
+- A model-specific note can be shown in the delete modals.
+- Demo booking pages and bookings, and demo approval jobs, review jobs and
+  reports.
+
+### Changed
+
+- The home page is a short set of KPIs, charts and tables. Each one answers
+  a question.
+- Set Target For is one choice: User, Role, or Role Hierarchy.
+- Leads, Opportunities and Campaigns open on the Kanban view.
+- A lead requires a title. The other lead fields can be left blank.
+- Lead assignment skips users who are unavailable.
+- The converted-lead window shows the new account, contact and opportunity.
+  Converting a lead does not start an approval.
+- A form with errors lists the fields to check. Long forms scroll, and
+  single-form modals are taller.
+- Import field mapping uses plainer wording, and the import window is wider.
+- Fiscal year dropdowns hide the blank choice. Alias and legacy time zones
+  are hidden from the time zone list.
+- The active company is read in one place.
+- Demo data uses linked records and dates counted from the day it is loaded.
+  Loading it does not fire workflow rules, lead assignment or cadences.
+
+### Fixed
+
+- Holiday dates are checked on each field, and a date already used as a
+  holiday is refused.
+- Shift hour breaks and half-filled days are checked on the field. The
+  timing column is wide enough for Different Hour Per Day.
+- Dashboard component fields include created and updated.
+- The calendar side panel keeps a fixed width, and the grid uses the rest.
+
 ## [1.18.1] — 2026-11-20
 
 ### Breaking

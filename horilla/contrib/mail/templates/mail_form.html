@@ -36,7 +36,7 @@
                 </select>
             </div>
             {% if validation_errors.from_mail %}
-                <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                     {{ validation_errors.from_mail }}
                 </div>
             {% endif %}
@@ -47,7 +47,7 @@
                 <div id="email-suggestions-to" class="relative"></div>
             </div>
             {% if validation_errors.to_email %}
-                <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                     {{ validation_errors.to_email }}
                 </div>
             {% endif %}
@@ -73,7 +73,7 @@
                 class="mb-2 text-color-600 p-2 placeholder:text-xs pe-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600"
             >
             {% if validation_errors.subject %}
-                <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                     {{ validation_errors.subject }}
                 </div>
             {% endif %}
@@ -150,7 +150,7 @@
             </div>
             {% rich_text_editor "message_content" message_content "full" "message_content" "350px" True %}
             {% if validation_errors.body %}
-                <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                     {{ validation_errors.body }}
                 </div>
             {% endif %}

@@ -10,7 +10,7 @@
                 value="{{ form.first_name.value|default:'' }}"
             >
             {% if form.first_name.errors %}
-                <div class="bg-red-50 text-red-500 px-3 py-2 rounded-lg text-sm mb-4 mt-2">
+                <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-sm mb-4 mt-2">
                     {{ form.first_name.errors.0 }}
                 </div>
             {% endif %}
@@ -25,7 +25,7 @@
                 value="{{ form.last_name.value|default:'' }}"
             >
             {% if form.last_name.errors %}
-                <div class="bg-red-50 text-red-500 px-3 py-2 rounded-lg text-sm mb-4 mt-2">
+                <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-sm mb-4 mt-2">
                     {{ form.last_name.errors.0 }}
                 </div>
             {% endif %}
@@ -48,7 +48,7 @@
             {% endfor %}
         </select>
         {% if form.existing_contact.errors %}
-            <div class="bg-red-50 text-red-500 px-3 py-2 rounded-lg text-sm mb-4 mt-2">
+            <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-sm mb-4 mt-2">
                 {{ form.existing_contact.errors.0 }}
             </div>
         {% endif %}

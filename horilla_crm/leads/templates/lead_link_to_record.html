@@ -11,7 +11,7 @@
                 {% trans "Show the activities, notes and emails of these converted leads on this record. The leads themselves are not changed. Remove a lead to unlink it." %}
             </p>
             {% if form.non_field_errors %}
-                <div class="bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm">
+                <div class="bg-red-50 text-red-500 rounded px-4 py-3 text-sm">
                     {% for error in form.non_field_errors %}{{ error }}<br>{% endfor %}
                 </div>
             {% endif %}
@@ -30,7 +30,7 @@
                     {% endfor %}
                 </select>
                 {% for error in form.leads.errors %}
-                    <div class="bg-red-50 text-red-500 px-3 py-2 rounded-lg text-sm mt-2">{{ error }}</div>
+                    <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-sm mt-2">{{ error }}</div>
                 {% endfor %}
             </div>
             <div class="flex justify-end gap-2">

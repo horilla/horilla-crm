@@ -1,7 +1,7 @@
 <div id="sec1" class="sec1">
     <div class="p-5">
         {% modal_header _('Lead Conversion') on_close="closeContentModal()" %}
-        <div class="bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm mb-4">
+        <div class="bg-red-50 text-red-500 rounded px-4 py-3 text-sm mb-4">
             {% trans "You don't have permission to convert this lead because you can't create the following records:" %}
             <ul class="list-disc ms-5 mt-2">
                 {% for label in missing_targets %}

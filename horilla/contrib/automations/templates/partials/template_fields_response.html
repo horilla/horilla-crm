@@ -37,7 +37,7 @@
             </select>
         </div>
         {% if mail_template_errors %}
-            <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+            <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                 {% for error in mail_template_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
             </div>
         {% endif %}
@@ -88,7 +88,7 @@
             </select>
         </div>
         {% if notification_template_errors %}
-            <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+            <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                 {% for error in notification_template_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
             </div>
         {% endif %}
@@ -116,7 +116,7 @@
             </select>
         </div>
         {% if mail_server_errors %}
-            <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+            <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                 {% for error in mail_server_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
             </div>
         {% endif %}

@@ -11,7 +11,7 @@
         <div class="p-5">
             {% modal_header _("Dated Conversion Rates") %}
             {% if form.non_field_errors %}
-                <div class="bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm mb-4">
+                <div class="bg-red-50 text-red-500 rounded px-4 py-3 text-sm mb-4">
                     {% for error in form.non_field_errors %}{{ error }}<br>{% endfor %}
                 </div>
             {% endif %}
@@ -37,7 +37,7 @@
                         class="w-full border border-dark-50 rounded-md mt-1 p-2 text-sm focus-visible:outline-0 focus:border-primary-600{% if form.start_date.errors %} border-red-500{% endif %}"
                     >
                     {% if form.start_date.errors %}
-                        <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                        <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                             {% for error in form.start_date.errors %}{{ error }}{% endfor %}
                         </div>
                     {% endif %}
@@ -64,7 +64,7 @@
                                 </span>
                                 {% for key, errors in form.errors.items %}
                                     {% if key == field_name %}
-                                        <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1 w-full">
+                                        <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1 w-full">
                                             {% for error in errors %}{{ error }}{% endfor %}
                                         </div>
                                     {% endif %}

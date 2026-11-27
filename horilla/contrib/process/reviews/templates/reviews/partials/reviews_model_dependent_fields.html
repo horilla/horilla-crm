@@ -10,7 +10,7 @@
         {{ form.review_fields }}
     </div>
     {% if form.review_fields.errors %}
-        <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+        <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
             {% for error in form.review_fields.errors %}
                 {{ error }}
             {% endfor %}

@@ -11,7 +11,7 @@
                 {% trans "Show this lead's activities, notes and emails on the records below. The lead itself is not changed." %}
             </p>
             {% if form.non_field_errors %}
-                <div class="bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm">
+                <div class="bg-red-50 text-red-500 rounded px-4 py-3 text-sm">
                     {% for error in form.non_field_errors %}{{ error }}<br>{% endfor %}
                 </div>
             {% endif %}
@@ -31,7 +31,7 @@
                         {% endif %}
                     </select>
                     {% for error in field.errors %}
-                        <div class="bg-red-50 text-red-500 px-3 py-2 rounded-lg text-sm mt-2">{{ error }}</div>
+                        <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-sm mt-2">{{ error }}</div>
                     {% endfor %}
                 </div>
             {% endfor %}

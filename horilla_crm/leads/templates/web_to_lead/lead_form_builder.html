@@ -44,7 +44,7 @@
                         class="mb-3 text-color-600 p-2 placeholder:text-xs pe-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600 {% if errors.form_name %}border-red-500{% endif %}"
                     >
                     {% if errors.form_name %}
-                        <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                        <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                             {{ errors.form_name.0 }}
                         </div>
                     {% endif %}
@@ -164,7 +164,7 @@
                                 class="mb-3 text-color-600 p-2 placeholder:text-xs pe-[40px] w-full border border-dark-50 rounded-md mt-1 focus-visible:outline-0 placeholder:text-dark-100 text-sm [transition:.3s] focus:border-primary-600 {% if errors.return_url %}border-red-500{% endif %}"
                             >
                             {% if errors.return_url %}
-                                <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                                <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                                     {{ errors.return_url.0 }}
                                 </div>
                             {% endif %}
@@ -283,7 +283,7 @@
                         </div>
 
                         {% if errors.lead_owner %}
-                            <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                            <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                                 {{ errors.lead_owner.0 }}
                             </div>
                         {% endif %}

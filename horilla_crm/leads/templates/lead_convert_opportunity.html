@@ -10,7 +10,7 @@
             value="{{ form.opportunity_name.value|default:'' }}"
         >
         {% if form.opportunity_name.errors %}
-            <div class="bg-red-50 text-red-500 px-3 py-2 rounded-lg text-sm mb-4 mt-2">
+            <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-sm mb-4 mt-2">
                 {{ form.opportunity_name.errors.0 }}
             </div>
         {% endif %}
@@ -60,7 +60,7 @@
             >{% trans "Select an account to see available opportunities" %}</small>
         {% endif %}
         {% if form.existing_opportunity.errors %}
-            <div class="bg-red-50 text-red-500 px-3 py-2 rounded-lg text-sm mb-4 mt-2">
+            <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-sm mb-4 mt-2">
                 {{ form.existing_opportunity.errors.0 }}
             </div>
         {% endif %}

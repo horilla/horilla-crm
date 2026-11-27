@@ -32,7 +32,7 @@
                 {% endif %}
             {% endif %}
             {% if form.non_field_errors %}
-                <div class="bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm mb-4">
+                <div class="bg-red-50 text-red-500 rounded px-4 py-3 text-sm mb-4">
                     {% for error in form.non_field_errors %}
                         {{ error }}<br>
                     {% endfor %}
@@ -47,7 +47,7 @@
             <!-- Display errors for hidden fields -->
             {% for field in form %}
                 {% if field.is_hidden and field.errors %}
-                    <div class="flex gap-1 bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm mb-4">
+                    <div class="bg-red-50 text-red-500 rounded px-4 py-3 text-sm mb-4 flex gap-1">
                         <strong>
                             {% if field.label %}
                                 {{ field.label }}
@@ -286,7 +286,7 @@
                                             {% endif %}
 
                                             {% if field.errors %}
-                                                <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                                                <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                                                     {% for error in field.errors %}
                                                         {{ error }}
                                                     {% endfor %}
@@ -464,7 +464,7 @@
                                         </span>
                                     </label>
                                     {% if field.errors %}
-                                        <div class="bg-red-50 text-red-500 px-3 py-2 rounded text-xs mt-1">
+                                        <div class="bg-red-50 text-red-500 rounded px-3 py-2 text-xs mt-1">
                                             {% for error in field.errors %}
                                                 {{ error }}
                                             {% endfor %}

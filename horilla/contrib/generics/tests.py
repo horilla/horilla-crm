@@ -1472,3 +1472,28 @@ class TimelineCalendarHookTests(SimpleTestCase):
             for name in ("jalali", "shamsi", "jdatetime"):
                 with self.subTest(path.name, name=name):
                     self.assertNotIn(name, source)
+
+
+class FormBasedPickerAccessTests(SimpleTestCase):
+    """A form with no model opens Select2 / the user picker only if it says so."""
+
+    def test_a_form_without_a_model_decides_through_user_can_use(self):
+        from django import forms
+
+        from horilla.contrib.generics.views.helpers.select2 import (
+            _can_use_form_for_model,
+        )
+
+        class PlainForm(forms.Form):
+            """No model, no say: refused as before."""
+
+        class TeamForm(forms.Form):
+            """No model, decides itself."""
+
+            @classmethod
+            def user_can_use(cls, user):
+                return user == "member"
+
+        self.assertFalse(_can_use_form_for_model("member", PlainForm))
+        self.assertTrue(_can_use_form_for_model("member", TeamForm))
+        self.assertFalse(_can_use_form_for_model("outsider", TeamForm))

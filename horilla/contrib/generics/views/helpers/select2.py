@@ -61,11 +61,16 @@ def _can_view_model(user, model):
 
 
 def _can_use_form_for_model(user, form_class):
-    """User may use `form_class` (needs add/change rights on its model)."""
+    """
+    User may use `form_class`: add/change rights on its model, or, for a form
+    with no model, what its ``user_can_use(user)`` classmethod answers (such a
+    form scopes its field querysets itself, e.g. the calendar's Team members).
+    """
     meta = getattr(form_class, "_meta", None)
     parent_model = getattr(meta, "model", None)
     if parent_model is None:
-        return False
+        user_can_use = getattr(form_class, "user_can_use", None)
+        return bool(callable(user_can_use) and user_can_use(user))
     return _has_any_perm(user, parent_model, ("add", "add_own", "change", "change_own"))
 
 

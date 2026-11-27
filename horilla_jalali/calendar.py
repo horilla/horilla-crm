@@ -8,7 +8,7 @@ and parse user-facing Jalali input when the Shamsi calendar is active.
 from __future__ import annotations
 
 import re
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from typing import Any
 
 import jdatetime
@@ -64,6 +64,28 @@ def uses_jalali_calendar(user: Any = None, language: str | None = None) -> bool:
         return True
     system = getattr(user, "calendar_system", None) or "jalali"
     return system == "jalali"
+
+
+def shamsi_period_bounds(period: str, day: date) -> tuple[date, date] | None:
+    """
+    Gregorian ``(start, end)`` of the Shamsi ``"week"`` or ``"month"`` holding ``day``.
+
+    The week runs Saturday to Friday, as in Iran. Returns ``None`` for any
+    other ``period``.
+    """
+    if period == "week":
+        # weekday(): Monday is 0, so Saturday is 5.
+        start = day - timedelta(days=(day.weekday() + 2) % 7)
+        return start, start + timedelta(days=6)
+    if period == "month":
+        shamsi = jdatetime.date.fromgregorian(date=day)
+        if shamsi.month == 12:
+            next_month = jdatetime.date(shamsi.year + 1, 1, 1)
+        else:
+            next_month = jdatetime.date(shamsi.year, shamsi.month + 1, 1)
+        start = jdatetime.date(shamsi.year, shamsi.month, 1).togregorian()
+        return start, next_month.togregorian() - timedelta(days=1)
+    return None
 
 
 def _is_plausible_jalali_year(year: int) -> bool:

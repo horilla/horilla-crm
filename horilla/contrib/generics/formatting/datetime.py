@@ -4,7 +4,7 @@ Gregorian date/time formatting used across Horilla template tags and views.
 
 from __future__ import annotations
 
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from django.utils.dateparse import parse_date as django_parse_date
@@ -18,7 +18,7 @@ class DateTimeFormatter:
     Format and parse date/datetime/time with user/company preferences.
 
     Extension apps may subclass via ``DateTimeFormatterExtension`` and override
-    ``format_*`` / ``parse_*`` (e.g. Jalali).
+    ``format_*`` / ``parse_*`` / ``period_bounds`` (e.g. Jalali).
     """
 
     def format(self, value, user=None, company=None, convert_timezone=True):
@@ -70,6 +70,25 @@ class DateTimeFormatter:
         if not value:
             return None
         return django_parse_date(str(value).strip())
+
+    def period_bounds(self, period, day, *, user=None):
+        """
+        Return the inclusive ``(start, end)`` dates of the ``"week"`` or
+        ``"month"`` that contains ``day``, or ``(None, None)`` for another
+        ``period``.
+
+        Gregorian, with weeks starting on Monday. Calendar extensions (e.g.
+        Jalali) override this, so "This Week" and "This Month" follow the
+        calendar the user reads dates in.
+        """
+        if period == "week":
+            start = day - timedelta(days=day.weekday())
+            return start, start + timedelta(days=6)
+        if period == "month":
+            start = day.replace(day=1)
+            next_month = (start + timedelta(days=31)).replace(day=1)
+            return start, next_month - timedelta(days=1)
+        return None, None
 
     def parse_datetime(self, value, *, user=None):
         """Parse a datetime string into a Gregorian ``datetime`` (or ``None``)."""

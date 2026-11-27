@@ -54,6 +54,7 @@ from horilla.registry.history_registry import (
 )
 from horilla.urls import reverse
 from horilla.utils import timezone
+from horilla.utils.date_ranges import get_preset_date_bounds
 from horilla.utils.translation import gettext, override
 
 
@@ -1472,3 +1473,47 @@ class TimelineCalendarHookTests(SimpleTestCase):
             for name in ("jalali", "shamsi", "jdatetime"):
                 with self.subTest(path.name, name=name):
                     self.assertNotIn(name, source)
+
+
+class DateRangePresetBoundsTests(SimpleTestCase):
+    """"This Week" and "This Month" come from the date formatter's calendar."""
+
+    # Friday 27 November 2026.
+    DAY = date(2026, 11, 27)
+
+    def test_gregorian_week_starts_on_monday_and_month_on_the_first(self):
+        with override("en"):
+            self.assertEqual(
+                get_preset_date_bounds("this_week", self.DAY),
+                (date(2026, 11, 23), date(2026, 11, 29)),
+            )
+            self.assertEqual(
+                get_preset_date_bounds("this_month", self.DAY),
+                (date(2026, 11, 1), date(2026, 11, 30)),
+            )
+            self.assertEqual(
+                get_preset_date_bounds("this_month", date(2026, 12, 31)),
+                (date(2026, 12, 1), date(2026, 12, 31)),
+            )
+
+    def test_the_formatter_decides_the_week_and_the_month(self):
+        """A calendar extension overriding period_bounds() changes both presets."""
+        with mock.patch("horilla.extension.formatting.get_datetime_formatter") as get:
+            get.return_value.period_bounds.return_value = ("start", "end")
+            bounds = get_preset_date_bounds("this_month", self.DAY, user="user")
+        self.assertEqual(bounds, ("start", "end"))
+        get.return_value.period_bounds.assert_called_once_with(
+            "month", self.DAY, user="user"
+        )
+
+    def test_today_yesterday_and_unknown_keys_do_not_use_the_formatter(self):
+        with mock.patch("horilla.extension.formatting.get_datetime_formatter") as get:
+            self.assertEqual(
+                get_preset_date_bounds("today", self.DAY), (self.DAY, self.DAY)
+            )
+            self.assertEqual(
+                get_preset_date_bounds("yesterday", self.DAY),
+                (date(2026, 11, 26), date(2026, 11, 26)),
+            )
+            self.assertEqual(get_preset_date_bounds("nope", self.DAY), (None, None))
+        get.assert_not_called()

@@ -208,7 +208,7 @@ class LeadConversionView(LoginRequiredMixin, FormView):
             messages.error(
                 self.request,
                 _("You don't have permission to %(actions)s.")
-                % {"actions": ", ".join(missing)},
+                % {"actions": ", ".join(str(action) for action in missing)},
             )
             return self.form_invalid(form)
 

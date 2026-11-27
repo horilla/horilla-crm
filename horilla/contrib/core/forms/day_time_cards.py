@@ -14,17 +14,18 @@ _CARD_BASE = (
     "position: relative; border-top: 1px solid #e5e7eb; "
     "border-bottom: 1px solid #e5e7eb; padding: 1.15rem 0.75rem 0.75rem;"
 )
+# Logical properties, so the card closes on the outer edges in RTL as well.
 _START_STYLE = (
-    f"{_CARD_BASE} border-left: 1px solid #e5e7eb; "
-    "border-top-left-radius: 0.5rem; border-bottom-left-radius: 0.5rem;"
+    f"{_CARD_BASE} border-inline-start: 1px solid #e5e7eb; "
+    "border-start-start-radius: 0.5rem; border-end-start-radius: 0.5rem;"
 )
 _END_STYLE = (
-    f"{_CARD_BASE} border-right: 1px solid #e5e7eb; "
-    "border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem; "
-    "margin-left: -1rem; width: calc(100% + 1rem);"
+    f"{_CARD_BASE} border-inline-end: 1px solid #e5e7eb; "
+    "border-start-end-radius: 0.5rem; border-end-end-radius: 0.5rem; "
+    "margin-inline-start: -1rem; width: calc(100% + 1rem);"
 )
 _LEGEND_STYLE = (
-    "position: absolute; top: -0.55rem; left: 0.6rem; "
+    "position: absolute; top: -0.55rem; inset-inline-start: 0.6rem; "
     "padding: 0 0.35rem; background: #fff; "
     "font-weight: 600; font-size: 0.8rem; color: #111827;"
 )

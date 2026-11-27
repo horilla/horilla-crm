@@ -39,7 +39,7 @@
                     {% for step in onboarding.steps %}
                         <li class="flex-1 relative flex flex-col items-center">
                             {% if not forloop.last %}
-                                <span class="absolute top-[17px] left-1/2 w-full h-0.5 bg-primary-600" aria-hidden="true"></span>
+                                <span class="absolute top-[17px] start-1/2 w-full h-0.5 bg-primary-600" aria-hidden="true"></span>
                             {% endif %}
                             <a href="{{ step.url }}" class="relative flex flex-col items-center gap-2.5 px-1 text-center">
                                 {% if step.done %}

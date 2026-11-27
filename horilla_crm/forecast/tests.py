@@ -538,11 +538,11 @@ class ForecastTargetFormRenderTests(HierarchyFixture):
         html = response.content.decode()
         self.assertIn("single-form-save-spinner", html)
         self.assertIn('id="condition-fields-container"', html)
-        self.assertIn("Role-Based Assignment", html)
-        self.assertIn("Same Period for All", html)
-        self.assertIn("Same Target for All", html)
-        # Switches use the generic form's segmented Yes/No control
-        self.assertEqual(html.count('class="flex flex-col w-full" data-bool-field'), 4)
+        # One choice decides what the target is for; the switches stay as hidden state
+        self.assertIn("Set Target For", html)
+        for label in ("User", "Role", "Role Hierarchy"):
+            self.assertIn(f">{label}</option>", html)
+        self.assertNotIn("Role-Based Assignment", html)
         self.assertNotIn("peer-checked:bg-primary-600", html)
 
     def test_form_is_posted_back_to_itself(self):
@@ -1181,11 +1181,10 @@ class IncludeRolesBelowTests(HierarchyFixture):
         ).content.decode()
         self.assertIn(f'name="share_role_{self.head.role_id}"', below)
         self.assertIn("Split By Role", below)
-        self.assertIn("Include Roles Below", below)
         plain = self.client.post(url, base, HTTP_HX_REQUEST="true").content.decode()
         self.assertIn(f'name="share_{self.head.pk}"', plain)
         self.assertNotIn("share_role_", plain)
-        self.assertIn("Include Roles Below", plain)  # the switch is offered either way
+        self.assertNotIn("Split By Role", plain)
 
     def test_individual_user_shares_are_saved_as_entered(self):
         """Different amounts per user: the two reps need not get the same."""

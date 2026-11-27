@@ -133,6 +133,7 @@ class LeadCreateFormLayoutTests(TestCase):
     def _payload(self, **overrides):
         payload = {
             "lead_owner": self.user.pk,
+            "title": "Prospect",
             "first_name": "Grace",
             "last_name": "Hopper",
             "email": "grace@example.com",
@@ -229,8 +230,8 @@ class LeadCreateFormLayoutTests(TestCase):
     @skipUnless(
         FIELD_REQUIREMENTS_INSTALLED, "horilla.contrib.field_management not installed"
     )
-    def test_email_made_optional_by_field_requirements_can_be_hidden(self):
-        """Relaxing email in Field Requirements lets the layout hide it."""
+    def test_email_is_optional_so_a_layout_can_hide_it_until_it_is_required(self):
+        """Email is optional, so the layout hides it; Field Requirements bring it back."""
 
         def _custom_layout():
             return self.client.get(
@@ -239,17 +240,7 @@ class LeadCreateFormLayoutTests(TestCase):
             )
 
         self._hide("email")
-        self.assertContains(_custom_layout(), 'name="email"')
-
-        apps.get_model("field_management", "FieldRequirement").objects.create(
-            content_type=self.lead_ct,
-            field_name="email",
-            is_required=False,
-            company=self.company,
-        )
-        response = _custom_layout()
-
-        self.assertNotContains(response, 'name="email"')
+        self.assertNotContains(_custom_layout(), 'name="email"')
         post = self.client.post(
             reverse("leads:leads_create_single"),
             self._payload(email="", last_name="Without Email"),
@@ -259,6 +250,14 @@ class LeadCreateFormLayoutTests(TestCase):
         self.assertTrue(
             self.lead.all_objects.filter(last_name="Without Email").exists()
         )
+
+        apps.get_model("field_management", "FieldRequirement").objects.create(
+            content_type=self.lead_ct,
+            field_name="email",
+            is_required=True,
+            company=self.company,
+        )
+        self.assertContains(_custom_layout(), 'name="email"')
 
     def test_edit_forms_show_every_field(self):
         """Lead edit forms are not affected by the layout."""

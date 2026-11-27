@@ -120,6 +120,7 @@ class LeadAssignmentRuleCustomFieldTimingTests(TransactionTestCase):
         """Return a payload for creating a lead, with optional overrides."""
         payload = {
             "lead_owner": self.manual_pick.pk,
+            "title": "Prospect",
             "first_name": "Sara",
             "last_name": "Ahmadi",
             "email": "sara@example.com",

@@ -302,6 +302,7 @@ class AssignmentFixtureMixin:
         """Valid form data for a new lead (owner: the first sales user)."""
         payload = {
             "lead_owner": self.sales[0].pk,
+            "title": "Prospect",
             "first_name": "Sara",
             "last_name": "Ahmadi",
             "email": "sara@example.com",
@@ -1311,6 +1312,7 @@ class WizardTests(ViewFixtureMixin, TransactionTestCase):
         """Submit step 1 with the usual values."""
         payload = {
             "lead_owner": self.sales[2].pk,
+            "title": "Prospect",
             "first_name": "Sara",
             "last_name": "Ahmadi",
             "email": "sara@example.com",
@@ -1511,9 +1513,10 @@ class FormLayoutTests(ViewFixtureMixin, TransactionTestCase):
         self.layout("city", sequence=1, visible=False)
         self.assertContains(self.custom_layout(), f'name="{APPLY_FIELD}"')
 
-    def test_owner_cannot_be_hidden_so_the_pool_always_has_a_field(self):
-        """The owner is required, so a layout can not remove it."""
+    def test_owner_can_be_hidden_and_the_switch_goes_with_it(self):
+        """The owner is optional, so a layout can remove it. The switch sits on
+        the owner field, so it is not offered either."""
         self.layout("lead_owner", sequence=1, visible=False)
         content = self.custom_layout().content.decode()
-        self.assertIn('name="lead_owner"', content)
-        self.assertIn(f'name="{APPLY_FIELD}"', content)
+        self.assertNotIn('name="lead_owner"', content)
+        self.assertNotIn(f'name="{APPLY_FIELD}"', content)

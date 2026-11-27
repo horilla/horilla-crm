@@ -328,10 +328,15 @@ class LeadCanRelaxRequirementTests(SimpleTestCase):
         lead = apps.get_model("leads", "Lead")
         self.assertTrue(can_relax_requirement(lead._meta.get_field("email")))
 
-    def test_lead_status_cannot_be_relaxed(self):
-        """Lead Stage is a non-nullable FK with nowhere to store an empty value."""
+    def test_lead_status_can_be_relaxed(self):
+        """Lead Stage is a nullable FK, so it can store an empty value."""
         lead = apps.get_model("leads", "Lead")
-        self.assertFalse(can_relax_requirement(lead._meta.get_field("lead_status")))
+        self.assertTrue(can_relax_requirement(lead._meta.get_field("lead_status")))
+
+    def test_opportunity_stage_cannot_be_relaxed(self):
+        """Opportunity Stage is a non-nullable FK with nowhere to store an empty value."""
+        opportunity = apps.get_model("opportunities", "Opportunity")
+        self.assertFalse(can_relax_requirement(opportunity._meta.get_field("stage")))
 
 
 @skipUnless(
@@ -431,12 +436,22 @@ class FieldRequirementModelTests(TestCase):
             self._clean(row)
         self.assertIn("field_name", ctx.exception.error_dict)
 
-    def test_relaxing_lead_status_is_rejected(self):
+    def test_relaxing_opportunity_stage_is_rejected(self):
         """A non-nullable FK has nowhere to store an empty value."""
-        row = self._requirement(field_name="lead_status", is_required=False)
+        opportunity = apps.get_model("opportunities", "Opportunity")
+        row = self._requirement(
+            content_type=HorillaContentType.objects.get_for_model(opportunity),
+            field_name="stage",
+            is_required=False,
+        )
         with self.assertRaises(ValidationError) as ctx:
             self._clean(row)
         self.assertIn("is_required", ctx.exception.error_dict)
+
+    def test_relaxing_lead_status_is_allowed(self):
+        """Lead Stage is nullable, so it can be made optional."""
+        row = self._requirement(field_name="lead_status", is_required=False)
+        self._clean(row)
 
     def test_requiring_lead_status_is_allowed(self):
         """Making a field required never needs an empty-value storage path."""
@@ -558,13 +573,14 @@ class FieldRequirementResolverTests(TestCase):
 
     def test_unsafe_relaxation_is_dropped(self):
         """A stale row that relaxes a non-nullable FK is not applied."""
+        opportunity = apps.get_model("opportunities", "Opportunity")
         FieldRequirement.all_objects.create(
-            content_type=self.lead_ct,
-            field_name="lead_status",
+            content_type=HorillaContentType.objects.get_for_model(opportunity),
+            field_name="stage",
             is_required=False,
             company=self.company_a,
         )
-        self.assertEqual(get_field_requirements_for_model(self.lead), {})
+        self.assertEqual(get_field_requirements_for_model(opportunity), {})
 
     def test_unknown_field_row_is_dropped(self):
         """A row pointing at a removed field is skipped."""
@@ -606,13 +622,17 @@ class FieldRequirementFormTests(TestCase):
         self.other_ct = HorillaContentType.objects.get_for_model(self.other_model)
 
     def test_field_picker_lists_lead_fields_and_marks_unsafe_ones(self):
-        """Lead email is offered; Lead Stage is labelled always required."""
+        """Lead fields are offered; Opportunity Stage is labelled always required."""
         choices = dict(get_field_choices(self.lead))
         self.assertIn("email", choices)
         self.assertIn("first_name", choices)
         self.assertIn("lead_status", choices)
-        self.assertIn("always required", str(choices["lead_status"]).lower())
+        self.assertNotIn("always required", str(choices["lead_status"]).lower())
         self.assertNotIn("always required", str(choices["email"]).lower())
+
+        opportunity = apps.get_model("opportunities", "Opportunity")
+        opportunity_choices = dict(get_field_choices(opportunity))
+        self.assertIn("always required", str(opportunity_choices["stage"]).lower())
 
     def test_form_model_choices_are_limited_to_opted_in_models(self):
         """Activity did not opt in, so it is not a model the admin can pick."""
@@ -632,12 +652,15 @@ class FieldRequirementFormTests(TestCase):
         )
         self.assertTrue(form.is_valid(), form.errors)
 
-    def test_relaxing_lead_status_is_rejected(self):
-        """The form refuses to make Lead Stage optional."""
+    def test_relaxing_opportunity_stage_is_rejected(self):
+        """The form refuses to make Opportunity Stage optional."""
+        opportunity = apps.get_model("opportunities", "Opportunity")
         form = FieldRequirementForm(
             data={
-                "content_type": self.lead_ct.pk,
-                "field_name": "lead_status",
+                "content_type": HorillaContentType.objects.get_for_model(
+                    opportunity
+                ).pk,
+                "field_name": "stage",
                 "is_required": False,
             }
         )
@@ -786,6 +809,17 @@ class FieldRequirementViewTests(TestCase):
         self.assertContains(response, 'value="email"')
         self.assertContains(response, 'value="first_name"')
         self.assertContains(response, 'value="lead_status"')
+        self.assertNotContains(response, "always required")
+
+    def test_field_choices_mark_opportunity_stage_always_required(self):
+        """Selecting Opportunity labels its non-nullable Stage as always required."""
+        opportunity = apps.get_model("opportunities", "Opportunity")
+        response = self.client.get(
+            reverse("field_management:field_requirement_field_choices"),
+            {"content_type": HorillaContentType.objects.get_for_model(opportunity).pk},
+            **self._htmx(),
+        )
+        self.assertContains(response, 'value="stage"')
         self.assertContains(response, "always required")
 
     def test_create_optional_lead_email(self):
@@ -804,21 +838,22 @@ class FieldRequirementViewTests(TestCase):
         )
         self.assertFalse(row.is_required)
 
-    def test_create_rejects_optional_lead_status(self):
-        """Posting Lead Stage as optional is refused and stores nothing."""
+    def test_create_rejects_optional_opportunity_stage(self):
+        """Posting Opportunity Stage as optional is refused and stores nothing."""
+        opportunity = apps.get_model("opportunities", "Opportunity")
         response = self.client.post(
             reverse("field_management:field_requirement_create_form"),
             {
-                "content_type": self.lead_ct.pk,
-                "field_name": "lead_status",
+                "content_type": HorillaContentType.objects.get_for_model(
+                    opportunity
+                ).pk,
+                "field_name": "stage",
             },
             **self._htmx(),
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "empty value")
-        self.assertFalse(
-            FieldRequirement.objects.filter(field_name="lead_status").exists()
-        )
+        self.assertFalse(FieldRequirement.objects.filter(field_name="stage").exists())
 
     def test_settings_page_is_linked_from_the_settings_shell(self):
         """Settings → Field Requirements is in the sidebar for a permitted user."""
@@ -940,6 +975,7 @@ class LeadFieldRequirementFormExtensionTests(TestCase):
     def _lead_payload(self, email=""):
         """Return a valid payload for the Lead form, with an optional email override."""
         return {
+            "title": "Prospect",
             "first_name": "Ada",
             "last_name": "Lovelace",
             "email": email,
@@ -962,8 +998,17 @@ class LeadFieldRequirementFormExtensionTests(TestCase):
         self.assertTrue(single.__name__.endswith("Extended"))
         self.assertIsNot(single, LeadSingleForm)
 
-    def test_email_stays_required_without_an_override(self):
-        """Lead.email is blank=False, so the form still requires it by default."""
+    def test_email_is_optional_without_an_override(self):
+        """Lead.email is blank=True, so the form does not require it by default."""
+        form = self._lead_single_form()
+        self.assertFalse(form.fields["email"].required)
+
+        bound = self._lead_single_form(data=self._lead_payload(email=""))
+        self.assertTrue(bound.is_valid(), bound.errors)
+
+    def test_required_email_is_required_on_lead_single_form(self):
+        """A company-scoped required email row adds required on LeadSingleForm."""
+        self._override("email", True)
         form = self._lead_single_form()
         self.assertTrue(form.fields["email"].required)
 
@@ -971,32 +1016,18 @@ class LeadFieldRequirementFormExtensionTests(TestCase):
         self.assertFalse(bound.is_valid())
         self.assertIn("email", bound.errors)
 
-    def test_optional_email_is_not_required_on_lead_single_form(self):
-        """A company-scoped optional email row drops required on LeadSingleForm."""
-        self._override("email", False)
-        form = self._lead_single_form()
-        self.assertFalse(form.fields["email"].required)
-        self.assertNotIn("required", form.fields["email"].widget.attrs)
-
-    def test_optional_email_allows_an_empty_value_to_validate(self):
-        """Empty email must pass both form and model validation when optional."""
-        self._override("email", False)
-        form = self._lead_single_form(data=self._lead_payload(email=""))
-        self.assertTrue(form.is_valid(), form.errors)
-        self.assertEqual(form.cleaned_data.get("email") or "", "")
-
-    def test_optional_email_does_not_apply_to_another_company(self):
-        """Company B still requires email when only Company A stored an override."""
-        self._override("email", False)
+    def test_required_email_does_not_apply_to_another_company(self):
+        """Company B keeps email optional when only Company A required it."""
+        self._override("email", True)
         _activate_company(self.other_company)
         form = self._lead_single_form()
-        self.assertTrue(form.fields["email"].required)
-
-    def test_optional_email_applies_to_the_multi_step_lead_form(self):
-        """LeadFormClass is discovered the same way as the single-step form."""
-        self._override("email", False)
-        form = self._lead_multi_form(step=1)
         self.assertFalse(form.fields["email"].required)
+
+    def test_required_email_applies_to_the_multi_step_lead_form(self):
+        """LeadFormClass is discovered the same way as the single-step form."""
+        self._override("email", True)
+        form = self._lead_multi_form(step=1)
+        self.assertTrue(form.fields["email"].required)
 
     def test_required_override_does_not_rerequire_hidden_wizard_steps(self):
         """Title is on step 1; a required override must not break step 2."""
@@ -1008,15 +1039,20 @@ class LeadFieldRequirementFormExtensionTests(TestCase):
         step_one = self._lead_multi_form(step=1)
         self.assertTrue(step_one.fields["title"].required)
 
-    def test_optional_email_on_step_one_stays_optional_on_later_steps(self):
-        """Hidden wizard fields stay optional when the override relaxes them."""
-        self._override("email", False)
+    def test_optional_title_override_relaxes_the_required_title(self):
+        """Title is required on the model; an optional row drops it on the form."""
+        self._override("title", False)
+        form = self._lead_single_form()
+        self.assertFalse(form.fields["title"].required)
+
+    def test_required_email_on_step_one_stays_optional_on_later_steps(self):
+        """Hidden wizard fields stay optional when the override requires them."""
+        self._override("email", True)
         form = self._lead_multi_form(step=2)
         self.assertFalse(form.fields["email"].required)
 
-    def test_optional_email_lead_saves_to_the_database(self):
-        """An optional empty email must persist, not just pass form.is_valid()."""
-        self._override("email", False)
+    def test_lead_without_email_saves_to_the_database(self):
+        """An empty email must persist, not just pass form.is_valid()."""
         form = self._lead_single_form(data=self._lead_payload(email=""))
         self.assertTrue(form.is_valid(), form.errors)
         lead = form.save(commit=False)
@@ -1028,8 +1064,9 @@ class LeadFieldRequirementFormExtensionTests(TestCase):
         self.assertEqual(saved.email, "")
         self.assertEqual(saved.first_name, "Ada")
 
-    def test_lead_without_override_cannot_be_saved_with_empty_email(self):
-        """Default Lead email still cannot be stored empty."""
+    def test_lead_with_a_required_email_cannot_be_saved_without_it(self):
+        """A company that requires email cannot save a lead with it empty."""
+        self._override("email", True)
         form = self._lead_single_form(data=self._lead_payload(email=""))
         self.assertFalse(form.is_valid())
         self.assertFalse(self.lead.all_objects.filter(first_name="Ada").exists())
@@ -1053,19 +1090,18 @@ class LeadFieldRequirementFormExtensionTests(TestCase):
             return self.client.get(url, **headers)
         return self.client.post(url, data, **headers)
 
-    def test_create_view_uses_composed_form_with_optional_email(self):
-        """The Lead create view resolves the FormExtension and drops email required."""
-        self._override("email", False)
+    def test_create_view_uses_composed_form_with_required_email(self):
+        """The Lead create view resolves the FormExtension and adds email required."""
+        self._override("email", True)
         self._login_client()
         response = self._lead_create("get")
         self.assertEqual(response.status_code, 200)
         form = response.context["form"]
         self.assertTrue(getattr(form.__class__, "__horilla_composed__", False))
-        self.assertFalse(form.fields["email"].required)
+        self.assertTrue(form.fields["email"].required)
 
-    def test_create_view_saves_a_lead_without_email_when_optional(self):
+    def test_create_view_saves_a_lead_without_email_by_default(self):
         """Posting the real create view with empty email stores the lead."""
-        self._override("email", False)
         self._login_client()
         response = self._lead_create("post", self._lead_payload(email=""))
         self.assertNotEqual(response.status_code, 500)
@@ -1073,8 +1109,9 @@ class LeadFieldRequirementFormExtensionTests(TestCase):
         self.assertEqual(saved.count(), 1, response.content[:2000])
         self.assertEqual(saved.get().email, "")
 
-    def test_create_view_still_requires_email_without_an_override(self):
-        """The same create view rejects empty email when nothing is configured."""
+    def test_create_view_rejects_empty_email_when_the_company_requires_it(self):
+        """The same create view rejects empty email once an override requires it."""
+        self._override("email", True)
         self._login_client()
         response = self._lead_create("post", self._lead_payload(email=""))
         self.assertFalse(

@@ -383,3 +383,7 @@ msgstr "حداقل یکی از گزینه‌های «هنگام ایجاد رک�
 
 msgid "This record has been moved to a pending review request and is hidden from the list until it is approved."
 msgstr "این رکورد به یک درخواست بازبینی در انتظار منتقل شده است و تا زمان تأیید در لیست نمایش داده نمی‌شود."
+
+#: horilla/contrib/process/reviews/views/core.py:537
+msgid "Unable to update the review process status."
+msgstr "به‌روزرسانی وضعیت فرآیند بازبینی ممکن نشد."

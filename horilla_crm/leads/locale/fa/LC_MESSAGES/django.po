@@ -745,7 +745,7 @@ msgstr "پیوند فرصت انتخاب شده"
 
 #, python-format
 msgid "You don't have permission to %(actions)s."
-msgstr ""
+msgstr "اجازه‌ی %(actions)s را ندارید."
 
 msgid "Define the stages a lead moves through in your pipeline."
 msgstr "مراحلی را که یک سرنخ در پایپ لاین شما طی می‌کند، تعریف کنید."
@@ -1005,3 +1005,109 @@ msgstr "شرکت سرنخ"
 #: horilla_crm/leads/templates/lead_status/lead_stages_modal.html:100
 msgid "Select Lead Stages for %(company_name)s"
 msgstr "انتخاب مراحل سرنخ برای %(company_name)s"
+
+#: horilla_crm/leads/form_mixins.py:495
+#, python-format
+msgid "Rule “%(rule)s” applies. The owner is picked from its people by round robin, the next person in turn; you can choose another one."
+msgstr "قانون «%(rule)s» اعمال می‌شود. مالک به‌صورت نوبتی از افراد این قانون انتخاب می‌شود، یعنی نفر بعدی در نوبت؛ می‌توانید فرد دیگری را انتخاب کنید."
+
+#: horilla_crm/leads/forms.py:555
+msgid "The matching rule assigns the lead to one of its people by its assignment method (least lead count or round robin); the selected Owner is used when no rule matches."
+msgstr "قانون منطبق، سرنخ را با روش تخصیص خودش (کمترین تعداد سرنخ یا نوبتی) به یکی از افرادش می‌سپارد؛ اگر هیچ قانونی منطبق نباشد، مالک انتخاب‌شده استفاده می‌شود."
+
+#: horilla_crm/leads/models/assignment_rules.py:174 horilla_crm/leads/templates/lead_assignment_rule/assignment_rule_detail.html:125
+msgid "Assignment Method"
+msgstr "روش تخصیص"
+
+#: horilla_crm/leads/models/assignment_rules.py:176
+msgid "How one person is chosen when several can be assigned: the one with the fewest leads, or each person in turn."
+msgstr "وقتی چند نفر قابل تخصیص هستند، یک نفر چگونه انتخاب شود: کسی که کمترین سرنخ را دارد، یا هر نفر به نوبت."
+
+#: horilla_crm/leads/models/assignment_rules.py:188
+msgid "Last Assigned User"
+msgstr "آخرین کاربر تخصیص‌یافته"
+
+#: horilla_crm/leads/models/assignment_rules.py:44
+msgid "Least Lead Count"
+msgstr "کمترین تعداد سرنخ"
+
+#: horilla_crm/leads/models/assignment_rules.py:45
+msgid "Round Robin"
+msgstr "نوبتی"
+
+#: horilla_crm/leads/models/assignment_rules.py:65
+msgid "Allow Owner Reassignment"
+msgstr "اجازه‌ی تغییر مالک"
+
+#: horilla_crm/leads/models/assignment_rules.py:67
+msgid "Allow users to change the owner of a lead that was assigned by this rule. When off, only users who can change all leads can change it."
+msgstr "کاربران بتوانند مالک سرنخی را که این قانون تخصیص داده است تغییر دهند. اگر خاموش باشد، فقط کاربرانی که اجازه‌ی تغییر همه‌ی سرنخ‌ها را دارند می‌توانند آن را تغییر دهند."
+
+#: horilla_crm/leads/onboarding.py:15
+msgid "Set up your lead stages"
+msgstr "مراحل سرنخ را تنظیم کنید"
+
+#: horilla_crm/leads/onboarding.py:16
+msgid "Define the stages your leads move through."
+msgstr "مراحلی را که سرنخ‌ها از آن‌ها عبور می‌کنند تعریف کنید."
+
+#: horilla_crm/leads/onboarding.py:27
+msgid "Import Leads"
+msgstr "وارد کردن سرنخ‌ها"
+
+#: horilla_crm/leads/onboarding.py:28
+msgid "Add your first leads"
+msgstr "اولین سرنخ‌هایتان را اضافه کنید"
+
+#: horilla_crm/leads/onboarding.py:29
+msgid "Add leads one by one, or import them from a CSV or Excel file."
+msgstr "سرنخ‌ها را یکی‌یکی اضافه کنید یا از یک فایل CSV یا اکسل وارد کنید."
+
+#: horilla_crm/leads/signals.py:233 horilla_crm/leads/views/lead_actions.py:57
+msgid "The owner of a lead assigned by an assignment rule cannot be changed."
+msgstr "مالک سرنخی که با قانون تخصیص واگذار شده است قابل تغییر نیست."
+
+#: horilla_crm/leads/templates/lead_assignment_rule/mail_config_popup.html:38
+msgid "Cannot use Email notification"
+msgstr "امکان استفاده از اعلان ایمیلی نیست"
+
+#: horilla_crm/leads/templates/lead_assignment_rule/mail_config_popup.html:41
+msgid "Configure outgoing mail to send an email when a lead is assigned by this rule."
+msgstr "برای ارسال ایمیل هنگام تخصیص سرنخ با این قانون، ایمیل خروجی را پیکربندی کنید."
+
+#: horilla_crm/leads/templates/lead_convert_no_permission.html:13
+msgid "Converting a lead creates or links an Account, a Contact and an Opportunity. Please ask your administrator to grant you the missing permissions."
+msgstr "تبدیل سرنخ یک حساب، یک مخاطب و یک فرصت ایجاد یا پیوند می‌دهد. لطفاً از مدیر سیستم بخواهید دسترسی‌های لازم را به شما بدهد."
+
+#: horilla_crm/leads/templates/lead_convert_no_permission.html:5
+msgid "You don't have permission to convert this lead because you can't create the following records:"
+msgstr "اجازه‌ی تبدیل این سرنخ را ندارید، چون نمی‌توانید این رکوردها را بسازید:"
+
+#: horilla_crm/leads/templates/web_to_lead/lead_form_builder.html:282
+msgid "If checked, the matching assignment rule picks the owner (by the rule's assignment method: least lead count or round robin), and the selected Lead Owner is used when no rule matches. If unchecked, rules are skipped and the selected Lead Owner is always used."
+msgstr "اگر تیک بخورد، قانون تخصیص منطبق مالک را انتخاب می‌کند (با روش تخصیص همان قانون: کمترین تعداد سرنخ یا نوبتی) و اگر هیچ قانونی منطبق نباشد، مالک سرنخ انتخاب‌شده استفاده می‌شود. اگر تیک نخورد، قوانین نادیده گرفته می‌شوند و همیشه مالک سرنخ انتخاب‌شده استفاده می‌شود."
+
+#: horilla_crm/leads/tour.py:24
+msgid "Working with the Leads list"
+msgstr "کار با فهرست سرنخ‌ها"
+
+#: horilla_crm/leads/tour.py:26
+msgid "Search, filter, switch layouts, select rows and take actions on your leads."
+msgstr "جستجو، فیلتر، تغییر چیدمان، انتخاب ردیف‌ها و انجام اقدامات روی سرنخ‌ها."
+
+#: horilla_crm/leads/tour.py:36
+msgid "leads"
+msgstr "سرنخ‌ها"
+
+#: horilla_crm/leads/tour.py:44
+msgid "Inside a lead"
+msgstr "داخل یک سرنخ"
+
+#: horilla_crm/leads/tour.py:46
+msgid "The summary, stages and tabs of a lead: activity, related records, notes and history."
+msgstr "خلاصه، مراحل و زبانه‌های یک سرنخ: فعالیت، رکوردهای مرتبط، یادداشت‌ها و تاریخچه."
+
+#: horilla_crm/leads/views/lead_conversion.py:204
+#, python-format
+msgid "create %(model)s"
+msgstr "ایجاد %(model)s"

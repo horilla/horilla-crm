@@ -581,3 +581,7 @@ msgstr "کاربران دارای دسترسی"
 
 msgid "Roles With Access"
 msgstr "نقش‌های دارای دسترسی"
+
+#: horilla/contrib/meeting/templates/meeting/meeting_integration_settings.html:75
+msgid "Enabled  — users can now create meeting links"
+msgstr "فعال شد — کاربران اکنون می‌توانند لینک جلسه بسازند"

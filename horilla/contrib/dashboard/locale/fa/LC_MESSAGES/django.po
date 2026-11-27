@@ -654,3 +654,122 @@ msgstr "چیدمان به پیش‌فرض بازنشانی شد."
 
 msgid "Return the 403 page instead of crashing when a user cannot toggle the default dashboard. Offer custom fields in dashboard pickers, grouping and charts."
 msgstr "نمایش صفحه 403 به‌جای خطای سیستمی وقتی کاربر اجازه تغییر داشبورد پیش‌فرض را ندارد. ارائه فیلدهای سفارشی در انتخابگرها، گروه‌بندی و نمودارهای داشبورد."
+
+#: horilla/contrib/dashboard/models.py:580
+msgid "Onboarding State"
+msgstr "وضعیت راه‌اندازی"
+
+#: horilla/contrib/dashboard/models.py:581
+msgid "Onboarding States"
+msgstr "وضعیت‌های راه‌اندازی"
+
+#: horilla/contrib/dashboard/templates/home/onboarding.html:106
+msgid "Show Setup Guide"
+msgstr "نمایش راهنمای راه‌اندازی"
+
+#: horilla/contrib/dashboard/templates/home/onboarding.html:12
+#, python-format
+msgid "Get started with %(company)s"
+msgstr "شروع کار با %(company)s"
+
+#: horilla/contrib/dashboard/templates/home/onboarding.html:14
+#, python-format
+msgid "%(done)s of %(total)s steps done"
+msgstr "%(done)s از %(total)s مرحله انجام شد"
+
+#: horilla/contrib/dashboard/templates/home/onboarding.html:27
+msgid "Dismiss Setup Guide"
+msgstr "بستن راهنمای راه‌اندازی"
+
+#: horilla/contrib/dashboard/templates/home/onboarding.html:49
+msgid "done"
+msgstr "انجام شده"
+
+#: horilla/contrib/dashboard/templates/home/onboarding.html:5 horilla/contrib/dashboard/tour.py:85
+msgid "Get started"
+msgstr "شروع کار"
+
+#: horilla/contrib/dashboard/templates/home/onboarding.html:54
+msgid "next step"
+msgstr "مرحله‌ی بعد"
+
+#: horilla/contrib/dashboard/templates/home/onboarding.html:73
+#, python-format
+msgid "Next step · %(number)s of %(total)s"
+msgstr "مرحله‌ی بعد · %(number)s از %(total)s"
+
+#: horilla/contrib/dashboard/templates/home/onboarding.html:80
+msgid "Skip For Now"
+msgstr "فعلاً رد کن"
+
+#: horilla/contrib/dashboard/templates/home/onboarding.html:82
+msgid "Set Up Now"
+msgstr "همین حالا راه‌اندازی کن"
+
+#: horilla/contrib/dashboard/templates/home/onboarding.html:87
+msgid "You skipped the remaining steps. Click a step above whenever you are ready to set it up."
+msgstr "مراحل باقی‌مانده را رد کردید. هر وقت آماده بودید، روی یکی از مراحل بالا کلیک کنید تا آن را راه‌اندازی کنید."
+
+#: horilla/contrib/dashboard/tour.py:18
+msgid "Your home page"
+msgstr "صفحه‌ی خانه‌ی شما"
+
+#: horilla/contrib/dashboard/tour.py:20
+msgid "The overview you land on after signing in: date range, key numbers and charts."
+msgstr "نمای کلی‌ای که بعد از ورود می‌بینید: بازه‌ی تاریخ، اعداد کلیدی و نمودارها."
+
+#: horilla/contrib/dashboard/tour.py:32
+msgid "A quick look at how your business is doing today."
+msgstr "نگاهی سریع به وضعیت امروز کسب‌وکارتان."
+
+#: horilla/contrib/dashboard/tour.py:35
+msgid "Date range"
+msgstr "بازه‌ی تاریخ"
+
+#: horilla/contrib/dashboard/tour.py:36
+msgid "Change the period every number and chart is based on."
+msgstr "بازه‌ای را که همه‌ی اعداد و نمودارها بر اساس آن محاسبه می‌شوند تغییر دهید."
+
+#: horilla/contrib/dashboard/tour.py:41
+msgid "Key numbers"
+msgstr "اعداد کلیدی"
+
+#: horilla/contrib/dashboard/tour.py:42
+msgid "Your most important figures, as cards."
+msgstr "مهم‌ترین شاخص‌های شما، به‌صورت کارت."
+
+#: horilla/contrib/dashboard/tour.py:49
+msgid "Charts show your data at a glance. Each card sums up one part of the numbers above."
+msgstr "نمودارها داده‌های شما را در یک نگاه نشان می‌دهند. هر کارت بخشی از اعداد بالا را خلاصه می‌کند."
+
+#: horilla/contrib/dashboard/tour.py:59
+msgid "Tables"
+msgstr "جدول‌ها"
+
+#: horilla/contrib/dashboard/tour.py:61
+msgid "Lists of records you can scroll through and open without leaving the page."
+msgstr "فهرست‌هایی از رکوردها که بدون ترک صفحه می‌توانید مرورشان کنید و بازشان کنید."
+
+#: horilla/contrib/dashboard/tour.py:68
+msgid "Arrange your page"
+msgstr "چیدمان صفحه"
+
+#: horilla/contrib/dashboard/tour.py:69
+msgid "Reorder the cards and charts to suit the way you work."
+msgstr "ترتیب کارت‌ها و نمودارها را مطابق شیوه‌ی کارتان تغییر دهید."
+
+#: horilla/contrib/dashboard/tour.py:74
+msgid "All dashboards"
+msgstr "همه‌ی داشبوردها"
+
+#: horilla/contrib/dashboard/tour.py:76
+msgid "This button leads to the list of all your dashboards, where you can create new ones, organise them in folders and mark your favourites."
+msgstr "این دکمه شما را به فهرست همه‌ی داشبوردهایتان می‌برد؛ آنجا می‌توانید داشبورد جدید بسازید، داشبوردها را در پوشه‌ها مرتب کنید و موارد دلخواهتان را علامت بزنید."
+
+#: horilla/contrib/dashboard/tour.py:86
+msgid "A short checklist to finish setting up your CRM."
+msgstr "یک فهرست کوتاه برای تکمیل راه‌اندازی CRM شما."
+
+#: horilla/contrib/dashboard/views/dashboard_actions.py:65
+msgid "You don't have permission to change this dashboard."
+msgstr "اجازه‌ی تغییر این داشبورد را ندارید."

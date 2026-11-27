@@ -927,3 +927,11 @@ msgstr "انتخاب مراحل فرصت برای %(company_name)s"
 
 msgid "Primary Contact"
 msgstr "مخاطب اصلی"
+
+#: horilla_crm/opportunities/onboarding.py:15
+msgid "Set up your opportunity stages"
+msgstr "مراحل فرصت را تنظیم کنید"
+
+#: horilla_crm/opportunities/onboarding.py:16
+msgid "Define the stages your deals move through."
+msgstr "مراحلی را که معامله‌ها از آن‌ها عبور می‌کنند تعریف کنید."

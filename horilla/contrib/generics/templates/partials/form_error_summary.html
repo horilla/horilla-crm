@@ -8,7 +8,7 @@
                 {% if not field.is_hidden and field.errors %}
                     <a
                         href="#{{ field.id_for_label }}"
-                        class="inline-flex items-center gap-1 pl-3 pr-2 py-0.5 rounded-full bg-white border border-red-200 text-red-700 text-xs font-medium whitespace-nowrap hover:border-red-600 transition-colors"
+                        class="inline-flex items-center gap-1 ps-3 pe-2 py-0.5 rounded-full bg-white border border-red-200 text-red-700 text-xs font-medium whitespace-nowrap hover:border-red-600 transition-colors"
                         onclick="var e=document.getElementById('{{ field.id_for_label }}'); if(e){e.scrollIntoView({behavior:'smooth',block:'center'}); e.focus({preventScroll:true});} return false;"
                     >
                         {{ field.label }}

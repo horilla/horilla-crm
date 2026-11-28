@@ -232,10 +232,11 @@ def default_dates(kind, day):
 def note_form(form):
     """
     The desktop notes form without the file field (uploads come later) and
-    with a plain text box: the desktop rich-text editor isn't loaded on the
-    phone.
+    the pin switch (drawn by the desktop stream only), and with a plain text
+    box: the desktop rich-text editor isn't loaded on the phone.
     """
     form.fields.pop("file", None)
+    form.fields.pop("is_pinned", None)
     description = form.fields["description"]
     description.widget = forms.Textarea(attrs={"rows": 6})
     # Its help text describes a file's notes; here it is the note itself.

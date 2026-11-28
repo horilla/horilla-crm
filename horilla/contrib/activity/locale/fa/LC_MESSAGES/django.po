@@ -451,3 +451,135 @@ msgstr "محدود کردن گزینه‌های شیء مرتبط به رکور�
 
 msgid "This record is read-only."
 msgstr "این رکورد فقط خواندنی است."
+
+#: horilla/contrib/activity/dashboard.py:105 horilla/contrib/activity/dashboard.py:201
+msgid "Open Tasks by Owner"
+msgstr "وظایف باز بر اساس مسئول"
+
+#: horilla/contrib/activity/dashboard.py:110
+msgid "Unassigned"
+msgstr "بدون مسئول"
+
+#: horilla/contrib/activity/dashboard.py:138 horilla/contrib/activity/dashboard.py:201
+msgid "Open Tasks by Priority"
+msgstr "وظایف باز بر اساس اولویت"
+
+#: horilla/contrib/activity/dashboard.py:150
+msgid "Today's Meetings & Events"
+msgstr "جلسات و رویدادهای امروز"
+
+#: horilla/contrib/activity/dashboard.py:151
+msgid "Everything scheduled for today, earliest first"
+msgstr "همه‌ی برنامه‌های امروز، به ترتیب زمان"
+
+#: horilla/contrib/activity/dashboard.py:157
+msgid "No meetings or events today."
+msgstr "امروز جلسه یا رویدادی ندارید."
+
+#: horilla/contrib/activity/dashboard.py:163
+msgid "Starts At"
+msgstr "زمان شروع"
+
+#: horilla/contrib/activity/dashboard.py:173
+msgid "Tasks Due This Week"
+msgstr "وظایف این هفته"
+
+#: horilla/contrib/activity/dashboard.py:174
+msgid "Overdue tasks and tasks due in the next 7 days"
+msgstr "وظایف عقب‌افتاده و وظایفی که تا ۷ روز آینده سررسید دارند"
+
+#: horilla/contrib/activity/dashboard.py:181
+msgid "No tasks due this week. You're all caught up!"
+msgstr "این هفته وظیفه‌ای سررسید ندارد. همه‌ی کارها انجام شده است!"
+
+#: horilla/contrib/activity/dashboard.py:187
+msgid "Due"
+msgstr "سررسید"
+
+#: horilla/contrib/activity/dashboard.py:203
+msgid "Who has the most open tasks"
+msgstr "چه کسی بیشترین وظیفه‌ی باز را دارد"
+
+#: horilla/contrib/activity/dashboard.py:204
+msgid "Open tasks grouped by urgency"
+msgstr "وظایف باز بر اساس فوریت"
+
+#: horilla/contrib/activity/dashboard.py:55
+msgid "Overdue Tasks"
+msgstr "وظایف عقب‌افتاده"
+
+#: horilla/contrib/activity/dashboard.py:70
+msgid "Meetings Today"
+msgstr "جلسات امروز"
+
+#: horilla/contrib/activity/tour.py:108
+msgid "One activity in full: what it is, when it is due and who it is for."
+msgstr "یک فعالیت به‌طور کامل: چه کاری است، چه زمانی سررسید دارد و برای کیست."
+
+#: horilla/contrib/activity/tour.py:110
+msgid "The status of the activity. Click one to update where it stands."
+msgstr "وضعیت فعالیت. برای به‌روزرسانی وضعیت، روی یکی کلیک کنید."
+
+#: horilla/contrib/activity/tour.py:115
+msgid "The record this activity is for."
+msgstr "رکوردی که این فعالیت برای آن است."
+
+#: horilla/contrib/activity/tour.py:130
+msgid "Inside an Activity"
+msgstr "داخل یک فعالیت"
+
+#: horilla/contrib/activity/tour.py:132
+msgid "The status, details and tabs of an activity: the record it is for, notes and history."
+msgstr "وضعیت، جزئیات و زبانه‌های یک فعالیت: رکورد مرتبط، یادداشت‌ها و تاریخچه."
+
+#: horilla/contrib/activity/tour.py:30
+msgid "Working with Activities"
+msgstr "کار با فعالیت‌ها"
+
+#: horilla/contrib/activity/tour.py:32
+msgid "Find your tasks, meetings, calls and events, and open the record each one is for."
+msgstr "وظایف، جلسات، تماس‌ها و رویدادهایتان را پیدا کنید و رکورد مرتبط با هر کدام را باز کنید."
+
+#: horilla/contrib/activity/tour.py:46
+msgid "The tasks, meetings, calls and events you have to do, in one list."
+msgstr "وظایف، جلسات، تماس‌ها و رویدادهایی که باید انجام دهید، در یک فهرست."
+
+#: horilla/contrib/activity/tour.py:50
+msgid "Tabs"
+msgstr "زبانه‌ها"
+
+#: horilla/contrib/activity/tour.py:52
+msgid "Each tab shows one kind of activity: Tasks, Meetings, Calls or Events."
+msgstr "هر زبانه یک نوع فعالیت را نشان می‌دهد: وظایف، جلسات، تماس‌ها یا رویدادها."
+
+#: horilla/contrib/activity/tour.py:61
+msgid "Add a task, meeting, call or event."
+msgstr "یک وظیفه، جلسه، تماس یا رویداد اضافه کنید."
+
+#: horilla/contrib/activity/tour.py:68
+msgid "Open this menu to choose how the activities are shown."
+msgstr "برای انتخاب نحوه‌ی نمایش فعالیت‌ها، این منو را باز کنید."
+
+#: horilla/contrib/activity/tour.py:76 horilla/contrib/tour/presets.py:157
+msgid "Pick a Layout"
+msgstr "انتخاب چیدمان"
+
+#: horilla/contrib/activity/tour.py:77
+msgid "List shows rows. Kanban shows cards in columns."
+msgstr "لیست ردیف‌ها را نشان می‌دهد. کانبان کارت‌ها را در ستون‌ها نشان می‌دهد."
+
+#: horilla/contrib/activity/tour.py:85
+msgid "Open an Activity"
+msgstr "باز کردن یک فعالیت"
+
+#: horilla/contrib/activity/tour.py:86
+msgid "Click a subject to open the activity."
+msgstr "برای باز کردن فعالیت، روی موضوع آن کلیک کنید."
+
+#: horilla/contrib/activity/tour.py:92
+msgid "The record the activity is for. Click it to open that record."
+msgstr "رکوردی که فعالیت برای آن است. برای باز کردن آن رکورد کلیک کنید."
+
+#: horilla/contrib/activity/tour.py:98
+msgid "Edit, duplicate or delete the activity."
+msgstr "فعالیت را ویرایش، کپی یا حذف کنید."

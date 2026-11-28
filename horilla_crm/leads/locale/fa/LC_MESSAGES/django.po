@@ -1111,3 +1111,61 @@ msgstr "خلاصه، مراحل و زبانه‌های یک سرنخ: فعالی
 #, python-format
 msgid "create %(model)s"
 msgstr "ایجاد %(model)s"
+
+#: horilla_crm/leads/assignment/pool.py:348
+#, python-format
+msgid "All users selected in the “%(rule)s” assignment rule are currently unavailable."
+msgstr "همه‌ی کاربرانی که در قانون تخصیص «%(rule)s» انتخاب شده‌اند در حال حاضر در دسترس نیستند."
+
+#: horilla_crm/leads/assignment/pool.py:355
+msgid "Untick “Assign using rules” and select another user as the owner."
+msgstr "تیک «تخصیص با استفاده از قوانین» را بردارید و کاربر دیگری را به‌عنوان مالک انتخاب کنید."
+
+#: horilla_crm/leads/dashboard.py:183
+msgid "New Leads (7 Days)"
+msgstr "سرنخ‌های جدید (۷ روز)"
+
+#: horilla_crm/leads/dashboard.py:243
+msgid "Hot Leads"
+msgstr "سرنخ‌های داغ"
+
+#: horilla_crm/leads/dashboard.py:244
+msgid "Highest-revenue open leads that are still in play"
+msgstr "سرنخ‌های بازی که بیشترین درآمد را دارند و هنوز در جریان‌اند"
+
+#: horilla_crm/leads/dashboard.py:267
+msgid "Where your leads are coming from"
+msgstr "سرنخ‌هایتان از کجا می‌آیند"
+
+#: horilla_crm/leads/dashboard.py:268
+msgid "How leads are spread across the pipeline"
+msgstr "سرنخ‌ها چگونه در پایپ لاین پخش شده‌اند"
+
+#: horilla_crm/leads/form_mixins.py:508
+#, python-format
+msgid "%(user)s is unavailable until %(date)s. Choose another person rule “%(rule)s” assigns to."
+msgstr "%(user)s تا %(date)s در دسترس نیست. فرد دیگری را از میان کسانی که قانون «%(rule)s» به آن‌ها تخصیص می‌دهد انتخاب کنید."
+
+#: horilla_crm/leads/templates/lead_assignment_rule/assign_to_toggle.html:2
+msgid "Users on leave are skipped automatically when a lead is assigned."
+msgstr "کاربرانی که در مرخصی‌اند هنگام تخصیص سرنخ به‌طور خودکار کنار گذاشته می‌شوند."
+
+#: horilla_crm/leads/tour.py:24
+msgid "Working with the Leads List"
+msgstr "کار با فهرست سرنخ‌ها"
+
+#: horilla_crm/leads/tour.py:39
+msgid "A lead is a person or company that might become a customer."
+msgstr "سرنخ شخص یا شرکتی است که ممکن است مشتری شود."
+
+#: horilla_crm/leads/tour.py:47
+msgid "Inside a Lead"
+msgstr "داخل یک سرنخ"
+
+#: horilla_crm/leads/tour.py:62
+msgid "One lead in full: who they are and everything done with them."
+msgstr "یک سرنخ به‌طور کامل: چه کسی است و هر کاری که با او انجام شده است."
+
+#: horilla_crm/leads/tour.py:67
+msgid "Campaigns this lead is part of."
+msgstr "کمپین‌هایی که این سرنخ در آن‌ها عضو است."

@@ -306,3 +306,59 @@ msgstr "مشاهده سلسله‌مراتب"
 
 msgid "Opportunities"
 msgstr "فرصت‌ها"
+
+#: horilla_crm/accounts/dashboard.py:113 horilla_crm/accounts/dashboard.py:128
+msgid "Top Accounts by Revenue"
+msgstr "حساب‌های برتر بر اساس درآمد"
+
+#: horilla_crm/accounts/dashboard.py:129
+msgid "Accounts with the highest annual revenue"
+msgstr "حساب‌هایی که بیشترین درآمد سالانه را دارند"
+
+#: horilla_crm/accounts/tour.py:25
+msgid "Working with the Accounts List"
+msgstr "کار با فهرست حساب‌ها"
+
+#: horilla_crm/accounts/tour.py:27
+msgid "Find the companies you work with, switch layouts, select rows and add a new account."
+msgstr "شرکت‌هایی را که با آن‌ها کار می‌کنید پیدا کنید، چیدمان را تغییر دهید، ردیف‌ها را انتخاب کنید و حساب جدید اضافه کنید."
+
+#: horilla_crm/accounts/tour.py:40
+msgid "accounts"
+msgstr "حساب‌ها"
+
+#: horilla_crm/accounts/tour.py:41
+msgid "An account is a company you do business with."
+msgstr "حساب، شرکتی است که با آن کار می‌کنید."
+
+#: horilla_crm/accounts/tour.py:42
+msgid "Add a new account here. A short form opens."
+msgstr "از اینجا حساب جدید اضافه کنید. یک فرم کوتاه باز می‌شود."
+
+#: horilla_crm/accounts/tour.py:50
+msgid "Inside an Account"
+msgstr "داخل یک حساب"
+
+#: horilla_crm/accounts/tour.py:52
+msgid "The summary and tabs of an account: activity, contacts, deals, notes and history."
+msgstr "خلاصه و زبانه‌های یک حساب: فعالیت، مخاطبان، معامله‌ها، یادداشت‌ها و تاریخچه."
+
+#: horilla_crm/accounts/tour.py:65
+msgid "One account in full: the company, its contacts and deals."
+msgstr "یک حساب به‌طور کامل: شرکت، مخاطبان و معامله‌هایش."
+
+#: horilla_crm/accounts/tour.py:70
+msgid "Branches or subsidiaries of this company."
+msgstr "شعبه‌ها یا زیرمجموعه‌های این شرکت."
+
+#: horilla_crm/accounts/tour.py:75
+msgid "Deals with this company."
+msgstr "معامله‌ها با این شرکت."
+
+#: horilla_crm/accounts/tour.py:80
+msgid "People who work at this company."
+msgstr "افرادی که در این شرکت کار می‌کنند."
+
+#: horilla_crm/accounts/tour.py:85
+msgid "Other companies that work with this one, and their role."
+msgstr "شرکت‌های دیگری که با این شرکت همکاری دارند، و نقش آن‌ها."

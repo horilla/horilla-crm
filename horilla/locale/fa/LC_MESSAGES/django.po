@@ -4335,3 +4335,481 @@ msgstr "ایجادشده این ماه"
 #: templates/components/header.html:40
 msgid "My Records"
 msgstr "رکوردهای من"
+
+#: horilla/contrib/core/availability_select.py:160
+#, python-format
+msgid "%(user)s is unavailable until %(date)s."
+msgstr "%(user)s تا %(date)s در دسترس نیست."
+
+#: horilla/contrib/core/availability_select.py:61
+#, python-format
+msgid "Unavailable until %(date)s"
+msgstr "در دسترس نیست تا %(date)s"
+
+#: horilla/contrib/core/forms/base.py:186
+msgid "Repeat Every (Weeks)"
+msgstr "تکرار هر (هفته)"
+
+#: horilla/contrib/core/forms/base.py:187
+msgid "Repeat Every (Months)"
+msgstr "تکرار هر (ماه)"
+
+#: horilla/contrib/core/forms/base.py:205
+msgid "The weekday the holiday falls on, for example Monday."
+msgstr "روزی از هفته که تعطیلی در آن است، مثلاً دوشنبه."
+
+#: horilla/contrib/core/forms/base.py:208
+#, python-format
+msgid "Which one in the month, from %(low)s to %(high)s: 1 is the first, 2 the second, and so on. A month does not always have a fifth."
+msgstr "کدام یک در ماه، از %(low)s تا %(high)s: 1 یعنی اولی، 2 یعنی دومی و به همین ترتیب. هر ماهی پنجمی ندارد."
+
+#: horilla/contrib/core/forms/base.py:214
+msgid "The name of the holiday, for example Independence Day."
+msgstr "نام تعطیلی، مثلاً روز استقلال."
+
+#: horilla/contrib/core/forms/base.py:216
+#, python-format
+msgid "Date and time the holiday begins, between the years %(low)s and %(high)s. For a full day off, start at 00:00."
+msgstr "تاریخ و ساعت شروع تعطیلی، بین سال‌های %(low)s تا %(high)s. برای یک روز کامل تعطیل، از ساعت 00:00 شروع کنید."
+
+#: horilla/contrib/core/forms/base.py:221
+#, python-format
+msgid "Date and time the holiday ends. It cannot be before the start or more than %(days)s days after it. For a single full day, end at 23:59 of the same day."
+msgstr "تاریخ و ساعت پایان تعطیلی. نمی‌تواند قبل از شروع یا بیش از %(days)s روز بعد از آن باشد. برای یک روز کامل، ساعت 23:59 همان روز را بزنید."
+
+#: horilla/contrib/core/forms/base.py:227
+msgid "Turn on to give the holiday to every user. Turn off to choose the users it applies to. Turning it off also removes the holiday from any business hours it was added to."
+msgstr "روشن کنید تا این تعطیلی برای همه‌ی کاربران باشد. خاموش کنید تا کاربرانش را انتخاب کنید. خاموش کردن آن، تعطیلی را از ساعات کاری‌ای که به آن‌ها اضافه شده هم حذف می‌کند."
+
+#: horilla/contrib/core/forms/base.py:231
+msgid "Only the users picked here get this holiday."
+msgstr "فقط کاربرانی که اینجا انتخاب می‌شوند این تعطیلی را دارند."
+
+#: horilla/contrib/core/forms/base.py:233
+msgid "Turn on to repeat this holiday automatically. Leave it off for a one-time holiday."
+msgstr "روشن کنید تا این تعطیلی خودکار تکرار شود. برای تعطیلی یک‌باره خاموش بگذارید."
+
+#: horilla/contrib/core/forms/base.py:237
+msgid "How often the holiday repeats: every week, every month or every year. The fields below change to match."
+msgstr "هر چند وقت یک بار تعطیلی تکرار شود: هر هفته، هر ماه یا هر سال. فیلدهای پایین متناسب با آن تغییر می‌کنند."
+
+#: horilla/contrib/core/forms/base.py:241
+#, python-format
+msgid "How many weeks between repeats, from %(low)s to %(high)s. 1 is every week and 2 is every other week."
+msgstr "چند هفته بین هر تکرار، از %(low)s تا %(high)s. 1 یعنی هر هفته و 2 یعنی یک هفته در میان."
+
+#: horilla/contrib/core/forms/base.py:249
+msgid "The weekdays that are a holiday in each repeat, for example Saturday and Sunday for a weekly off."
+msgstr "روزهایی از هفته که در هر تکرار تعطیل‌اند، مثلاً پنج‌شنبه و جمعه برای تعطیلی هفتگی."
+
+#: horilla/contrib/core/forms/base.py:253
+msgid "On Day: the same date every month, such as the 5th. On the: the same weekday every month, such as the 2nd Monday."
+msgstr "در روز: همان تاریخ هر ماه، مثلاً پنجم. در: همان روز هفته در هر ماه، مثلاً دومین دوشنبه."
+
+#: horilla/contrib/core/forms/base.py:257
+#, python-format
+msgid "The date of the month, from %(low)s to %(high)s. A date above 28 does not exist in every month."
+msgstr "روز ماه، از %(low)s تا %(high)s. تاریخ‌های بالای 28 در همه‌ی ماه‌ها وجود ندارند."
+
+#: horilla/contrib/core/forms/base.py:262
+#, python-format
+msgid "How many months between repeats, from %(low)s to %(high)s. 1 is every month and 3 is every third month. Leave it empty for every month."
+msgstr "چند ماه بین هر تکرار، از %(low)s تا %(high)s. 1 یعنی هر ماه و 3 یعنی هر سه ماه یک بار. برای هر ماه خالی بگذارید."
+
+#: horilla/contrib/core/forms/base.py:272
+msgid "On every: the same date every year, such as 14 July. On the: a weekday of a month, such as the 2nd Monday of July."
+msgstr "در هر: همان تاریخ هر سال، مثلاً ۱۴ ژوئیه. در: یکی از روزهای هفته در یک ماه، مثلاً دومین دوشنبه‌ی ژوئیه."
+
+#: horilla/contrib/core/forms/base.py:275
+msgid "The month of the year the holiday falls in."
+msgstr "ماهی از سال که تعطیلی در آن است."
+
+#: horilla/contrib/core/forms/base.py:277
+#, python-format
+msgid "The date in that month, from %(low)s to %(high)s. It must exist in the month: February allows up to 29 and April up to 30."
+msgstr "روز آن ماه، از %(low)s تا %(high)s. باید در آن ماه وجود داشته باشد: فوریه تا 29 و آوریل تا 30."
+
+#: horilla/contrib/core/forms/base.py:412
+#, python-format
+msgid "%(low)s to %(high)s"
+msgstr "%(low)s تا %(high)s"
+
+#: horilla/contrib/core/forms/shift_hour.py:534
+#, python-format
+msgid "Enter both start and end for %(day)s, or leave both empty."
+msgstr "برای %(day)s هم شروع و هم پایان را وارد کنید، یا هر دو را خالی بگذارید."
+
+#: horilla/contrib/core/forms/shift_hour.py:550
+msgid "Start time is required when using the same hours every day."
+msgstr "وقتی برای همه‌ی روزها ساعت یکسان دارید، زمان شروع الزامی است."
+
+#: horilla/contrib/core/forms/shift_hour.py:551
+msgid "End time is required when using the same hours every day."
+msgstr "وقتی برای همه‌ی روزها ساعت یکسان دارید، زمان پایان الزامی است."
+
+#: horilla/contrib/core/forms/shift_hour.py:602
+#, python-format
+msgid "Break on %(day)s cannot cover the whole shift. Leave some working time."
+msgstr "استراحت %(day)s نمی‌تواند کل شیفت را بپوشاند. مقداری زمان کاری باقی بگذارید."
+
+#: horilla/contrib/core/forms/shift_hour.py:651
+#, python-format
+msgid "%(day)s is not a working day of the shift, so it cannot have a break."
+msgstr "%(day)s روز کاری این شیفت نیست، پس نمی‌تواند استراحت داشته باشد."
+
+#: horilla/contrib/core/forms/shift_hour.py:672
+msgid "Break start is required for this mode."
+msgstr "شروع استراحت برای این حالت الزامی است."
+
+#: horilla/contrib/core/forms/shift_hour.py:673
+msgid "Break end is required for this mode."
+msgstr "پایان استراحت برای این حالت الزامی است."
+
+#: horilla/contrib/core/forms/shift_hour.py:737
+#, python-format
+msgid "Break 1 and Break 2 overlap on %(day)s."
+msgstr "استراحت ۱ و استراحت ۲ در %(day)s با هم هم‌پوشانی دارند."
+
+#: horilla/contrib/core/models/attachments.py:61
+msgid "Pinned entries are shown first in the notes stream."
+msgstr "موارد سنجاق‌شده اول از همه در جریان یادداشت‌ها نمایش داده می‌شوند."
+
+#: horilla/contrib/core/models/attachments.py:97
+msgid "Attachment added"
+msgstr "پیوست اضافه شد"
+
+#: horilla/contrib/core/models/attachments.py:97
+msgid "Note added"
+msgstr "یادداشت اضافه شد"
+
+#: horilla/contrib/core/models/holidays.py:177
+msgid "Start date"
+msgstr "تاریخ شروع"
+
+#: horilla/contrib/core/models/holidays.py:178
+msgid "End date"
+msgstr "تاریخ پایان"
+
+#: horilla/contrib/core/models/holidays.py:185
+#, python-format
+msgid "%(label)s must be in the years %(low)s to %(high)s."
+msgstr "%(label)s باید در سال‌های %(low)s تا %(high)s باشد."
+
+#: horilla/contrib/core/models/holidays.py:199
+#, python-format
+msgid "A holiday cannot last more than %(days)s days."
+msgstr "یک تعطیلی نمی‌تواند بیش از %(days)s روز طول بکشد."
+
+#: horilla/contrib/core/models/holidays.py:210
+msgid "Select at least one day for weekly recurrence."
+msgstr "برای تکرار هفتگی دست‌کم یک روز را انتخاب کنید."
+
+#: horilla/contrib/core/models/holidays.py:218
+msgid "Recurs every (weeks)"
+msgstr "تکرار هر (هفته)"
+
+#: horilla/contrib/core/models/holidays.py:245
+msgid "Monthly interval"
+msgstr "فاصله ماهانه"
+
+#: horilla/contrib/core/models/holidays.py:255
+msgid "Please select a valid monthly repeat type."
+msgstr "لطفاً یک نوع تکرار ماهانه معتبر انتخاب کنید"
+
+#: horilla/contrib/core/models/holidays.py:263
+msgid "Month is required for yearly recurrence."
+msgstr "ماه برای تکرار سالانه الزامی است"
+
+#: horilla/contrib/core/models/holidays.py:277
+#, python-format
+msgid "%(month)s has at most %(days)s days."
+msgstr "%(month)s حداکثر %(days)s روز دارد."
+
+#: horilla/contrib/core/models/holidays.py:288
+msgid "Please select a valid yearly repeat type."
+msgstr "لطفاً یک نوع تکرار سالانه معتبر انتخاب کنید"
+
+#: horilla/contrib/core/models/holidays.py:296
+msgid "Day of week is required."
+msgstr "روز هفته الزامی است."
+
+#: horilla/contrib/core/models/holidays.py:303
+msgid "Week of month"
+msgstr "هفته ماه"
+
+#: horilla/contrib/core/models/holidays.py:321
+msgid "Frequency is required for recurring holidays."
+msgstr "تناوب برای تعطیلات تکرارشونده الزامی است"
+
+#: horilla/contrib/core/models/holidays.py:38
+#, python-format
+msgid "%(label)s is required."
+msgstr "%(label)s الزامی است."
+
+#: horilla/contrib/core/models/holidays.py:389
+#, python-format
+msgid "%(name)s is already a holiday for all users on these dates."
+msgstr "%(name)s در این تاریخ‌ها از قبل برای همه‌ی کاربران تعطیل است."
+
+#: horilla/contrib/core/models/holidays.py:399
+#, python-format
+msgid "%(name)s is already a holiday on these dates for %(users)s."
+msgstr "%(name)s در این تاریخ‌ها از قبل برای %(users)s تعطیل است."
+
+#: horilla/contrib/core/models/holidays.py:41
+#, python-format
+msgid "%(label)s must be between %(low)s and %(high)s."
+msgstr "%(label)s باید بین %(low)s و %(high)s باشد."
+
+#: horilla/contrib/core/models/holidays.py:515
+msgid "Not a recurring holiday"
+msgstr "تعطیلی تکرارشونده نیست"
+
+#: horilla/contrib/core/models/holidays.py:522
+#, python-format
+msgid "Every week on %(days)s"
+msgid_plural "Every %(count)s weeks on %(days)s"
+msgstr[0] "هر هفته در %(days)s"
+msgstr[1] "هر %(count)s هفته در %(days)s"
+
+#: horilla/contrib/core/models/holidays.py:537
+#, python-format
+msgid "%(nth)s %(weekday)s"
+msgstr "%(nth)s %(weekday)s"
+
+#: horilla/contrib/core/models/holidays.py:542 horilla/contrib/core/models/holidays.py:565
+msgid "Recurring holiday"
+msgstr "تعطیلی تکرارشونده"
+
+#: horilla/contrib/core/models/holidays.py:544
+#, python-format
+msgid "On the %(which)s of every month"
+msgid_plural "On the %(which)s of every %(count)s months"
+msgstr[0] "در %(which)s هر ماه"
+msgstr[1] "در %(which)s هر %(count)s ماه"
+
+#: horilla/contrib/core/models/holidays.py:552
+#, python-format
+msgid "Every year on %(day)s %(month)s"
+msgstr "هر سال در %(day)s %(month)s"
+
+#: horilla/contrib/core/models/holidays.py:559
+#, python-format
+msgid "On the %(nth)s %(weekday)s of %(month)s every year"
+msgstr "در %(nth)s %(weekday)s %(month)s هر سال"
+
+#: horilla/contrib/core/templates/import/import_step2.html:10
+msgid "Match each field to a column from your file. Fields marked"
+msgstr "هر فیلد را با یکی از ستون‌های فایلتان تطبیق دهید. فیلدهایی که علامت"
+
+#: horilla/contrib/core/templates/import/import_step2.html:116
+msgid "Fallback value (optional)"
+msgstr "مقدار جایگزین (اختیاری)"
+
+#: horilla/contrib/core/templates/import/import_step2.html:12
+msgid "are required. If a column is left empty in your file, the Fallback Value will be used instead."
+msgstr "دارند الزامی‌اند. اگر ستونی در فایلتان خالی باشد، به‌جای آن «مقدار جایگزین» استفاده می‌شود."
+
+#: horilla/contrib/core/templates/import/import_step2.html:133
+msgid "No example"
+msgstr "نمونه‌ای نیست"
+
+#: horilla/contrib/core/templates/import/import_step2.html:26
+msgid "Column in Your File"
+msgstr "ستون در فایل شما"
+
+#: horilla/contrib/core/templates/import/import_step2.html:28
+msgid "Fallback Value"
+msgstr "مقدار جایگزین"
+
+#: horilla/contrib/core/templates/import/import_step2.html:29
+msgid "Used when the file cell is empty"
+msgstr "وقتی خانه‌ی فایل خالی است استفاده می‌شود"
+
+#: horilla/contrib/core/templates/import/import_step2.html:31
+msgid "Example from File"
+msgstr "نمونه از فایل"
+
+#: horilla/contrib/core/templates/import/import_step2.html:57
+msgid "Select Column"
+msgstr "انتخاب ستون"
+
+#: horilla/contrib/core/templates/import/import_step2.html:83 horilla/contrib/core/templates/import/import_step2.html:100
+msgid "No fallback"
+msgstr "بدون جایگزین"
+
+#: horilla/contrib/core/templates/import/value_mapping_partial.html:10
+msgid "Import as"
+msgstr "وارد شود به‌عنوان"
+
+#: horilla/contrib/core/templates/import/value_mapping_partial.html:2
+msgid "Match values for"
+msgstr "تطبیق مقادیر برای"
+
+#: horilla/contrib/core/templates/import/value_mapping_partial.html:4
+msgid "These values were found in your file. Choose what each one should become."
+msgstr "این مقادیر در فایل شما پیدا شد. انتخاب کنید هر کدام به چه چیزی تبدیل شود."
+
+#: horilla/contrib/core/templates/import/value_mapping_partial.html:9
+msgid "Value in Your File"
+msgstr "مقدار در فایل شما"
+
+#: horilla/contrib/core/tests.py:301 horilla/contrib/core/tests.py:320 horilla/contrib/core/tests.py:325
+msgid "Help"
+msgstr "راهنما"
+
+#: horilla/contrib/core/tests.py:312 horilla/contrib/core/tests.py:334
+msgid "Panel"
+msgstr "پنل"
+
+#: horilla/contrib/core/views/branches.py:463
+msgid "Working Hours"
+msgstr "ساعات کاری"
+
+#: horilla/contrib/core/views/user_shift_hours.py:42
+msgid "My Shift Hours"
+msgstr "ساعات شیفت من"
+
+#: horilla/contrib/core/views/user_shift_hours.py:43
+msgid "View the shift hours assigned to you."
+msgstr "ساعات شیفتی را که به شما اختصاص داده شده ببینید."
+
+#: horilla/contrib/tour/presets.py:105
+msgid "Pin a View"
+msgstr "سنجاق کردن نما"
+
+#: horilla/contrib/tour/presets.py:139
+msgid "Build a Filter"
+msgstr "ساختن فیلتر"
+
+#: horilla/contrib/tour/presets.py:176
+msgid "Action Menu"
+msgstr "منوی اقدامات"
+
+#: horilla/contrib/tour/presets.py:195
+msgid "Select Rows"
+msgstr "انتخاب ردیف‌ها"
+
+#: horilla/contrib/tour/presets.py:200
+msgid "Bulk Actions"
+msgstr "اقدامات گروهی"
+
+#: horilla/contrib/tour/presets.py:223
+msgid "Open a Record"
+msgstr "باز کردن رکورد"
+
+#: horilla/contrib/tour/presets.py:229
+msgid "Row Actions"
+msgstr "اقدامات ردیف"
+
+#: horilla/contrib/tour/presets.py:271
+msgid "Records linked to this one."
+msgstr "رکوردهایی که به این رکورد پیوند دارند."
+
+#: horilla/contrib/tour/presets.py:291
+msgid "Record Page"
+msgstr "صفحه‌ی رکورد"
+
+#: horilla/contrib/tour/presets.py:83
+msgid "Welcome to Your {records}"
+msgstr "به فهرست {records} خوش آمدید"
+
+#: horilla/contrib/tour/presets.py:92
+msgid "Where You Are"
+msgstr "کجا هستید"
+
+#: horilla/contrib/tour/presets.py:97
+msgid "Saved Views"
+msgstr "نماهای ذخیره‌شده"
+
+#: horilla/contrib/tour/settings_tour.py:111
+msgid "Manage your company, users and system configuration. This short tour shows how the page is laid out."
+msgstr "شرکت، کاربران و پیکربندی سیستم را مدیریت کنید. این راهنمای کوتاه نشان می‌دهد صفحه چگونه چیده شده است."
+
+#: horilla/contrib/tour/settings_tour.py:116
+msgid "Search Settings"
+msgstr "جستجو در تنظیمات"
+
+#: horilla/contrib/tour/settings_tour.py:118
+msgid "Type what you are looking for, such as a user, a role or a currency. The matches are grouped by section, and a click opens the page."
+msgstr "چیزی را که دنبالش هستید تایپ کنید، مثلاً یک کاربر، یک نقش یا یک ارز. نتایج بر اساس بخش گروه‌بندی می‌شوند و با یک کلیک صفحه باز می‌شود."
+
+#: horilla/contrib/tour/settings_tour.py:126
+msgid "Sections"
+msgstr "بخش‌ها"
+
+#: horilla/contrib/tour/settings_tour.py:128
+msgid "Settings are grouped into sections, such as General. You only see the sections and pages your role may open."
+msgstr "تنظیمات در بخش‌هایی مثل «عمومی» گروه‌بندی شده‌اند. فقط بخش‌ها و صفحه‌هایی را می‌بینید که نقش شما اجازه‌ی باز کردنشان را دارد."
+
+#: horilla/contrib/tour/settings_tour.py:135
+msgid "Open a Page"
+msgstr "باز کردن یک صفحه"
+
+#: horilla/contrib/tour/settings_tour.py:137
+msgid "Click a page to open it on the right. The page you are on is marked."
+msgstr "روی یک صفحه کلیک کنید تا در کنار باز شود. صفحه‌ای که در آن هستید علامت خورده است."
+
+#: horilla/contrib/tour/settings_tour.py:143
+msgid "Open or Close a Section"
+msgstr "باز یا بسته کردن یک بخش"
+
+#: horilla/contrib/tour/settings_tour.py:144
+msgid "Click a section name to show its pages or hide them."
+msgstr "برای نمایش یا پنهان کردن صفحه‌های یک بخش، روی نام آن کلیک کنید."
+
+#: horilla/contrib/tour/settings_tour.py:149 horilla/contrib/tour/settings_tour.py:205
+msgid "The Page"
+msgstr "صفحه"
+
+#: horilla/contrib/tour/settings_tour.py:151
+msgid "The page you pick opens here. Edit or add records in place without leaving Settings."
+msgstr "صفحه‌ای که انتخاب می‌کنید اینجا باز می‌شود. بدون ترک تنظیمات، رکوردها را همان‌جا ویرایش یا اضافه کنید."
+
+#: horilla/contrib/tour/settings_tour.py:164
+msgid "Finding Your Way in My Settings"
+msgstr "آشنایی با تنظیمات من"
+
+#: horilla/contrib/tour/settings_tour.py:166
+msgid "Your profile, password, regional formats, login history, holidays and shift hours."
+msgstr "نمایه، رمز عبور، قالب‌های منطقه‌ای، تاریخچه‌ی ورود، تعطیلات و ساعات شیفت شما."
+
+#: horilla/contrib/tour/settings_tour.py:185
+msgid "Manage your personal profile, password and preferences. These settings only change your own account."
+msgstr "نمایه‌ی شخصی، رمز عبور و ترجیحاتتان را مدیریت کنید. این تنظیمات فقط حساب کاربری خودتان را تغییر می‌دهند."
+
+#: horilla/contrib/tour/settings_tour.py:190 horilla/contrib/tour/tour.py:110
+msgid "Your Profile"
+msgstr "نمایه‌ی شما"
+
+#: horilla/contrib/tour/settings_tour.py:191
+msgid "Your name and role. Click it to open and edit your profile."
+msgstr "نام و نقش شما. برای باز کردن و ویرایش نمایه‌تان روی آن کلیک کنید."
+
+#: horilla/contrib/tour/settings_tour.py:196
+msgid "Your Pages"
+msgstr "صفحه‌های شما"
+
+#: horilla/contrib/tour/settings_tour.py:198
+msgid "Regional and formatting, password, login history, holidays and shift hours. Click one to open it on the right."
+msgstr "منطقه و قالب‌بندی، رمز عبور، تاریخچه‌ی ورود، تعطیلات و ساعات شیفت. روی یکی کلیک کنید تا در کنار باز شود."
+
+#: horilla/contrib/tour/settings_tour.py:206
+msgid "The page you pick opens here, and you can change it in place."
+msgstr "صفحه‌ای که انتخاب می‌کنید اینجا باز می‌شود و می‌توانید همان‌جا تغییرش دهید."
+
+#: horilla/contrib/tour/settings_tour.py:89
+msgid "Finding Your Way in Settings"
+msgstr "آشنایی با تنظیمات"
+
+#: horilla/contrib/tour/settings_tour.py:91
+msgid "Search the settings, open a section and see where each page opens."
+msgstr "در تنظیمات جستجو کنید، یک بخش را باز کنید و ببینید هر صفحه کجا باز می‌شود."
+
+#: horilla/contrib/tour/tour.py:31
+msgid "Find Your Way Around"
+msgstr "آشنایی با محیط"
+
+#: horilla/contrib/tour/tour.py:61
+msgid "Quick Actions"
+msgstr "اقدامات سریع"

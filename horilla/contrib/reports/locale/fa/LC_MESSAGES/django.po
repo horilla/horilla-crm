@@ -447,3 +447,127 @@ msgstr "مقدار فیلتر نامعتبر: {}"
 
 msgid "Accept custom fields as report columns, including detail virtual fields."
 msgstr "پذیرش فیلدهای سفارشی به‌عنوان ستون گزارش، از جمله فیلدهای مجازی جزئیات."
+
+#: horilla/contrib/reports/tour.py:104
+msgid "The Reports"
+msgstr "گزارش‌ها"
+
+#: horilla/contrib/reports/tour.py:105
+msgid "Or tick only the ones you need."
+msgstr "یا فقط موارد موردنیازتان را تیک بزنید."
+
+#: horilla/contrib/reports/tour.py:111
+msgid "Click Create to add them to your reports."
+msgstr "برای افزودن آن‌ها به گزارش‌هایتان «ایجاد» را بزنید."
+
+#: horilla/contrib/reports/tour.py:123
+msgid "Inside a Report"
+msgstr "داخل یک گزارش"
+
+#: horilla/contrib/reports/tour.py:125
+msgid "The summary, the pivot table, the list of records and the chart of a report."
+msgstr "خلاصه، جدول محوری، فهرست رکوردها و نمودار یک گزارش."
+
+#: horilla/contrib/reports/tour.py:138
+msgid "Your Report"
+msgstr "گزارش شما"
+
+#: horilla/contrib/reports/tour.py:139
+msgid "The report's name, and the kind of record it covers."
+msgstr "نام گزارش و نوع رکوردی که پوشش می‌دهد."
+
+#: horilla/contrib/reports/tour.py:145
+msgid "Go back to the list of reports."
+msgstr "به فهرست گزارش‌ها برگردید."
+
+#: horilla/contrib/reports/tour.py:151
+msgid "Reload the report with the latest data."
+msgstr "گزارش را با آخرین داده‌ها دوباره بارگذاری کنید."
+
+#: horilla/contrib/reports/tour.py:158
+msgid "Change the report: its columns, grouping and filters."
+msgstr "گزارش را تغییر دهید: ستون‌ها، گروه‌بندی و فیلترهای آن."
+
+#: horilla/contrib/reports/tour.py:165
+msgid "Save the report as an Excel or CSV file."
+msgstr "گزارش را به‌صورت فایل اکسل یا CSV ذخیره کنید."
+
+#: horilla/contrib/reports/tour.py:176
+msgid "How many records are in this report."
+msgstr "تعداد رکوردهای این گزارش."
+
+#: horilla/contrib/reports/tour.py:183
+msgid "How the records are grouped, for example by industry. Click it to change it."
+msgstr "نحوه‌ی گروه‌بندی رکوردها، مثلاً بر اساس صنعت. برای تغییر آن کلیک کنید."
+
+#: horilla/contrib/reports/tour.py:192
+msgid "The conditions that narrow the records. None means every record is included."
+msgstr "شرط‌هایی که رکوردها را محدود می‌کنند. «هیچ» یعنی همه‌ی رکوردها شامل می‌شوند."
+
+#: horilla/contrib/reports/tour.py:199
+msgid "No Data Yet"
+msgstr "هنوز داده‌ای نیست"
+
+#: horilla/contrib/reports/tour.py:201
+msgid "This report has no records yet. It fills in when there is data to show; use Reload to refresh it."
+msgstr "این گزارش هنوز رکوردی ندارد. وقتی داده‌ای برای نمایش باشد پر می‌شود؛ برای تازه کردن آن از «بارگذاری مجدد» استفاده کنید."
+
+#: horilla/contrib/reports/tour.py:209
+msgid "Pivot, Details, Chart"
+msgstr "محوری، جزئیات، نمودار"
+
+#: horilla/contrib/reports/tour.py:210
+msgid "Show the same data as a table of totals, a list or a chart."
+msgstr "همین داده‌ها را به‌صورت جدول جمع‌ها، فهرست یا نمودار ببینید."
+
+#: horilla/contrib/reports/tour.py:217
+msgid "The records counted and added up for each group."
+msgstr "رکوردهایی که برای هر گروه شمرده و جمع زده شده‌اند."
+
+#: horilla/contrib/reports/tour.py:225
+msgid "Every record behind the numbers. Click a heading to sort."
+msgstr "همه‌ی رکوردهای پشت این اعداد. برای مرتب‌سازی روی عنوان ستون کلیک کنید."
+
+#: horilla/contrib/reports/tour.py:233
+msgid "Show this table on a dashboard."
+msgstr "این جدول را در یک داشبورد نمایش دهید."
+
+#: horilla/contrib/reports/tour.py:254
+msgid "The same numbers as a chart."
+msgstr "همین اعداد به‌صورت نمودار."
+
+#: horilla/contrib/reports/tour.py:261 horilla/contrib/dashboard/tour.py:277
+msgid "Chart Options"
+msgstr "گزینه‌های نمودار"
+
+#: horilla/contrib/reports/tour.py:263
+msgid "Change the chart type, save it as a PDF or PNG, or add it to a dashboard."
+msgstr "نوع نمودار را تغییر دهید، آن را به‌صورت PDF یا PNG ذخیره کنید یا به یک داشبورد اضافه کنید."
+
+#: horilla/contrib/reports/tour.py:38
+msgid "Getting Started with Reports"
+msgstr "شروع کار با گزارش‌ها"
+
+#: horilla/contrib/reports/tour.py:40
+msgid "Open the gear to load ready-made reports, so you do not have to start from scratch."
+msgstr "چرخ‌دنده را باز کنید تا گزارش‌های آماده بارگذاری شوند و لازم نباشد از صفر شروع کنید."
+
+#: horilla/contrib/reports/tour.py:53
+msgid "Reports turn your CRM data into tables and charts."
+msgstr "گزارش‌ها داده‌های CRM شما را به جدول و نمودار تبدیل می‌کنند."
+
+#: horilla/contrib/reports/tour.py:57
+msgid "Click the gear for more options."
+msgstr "برای گزینه‌های بیشتر روی چرخ‌دنده کلیک کنید."
+
+#: horilla/contrib/reports/tour.py:71
+msgid "Adds ready-made reports, such as Leads by Source or Sales Forecast, so you do not have to start from scratch."
+msgstr "گزارش‌های آماده‌ای مثل «سرنخ‌ها بر اساس منبع» یا «پیش‌بینی فروش» اضافه می‌کند تا لازم نباشد از صفر شروع کنید."
+
+#: horilla/contrib/reports/tour.py:87
+msgid "Choose the ready-made reports you want to add."
+msgstr "گزارش‌های آماده‌ای را که می‌خواهید اضافه کنید انتخاب کنید."
+
+#: horilla/contrib/reports/tour.py:99
+msgid "Tick this to choose every report at once."
+msgstr "برای انتخاب همه‌ی گزارش‌ها با هم، این را تیک بزنید."

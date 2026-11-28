@@ -218,3 +218,51 @@ msgstr "افزودن به‌عنوان مخاطب"
 
 msgid "Link Leads"
 msgstr "پیوند سرنخ‌ها"
+
+#: horilla_crm/contacts/tour.py:25
+msgid "Working with the Contacts List"
+msgstr "کار با فهرست مخاطبان"
+
+#: horilla_crm/contacts/tour.py:27
+msgid "Find the people you deal with, switch layouts, select rows and add a new contact."
+msgstr "افرادی را که با آن‌ها سروکار دارید پیدا کنید، چیدمان را تغییر دهید، ردیف‌ها را انتخاب کنید و مخاطب جدید اضافه کنید."
+
+#: horilla_crm/contacts/tour.py:40
+msgid "contacts"
+msgstr "مخاطبین"
+
+#: horilla_crm/contacts/tour.py:41
+msgid "A contact is a person you deal with, usually at an account."
+msgstr "مخاطب کسی است که با او سروکار دارید، معمولاً در یک حساب."
+
+#: horilla_crm/contacts/tour.py:42
+msgid "Add a new contact here. A short form opens."
+msgstr "از اینجا مخاطب جدید اضافه کنید. یک فرم کوتاه باز می‌شود."
+
+#: horilla_crm/contacts/tour.py:50
+msgid "Inside a Contact"
+msgstr "داخل یک مخاطب"
+
+#: horilla_crm/contacts/tour.py:52
+msgid "The summary and tabs of a contact: activity, related records, notes and history."
+msgstr "خلاصه و زبانه‌های یک مخاطب: فعالیت، رکوردهای مرتبط، یادداشت‌ها و تاریخچه."
+
+#: horilla_crm/contacts/tour.py:65
+msgid "One contact in full: the person and everything linked to them."
+msgstr "یک مخاطب به‌طور کامل: خود شخص و هر چیزی که به او پیوند دارد."
+
+#: horilla_crm/contacts/tour.py:70
+msgid "Contacts grouped under this one."
+msgstr "مخاطبانی که زیرمجموعه‌ی این مخاطب‌اند."
+
+#: horilla_crm/contacts/tour.py:75
+msgid "Campaigns this person is part of."
+msgstr "کمپین‌هایی که این شخص در آن‌ها عضو است."
+
+#: horilla_crm/contacts/tour.py:80
+msgid "Deals this person takes part in."
+msgstr "معامله‌هایی که این شخص در آن‌ها نقش دارد."
+
+#: horilla_crm/contacts/tour.py:85
+msgid "The companies this person belongs to."
+msgstr "شرکت‌هایی که این شخص به آن‌ها تعلق دارد."

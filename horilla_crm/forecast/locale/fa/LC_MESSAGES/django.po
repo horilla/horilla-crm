@@ -448,3 +448,433 @@ msgstr ""
 
 msgid "Filter Opportunities"
 msgstr "فیلتر فرصت‌ها"
+
+#: horilla_crm/forecast/forms.py:248
+msgid "Also Change the Role Total"
+msgstr "مجموع نقش هم تغییر کند"
+
+#: horilla_crm/forecast/forms.py:252
+msgid "Make the role target equal to what its targets add up to after this change. Leave off to keep the role target as it was."
+msgstr "هدف نقش برابر با جمع هدف‌هایش پس از این تغییر شود. برای نگه داشتن هدف نقش به همان شکل قبل، خاموش بگذارید."
+
+#: horilla_crm/forecast/forms.py:62
+msgid "Target Is for the Whole Role"
+msgstr "هدف برای کل نقش است"
+
+#: horilla_crm/forecast/forms.py:63
+msgid "Enter one total and divide it among the users in the role"
+msgstr "یک مجموع وارد کنید و آن را بین کاربران نقش تقسیم کنید"
+
+#: horilla_crm/forecast/forms.py:78
+msgid "Include Roles Below"
+msgstr "شامل نقش‌های پایین‌تر"
+
+#: horilla_crm/forecast/forms.py:80
+msgid "Divide the total across this role and every role below it, by role"
+msgstr "مجموع را بین این نقش و همه‌ی نقش‌های زیر آن، به تفکیک نقش، تقسیم کنید"
+
+#: horilla_crm/forecast/models.py:588
+#, python-format
+msgid "This target is part of the %(role)s role target of %(total)s. After deleting it, the role's targets will add up to %(after)s."
+msgstr "این هدف بخشی از هدف نقش %(role)s به مبلغ %(total)s است. پس از حذف آن، جمع هدف‌های این نقش %(after)s می‌شود."
+
+#: horilla_crm/forecast/templates/forecast_navbar.html:24
+msgid "My Team"
+msgstr "تیم من"
+
+#: horilla_crm/forecast/templates/forecast_navbar.html:5
+msgid "My Team Forecast"
+msgstr "پیش‌بینی تیم من"
+
+#: horilla_crm/forecast/templates/forecast_role_row.html:23
+msgid "Show or hide the roles below"
+msgstr "نمایش یا پنهان کردن نقش‌های پایین‌تر"
+
+#: horilla_crm/forecast/templates/forecast_role_row.html:34
+msgid "No Role"
+msgstr "بدون نقش"
+
+#: horilla_crm/forecast/templates/forecast_role_row.html:42 horilla_crm/forecast/templates/forecast_target/whole_role_section.html:90
+msgid "Show or hide the users in this role"
+msgstr "نمایش یا پنهان کردن کاربران این نقش"
+
+#: horilla_crm/forecast/templates/forecast_role_row.html:52
+#, python-format
+msgid "%(counter)s user"
+msgid_plural "%(counter)s users"
+msgstr[0] "%(counter)s کاربر"
+msgstr[1] "%(counter)s کاربر"
+
+#: horilla_crm/forecast/templates/forecast_role_row.html:56
+#, python-format
+msgid "%(count)s in team"
+msgstr "%(count)s نفر در تیم"
+
+#: horilla_crm/forecast/templates/forecast_role_row.html:62
+#, python-format
+msgid "Role target %(total)s"
+msgstr "هدف نقش %(total)s"
+
+#: horilla_crm/forecast/templates/forecast_role_row.html:66
+msgid "The targets of this role no longer add up to the role target that was set."
+msgstr "جمع هدف‌های این نقش دیگر با هدف تعیین‌شده برای نقش برابر نیست."
+
+#: horilla_crm/forecast/templates/forecast_role_row.html:67
+#, python-format
+msgid "Role target %(total)s &middot; now %(now)s"
+msgstr "هدف نقش %(total)s &middot; اکنون %(now)s"
+
+#: horilla_crm/forecast/templates/forecast_role_users.html:13
+msgid "No users to show for this role."
+msgstr "کاربری برای نمایش در این نقش نیست."
+
+#: horilla_crm/forecast/templates/forecast_role_users.html:24
+msgid "Loading More Users"
+msgstr "در حال بارگذاری کاربران بیشتر"
+
+#: horilla_crm/forecast/templates/forecast_role_users.html:32
+msgid "Load More Users"
+msgstr "بارگذاری کاربران بیشتر"
+
+#: horilla_crm/forecast/templates/forecast_target/forecast_target_form.html:15
+msgid "User: set a target for one or more users. Role: enter one total and divide it among the users in that role. Role Hierarchy: divide the total across the role and every role under it."
+msgstr "کاربر: برای یک یا چند کاربر هدف تعیین کنید. نقش: یک مجموع وارد کنید و آن را بین کاربران آن نقش تقسیم کنید. سلسله‌مراتب نقش: مجموع را بین آن نقش و همه‌ی نقش‌های زیرش تقسیم کنید."
+
+#: horilla_crm/forecast/templates/forecast_target/forecast_target_form.html:19
+msgid "Set Target For"
+msgstr "تعیین هدف برای"
+
+#: horilla_crm/forecast/templates/forecast_target/forecast_target_form.html:25
+msgid "Role Hierarchy"
+msgstr "سلسله‌مراتب نقش"
+
+#: horilla_crm/forecast/templates/forecast_target/role_target_col.html:10
+#, python-format
+msgid "Split among %(count)s users"
+msgstr "تقسیم بین %(count)s کاربر"
+
+#: horilla_crm/forecast/templates/forecast_target/role_target_col.html:14 horilla_crm/forecast/templates/forecast_target/role_targets_section.html:58
+msgid "The targets of this role total no longer add up to the role target that was set."
+msgstr "جمع هدف‌های این نقش دیگر با هدف تعیین‌شده برای نقش برابر نیست."
+
+#: horilla_crm/forecast/templates/forecast_target/role_target_col.html:15
+#, python-format
+msgid "Now adds up to %(now)s"
+msgstr "اکنون جمع آن %(now)s است"
+
+#: horilla_crm/forecast/templates/forecast_target/role_target_users.html:34 horilla_crm/forecast/templates/forecast_target/role_target_users.html:35 horilla_crm/forecast/templates/forecast_target/role_targets_section.html:79 horilla_crm/forecast/templates/forecast_target/role_targets_section.html:80
+msgid "Edit Role Target"
+msgstr "ویرایش هدف نقش"
+
+#: horilla_crm/forecast/templates/forecast_target/role_target_users.html:66
+msgid "No users to show for this role total."
+msgstr "کاربری برای نمایش در این مجموع نقش نیست."
+
+#: horilla_crm/forecast/templates/forecast_target/role_target_users.html:77
+msgid "Loading more users..."
+msgstr "در حال بارگذاری کاربران بیشتر..."
+
+#: horilla_crm/forecast/templates/forecast_target/role_targets_section.html:16 horilla_crm/forecast/templates/forecast_target/whole_role_toggle.html:12 horilla_crm/forecast/views/forecast_target.py:622 horilla_crm/forecast/views/forecast_target.py:639
+msgid "Role Target"
+msgstr "هدف نقش"
+
+#: horilla_crm/forecast/templates/forecast_target/role_targets_section.html:17
+msgid "Adds Up To"
+msgstr "جمع می‌شود"
+
+#: horilla_crm/forecast/templates/forecast_target/role_targets_section.html:19
+msgid "Set On"
+msgstr "تعیین‌شده در"
+
+#: horilla_crm/forecast/templates/forecast_target/role_targets_section.html:32
+msgid "Show or hide the users of this role target"
+msgstr "نمایش یا پنهان کردن کاربران این هدف نقش"
+
+#: horilla_crm/forecast/templates/forecast_target/role_targets_section.html:46
+msgid "Includes roles below"
+msgstr "شامل نقش‌های پایین‌تر"
+
+#: horilla_crm/forecast/templates/forecast_target/role_targets_section.html:59
+msgid "Does not match"
+msgstr "برابر نیست"
+
+#: horilla_crm/forecast/templates/forecast_target/role_targets_section.html:61
+msgid "Matches"
+msgstr "برابر است"
+
+#: horilla_crm/forecast/templates/forecast_target/role_targets_section.html:65
+msgid "your users only"
+msgstr "فقط کاربران شما"
+
+#: horilla_crm/forecast/templates/forecast_target/role_targets_section.html:70
+msgid "visible"
+msgstr "قابل مشاهده"
+
+#: horilla_crm/forecast/templates/forecast_target/role_targets_section.html:8
+msgid "Role Targets"
+msgstr "هدف‌های نقش"
+
+#: horilla_crm/forecast/templates/forecast_target/role_targets_section.html:9
+msgid "One row per role total. Open a row to see its users."
+msgstr "یک ردیف برای هر مجموع نقش. برای دیدن کاربرانش، ردیف را باز کنید."
+
+#: horilla_crm/forecast/templates/forecast_target/role_targets_section.html:94
+msgid "Individual Targets"
+msgstr "هدف‌های فردی"
+
+#: horilla_crm/forecast/templates/forecast_target/role_total_form.html:18
+#, python-format
+msgid "%(role)s Role Target"
+msgstr "هدف نقش %(role)s"
+
+#: horilla_crm/forecast/templates/forecast_target/role_total_form.html:34
+#, python-format
+msgid "Only the %(count)s users in this role are changed, each by the same proportion, so they add up to the new figure. They now add up to %(current)s. The role target above it follows if it matched before."
+msgstr "فقط %(count)s کاربر این نقش، هر کدام به یک نسبت، تغییر می‌کنند تا جمعشان برابر رقم جدید شود. اکنون جمعشان %(current)s است. اگر هدف نقش بالاتر قبلاً برابر بوده، آن هم همراه می‌شود."
+
+#: horilla_crm/forecast/templates/forecast_target/role_total_form.html:36
+#, python-format
+msgid "Every one of the %(count)s users' targets is changed by the same proportion, so they add up to the new role target. They now add up to %(current)s."
+msgstr "هدف هر یک از %(count)s کاربر به یک نسبت تغییر می‌کند تا جمعشان برابر هدف جدید نقش شود. اکنون جمعشان %(current)s است."
+
+#: horilla_crm/forecast/templates/forecast_target/target_update_form.html:17
+#, python-format
+msgid "Part of the %(role)s role target of <b>%(total)s</b>. The other targets add up to <b>%(others)s</b>."
+msgstr "بخشی از هدف نقش %(role)s به مبلغ <b>%(total)s</b>. جمع هدف‌های دیگر <b>%(others)s</b> است."
+
+#: horilla_crm/forecast/templates/forecast_target/target_update_form.html:20
+msgid "The role's targets will still add up to the role target."
+msgstr "جمع هدف‌های نقش همچنان برابر هدف نقش می‌ماند."
+
+#: horilla_crm/forecast/templates/forecast_target/target_update_form.html:22
+msgid "The role target will change to"
+msgstr "هدف نقش تغییر می‌کند به"
+
+#: horilla_crm/forecast/templates/forecast_target/target_update_form.html:25
+msgid "The role's targets will add up to"
+msgstr "جمع هدف‌های نقش می‌شود"
+
+#: horilla_crm/forecast/templates/forecast_target/target_update_form.html:26
+msgid "from the role target"
+msgstr "از هدف نقش"
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:110
+msgid "Share for role"
+msgstr "سهم برای نقش"
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:134 horilla_crm/forecast/templates/forecast_target/whole_role_section.html:162
+msgid "Share for"
+msgstr "سهم برای"
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:182 horilla_crm/forecast/views/forecast_target.py:834
+msgid "No users in this role or the roles below it are available to you."
+msgstr "هیچ کاربری در این نقش یا نقش‌های زیر آن در دسترس شما نیست."
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:184 horilla_crm/forecast/views/forecast_target.py:836
+msgid "No users in this role are available to you."
+msgstr "هیچ کاربری در این نقش در دسترس شما نیست."
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:187
+msgid "Select a role to split the target among its users."
+msgstr "برای تقسیم هدف بین کاربران یک نقش، آن نقش را انتخاب کنید."
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:259
+msgid "Over By"
+msgstr "بیشتر به میزان"
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:259
+msgid "Remaining"
+msgstr "باقی‌مانده"
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:44
+msgid "Each role's share is divided equally among its users and saved as a normal target for each. Shares start equal per user, so a role with more users gets more. They must add up to the role target."
+msgstr "سهم هر نقش به‌طور مساوی بین کاربرانش تقسیم و برای هر کدام به‌عنوان یک هدف عادی ذخیره می‌شود. سهم‌ها در ابتدا برای هر کاربر برابرند، پس نقشی که کاربران بیشتری دارد سهم بیشتری می‌گیرد. جمع سهم‌ها باید برابر هدف نقش باشد."
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:46
+msgid "Each share is saved as a normal target for that user. The shares must add up to the role target."
+msgstr "هر سهم به‌عنوان یک هدف عادی برای آن کاربر ذخیره می‌شود. جمع سهم‌ها باید برابر هدف نقش باشد."
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:49
+msgid "Split By Role"
+msgstr "تقسیم بر اساس نقش"
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:49
+msgid "Split By User"
+msgstr "تقسیم بر اساس کاربر"
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:54
+msgid "Fully Split"
+msgstr "کاملاً تقسیم شد"
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:60
+msgid "Split Equally"
+msgstr "تقسیم مساوی"
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:70 horilla_crm/forecast/templates/forecast_target/whole_role_section.html:75
+msgid "Share"
+msgstr "سهم"
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_section.html:71
+msgid "Per User"
+msgstr "برای هر کاربر"
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_toggle.html:10
+msgid "Divided equally among the users in this role. You can change each share below."
+msgstr "به‌طور مساوی بین کاربران این نقش تقسیم شده است. می‌توانید سهم هر کدام را در پایین تغییر دهید."
+
+#: horilla_crm/forecast/templates/forecast_target/whole_role_toggle.html:22
+msgid "Enter total for the role"
+msgstr "مجموع نقش را وارد کنید"
+
+#: horilla_crm/forecast/tour.py:103
+msgid "Choose the first and last period, then click Apply."
+msgstr "اولین و آخرین دوره را انتخاب کنید، سپس «اعمال» را بزنید."
+
+#: horilla_crm/forecast/tour.py:114
+msgid "The Chart Analysis button opens these charts: your target against what you achieved, how both move over time, and how your deals split into Closed, Commit, Best Case and Pipeline."
+msgstr "دکمه‌ی «تحلیل نمودار» این نمودارها را باز می‌کند: هدف شما در برابر آنچه به دست آورده‌اید، روند هر دو در طول زمان، و تقسیم معامله‌هایتان به بسته، تعهد، بهترین حالت و پایپ لاین."
+
+#: horilla_crm/forecast/tour.py:126
+msgid "The goal for each period."
+msgstr "هدف هر دوره."
+
+#: horilla_crm/forecast/tour.py:132
+msgid "How much of the target you have reached."
+msgstr "چه مقدار از هدف را به دست آورده‌اید."
+
+#: horilla_crm/forecast/tour.py:138
+msgid "How much is still missing to reach the target."
+msgstr "چه مقدار تا رسیدن به هدف باقی مانده است."
+
+#: horilla_crm/forecast/tour.py:144
+msgid "Deals you have already won."
+msgstr "معامله‌هایی که از قبل برده‌اید."
+
+#: horilla_crm/forecast/tour.py:150
+msgid "Deals that are very likely to close."
+msgstr "معامله‌هایی که احتمال بسته شدنشان بسیار زیاد است."
+
+#: horilla_crm/forecast/tour.py:156
+msgid "Deals with a fair chance of closing."
+msgstr "معامله‌هایی که شانس خوبی برای بسته شدن دارند."
+
+#: horilla_crm/forecast/tour.py:162
+msgid "Early deals that are still far from closing."
+msgstr "معامله‌های اولیه که هنوز تا بسته شدن فاصله دارند."
+
+#: horilla_crm/forecast/tour.py:168
+msgid "Open a Period"
+msgstr "باز کردن یک دوره"
+
+#: horilla_crm/forecast/tour.py:169
+msgid "Click a period to see each team member's numbers."
+msgstr "برای دیدن اعداد هر عضو تیم، روی یک دوره کلیک کنید."
+
+#: horilla_crm/forecast/tour.py:177
+msgid "Trend Arrow"
+msgstr "پیکان روند"
+
+#: horilla_crm/forecast/tour.py:179
+msgid "An arrow shows if the number went up or down since the last period. Hover over it to see by how much."
+msgstr "یک پیکان نشان می‌دهد عدد نسبت به دوره‌ی قبل بالا رفته یا پایین آمده است. برای دیدن مقدارش، نشانگر را روی آن ببرید."
+
+#: horilla_crm/forecast/tour.py:186
+msgid "See the Deals"
+msgstr "دیدن معامله‌ها"
+
+#: horilla_crm/forecast/tour.py:187
+msgid "Click an amount to list the deals behind it."
+msgstr "برای فهرست کردن معامله‌های پشت یک مبلغ، روی آن کلیک کنید."
+
+#: horilla_crm/forecast/tour.py:194
+msgid "Deals by Category"
+msgstr "معامله‌ها بر اساس دسته"
+
+#: horilla_crm/forecast/tour.py:195
+msgid "Switch between Closed, Committed, Best Case and Open Pipeline."
+msgstr "بین بسته، متعهد شده، بهترین حالت و پایپ لاین باز جابه‌جا شوید."
+
+#: horilla_crm/forecast/tour.py:202
+msgid "The Deals"
+msgstr "معامله‌ها"
+
+#: horilla_crm/forecast/tour.py:203
+msgid "Each deal with its amount, close date and stage."
+msgstr "هر معامله با مبلغ، تاریخ بسته شدن و مرحله‌اش."
+
+#: horilla_crm/forecast/tour.py:60
+msgid "Understanding the Forecast"
+msgstr "آشنایی با پیش‌بینی"
+
+#: horilla_crm/forecast/tour.py:62
+msgid "Compare your target with what you have won and what you expect to win, period by period."
+msgstr "هدفتان را با آنچه برده‌اید و آنچه انتظار دارید ببرید، دوره به دوره مقایسه کنید."
+
+#: horilla_crm/forecast/tour.py:79
+msgid "See how much you expect to sell, compared with your target."
+msgstr "ببینید انتظار دارید چه مقدار بفروشید، در مقایسه با هدفتان."
+
+#: horilla_crm/forecast/tour.py:84
+msgid "Each tab counts your deals in a different way: by amount, by expected revenue or by number of deals."
+msgstr "هر زبانه معامله‌هایتان را به شکلی متفاوت می‌شمارد: بر اساس مبلغ، درآمد مورد انتظار یا تعداد معامله‌ها."
+
+#: horilla_crm/forecast/tour.py:91
+msgid "Whose Forecast"
+msgstr "پیش‌بینی چه کسی"
+
+#: horilla_crm/forecast/tour.py:92
+msgid "Pick All Users, your own forecast or a team member's."
+msgstr "«همه‌ی کاربران»، پیش‌بینی خودتان یا پیش‌بینی یکی از اعضای تیم را انتخاب کنید."
+
+#: horilla_crm/forecast/views/forecast_target.py:1333
+#, python-format
+msgid "The %(role)s role target is now %(total)s."
+msgstr "هدف نقش %(role)s اکنون %(total)s است."
+
+#: horilla_crm/forecast/views/forecast_target.py:1346
+#, python-format
+msgid "This target is part of the %(role)s role target of %(total)s. The targets of that role now add up to %(current)s."
+msgstr "این هدف بخشی از هدف نقش %(role)s به مبلغ %(total)s است. جمع هدف‌های آن نقش اکنون %(current)s است."
+
+#: horilla_crm/forecast/views/forecast_target.py:1389
+#, python-format
+msgid "The %(role)s role target is %(total)s, but its targets now add up to %(current)s."
+msgstr "هدف نقش %(role)s برابر %(total)s است، اما جمع هدف‌هایش اکنون %(current)s است."
+
+#: horilla_crm/forecast/views/forecast_target.py:1587
+msgid "Enter a role target greater than zero."
+msgstr "هدف نقش را بزرگ‌تر از صفر وارد کنید."
+
+#: horilla_crm/forecast/views/forecast_target.py:1598
+#, python-format
+msgid "%(role)s role target changed to %(total)s for %(count)s users."
+msgstr "هدف نقش %(role)s برای %(count)s کاربر به %(total)s تغییر کرد."
+
+#: horilla_crm/forecast/views/forecast_target.py:825
+msgid "Select a role you can set targets for."
+msgstr "نقشی را انتخاب کنید که می‌توانید برایش هدف تعیین کنید."
+
+#: horilla_crm/forecast/views/forecast_target.py:827
+msgid "Period is required."
+msgstr "دوره الزامی است."
+
+#: horilla_crm/forecast/views/forecast_target.py:829
+msgid "Forecast type is required."
+msgstr "نوع پیش‌بینی الزامی است."
+
+#: horilla_crm/forecast/views/forecast_target.py:831
+msgid "Enter the role target."
+msgstr "هدف نقش را وارد کنید."
+
+#: horilla_crm/forecast/views/forecast_target.py:839
+msgid "Shares must add up to the role target."
+msgstr "جمع سهم‌ها باید برابر هدف نقش باشد."
+
+#: horilla_crm/forecast/views/forecast_target.py:888
+#, python-format
+msgid "Role target divided among %(count)s users."
+msgstr "هدف نقش بین %(count)s کاربر تقسیم شد."
+
+#: horilla_crm/forecast/views/forecast_target.py:969
+msgid "You can only set targets for users below you in the hierarchy."
+msgstr "فقط می‌توانید برای کاربرانی که در سلسله‌مراتب زیر شما هستند هدف تعیین کنید."

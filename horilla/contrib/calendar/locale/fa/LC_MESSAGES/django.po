@@ -765,3 +765,123 @@ msgstr "کاربری مطابق یافت نشد."
 
 msgid "No users assigned yet."
 msgstr "هنوز کاربری تخصیص داده نشده است."
+
+#: horilla/contrib/calendar/forms.py:191
+msgid "To cannot be earlier than From."
+msgstr "«تا» نمی‌تواند قبل از «از» باشد."
+
+#: horilla/contrib/calendar/tour.py:107
+msgid "Add a task, call, meeting or event on that day."
+msgstr "در آن روز یک وظیفه، تماس، جلسه یا رویداد اضافه کنید."
+
+#: horilla/contrib/calendar/tour.py:115
+msgid "Block out the time when you are not available."
+msgstr "زمان‌هایی را که در دسترس نیستید مسدود کنید."
+
+#: horilla/contrib/calendar/tour.py:123
+msgid "An Event"
+msgstr "یک رویداد"
+
+#: horilla/contrib/calendar/tour.py:124
+msgid "Click an event to see its details."
+msgstr "برای دیدن جزئیات یک رویداد روی آن کلیک کنید."
+
+#: horilla/contrib/calendar/tour.py:131
+msgid "Event Details"
+msgstr "جزئیات رویداد"
+
+#: horilla/contrib/calendar/tour.py:133
+msgid "See the details and act on them: mark a task as complete, edit it, delete it or open its record."
+msgstr "جزئیات را ببینید و روی آن اقدام کنید: وظیفه را تکمیل‌شده علامت بزنید، ویرایش یا حذفش کنید یا رکوردش را باز کنید."
+
+#: horilla/contrib/calendar/tour.py:145
+msgid "Mine shows your own events. Team adds the events of your team."
+msgstr "«خودم» رویدادهای خودتان را نشان می‌دهد. «تیم» رویدادهای تیمتان را هم اضافه می‌کند."
+
+#: horilla/contrib/calendar/tour.py:156
+msgid "In Team view, choose whose events to show. All members shows everyone in your team."
+msgstr "در نمای تیم، انتخاب کنید رویدادهای چه کسانی نمایش داده شود. «همه‌ی اعضا» همه‌ی اعضای تیمتان را نشان می‌دهد."
+
+#: horilla/contrib/calendar/tour.py:165
+msgid "Choose Members"
+msgstr "انتخاب اعضا"
+
+#: horilla/contrib/calendar/tour.py:167
+msgid "Search for a name, tick the members you want and click Select. The calendar then shows only their events."
+msgstr "نامی را جستجو کنید، اعضای موردنظر را تیک بزنید و «انتخاب» را بزنید. سپس تقویم فقط رویدادهای آن‌ها را نشان می‌دهد."
+
+#: horilla/contrib/calendar/tour.py:185
+msgid "Colour the events by their type or by their status."
+msgstr "رویدادها را بر اساس نوع یا وضعیتشان رنگ‌بندی کنید."
+
+#: horilla/contrib/calendar/tour.py:191
+msgid "Status Colours"
+msgstr "رنگ‌های وضعیت"
+
+#: horilla/contrib/calendar/tour.py:193
+msgid "Completed and Not completed each get a colour. Tick one to show those events, untick it to hide them."
+msgstr "«تکمیل‌شده» و «تکمیل‌نشده» هر کدام یک رنگ دارند. برای نمایش آن رویدادها تیک بزنید و برای پنهان کردنشان تیک را بردارید."
+
+#: horilla/contrib/calendar/tour.py:205
+msgid "Tick a calendar to show its events. Untick it to hide them."
+msgstr "برای نمایش رویدادهای یک تقویم تیکش را بزنید و برای پنهان کردنشان تیک را بردارید."
+
+#: horilla/contrib/calendar/tour.py:212
+msgid "Add a Calendar"
+msgstr "افزودن تقویم"
+
+#: horilla/contrib/calendar/tour.py:213
+msgid "Add a calendar of your own."
+msgstr "یک تقویم برای خودتان اضافه کنید."
+
+#: horilla/contrib/calendar/tour.py:218
+msgid "Calendar Options"
+msgstr "گزینه‌های تقویم"
+
+#: horilla/contrib/calendar/tour.py:219
+msgid "Show only this calendar, or change its colours."
+msgstr "فقط همین تقویم را نشان دهید یا رنگ‌هایش را تغییر دهید."
+
+#: horilla/contrib/calendar/tour.py:50
+msgid "Using the Calendar"
+msgstr "کار با تقویم"
+
+#: horilla/contrib/calendar/tour.py:52
+msgid "See your tasks, meetings and time off, add to them and choose what shows."
+msgstr "وظایف، جلسات و مرخصی‌هایتان را ببینید، به آن‌ها اضافه کنید و انتخاب کنید چه چیزی نمایش داده شود."
+
+#: horilla/contrib/calendar/tour.py:64
+msgid "Your tasks, meetings, events and time off in one place."
+msgstr "وظایف، جلسات، رویدادها و مرخصی‌هایتان در یک جا."
+
+#: horilla/contrib/calendar/tour.py:67
+msgid "This Period"
+msgstr "این دوره"
+
+#: horilla/contrib/calendar/tour.py:68
+msgid "The month, week or day you are looking at."
+msgstr "ماه، هفته یا روزی که در حال دیدنش هستید."
+
+#: horilla/contrib/calendar/tour.py:73
+msgid "Move Around"
+msgstr "جابه‌جایی"
+
+#: horilla/contrib/calendar/tour.py:74
+msgid "Go to the previous or next period. Today brings you back to now."
+msgstr "به دوره‌ی قبل یا بعد بروید. «امروز» شما را به زمان حال برمی‌گرداند."
+
+#: horilla/contrib/calendar/tour.py:82
+msgid "Day, Week, Month, Year"
+msgstr "روز، هفته، ماه، سال"
+
+#: horilla/contrib/calendar/tour.py:83
+msgid "Choose how much time you see at once."
+msgstr "انتخاب کنید چه مقدار از زمان را یک‌جا ببینید."
+
+#: horilla/contrib/calendar/tour.py:93
+msgid "Click Any Day"
+msgstr "روی هر روزی کلیک کنید"
+
+#: horilla/contrib/calendar/tour.py:95
+msgid "Click any day, or any time slot in the day and week views, to open this small menu."
+msgstr "روی هر روز، یا در نمای روز و هفته روی هر بازه‌ی زمانی، کلیک کنید تا این منوی کوچک باز شود."

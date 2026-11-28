@@ -773,3 +773,143 @@ msgstr "یک فهرست کوتاه برای تکمیل راه‌اندازی CRM
 #: horilla/contrib/dashboard/views/dashboard_actions.py:65
 msgid "You don't have permission to change this dashboard."
 msgstr "اجازه‌ی تغییر این داشبورد را ندارید."
+
+#: horilla/contrib/dashboard/tour.py:104
+msgid "Arrange Your Page"
+msgstr "چیدمان صفحه"
+
+#: horilla/contrib/dashboard/tour.py:121
+msgid "Get Started"
+msgstr "شروع کار"
+
+#: horilla/contrib/dashboard/tour.py:133
+msgid "Working with Dashboards"
+msgstr "کار با داشبوردها"
+
+#: horilla/contrib/dashboard/tour.py:135
+msgid "Create a dashboard, keep dashboards in folders and choose the one you see on Home."
+msgstr "داشبورد بسازید، داشبوردها را در پوشه‌ها نگه دارید و داشبوردی را که در خانه می‌بینید انتخاب کنید."
+
+#: horilla/contrib/dashboard/tour.py:148
+msgid "A dashboard puts your key numbers and charts on one page."
+msgstr "داشبورد اعداد کلیدی و نمودارهایتان را در یک صفحه کنار هم می‌گذارد."
+
+#: horilla/contrib/dashboard/tour.py:152
+msgid "Create a dashboard, then add numbers and charts to it."
+msgstr "یک داشبورد بسازید، سپس عدد و نمودار به آن اضافه کنید."
+
+#: horilla/contrib/dashboard/tour.py:159
+msgid "Keep related dashboards together in a folder."
+msgstr "داشبوردهای مرتبط را در یک پوشه کنار هم نگه دارید."
+
+#: horilla/contrib/dashboard/tour.py:165
+msgid "Open a Dashboard"
+msgstr "باز کردن داشبورد"
+
+#: horilla/contrib/dashboard/tour.py:166
+msgid "Click a name to open the dashboard."
+msgstr "برای باز کردن داشبورد روی نام آن کلیک کنید."
+
+#: horilla/contrib/dashboard/tour.py:173
+msgid "Turn this on to show the dashboard on your Home page. Only one dashboard can be the default."
+msgstr "این را روشن کنید تا داشبورد در صفحه‌ی خانه‌ی شما نمایش داده شود. فقط یک داشبورد می‌تواند پیش‌فرض باشد."
+
+#: horilla/contrib/dashboard/tour.py:183
+msgid "Mark it as a favourite, edit it, move it to a folder or delete it."
+msgstr "آن را به علاقه‌مندی‌ها اضافه کنید، ویرایش کنید، به پوشه‌ای منتقل کنید یا حذف کنید."
+
+#: horilla/contrib/dashboard/tour.py:189
+msgid "Browse"
+msgstr "مرور"
+
+#: horilla/contrib/dashboard/tour.py:190
+msgid "See all dashboards, your folders or your favourites."
+msgstr "همه‌ی داشبوردها، پوشه‌هایتان یا علاقه‌مندی‌هایتان را ببینید."
+
+#: horilla/contrib/dashboard/tour.py:201
+msgid "Inside a Dashboard"
+msgstr "داخل یک داشبورد"
+
+#: horilla/contrib/dashboard/tour.py:203
+msgid "The numbers and charts of a dashboard, and how to add, arrange and change them."
+msgstr "اعداد و نمودارهای یک داشبورد، و نحوه‌ی افزودن، چیدن و تغییر آن‌ها."
+
+#: horilla/contrib/dashboard/tour.py:216
+msgid "Your Dashboard"
+msgstr "داشبورد شما"
+
+#: horilla/contrib/dashboard/tour.py:217
+msgid "The name of the dashboard. The arrow goes back to the list."
+msgstr "نام داشبورد. پیکان به فهرست برمی‌گردد."
+
+#: horilla/contrib/dashboard/tour.py:225
+msgid "Add a number, a chart or a table to this dashboard."
+msgstr "یک عدد، نمودار یا جدول به این داشبورد اضافه کنید."
+
+#: horilla/contrib/dashboard/tour.py:232
+msgid "Click it to move the cards around."
+msgstr "برای جابه‌جا کردن کارت‌ها روی آن کلیک کنید."
+
+#: horilla/contrib/dashboard/tour.py:242
+msgid "Save or Cancel"
+msgstr "ذخیره یا لغو"
+
+#: horilla/contrib/dashboard/tour.py:244
+msgid "Click Save to keep the new order, or Cancel to leave it as it was."
+msgstr "برای نگه داشتن ترتیب جدید «ذخیره» و برای برگرداندن آن به حالت قبل «لغو» را بزنید."
+
+#: horilla/contrib/dashboard/tour.py:254
+msgid "Hold these dots and drag the card where you want it."
+msgstr "این نقطه‌ها را نگه دارید و کارت را به جای دلخواه بکشید."
+
+#: horilla/contrib/dashboard/tour.py:260
+msgid "A Number"
+msgstr "یک عدد"
+
+#: horilla/contrib/dashboard/tour.py:261
+msgid "A key figure. Click it to see the records behind it."
+msgstr "یک شاخص کلیدی. برای دیدن رکوردهای پشت آن کلیک کنید."
+
+#: horilla/contrib/dashboard/tour.py:266
+msgid "Number Options"
+msgstr "گزینه‌های عدد"
+
+#: horilla/contrib/dashboard/tour.py:267 horilla/contrib/dashboard/tour.py:292
+msgid "Edit it, add it to another dashboard or delete it."
+msgstr "آن را ویرایش کنید، به داشبورد دیگری اضافه کنید یا حذف کنید."
+
+#: horilla/contrib/dashboard/tour.py:271
+msgid "A Chart"
+msgstr "یک نمودار"
+
+#: horilla/contrib/dashboard/tour.py:272
+msgid "Your data at a glance."
+msgstr "داده‌هایتان در یک نگاه."
+
+#: horilla/contrib/dashboard/tour.py:279
+msgid "Edit it, save it as a PNG or PDF, add it to another dashboard or delete it."
+msgstr "آن را ویرایش کنید، به‌صورت PNG یا PDF ذخیره کنید، به داشبورد دیگری اضافه کنید یا حذف کنید."
+
+#: horilla/contrib/dashboard/tour.py:285
+msgid "A Table"
+msgstr "یک جدول"
+
+#: horilla/contrib/dashboard/tour.py:286
+msgid "A list of records from your CRM."
+msgstr "فهرستی از رکوردهای CRM شما."
+
+#: horilla/contrib/dashboard/tour.py:291
+msgid "Table Options"
+msgstr "گزینه‌های جدول"
+
+#: horilla/contrib/dashboard/tour.py:54
+msgid "Your Home Page"
+msgstr "صفحه‌ی خانه‌ی شما"
+
+#: horilla/contrib/dashboard/tour.py:71
+msgid "Date Range"
+msgstr "بازه‌ی تاریخ"
+
+#: horilla/contrib/dashboard/tour.py:77
+msgid "Key Numbers"
+msgstr "اعداد کلیدی"

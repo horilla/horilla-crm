@@ -72,3 +72,7 @@ msgstr "اعلان خوانده نشده ای وجود ندارد"
 
 msgid "No notifications"
 msgstr "اعلانی وجود ندارد"
+
+#: static/assets/js/global.js:1290
+msgid "Select an Option"
+msgstr "یک گزینه را انتخاب کنید"

@@ -37,11 +37,14 @@ def get_date_range_choices(created=False, keys=None):
     ]
 
 
-def get_preset_date_bounds(date_range, today):
+def get_preset_date_bounds(date_range, today, user=None):
     """Return the inclusive ``(start, end)`` dates for a preset key.
 
     ``today`` is the current date in the timezone the data is shown in.
-    Weeks start on Monday. Returns ``(None, None)`` for an unknown key.
+    The week and the month come from the date formatter's ``period_bounds``:
+    Gregorian with weeks starting on Monday, unless a calendar extension
+    (e.g. Jalali) changes them for ``user``. Returns ``(None, None)`` for an
+    unknown key.
     """
     key = str(date_range)
     if key == "today":
@@ -49,11 +52,10 @@ def get_preset_date_bounds(date_range, today):
     if key == "yesterday":
         yesterday = today - timedelta(days=1)
         return yesterday, yesterday
-    if key == "this_week":
-        start = today - timedelta(days=today.weekday())
-        return start, start + timedelta(days=6)
-    if key == "this_month":
-        start = today.replace(day=1)
-        next_month = (start + timedelta(days=31)).replace(day=1)
-        return start, next_month - timedelta(days=1)
+    if key in ("this_week", "this_month"):
+        # Imported here: the formatter's app may import this module.
+        from horilla.extension.formatting import get_datetime_formatter
+
+        period = key.removeprefix("this_")
+        return get_datetime_formatter().period_bounds(period, today, user=user)
     return None, None

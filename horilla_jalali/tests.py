@@ -4,13 +4,17 @@
 import importlib
 import re
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from datetime import timezone as dt_timezone
 from pathlib import Path
 from types import SimpleNamespace
+from unittest import skipUnless
 from unittest.mock import patch
 
+import jdatetime
+
 # Third-party imports (Django)
+from django.apps import apps
 from django.contrib.staticfiles import finders
 from django.test import SimpleTestCase
 from django.utils import formats, timezone
@@ -24,7 +28,9 @@ from horilla.registry.history_registry import (
     get_history_datetime_formatters,
     register_history_datetime_formatter,
 )
+from horilla.utils.date_ranges import get_preset_date_bounds
 from horilla.utils.translation import override
+from horilla_jalali.calendar import shamsi_period_bounds
 from horilla_jalali.history import format_history_datetime_as_jalali, format_shamsi
 
 
@@ -237,3 +243,71 @@ class JalaliTimelineCalendarTests(SimpleTestCase):
         self.assertEqual(
             self.object_keys(script, "JALALI_TIMELINE_CALENDAR"), gregorian_keys
         )
+
+
+class ShamsiDateRangePresetTests(SimpleTestCase):
+    """"This Week" and "This Month" follow the Shamsi calendar."""
+
+    # Friday 27 November 2026 is 6 Azar 1405.
+    DAY = date(2026, 11, 27)
+
+    def setUp(self):
+        # No request user: the language alone decides, as in a background job.
+        patcher = patch(
+            "horilla.contrib.utils.middlewares.get_current_request", return_value=None
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_week_runs_saturday_to_friday(self):
+        self.assertEqual(
+            shamsi_period_bounds("week", self.DAY),
+            (date(2026, 11, 21), date(2026, 11, 27)),
+        )
+        # A Saturday starts its own week.
+        self.assertEqual(
+            shamsi_period_bounds("week", date(2026, 11, 28)),
+            (date(2026, 11, 28), date(2026, 12, 4)),
+        )
+
+    def test_month_is_the_shamsi_month(self):
+        """Azar 1405 runs from 22 November to 21 December 2026."""
+        self.assertEqual(
+            shamsi_period_bounds("month", self.DAY),
+            (date(2026, 11, 22), date(2026, 12, 21)),
+        )
+
+    def test_esfand_ends_the_day_before_nowruz(self):
+        start, end = shamsi_period_bounds("month", date(2026, 3, 10))
+        first = jdatetime.date.fromgregorian(date=start)
+        self.assertEqual((first.year, first.month, first.day), (1404, 12, 1))
+        self.assertEqual(
+            jdatetime.date.fromgregorian(date=end + timedelta(days=1)),
+            jdatetime.date(1405, 1, 1),
+        )
+
+    @skipUnless(apps.is_installed("horilla_jalali"), "the formatter extension is off")
+    def test_presets_use_the_shamsi_calendar_in_persian(self):
+        with override("fa"):
+            self.assertEqual(
+                get_preset_date_bounds("this_month", self.DAY),
+                (date(2026, 11, 22), date(2026, 12, 21)),
+            )
+            self.assertEqual(
+                get_preset_date_bounds("this_week", self.DAY),
+                (date(2026, 11, 21), date(2026, 11, 27)),
+            )
+        with override("en"):
+            self.assertEqual(
+                get_preset_date_bounds("this_month", self.DAY),
+                (date(2026, 11, 1), date(2026, 11, 30)),
+            )
+
+    @skipUnless(apps.is_installed("horilla_jalali"), "the formatter extension is off")
+    def test_gregorian_opt_out_keeps_the_gregorian_month(self):
+        user = SimpleNamespace(calendar_system="gregorian", is_authenticated=True)
+        with override("fa"):
+            self.assertEqual(
+                get_preset_date_bounds("this_month", self.DAY, user=user),
+                (date(2026, 11, 1), date(2026, 11, 30)),
+            )

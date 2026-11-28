@@ -1459,3 +1459,134 @@ msgstr "انتخاب %(name)s"
 #: horilla/contrib/generics/templates/related_list_content.html:9
 msgid "View and manage %(title)s related to this %(name)s."
 msgstr "%(title)s مرتبط با این %(name)s را مشاهده و مدیریت کنید."
+
+#: horilla/contrib/generics/templates/forms/widgets/day_quick_fill.html:101
+msgid "End time must be after start time."
+msgstr "زمان پایان باید بعد از زمان شروع باشد."
+
+#: horilla/contrib/generics/templates/forms/widgets/day_quick_fill.html:9
+msgid "Set a time range once and apply it to several days. You can still edit each day afterwards."
+msgstr "یک بازه‌ی زمانی را یک بار تعیین کنید و برای چند روز اعمال کنید. بعداً هم می‌توانید هر روز را جداگانه ویرایش کنید."
+
+#: horilla/contrib/generics/templates/forms/widgets/day_quick_fill.html:95
+msgid "Select at least one day."
+msgstr "دست‌کم یک روز را انتخاب کنید."
+
+#: horilla/contrib/generics/templates/forms/widgets/day_quick_fill.html:97
+msgid "Enter both a start and an end time."
+msgstr "هم زمان شروع و هم زمان پایان را وارد کنید."
+
+#: horilla/contrib/generics/templates/global_search.html:110
+msgid "No records match this filter"
+msgstr "هیچ رکوردی با این فیلتر مطابقت ندارد"
+
+#: horilla/contrib/generics/templates/global_search_suggest.html:16 horilla/contrib/generics/templates/global_search_suggest.html:49 horilla/contrib/generics/templates/global_search_suggest.html:69 horilla/contrib/generics/templates/partials/list_search_suggest.html:16
+msgid "for"
+msgstr "برای"
+
+#: horilla/contrib/generics/templates/global_search_suggest.html:81
+msgid "Press Enter to see all results"
+msgstr "برای دیدن همه‌ی نتایج Enter را بزنید"
+
+#: horilla/contrib/generics/templates/global_search_suggest.html:85
+msgid "No results for"
+msgstr "نتیجه‌ای پیدا نشد برای"
+
+#: horilla/contrib/generics/templates/navbar.html:193 templates/components/header.html:96
+msgid "Recent Searches"
+msgstr "جستجوهای اخیر"
+
+#: horilla/contrib/generics/templates/partials/applied_filters_slot.html:107
+msgid "where"
+msgstr "شرط"
+
+#: horilla/contrib/generics/templates/partials/applied_filters_slot.html:97
+#, python-format
+msgid "%(counter)s filter"
+msgid_plural "%(counter)s filters"
+msgstr[0] "%(counter)s فیلتر"
+msgstr[1] "%(counter)s فیلتر"
+
+#: horilla/contrib/generics/templates/partials/bulk_update_form.html:27
+msgid "Select state/province"
+msgstr "انتخاب استان"
+
+#: horilla/contrib/generics/templates/partials/list_search_suggest.html:34
+msgid "No matches in this list."
+msgstr "در این فهرست موردی پیدا نشد."
+
+#: horilla/contrib/generics/templates/partials/list_search_suggest.html:35
+msgid "Search all modules"
+msgstr "جستجو در همه‌ی ماژول‌ها"
+
+#: horilla/contrib/generics/templates/partials/list_search_suggest.html:40 templates/components/header.html:29
+msgid "Quick Filters"
+msgstr "فیلترهای سریع"
+
+#: horilla/contrib/generics/forms/generics.py:823
+msgid "Log a note…"
+msgstr "یک یادداشت بنویسید…"
+
+#: horilla/contrib/generics/forms/generics.py:849
+msgid "Write a note or keep the file."
+msgstr "یک یادداشت بنویسید یا فایل را نگه دارید."
+
+#: horilla/contrib/generics/forms/generics.py:863
+msgid "Write a note or attach a file to log it."
+msgstr "برای ثبت، یک یادداشت بنویسید یا فایلی پیوست کنید."
+
+#: horilla/contrib/generics/templates/forms/notes_attachment_composer.html:27 horilla/contrib/generics/templates/forms/notes_attachment_inline_edit.html:33
+msgid "Remove file"
+msgstr "حذف فایل"
+
+#: horilla/contrib/generics/templates/forms/notes_attachment_composer.html:40 horilla/contrib/generics/templates/notes_attachments.html:81
+msgid "Pin"
+msgstr "سنجاق"
+
+#: horilla/contrib/generics/templates/forms/notes_attachment_composer.html:43
+msgid "Log note"
+msgstr "ثبت یادداشت"
+
+#: horilla/contrib/generics/templates/notes_attachments.html:120
+msgid "Nothing to show yet. Please add your Attachments."
+msgstr "هنوز چیزی برای نمایش نیست. لطفاً پیوست‌هایتان را اضافه کنید."
+
+#: horilla/contrib/generics/templates/notes_attachments.html:126
+msgid "No entries match your search."
+msgstr "هیچ موردی با جستجوی شما مطابقت ندارد."
+
+#: horilla/contrib/generics/templates/notes_attachments.html:127
+msgid "No notes yet."
+msgstr "هنوز یادداشتی نیست."
+
+#: horilla/contrib/generics/templates/notes_attachments.html:128
+msgid "No files attached yet."
+msgstr "هنوز فایلی پیوست نشده است."
+
+#: horilla/contrib/generics/templates/notes_attachments.html:129
+msgid "Nothing to show yet."
+msgstr "هنوز چیزی برای نمایش نیست."
+
+#: horilla/contrib/generics/templates/notes_attachments.html:13
+msgid "Search notes and files"
+msgstr "جستجو در یادداشت‌ها و فایل‌ها"
+
+#: horilla/contrib/generics/templates/notes_attachments.html:21
+msgid "Files"
+msgstr "فایل‌ها"
+
+#: horilla/contrib/generics/templates/partials/form_error_summary.html:5
+msgid "Please check these fields:"
+msgstr "لطفاً این فیلدها را بررسی کنید:"
+
+#: horilla/contrib/generics/templates/partials/form_error_summary.html:5
+msgid "Please check this field:"
+msgstr "لطفاً این فیلد را بررسی کنید:"
+
+#: horilla/contrib/generics/views/attachments.py:123 horilla/contrib/core/models/attachments.py:59
+msgid "Pinned"
+msgstr "سنجاق‌شده"
+
+#: horilla/contrib/generics/views/attachments.py:321
+msgid "You don't have permission to pin this attachment."
+msgstr "اجازه‌ی سنجاق کردن این پیوست را ندارید."

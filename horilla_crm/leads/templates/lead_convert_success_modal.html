@@ -2,7 +2,7 @@
     {% include "messages.html" %}
     {% with contact_full_name=contact.first_name|add:" "|add:contact.last_name %}
     <div class="relative rounded-xl overflow-hidden">
-        <div class="flex items-center gap-3.5 pt-[22px] pb-5 pl-[22px] pr-14 bg-primary-100 border-b border-primary-500">
+        <div class="flex items-center gap-3.5 pt-[22px] pb-5 ps-[22px] pe-14 bg-primary-100 border-b border-primary-500">
             <span class="shrink-0 w-[46px] h-[46px] rounded-full bg-primary-600 text-white grid place-items-center">
                 <svg class="w-[25px] h-[25px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
             </span>
@@ -14,7 +14,7 @@
         <button
             type="button"
             onclick="closeContentModal();$('#reloadButton').click()"
-            class="absolute top-3 right-3.5 w-8 h-8 grid place-items-center rounded-lg cursor-pointer hover:bg-black/5"
+            class="absolute top-3 end-3.5 w-8 h-8 grid place-items-center rounded-lg cursor-pointer hover:bg-black/5"
             aria-label="{% trans 'Close' %}"
         >
             <img src="{% static 'assets/icons/close.svg' %}" alt="" class="w-3.5">

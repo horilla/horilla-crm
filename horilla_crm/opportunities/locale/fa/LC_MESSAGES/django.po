@@ -927,3 +927,83 @@ msgstr "انتخاب مراحل فرصت برای %(company_name)s"
 
 msgid "Primary Contact"
 msgstr "مخاطب اصلی"
+
+#: horilla_crm/opportunities/onboarding.py:15
+msgid "Set up your opportunity stages"
+msgstr "مراحل فرصت را تنظیم کنید"
+
+#: horilla_crm/opportunities/onboarding.py:16
+msgid "Define the stages your deals move through."
+msgstr "مراحلی را که معامله‌ها از آن‌ها عبور می‌کنند تعریف کنید."
+
+#: horilla_crm/opportunities/dashboard.py:210 horilla_crm/opportunities/dashboard.py:352
+msgid "Deals by Stage"
+msgstr "معامله‌ها بر اساس مرحله"
+
+#: horilla_crm/opportunities/dashboard.py:258 horilla_crm/opportunities/dashboard.py:352
+msgid "Won Revenue by Month"
+msgstr "درآمد به‌دست‌آمده بر اساس ماه"
+
+#: horilla_crm/opportunities/dashboard.py:264 horilla_crm/opportunities/dashboard.py:302
+msgid "Won Revenue"
+msgstr "درآمد به‌دست‌آمده"
+
+#: horilla_crm/opportunities/dashboard.py:324
+msgid "Deals Closing in the Next 30 Days"
+msgstr "معامله‌هایی که تا ۳۰ روز آینده بسته می‌شوند"
+
+#: horilla_crm/opportunities/dashboard.py:325
+msgid "Open deals expected to close soon, earliest first"
+msgstr "معامله‌های بازی که انتظار می‌رود به‌زودی بسته شوند، به ترتیب نزدیک‌ترین"
+
+#: horilla_crm/opportunities/dashboard.py:332
+msgid "No deals closing in the next 30 days."
+msgstr "هیچ معامله‌ای در ۳۰ روز آینده بسته نمی‌شود."
+
+#: horilla_crm/opportunities/dashboard.py:355
+msgid "Value of deals at each stage, including closed won and lost"
+msgstr "ارزش معامله‌ها در هر مرحله، شامل برنده و بازنده"
+
+#: horilla_crm/opportunities/dashboard.py:356
+msgid "Closed-won revenue over the last 6 months"
+msgstr "درآمد معامله‌های برنده در ۶ ماه گذشته"
+
+#: horilla_crm/opportunities/tour.py:28
+msgid "Working with the Opportunities List"
+msgstr "کار با فهرست فرصت‌ها"
+
+#: horilla_crm/opportunities/tour.py:30
+msgid "Find your deals, switch layouts, select rows and add a new opportunity."
+msgstr "معامله‌هایتان را پیدا کنید، چیدمان را تغییر دهید، ردیف‌ها را انتخاب کنید و فرصت جدید اضافه کنید."
+
+#: horilla_crm/opportunities/tour.py:43
+msgid "An opportunity is a deal you are working to win."
+msgstr "فرصت معامله‌ای است که برای بردنش تلاش می‌کنید."
+
+#: horilla_crm/opportunities/tour.py:44
+msgid "Add a new opportunity here. A short form opens."
+msgstr "از اینجا فرصت جدید اضافه کنید. یک فرم کوتاه باز می‌شود."
+
+#: horilla_crm/opportunities/tour.py:52
+msgid "Inside an Opportunity"
+msgstr "داخل یک فرصت"
+
+#: horilla_crm/opportunities/tour.py:54
+msgid "The summary, stages and tabs of a deal: activity, related records, notes and history."
+msgstr "خلاصه، مراحل و زبانه‌های یک معامله: فعالیت، رکوردهای مرتبط، یادداشت‌ها و تاریخچه."
+
+#: horilla_crm/opportunities/tour.py:67
+msgid "One deal in full: its value, stage and linked records."
+msgstr "یک معامله به‌طور کامل: ارزش، مرحله و رکوردهای مرتبطش."
+
+#: horilla_crm/opportunities/tour.py:69
+msgid "Each stage is a step in your sales process. Click one to move the deal forward."
+msgstr "هر مرحله یک گام در فرایند فروش شماست. برای جلو بردن معامله روی یکی کلیک کنید."
+
+#: horilla_crm/opportunities/tour.py:75
+msgid "The people involved in the deal and the role each plays."
+msgstr "افرادی که در معامله نقش دارند و نقش هر کدام."
+
+#: horilla_crm/opportunities/tour.py:80
+msgid "Colleagues who work on this deal with you."
+msgstr "همکارانی که با شما روی این معامله کار می‌کنند."

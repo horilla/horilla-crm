@@ -101,7 +101,7 @@ msgid "No automations were processed."
 msgstr "هیچ اتوماسیونی پردازش نشد."
 
 msgid "Message Automations"
-msgstr ""
+msgstr "اتوماسیون‌های پیام"
 
 msgid "Equal (==)"
 msgstr "برابر (==)"
@@ -247,7 +247,7 @@ msgid "Optional. Leave empty to run whenever the scheduler runs."
 msgstr "اختیاری. برای اجرا در هر زمان که زمان‌بند اجرا می‌شود، خالی بگذارید."
 
 msgid "Message Automation"
-msgstr ""
+msgstr "اتوماسیون پیام"
 
 msgid "This field is required when Trigger is 'Scheduled'."
 msgstr "این فیلد زمانی که محرک 'زمان‌بندی شده' است الزامی است."
@@ -368,7 +368,7 @@ msgid "Select user fields"
 msgstr "انتخاب فیلدهای کاربر"
 
 msgid "Automate messages across your delivery channels based on events in your workflow."
-msgstr ""
+msgstr "ارسال پیام در کانال‌های تحویل را بر اساس رویدادهای گردش کارتان خودکار کنید."
 
 msgid "Template"
 msgstr "قالب"

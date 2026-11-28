@@ -948,3 +948,11 @@ msgstr "آدرس API ایمیل Microsoft. مقدار پیش‌فرض را تغ�
 
 msgid "Send as Mail"
 msgstr "ارسال با ایمیل"
+
+#: horilla/contrib/mail/onboarding.py:15
+msgid "Connect your mail server"
+msgstr "سرور ایمیل خود را متصل کنید"
+
+#: horilla/contrib/mail/onboarding.py:16
+msgid "Send emails on behalf of {company} straight from the app."
+msgstr "از داخل برنامه، به نام {company} ایمیل بفرستید."

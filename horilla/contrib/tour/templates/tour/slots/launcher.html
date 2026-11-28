@@ -1,7 +1,7 @@
     {# Tour popover and message card: tour.js copies these in and fills the text #}
     <template id="horilla-tour-popover" data-popover-class="!rounded-lg !p-4 !min-w-[260px] !max-w-[340px] !bg-white !shadow-2xl">
         <div>
-            <button type="button" data-tour-close data-native-tooltip="true" class="absolute top-1.5 right-3 focus:outline-none text-xl leading-none text-dark-400 hover:text-dark-600 cursor-pointer" aria-label="{% trans 'Close' %}">&times;</button>
+            <button type="button" data-tour-close data-native-tooltip="true" class="absolute top-1.5 end-3 focus:outline-none text-xl leading-none text-dark-400 hover:text-dark-600 cursor-pointer" aria-label="{% trans 'Close' %}">&times;</button>
             <p data-tour-title class="pe-5 text-base font-semibold text-dark-600"></p>
             <p data-tour-body class="mt-1.5 text-sm leading-relaxed text-dark-400"></p>
             <p data-tour-progress class="mt-2.5 text-xs text-dark-400"></p>
@@ -13,7 +13,7 @@
         </div>
     </template>
     <template id="horilla-tour-card">
-        <div id="horilla-tour-card" role="status" class="fixed right-[20px] top-[70px] z-[1000000001] w-[340px] max-w-[calc(100vw-20px)] rounded-lg bg-white px-4 py-4 [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_8%)]">
+        <div id="horilla-tour-card" role="status" class="fixed end-[20px] top-[70px] z-[1000000001] w-[340px] max-w-[calc(100vw-20px)] rounded-lg bg-white px-4 py-4 [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_8%)]">
             <p data-tour-card-title class="text-sm font-semibold text-dark-600"></p>
             <p data-tour-card-body class="mt-1.5 text-xs leading-normal text-dark-400"></p>
             <div class="mt-3.5 flex justify-end">
@@ -23,7 +23,7 @@
     </template>
     <div
         id="horilla-tour-panel"
-        class="fixed right-[20px] top-[70px] z-[60] w-[380px] max-w-[calc(100vw-20px)] overflow-hidden rounded-lg bg-white [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_8%)]"
+        class="fixed end-[20px] top-[70px] z-[60] w-[380px] max-w-[calc(100vw-20px)] overflow-hidden rounded-lg bg-white [box-shadow:0px_0px_20px_0px_rgb(0_0_0_/_8%)]"
         role="dialog"
         aria-labelledby="tour-panel-title"
         hidden

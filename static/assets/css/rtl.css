@@ -559,3 +559,13 @@ html[dir="rtl"] .horilla-dashboard-sortable.is-edit-sortable>[data-id] {
 [dir="rtl"] [class*="space-x-"] > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 1;
 }
+
+/*
+ * Product Tour popover. driver.css gives every element inside it a Latin
+ * font stack, so Persian text fell back to a system font. Icons (<i>) keep
+ * their own font.
+ */
+[dir="rtl"] .driver-popover,
+[dir="rtl"] .driver-popover *:not(i) {
+  font-family: "Vazirmatn", "Inter", sans-serif;
+}

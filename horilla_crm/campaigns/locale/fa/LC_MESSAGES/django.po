@@ -248,3 +248,95 @@ msgstr ""
 
 msgid "View Hierarchy"
 msgstr "مشاهده سلسله‌مراتب"
+
+#: horilla_crm/campaigns/dashboard.py:183 horilla_crm/campaigns/dashboard.py:267
+msgid "Actual Return by Campaign Type"
+msgstr "بازگشت واقعی بر اساس نوع کمپین"
+
+#: horilla_crm/campaigns/dashboard.py:201
+msgid "Return (won revenue ÷ spend)"
+msgstr "بازگشت (درآمد به‌دست‌آمده ÷ هزینه)"
+
+#: horilla_crm/campaigns/dashboard.py:214 horilla_crm/campaigns/dashboard.py:244
+msgid "Running Campaigns"
+msgstr "کمپین‌های در حال اجرا"
+
+#: horilla_crm/campaigns/dashboard.py:221
+msgid "Campaign Spend"
+msgstr "هزینه‌ی کمپین"
+
+#: horilla_crm/campaigns/dashboard.py:228
+msgid "Expected Campaign Revenue"
+msgstr "درآمد مورد انتظار کمپین"
+
+#: horilla_crm/campaigns/dashboard.py:247
+msgid "No campaigns are running."
+msgstr "هیچ کمپینی در حال اجرا نیست."
+
+#: horilla_crm/campaigns/dashboard.py:253
+msgid "Ends On"
+msgstr "تاریخ پایان"
+
+#: horilla_crm/campaigns/dashboard.py:254
+msgid "Budget"
+msgstr "بودجه"
+
+#: horilla_crm/campaigns/dashboard.py:255
+msgid "Spent"
+msgstr "هزینه‌شده"
+
+#: horilla_crm/campaigns/dashboard.py:269
+msgid "Revenue actually won divided by money spent, for each channel"
+msgstr "درآمدی که واقعاً به دست آمده تقسیم بر هزینه‌ی صرف‌شده، برای هر کانال"
+
+#: horilla_crm/campaigns/tour.py:28
+msgid "Working with the Campaigns List"
+msgstr "کار با فهرست کمپین‌ها"
+
+#: horilla_crm/campaigns/tour.py:30
+msgid "Find your marketing campaigns, switch layouts, select rows and add a new campaign."
+msgstr "کمپین‌های بازاریابی‌تان را پیدا کنید، چیدمان را تغییر دهید، ردیف‌ها را انتخاب کنید و کمپین جدید اضافه کنید."
+
+#: horilla_crm/campaigns/tour.py:43
+msgid "campaigns"
+msgstr "کمپین‌ها"
+
+#: horilla_crm/campaigns/tour.py:44
+msgid "A campaign is a marketing effort, like an email, webinar or ad."
+msgstr "کمپین یک فعالیت بازاریابی است، مثل ایمیل، وبینار یا تبلیغ."
+
+#: horilla_crm/campaigns/tour.py:45
+msgid "Add a new campaign here. A short form opens."
+msgstr "از اینجا کمپین جدید اضافه کنید. یک فرم کوتاه باز می‌شود."
+
+#: horilla_crm/campaigns/tour.py:53
+msgid "Inside a Campaign"
+msgstr "داخل یک کمپین"
+
+#: horilla_crm/campaigns/tour.py:55
+msgid "The summary, status and tabs of a campaign: activity, members, related opportunities, notes and history."
+msgstr "خلاصه، وضعیت و زبانه‌های یک کمپین: فعالیت، اعضا، فرصت‌های مرتبط، یادداشت‌ها و تاریخچه."
+
+#: horilla_crm/campaigns/tour.py:68
+msgid "One campaign in full: its dates, status and linked records."
+msgstr "یک کمپین به‌طور کامل: تاریخ‌ها، وضعیت و رکوردهای مرتبط."
+
+#: horilla_crm/campaigns/tour.py:70
+msgid "The campaign's status: New, Planned, In Progress, Completed or Aborted. Click one to update it."
+msgstr "وضعیت کمپین: جدید، برنامه‌ریزی‌شده، در حال انجام، تکمیل‌شده یا لغوشده. برای به‌روزرسانی روی یکی کلیک کنید."
+
+#: horilla_crm/campaigns/tour.py:76
+msgid "The leads and contacts you are reaching."
+msgstr "سرنخ‌ها و مخاطبانی که به آن‌ها دسترسی دارید."
+
+#: horilla_crm/campaigns/tour.py:80
+msgid "Child Campaigns"
+msgstr "کمپین‌های فرزند"
+
+#: horilla_crm/campaigns/tour.py:81
+msgid "Smaller campaigns that belong to this one."
+msgstr "کمپین‌های کوچک‌تری که زیرمجموعه‌ی این کمپین‌اند."
+
+#: horilla_crm/campaigns/tour.py:86
+msgid "Deals this campaign helped create."
+msgstr "معامله‌هایی که این کمپین به ایجادشان کمک کرده است."

@@ -208,6 +208,17 @@ class TeamMembersForm(forms.Form):
         queryset=User.objects.none(), required=False
     )
 
+    @classmethod
+    def user_can_use(cls, user):
+        """
+        The picker opens for anyone who can view activities (the form has no
+        model whose add/change rights could decide); what it lists is
+        ``_team_members()``, nobody when the Team view adds nothing.
+        """
+        return user.has_perm("activity.view_activity") or user.has_perm(
+            "activity.view_own_activity"
+        )
+
     def __init__(self, *args, request=None, **kwargs):
         kwargs.pop("instance", None)
         super().__init__(*args, **kwargs)

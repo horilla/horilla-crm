@@ -5,6 +5,7 @@ This module provides helper methods for creating notifications and limiting cont
 # Notification helper methods
 # First party imports (Horilla)
 from horilla.contrib.core.models import HorillaContentType
+from horilla.db.models import Q
 
 # Local imports
 from .models import Notification
@@ -63,20 +64,17 @@ def get_user_notifications(user):
     """
     queryset = Notification.objects.filter(user=user)
     linked = queryset.filter(content_type__isnull=False, object_id__isnull=False)
-    hidden = []
-    for content_type_id in linked.values_list("content_type_id", flat=True).distinct():
-        model = HorillaContentType.objects.get(pk=content_type_id).model_class()
+    hidden = Q()
+    # order_by() drops Meta.ordering (-created_at): with it, DISTINCT ran over
+    # (content_type_id, created_at) and gave one row per notification.
+    content_type_ids = linked.order_by().values_list("content_type_id", flat=True)
+    for content_type_id in content_type_ids.distinct():
+        model = HorillaContentType.objects.get_for_id(content_type_id).model_class()
         if model is None:
             continue
-        rows = list(
-            linked.filter(content_type_id=content_type_id).values_list(
-                "pk", "object_id"
-            )
-        )
-        visible = set(
-            model._default_manager.filter(
-                pk__in={object_id for _, object_id in rows}
-            ).values_list("pk", flat=True)
-        )
-        hidden.extend(pk for pk, object_id in rows if object_id not in visible)
-    return queryset.exclude(pk__in=hidden)
+        # A subquery, not ids loaded here: this runs on every page through the
+        # unread_notifications context processor, so it must not grow with the
+        # number of notifications. The default manager is company-scoped.
+        visible = model._default_manager.values("pk")
+        hidden |= Q(content_type_id=content_type_id) & ~Q(object_id__in=visible)
+    return queryset.exclude(hidden) if hidden else queryset

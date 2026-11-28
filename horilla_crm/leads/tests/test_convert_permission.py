@@ -3,6 +3,7 @@
 # Third-party imports (Django)
 from django.contrib.auth.models import Permission
 from django.contrib.auth.signals import user_logged_in, user_logged_out
+from django.contrib.messages import get_messages
 from django.test import TestCase
 from login_history.models import post_login, post_logout
 
@@ -10,6 +11,7 @@ from login_history.models import post_login, post_logout
 from horilla.auth.models import User
 from horilla.contrib.core.models import Company
 from horilla.urls import reverse
+from horilla_crm.contacts.models import Contact
 from horilla_crm.leads.models import Lead, LeadStatus
 
 DENIED_TEXT = "You do not have permission to view this page."
@@ -121,3 +123,47 @@ class LeadConvertPermissionTests(TestCase):
         self._grant("convert_own_lead")
         self.assertNotContains(self._open_conversion(self.own_lead), DENIED_TEXT)
         self.assertContains(self._open_conversion(self.others_lead), DENIED_TEXT)
+
+    def test_a_missing_permission_on_save_is_reported(self):
+        """
+        A user who may create every record but not change contacts links one of
+        their own contacts: the save is refused with a message, not a crash.
+        """
+        self._grant("convert_lead")
+        for app_label, codename in (
+            ("accounts", "add_account"),
+            ("contacts", "add_contact"),
+            ("opportunities", "add_opportunity"),
+        ):
+            self.user.user_permissions.add(
+                Permission.objects.get(
+                    content_type__app_label=app_label, codename=codename
+                )
+            )
+        contact = Contact.all_objects.create(
+            first_name="Grace",
+            last_name="Hopper",
+            email="grace@example.com",
+            contact_owner=self.user,
+            company=self.company,
+        )
+        response = self.client.post(
+            reverse("leads:convert_lead", kwargs={"pk": self.own_lead.pk}),
+            {
+                "account_action": "create_new",
+                "account_name": "Prospect Pioneers",
+                "contact_action": "select_existing",
+                "existing_contact": contact.pk,
+                "opportunity_action": "create_new",
+                "opportunity_name": "Pioneer deal",
+                "owner": self.user.pk,
+            },
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.own_lead.refresh_from_db()
+        self.assertFalse(self.own_lead.is_convert)
+        self.assertIn(
+            "link the selected contact",
+            " ".join(str(message) for message in get_messages(response.wsgi_request)),
+        )
